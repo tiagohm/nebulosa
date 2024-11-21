@@ -860,52 +860,54 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 	}
 
 	private async refreshChart(force: boolean = false) {
-		if (force || !this.altitudePoints.length) {
-			const { dateTime, location } = this.dateTimeAndLocation
+		try {
+			if (force || !this.altitudePoints.length) {
+				const { dateTime, location } = this.dateTimeAndLocation
 
-			// Sun.
-			if (this.tab === BodyTabType.SUN) {
-				const points = await this.api.altitudePointsOfSun(dateTime, location)
-				this.sun.altitude = points
-			}
-			// Moon.
-			else if (this.tab === BodyTabType.MOON) {
-				const points = await this.api.altitudePointsOfMoon(dateTime, location)
-				this.moon.altitude = points
-			}
-			// Planet.
-			else if (this.tab === BodyTabType.PLANET) {
-				if (this.planet.selected) {
-					const points = await this.api.altitudePointsOfPlanet(this.planet.selected.code, dateTime, location)
-					this.planet.altitude = points
+				// Sun.
+				if (this.tab === BodyTabType.SUN) {
+					const points = await this.api.altitudePointsOfSun(dateTime, location)
+					this.sun.altitude = points
+				}
+				// Moon.
+				else if (this.tab === BodyTabType.MOON) {
+					const points = await this.api.altitudePointsOfMoon(dateTime, location)
+					this.moon.altitude = points
+				}
+				// Planet.
+				else if (this.tab === BodyTabType.PLANET) {
+					if (this.planet.selected) {
+						const points = await this.api.altitudePointsOfPlanet(this.planet.selected.code, dateTime, location)
+						this.planet.altitude = points
+					}
+				}
+				// Minor Planet.
+				else if (this.tab === BodyTabType.MINOR_PLANET) {
+					if (this.minorPlanet.search.result) {
+						const code = `DES=${this.minorPlanet.search.result.spkId};`
+						const points = await this.api.altitudePointsOfPlanet(code, dateTime, location)
+						this.minorPlanet.altitude = points
+					}
+				}
+				// Sky Object.
+				else if (this.tab === BodyTabType.SKY_OBJECT) {
+					if (this.skyObject.search.selected) {
+						const points = await this.api.altitudePointsOfSkyObject(this.skyObject.search.selected, dateTime, location)
+						this.skyObject.altitude = points
+					}
+				}
+				// Satellite.
+				else {
+					if (this.satellite.search.selected) {
+						const points = await this.api.altitudePointsOfSatellite(this.satellite.search.selected, dateTime, location)
+						this.satellite.altitude = points
+					}
 				}
 			}
-			// Minor Planet.
-			else if (this.tab === BodyTabType.MINOR_PLANET) {
-				if (this.minorPlanet.search.result) {
-					const code = `DES=${this.minorPlanet.search.result.spkId};`
-					const points = await this.api.altitudePointsOfPlanet(code, dateTime, location)
-					this.minorPlanet.altitude = points
-				}
-			}
-			// Sky Object.
-			else if (this.tab === BodyTabType.SKY_OBJECT) {
-				if (this.skyObject.search.selected) {
-					const points = await this.api.altitudePointsOfSkyObject(this.skyObject.search.selected, dateTime, location)
-					this.skyObject.altitude = points
-				}
-			}
-			// Satellite.
-			else {
-				if (this.satellite.search.selected) {
-					const points = await this.api.altitudePointsOfSatellite(this.satellite.search.selected, dateTime, location)
-					this.satellite.altitude = points
-				}
-			}
+		} finally {
+			this.updateAltitudeChart()
+			this.chart.refresh()
 		}
-
-		this.updateAltitudeChart()
-		this.chart.refresh()
 	}
 
 	private updateNow(date: Date = new Date()) {
