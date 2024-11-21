@@ -2,11 +2,10 @@ import { HttpErrorResponse, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest
 import { inject, Injectable } from '@angular/core'
 import { catchError, Observable, throwError } from 'rxjs'
 import { AngularService } from '../services/angular.service'
-import { Severity } from '../types/angular.types'
 
 export interface ErrorResponse {
 	message: string
-	type: Severity
+	type: 'success' | 'info' | 'warning' | 'error'
 }
 
 @Injectable({ providedIn: 'root' })

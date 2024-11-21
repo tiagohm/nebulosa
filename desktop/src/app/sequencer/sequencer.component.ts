@@ -388,7 +388,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 				return
 			}
 
-			this.angularService.message('Failed to load the file', 'danger')
+			this.angularService.message('Failed to load the file', 'error')
 
 			this.preference.loadPath = undefined
 			this.savePreference()
