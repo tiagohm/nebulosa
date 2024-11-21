@@ -62,5 +62,8 @@
 	<router-outlet></router-outlet>
 </section>
 
-<p-toast position="bottom-center" />
+<p-toast
+	position="bottom-center"
+	[preventOpenDuplicates]="true" />
+
 <p-confirmDialog [style]="{ minWidth: '320px', maxWidth: '80px' }" />
