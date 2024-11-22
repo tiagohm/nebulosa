@@ -15,5 +15,5 @@ export class MenuBarComponent {
 	protected readonly model!: MenuItem[]
 
 	@Output()
-	readonly onSplitButtonClick = new EventEmitter<SplitButtonClickEvent>()
+	readonly splitButtonClick = new EventEmitter<SplitButtonClickEvent>()
 }

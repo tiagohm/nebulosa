@@ -15,10 +15,10 @@ export class SlideMenuComponent implements OnInit {
 	readonly appendTo: Nullable<HTMLElement | ElementRef | TemplateRef<unknown> | string>
 
 	@Output()
-	readonly onNext = new EventEmitter<MenuItemCommandEvent>()
+	readonly forward = new EventEmitter<MenuItemCommandEvent>()
 
 	@Output()
-	readonly onBack = new EventEmitter<MenuItemCommandEvent>()
+	readonly backward = new EventEmitter<MenuItemCommandEvent>()
 
 	protected currentMenu!: SlideMenuItem[]
 
@@ -32,7 +32,7 @@ export class SlideMenuComponent implements OnInit {
 	back(event: MouseEvent) {
 		if (this.navigation.length) {
 			this.currentMenu = this.navigation.splice(this.navigation.length - 1, 1)[0]
-			this.onBack.emit({ originalEvent: event })
+			this.backward.emit({ originalEvent: event })
 		}
 	}
 
@@ -47,7 +47,7 @@ export class SlideMenuComponent implements OnInit {
 					event.parentItem = parentItem
 					event.level = level
 					command?.(event)
-					this.onNext.emit(event)
+					this.forward.emit(event)
 				}
 
 				this.processMenu(item.slideMenu, level + 1, item)
@@ -56,7 +56,7 @@ export class SlideMenuComponent implements OnInit {
 					event.parentItem = parentItem
 					event.level = level
 					command?.(event)
-					this.onNext.emit(event)
+					this.forward.emit(event)
 				}
 			}
 		}

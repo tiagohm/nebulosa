@@ -1,4 +1,5 @@
 import eslint from '@eslint/js'
+import angular from 'angular-eslint'
 import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
@@ -7,21 +8,7 @@ export default tseslint.config(
 	},
 	{
 		files: ['**/*.ts'],
-		...eslint.configs.recommended,
-	},
-	...tseslint.configs.strictTypeChecked.map((config) => {
-		return {
-			files: ['**/*.ts'],
-			...config,
-		}
-	}),
-	...tseslint.configs.stylisticTypeCheckedOnly.map((config) => {
-		return {
-			files: ['**/*.ts'],
-			...config,
-		}
-	}),
-	{
+		extends: [eslint.configs.recommended, ...tseslint.configs.strictTypeChecked, ...tseslint.configs.stylisticTypeCheckedOnly, ...angular.configs.tsRecommended],
 		languageOptions: {
 			parserOptions: {
 				ecmaVersion: 2022,
@@ -30,9 +17,6 @@ export default tseslint.config(
 				tsconfigRootDir: import.meta.dirname,
 			},
 		},
-	},
-	{
-		files: ['**/*.ts'],
 		rules: {
 			'no-unused-vars': 'off',
 			'no-loss-of-precision': 'off',
@@ -63,6 +47,31 @@ export default tseslint.config(
 				{
 					allowShortCircuit: true,
 					allowTernary: true,
+				},
+			],
+			'@angular-eslint/directive-selector': 'off',
+			'@angular-eslint/component-selector': [
+				'error',
+				{
+					type: 'element',
+					prefix: 'neb',
+					style: 'kebab-case',
+				},
+			],
+		},
+	},
+	{
+		files: ['**/*.html'],
+		extends: [...angular.configs.templateRecommended, ...angular.configs.templateAccessibility],
+		rules: {
+			'@angular-eslint/template/label-has-associated-control': 'off',
+			'@angular-eslint/template/click-events-have-key-events': 'off',
+			'@angular-eslint/template/interactive-supports-focus': 'off',
+			'@angular-eslint/template/alt-text': 'off',
+			'@angular-eslint/template/elements-content': [
+				'error',
+				{
+					allowList: ['pButton'],
 				},
 			],
 		},

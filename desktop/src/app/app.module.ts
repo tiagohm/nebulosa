@@ -59,10 +59,9 @@ import { MenuItemComponent } from '../shared/components/menu-item/menu-item.comp
 import { MoonComponent } from '../shared/components/moon/moon.component'
 import { PathChooserComponent } from '../shared/components/path-chooser/path-chooser.component'
 import { SlideMenuComponent } from '../shared/components/slide-menu/slide-menu.component'
-import { ConfirmDialog } from '../shared/dialogs/confirm/confirm.dialog'
+import { ConfirmDialogComponent } from '../shared/dialogs/confirm/confirm.dialog'
 import { NoDropdownDirective } from '../shared/directives/no-dropdown.directive'
 import { SpinnableNumberDirective } from '../shared/directives/spinnable-number.directive'
-import { StopPropagationDirective } from '../shared/directives/stop-propagation.directive'
 import { ConfirmationInterceptor } from '../shared/interceptors/confirmation.interceptor'
 import { ErrorInterceptor } from '../shared/interceptors/error.interceptor'
 import { IdempotencyKeyInterceptor } from '../shared/interceptors/idempotency-key.interceptor'
@@ -115,7 +114,7 @@ import { SettingsComponent } from './settings/settings.component'
 		CameraComponent,
 		CameraInfoComponent,
 		CameraExposureComponent,
-		ConfirmDialog,
+		ConfirmDialogComponent,
 		CrossHairComponent,
 		DeviceChooserComponent,
 		DeviceListMenuComponent,
@@ -153,7 +152,6 @@ import { SettingsComponent } from './settings/settings.component'
 		SequencerComponent,
 		SettingsComponent,
 		SlideMenuComponent,
-		StopPropagationDirective,
 		WinPipe,
 	],
 	imports: [

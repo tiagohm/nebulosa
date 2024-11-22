@@ -1,7 +1,7 @@
 import { Injectable, Type, inject } from '@angular/core'
 import { MessageService } from 'primeng/api'
 import { DialogService, DynamicDialogConfig } from 'primeng/dynamicdialog'
-import { ConfirmDialog } from '../dialogs/confirm/confirm.dialog'
+import { ConfirmDialogComponent } from '../dialogs/confirm/confirm.dialog'
 import { Undefinable } from '../utils/types'
 
 @Injectable({ providedIn: 'root' })
@@ -35,7 +35,7 @@ export class AngularService {
 	}
 
 	confirm(message: string) {
-		return ConfirmDialog.open(this, message)
+		return ConfirmDialogComponent.open(this, message)
 	}
 
 	message(text: string, severity: 'success' | 'info' | 'warning' | 'error' = 'success') {

@@ -18,6 +18,6 @@
 		*ngIf="visible"
 		[model]="model"
 		appendTo="body"
-		(onNext)="next($event)"
-		(onBack)="back()" />
+		(forward)="next($event)"
+		(backward)="back()" />
 </p-dialog>

@@ -15,7 +15,7 @@ export class INDIPropertyComponent implements AfterContentInit {
 	protected disabled = false
 
 	@Output()
-	readonly onSend = new EventEmitter<INDISendProperty>()
+	readonly send = new EventEmitter<INDISendProperty>()
 
 	ngAfterContentInit() {
 		for (const item of this.property.items) {
@@ -37,7 +37,7 @@ export class INDIPropertyComponent implements AfterContentInit {
 			],
 		}
 
-		this.onSend.emit(property)
+		this.send.emit(property)
 	}
 
 	sendNumber() {
@@ -53,7 +53,7 @@ export class INDIPropertyComponent implements AfterContentInit {
 			items,
 		}
 
-		this.onSend.emit(property)
+		this.send.emit(property)
 	}
 
 	sendText() {
@@ -69,6 +69,6 @@ export class INDIPropertyComponent implements AfterContentInit {
 			items,
 		}
 
-		this.onSend.emit(property)
+		this.send.emit(property)
 	}
 }

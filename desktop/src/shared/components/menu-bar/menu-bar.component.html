@@ -34,7 +34,7 @@
 					[pTooltip]="item.tooltip"
 					[tooltipPosition]="item.tooltipPosition ?? 'bottom'"
 					size="small"
-					(onClick)="onSplitButtonClick.emit({ item, event: $event })"
+					(onClick)="splitButtonClick.emit({ item, event: $event })"
 					appendTo="body" />
 			} @else {
 				<p-badge

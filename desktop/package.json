@@ -69,6 +69,7 @@
 		"@types/eslint__js": "8.42.3",
 		"@types/leaflet": "1.9.14",
 		"@types/node": "22.9.1",
+		"angular-eslint": "18.4.1",
 		"electron": "33.2.0",
 		"electron-builder": "25.1.8",
 		"eslint": "9.15.0",

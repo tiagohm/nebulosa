@@ -73,6 +73,12 @@
 							"buildTarget": "nebulosa:build:production"
 						}
 					}
+				},
+				"lint": {
+					"builder": "@angular-eslint/builder:lint",
+					"options": {
+						"lintFilePatterns": ["src/**/*.ts", "src/**/*.html"]
+					}
 				}
 			}
 		}

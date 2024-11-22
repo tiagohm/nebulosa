@@ -36,7 +36,7 @@
 				<neb-indi-property
 					*ngIf="!showLog && property.group === group"
 					[property]="property"
-					(onSend)="send($event)" />
+					(send)="send($event)" />
 			</div>
 			<div
 				class="col-12 flex flex-column text-gray-200 h-full"

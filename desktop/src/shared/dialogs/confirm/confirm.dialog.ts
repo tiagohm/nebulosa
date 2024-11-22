@@ -6,7 +6,7 @@ import { AngularService } from '../../services/angular.service'
 @Component({
 	templateUrl: 'confirm.dialog.html',
 })
-export class ConfirmDialog {
+export class ConfirmDialogComponent {
 	private readonly dialogRef = inject(DynamicDialogRef)
 
 	readonly header: string
@@ -29,6 +29,6 @@ export class ConfirmDialog {
 
 	static async open(service: AngularService, message: string) {
 		const data: Confirmation = { message }
-		return (await service.open<Confirmation, ConfirmEventType>(ConfirmDialog, { header: 'Confirmation', data, style: { maxWidth: '320px' } })) ?? ConfirmEventType.CANCEL
+		return (await service.open<Confirmation, ConfirmEventType>(ConfirmDialogComponent, { header: 'Confirmation', data, style: { maxWidth: '320px' } })) ?? ConfirmEventType.CANCEL
 	}
 }
