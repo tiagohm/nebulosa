@@ -3,6 +3,7 @@
 ifeq ($(OS),Windows_NT)
 api:
 	gradlew.bat api:shadowJar
+	gradlew.bat api:dependencyGraph -Dorg.gradle.configuration-cache=false
 	gradlew.bat --stop
 
 desktop:
@@ -10,6 +11,7 @@ desktop:
 else
 api:
 	./gradlew api:shadowJar
+	./gradlew api:dependencyGraph -Dorg.gradle.configuration-cache=false
 	./gradlew --stop
 
 desktop:

@@ -1,5 +1,5 @@
 import { AfterContentInit, Component, inject, NgZone, ViewChild, ViewEncapsulation } from '@angular/core'
-import nebulosa from '../../assets/data/nebulosa.json'
+import packageJson from '../../../package.json' with { type: 'json' }
 import { DeviceChooserComponent } from '../../shared/components/device-chooser/device-chooser.component'
 import { DeviceConnectionCommandEvent, DeviceListMenuComponent } from '../../shared/components/device-list-menu/device-list-menu.component'
 import { MenuItem, SlideMenuItem } from '../../shared/components/menu-item/menu-item.component'
@@ -338,7 +338,7 @@ export class HomeComponent implements AfterContentInit {
 			try {
 				const release = await this.api.latestRelease()
 
-				if (release.tag_name && nebulosa.version !== release.tag_name) {
+				if (release.tag_name && packageJson.version !== release.tag_name) {
 					this.newVersion = release.name
 				}
 			} catch {

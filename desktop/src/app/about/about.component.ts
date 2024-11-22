@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core'
-import buildInfo from '../../assets/data/buildInfo.json' with { type: 'json' }
+import packageJson from '../../../package.json' with { type: 'json' }
 import dependencyGraph from '../../assets/data/dependencyGraph.json' with { type: 'json' }
 import { DependencyItem, FLAT_ICON_URL, IconItem } from '../../shared/types/about.types'
 import { AppComponent } from '../app.component'
@@ -9,11 +9,9 @@ import { AppComponent } from '../app.component'
 	templateUrl: 'about.component.html',
 })
 export class AboutComponent {
-	protected readonly codename = buildInfo.codename
-	protected readonly version = buildInfo.version
-	protected readonly description = buildInfo.description
-	protected readonly commit = buildInfo.build.commit
-	protected readonly date = buildInfo.build.date
+	protected readonly codename = packageJson.codename
+	protected readonly version = packageJson.version
+	protected readonly description = packageJson.description
 	protected readonly icons: IconItem[] = []
 	protected readonly dependencies: DependencyItem[] = []
 

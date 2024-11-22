@@ -51,7 +51,7 @@
     },
     {
         "name": "org.flywaydb:flyway-core",
-        "version": "10.22.0",
+        "version": "11.0.0",
         "source": "api"
     },
     {
