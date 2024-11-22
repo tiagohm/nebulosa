@@ -17,6 +17,7 @@ import org.koin.core.component.get
 import java.nio.file.Path
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
+import kotlin.io.path.exists
 import kotlin.io.path.inputStream
 import kotlin.io.path.outputStream
 
@@ -34,53 +35,71 @@ class IERSUpdateTask(
     override fun run() {
         get<MainDatabaseMigrator>().await()
 
-        val iersa = IERSA()
-        val iersb = IERSB()
+        var iersa: IERSA? = null
+        var iersb: IERSB? = null
 
         with(Path.of("$dataPath", "finals2000A.all")) {
-            download(IERSA.URL, IERSA_UPDATED_AT_KEY)
-            inputStream().use(iersa::load)
+            if (download(IERSA.URL, IERSA_UPDATED_AT_KEY)) {
+                iersa = IERSA()
+                inputStream().use(iersa::load)
+            }
         }
 
         with(Path.of("$dataPath", "eopc04.1962-now.txt")) {
-            download(IERSB.URL, IERSB_UPDATED_AT_KEY)
-            inputStream().use(iersb::load)
+            if (download(IERSB.URL, IERSB_UPDATED_AT_KEY)) {
+                iersb = IERSB()
+                inputStream().use(iersb::load)
+            }
         }
 
-        IERS.attach(IERSAB(iersa, iersb))
+        if (iersa != null && iersb != null) IERS.attach(IERSAB(iersa, iersb))
+        else if (iersa != null) IERS.attach(iersa)
+        else if (iersb != null) IERS.attach(iersb)
     }
 
-    private fun Path.download(url: String, key: String) {
+    private fun Path.download(url: String, key: String): Boolean {
         try {
             var request = Request.Builder().head().url(url).build()
 
             var modifiedAt = httpClient.newCall(request).execute()
                 .use { it.headers.getDate(HttpHeaders.LastModified) }
+                ?.toInstant()?.toEpochMilli()
 
-            if (modifiedAt != null && "$modifiedAt" == preferenceService.getText(key)) {
+            if (exists() && modifiedAt != null && modifiedAt == preferenceService[key]?.toLongOrNull()) {
                 LOG.info("{} is up to date. modifiedAt={}", url, modifiedAt)
-                return
+                return true
             }
 
             request = request.newBuilder().get().build()
 
-            LOG.d { debug("downloading {}", url) }
+            LOG.d { debug("{} is out of date. modifiedAt={}", url, modifiedAt) }
 
             httpClient.newCall(request).execute().use {
-                it.body!!.byteStream().transferAndClose(outputStream())
-                modifiedAt = it.headers.getDate(HttpHeaders.LastModified)
-                preferenceService.putText(key, "$modifiedAt")
-                LOG.d { debug("{} downloaded. modifiedAt={}", url, modifiedAt) }
+                if (it.isSuccessful) {
+                    it.body!!.byteStream().transferAndClose(outputStream())
+                    modifiedAt = it.headers.getDate(HttpHeaders.LastModified)?.toInstant()?.toEpochMilli()
+
+                    if (modifiedAt != null) {
+                        preferenceService[key] = modifiedAt
+                        preferenceService.save()
+                    }
+
+                    LOG.d { debug("{} downloaded. modifiedAt={}", url, modifiedAt) }
+
+                    return true
+                }
             }
         } catch (e: Throwable) {
             LOG.error("failed to download finals2000A.all", e)
         }
+
+        return false
     }
 
     companion object {
 
-        const val IERSA_UPDATED_AT_KEY = "IERSA.UPDATED_AT"
-        const val IERSB_UPDATED_AT_KEY = "IERSB.UPDATED_AT"
+        const val IERSA_UPDATED_AT_KEY = "iersa.updatedAt"
+        const val IERSB_UPDATED_AT_KEY = "iersb.updatedAt"
 
         private val LOG = loggerFor<IERSUpdateTask>()
     }

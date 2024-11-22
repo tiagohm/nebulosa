@@ -47,7 +47,7 @@ class LibWCSDownloadTask(
             if (response.isSuccessful) {
                 val newestVersion = response.body!!.string()
 
-                if (newestVersion != preferenceService.getText(VERSION_KEY) || !libraryPath.exists()) {
+                if (newestVersion != preferenceService[VERSION_KEY] || !libraryPath.exists()) {
                     LOG.info("libwcs is out of date. Downloading...")
 
                     request = Request.Builder().get().url(libraryUrl).build()
@@ -55,7 +55,8 @@ class LibWCSDownloadTask(
                     httpClient.newCall(request).execute().use {
                         if (it.isSuccessful) {
                             it.body!!.byteStream().transferAndCloseOutput(libraryPath.outputStream())
-                            preferenceService.putText(VERSION_KEY, newestVersion)
+                            preferenceService[VERSION_KEY] = newestVersion
+                            preferenceService.save()
                         }
                     }
                 } else {
@@ -77,7 +78,7 @@ class LibWCSDownloadTask(
     companion object {
 
         const val VERSION_URL = "https://raw.githubusercontent.com/tiagohm/nebulosa.data/main/libs/wcs/VERSION.txt"
-        const val VERSION_KEY = "LIBWCS.VERSION"
+        const val VERSION_KEY = "libwcs.version"
 
         const val LINUX_X86_64 = "linux-x86-64"
         const val LINUX_AARCH_64 = "linux-aarch64"

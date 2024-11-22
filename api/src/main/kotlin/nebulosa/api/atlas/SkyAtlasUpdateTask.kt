@@ -34,7 +34,7 @@ class SkyAtlasUpdateTask(
         httpClient.newCall(request).execute().use { response ->
             if (response.isSuccessful) {
                 val newestVersion = response.body!!.string().trim()
-                val currentVersion = preferenceService.getText(VERSION_KEY)
+                val currentVersion = preferenceService[VERSION_KEY]
 
                 if (newestVersion != currentVersion || skyObjectEntityRepository.size == 0L) {
                     skyObjectEntityRepository.clear()
@@ -71,7 +71,9 @@ class SkyAtlasUpdateTask(
                         }
                     }
 
-                    preferenceService.putText(VERSION_KEY, newestVersion)
+                    preferenceService[VERSION_KEY] = newestVersion
+                    preferenceService.save()
+
                     messageService.sendMessage(SkyAtlasUpdateNotificationEvent.Finished(newestVersion))
 
                     LOG.info("Sky Atlas database was updated. version={}, size={}", newestVersion, skyObjectEntityRepository.size)
@@ -85,7 +87,7 @@ class SkyAtlasUpdateTask(
     companion object {
 
         const val VERSION_URL = "https://raw.githubusercontent.com/tiagohm/nebulosa.data/main/simbad/VERSION.txt"
-        const val VERSION_KEY = "SKY_ATLAS.VERSION"
+        const val VERSION_KEY = "skyAtlas.version"
 
         const val DATA_URL = "https://raw.githubusercontent.com/tiagohm/nebulosa.data/main/simbad/simbad.%02d.dat"
         const val MAX_DATA_COUNT = 100

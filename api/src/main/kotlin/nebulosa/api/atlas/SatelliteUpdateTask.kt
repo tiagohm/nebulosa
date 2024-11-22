@@ -35,9 +35,9 @@ class SatelliteUpdateTask(
 
     private fun isOutOfDate(): Boolean {
         try {
-            val updatedAt = preferenceService.getLong(UPDATED_AT_KEY) ?: 0L
+            val updatedAt = preferenceService[UPDATED_AT_KEY]?.toLongOrNull() ?: 0L
             return System.currentTimeMillis() - updatedAt >= UPDATE_INTERVAL
-        } catch (e: JsonMappingException) {
+        } catch (_: JsonMappingException) {
             return true
         }
     }
@@ -47,7 +47,8 @@ class SatelliteUpdateTask(
             LOG.info("satellites is out of date")
 
             if (updateTLEs()) {
-                preferenceService.putLong(UPDATED_AT_KEY, System.currentTimeMillis())
+                preferenceService[UPDATED_AT_KEY] = System.currentTimeMillis()
+                preferenceService.save()
             } else {
                 LOG.warn("no satellites was updated")
             }
@@ -122,7 +123,7 @@ class SatelliteUpdateTask(
     companion object {
 
         const val UPDATE_INTERVAL = 1000L * 60 * 60 * 24 * 2 // 2 days in ms
-        const val UPDATED_AT_KEY = "SATELLITES.UPDATED_AT"
+        const val UPDATED_AT_KEY = "satellites.updatedAt"
 
         private val LOG = loggerFor<SatelliteUpdateTask>()
     }

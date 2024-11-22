@@ -16,8 +16,14 @@ import nebulosa.api.core.FileLocker
 import nebulosa.api.database.migration.MainDatabaseMigrator
 import nebulosa.api.database.migration.SkyDatabaseMigrator
 import nebulosa.api.inject.controllersModule
-import nebulosa.api.inject.koinApp
+import nebulosa.api.inject.coreModule
+import nebulosa.api.inject.databaseModule
+import nebulosa.api.inject.eventBusModule
+import nebulosa.api.inject.httpModule
 import nebulosa.api.inject.objectMapperModule
+import nebulosa.api.inject.pathModule
+import nebulosa.api.inject.phd2Module
+import nebulosa.api.inject.repositoriesModule
 import nebulosa.api.inject.serverModule
 import nebulosa.api.inject.servicesModule
 import nebulosa.api.ktor.configureHTTP
@@ -25,6 +31,7 @@ import nebulosa.api.ktor.configureMonitoring
 import nebulosa.api.ktor.configureRouting
 import nebulosa.api.ktor.configureSerialization
 import nebulosa.api.ktor.configureSockets
+import nebulosa.api.preference.PreferenceService
 import nebulosa.json.PathModule
 import nebulosa.log.d
 import nebulosa.log.loggerFor
@@ -38,32 +45,32 @@ import java.util.concurrent.ExecutorService
 import kotlin.io.path.Path
 import kotlin.io.path.exists
 import kotlin.io.path.fileSize
-import kotlin.io.path.inputStream
 import kotlin.io.path.isRegularFile
 import kotlin.system.exitProcess
 
 @Command(name = "nebulosa")
 class Nebulosa : Runnable {
 
-    private val properties = Properties(3)
+    private val preferencesPath = Path(System.getProperty(APP_DIR_KEY), PreferenceService.FILENAME)
+    private val preferences = PreferenceService()
 
     init {
-        Path(System.getProperty(APP_DIR_KEY), PROPERTIES_FILENAME)
+        preferencesPath
             .takeIf { it.exists() && it.isRegularFile() }
-            ?.also { it.inputStream().use(properties::load) }
+            ?.also(preferences::load)
     }
 
     @Option(name = ["-h", "--host"])
-    private var host = properties.getProperty("host")?.ifBlank { null } ?: DEFAULT_HOST
+    private var host = preferences["host"]?.ifBlank { null } ?: DEFAULT_HOST
 
     @Option(name = ["-p", "--port"])
-    private var port = properties.getProperty("port")?.ifBlank { null }?.toIntOrNull() ?: DEFAULT_PORT
+    private var port = preferences["port"]?.toIntOrNull() ?: DEFAULT_PORT
 
     @Option(name = ["-d", "--debug"])
-    private var debug = properties.getProperty("debug")?.toBoolean() == true
+    private var debug = preferences["debug"]?.toBoolean() == true
 
     @Option(name = ["-t", "--trace"])
-    private var trace = properties.getProperty("trace")?.toBoolean() == true
+    private var trace = preferences["trace"]?.toBoolean() == true
 
     @Option(name = ["-f", "--files"])
     private val files = mutableListOf<String>()
@@ -106,13 +113,19 @@ class Nebulosa : Runnable {
             configureMonitoring(debug)
         }.start(false)
 
-        // app.exception(Exception::class.java, ::handleException)
-
-        koinApp.modules(serverModule(server))
-        koinApp.modules(objectMapperModule(OBJECT_MAPPER))
-        koinApp.modules(servicesModule())
-        koinApp.modules(controllersModule())
-        startKoin(koinApp)
+        val koinApp = startKoin {
+            modules(pathModule())
+            modules(coreModule())
+            modules(httpModule())
+            modules(databaseModule())
+            modules(eventBusModule())
+            modules(repositoriesModule())
+            modules(phd2Module())
+            modules(serverModule(server))
+            modules(objectMapperModule(OBJECT_MAPPER))
+            modules(servicesModule(preferences))
+            modules(controllersModule())
+        }
 
         with(runBlocking { server.engine.resolvedConnectors().first().port }) {
             println("server is started at port: $this")
@@ -144,7 +157,6 @@ class Nebulosa : Runnable {
 
         internal val LOG = loggerFor<Nebulosa>()
 
-        const val PROPERTIES_FILENAME = "nebulosa.properties"
         const val DEFAULT_HOST = "0.0.0.0"
         const val DEFAULT_PORT = 0
 

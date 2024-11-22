@@ -68,7 +68,6 @@ import nebulosa.api.mounts.MountEventHub
 import nebulosa.api.mounts.MountService
 import nebulosa.api.platesolver.PlateSolverController
 import nebulosa.api.platesolver.PlateSolverService
-import nebulosa.api.preference.PreferenceRepository
 import nebulosa.api.preference.PreferenceService
 import nebulosa.api.rotators.RotatorController
 import nebulosa.api.rotators.RotatorEventHub
@@ -101,7 +100,6 @@ import okhttp3.logging.HttpLoggingInterceptor
 import org.greenrobot.eventbus.EventBus
 import org.jetbrains.exposed.sql.Database
 import org.koin.core.qualifier.named
-import org.koin.dsl.koinApplication
 import org.koin.dsl.module
 import java.nio.file.Path
 import java.time.LocalDate
@@ -118,32 +116,23 @@ import kotlin.io.path.deleteIfExists
 import kotlin.io.path.exists
 import kotlin.io.path.listDirectoryEntries
 
-val koinApp = koinApplication {
-    modules(pathModule())
-    modules(coreModule())
-    modules(httpModule())
-    modules(databaseModule())
-    modules(eventBusModule())
-    modules(repositoriesModule())
-    modules(phd2Module())
-}
-
 object Named {
 
-    val appDir = named("appDir")
-    val logsDir = named("logsDir")
-    val dataDir = named("dataDir")
-    val capturesDir = named("capturesDir")
-    val sequencesDir = named("sequencesDir")
-    val cacheDir = named("cacheDir")
-    val libsDir = named("libsDir")
-    val liveStackingDir = named("liveStackingDir")
-    val defaultHttpClient = named("defaultHttpClient")
-    val alpacaHttpClient = named("alpacaHttpClient")
-    val mainConnection = named("mainConnection")
-    val mainDatasourceUrl = named("mainDatasource")
-    val skyConnection = named("skyConnection")
-    val skyDatasourceUrl = named("skyDatasource")
+    @JvmField val appDir = named("appDir")
+    @JvmField val logsDir = named("logsDir")
+    @JvmField val dataDir = named("dataDir")
+    @JvmField val capturesDir = named("capturesDir")
+    @JvmField val sequencesDir = named("sequencesDir")
+    @JvmField val cacheDir = named("cacheDir")
+    @JvmField val libsDir = named("libsDir")
+    @JvmField val liveStackingDir = named("liveStackingDir")
+    @JvmField val preferencesPath = named("preferencesPath")
+    @JvmField val defaultHttpClient = named("defaultHttpClient")
+    @JvmField val alpacaHttpClient = named("alpacaHttpClient")
+    @JvmField val mainConnection = named("mainConnection")
+    @JvmField val mainDatasourceUrl = named("mainDatasource")
+    @JvmField val skyConnection = named("skyConnection")
+    @JvmField val skyDatasourceUrl = named("skyDatasource")
 }
 
 // PATH
@@ -175,6 +164,7 @@ fun pathModule(root: Path = Path(requireNotNull(System.getProperty(APP_DIR_KEY))
     single(Named.cacheDir) { Path("$root", "cache").createDirectories() }
     single(Named.libsDir) { Path("$root", "libs").createDirectories() }
     single(Named.liveStackingDir) { Path("$root", "live-stacking").createDirectories() }
+    single(Named.preferencesPath) { Path("$root", PreferenceService.FILENAME) }
 }
 
 // CORE
@@ -255,7 +245,6 @@ fun phd2Module() = module {
 
 fun repositoriesModule() = module {
     single { CalibrationFrameRepository(get(Named.mainConnection)) }
-    single { PreferenceRepository(get(Named.mainConnection)) }
     single { SatelliteRepository(get(Named.skyConnection)) }
     single { SkyObjectEntityRepository(get(Named.skyConnection)) }
 }
@@ -282,7 +271,7 @@ fun tasksModule() = module(true) {
     single { LibWCSDownloadTask(get(Named.libsDir), get(Named.defaultHttpClient), get(), get()) }
 }
 
-fun servicesModule() = module {
+fun servicesModule(preferenceService: PreferenceService) = module {
     single { HorizonsService(httpClient = get(Named.defaultHttpClient)) }
     single { SimbadService(httpClient = get(Named.defaultHttpClient)) }
     single { SmallBodyDatabaseService(httpClient = get(Named.defaultHttpClient)) }
@@ -313,8 +302,8 @@ fun servicesModule() = module {
     single { DARVExecutor(get(), get(), get()) }
     single { TPPAExecutor(get(), get(), get()) }
     single { PolarAlignmentService(get(), get()) }
-    single { PreferenceService(get(), get()) }
-    single { GuidingService(get(), get(), get(), get()) }
+    single { preferenceService }
+    single { GuidingService(get(), get(), get(), get(), get()) }
     single { SequencerExecutor(get(), get(), get(), get(), get()) }
     single { SequencerService(get(Named.sequencesDir), get()) }
     single { MoonPhaseFinder(get()) }
