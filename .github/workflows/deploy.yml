@@ -23,13 +23,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build
-        run: ./gradlew :api:shadowJar
-
-      - name: Dependency Graph and Build Info
-        run: ./gradlew :api:about -Dorg.gradle.configuration-cache=false
-
-      - name: Stop Gradle
-        run: ./gradlew --stop
+        run: ./gradlew --no-daemon :api:shadowJar
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
