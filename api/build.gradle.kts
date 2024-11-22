@@ -1,4 +1,12 @@
+@file:Suppress("UNCHECKED_CAST")
+
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import groovy.json.JsonOutput
+import org.apache.groovy.json.internal.JsonFastParser
+import org.apache.groovy.json.internal.Value
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 
 plugins {
     kotlin("jvm")
@@ -60,5 +68,65 @@ tasks.withType<ShadowJar> {
 
     manifest {
         attributes["Main-Class"] = "nebulosa.api.MainKt"
+    }
+}
+
+tasks.register("about") {
+    doLast {
+        val dependencies = project.configurations.flatMap { config ->
+            config.dependencies.withType<MinimalExternalModuleDependency>().map {
+                mapOf("name" to "${it.group}:${it.name}", "version" to it.version, "source" to "api")
+            }
+        }.toMutableSet()
+
+        var json = File(project.rootDir, "desktop/package.json").readText()
+        var desktopDependencies = JsonFastParser().parse(json) as Map<String, Value>
+        val name = desktopDependencies["name"]!!.stringValue()
+        val codename = desktopDependencies["codename"]!!.stringValue()
+        val version = desktopDependencies["version"]!!.stringValue()
+        val description = desktopDependencies["description"]!!.stringValue()
+
+        with(desktopDependencies["dependencies"]!!.toValue() as Map<String, Value>) {
+            for ((name, version) in this) {
+                dependencies.add(mapOf("name" to name, "version" to version.stringValue(), "source" to "desktop"))
+            }
+        }
+        with(desktopDependencies["devDependencies"]!!.toValue() as Map<String, Value>) {
+            for ((name, version) in this) {
+                dependencies.add(mapOf("name" to name, "version" to version.stringValue(), "source" to "desktop"))
+            }
+        }
+
+        json = File(project.rootDir, "desktop/app/package.json").readText()
+        desktopDependencies = JsonFastParser().parse(json) as Map<String, Value>
+
+        with(desktopDependencies["dependencies"]!!.toValue() as Map<String, Value>) {
+            for ((name, version) in this) {
+                dependencies.add(mapOf("name" to name, "version" to version.stringValue(), "source" to "desktop"))
+            }
+        }
+
+        json = JsonOutput.prettyPrint(JsonOutput.toJson(dependencies))
+        // logger.quiet(json)
+        File(project.rootDir, "desktop/src/assets/data/dependencyGraph.json").writeText(json)
+
+        val process = Runtime.getRuntime().exec("git rev-parse HEAD")
+        val commitRevision = process.inputStream.bufferedReader().readText().trim()
+        val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+        val commitDate = LocalDateTime.now(ZoneOffset.UTC).format(dateFormat)
+
+        val buildInfo = mapOf(
+            "name" to name,
+            "codename" to codename,
+            "version" to version,
+            "description" to description,
+            "build" to mapOf(
+                "commit" to commitRevision,
+                "date" to commitDate
+            )
+        )
+
+        json = JsonOutput.prettyPrint(JsonOutput.toJson(buildInfo))
+        File(project.rootDir, "desktop/src/assets/data/buildInfo.json").writeText(json)
     }
 }

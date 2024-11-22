@@ -1,5 +1,6 @@
 import { Component, inject } from '@angular/core'
-import nebulosa from '../../assets/data/nebulosa.json'
+import buildInfo from '../../assets/data/buildInfo.json' with { type: 'json' }
+import dependencyGraph from '../../assets/data/dependencyGraph.json' with { type: 'json' }
 import { DependencyItem, FLAT_ICON_URL, IconItem } from '../../shared/types/about.types'
 import { AppComponent } from '../app.component'
 
@@ -8,11 +9,11 @@ import { AppComponent } from '../app.component'
 	templateUrl: 'about.component.html',
 })
 export class AboutComponent {
-	protected readonly codename = nebulosa.codename
-	protected readonly version = nebulosa.version
-	protected readonly description = nebulosa.description
-	protected readonly commit = nebulosa.build.commit
-	protected readonly date = nebulosa.build.date
+	protected readonly codename = buildInfo.codename
+	protected readonly version = buildInfo.version
+	protected readonly description = buildInfo.description
+	protected readonly commit = buildInfo.build.commit
+	protected readonly date = buildInfo.build.date
 	protected readonly icons: IconItem[] = []
 	protected readonly dependencies: DependencyItem[] = []
 
@@ -54,13 +55,17 @@ export class AboutComponent {
 	}
 
 	private mapDependencies() {
-		for (const { name, version } of nebulosa.dependencies) {
-			this.dependencies.push(this.mapDependency(name, version))
+		for (const item of dependencyGraph) {
+			this.dependencies.push(this.mapDependency(item as DependencyItem))
 		}
 	}
 
-	private mapDependency(name: string, version: string): DependencyItem {
-		const link = `https://www.npmjs.com/package/${name}`
-		return { name, version, link }
+	private mapDependency(item: DependencyItem): DependencyItem {
+		const link =
+			item.version.includes('#') ? undefined
+			: item.source === 'desktop' ? `https://www.npmjs.com/package/${item.name}/v/${item.version}`
+			: `https://central.sonatype.com/artifact/${item.name.replace(':', '/')}/${item.version}`
+
+		return { ...item, link }
 	}
 }

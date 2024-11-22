@@ -65,6 +65,7 @@
 						style="height: 100px">
 						@for (dep of dependencies; track $index) {
 							<a
+								*ngIf="dep.link"
 								target="_blank"
 								[attr.href]="dep.link">
 								{{ dep.name }} ({{ dep.version }})
