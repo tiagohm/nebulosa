@@ -12,6 +12,7 @@ import { ONE_DECIMAL_PLACE_FORMATTER, TWO_DIGITS_FORMATTER } from '../../shared/
 import { AngularService } from '../../shared/services/angular.service'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
+import { DeviceService } from '../../shared/services/device.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { extractDate, extractTime } from '../../shared/types/angular.types'
@@ -58,6 +59,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 	private readonly route = inject(ActivatedRoute)
 	private readonly preferenceService = inject(PreferenceService)
 	private readonly angularService = inject(AngularService)
+	private readonly deviceService = inject(DeviceService)
 
 	protected readonly sun = structuredClone(DEFAULT_SUN)
 	protected readonly moon = structuredClone(DEFAULT_MOON)
@@ -538,7 +540,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 		this.minorPlanet.closeApproach.result = await this.api.closeApproachesOfMinorPlanets(this.minorPlanet.closeApproach.days, this.minorPlanet.closeApproach.lunarDistance, this.dateTimeAndLocation.dateTime)
 
 		if (!this.minorPlanet.closeApproach.result.length) {
-			this.angularService.message('No close approaches found for the given days and lunar distance', 'warning')
+			this.angularService.message('No close approaches found for the given days and lunar distance', 'warn')
 		}
 	}
 
@@ -974,25 +976,8 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 		}
 	}
 
-	private async executeMount(action: (mount: Mount) => void | Promise<void>) {
-		if (await this.angularService.confirm('Are you sure that you want to proceed?')) {
-			return false
-		}
-
+	private async executeMount(action: (mount: Mount) => void | Promise<void>, showConfirmation: boolean = true) {
 		const mounts = await this.api.mounts()
-
-		if (mounts.length === 1) {
-			await action(mounts[0])
-			return true
-		} else {
-			const mount = await this.deviceMenu.show(mounts)
-
-			if (mount && mount !== 'NONE' && mount.connected) {
-				await action(mount)
-				return true
-			}
-		}
-
-		return false
+		return this.deviceService.executeAction(this.deviceMenu, mounts, action, showConfirmation)
 	}
 }

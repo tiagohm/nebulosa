@@ -365,7 +365,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 
 	private loadPlanFromJson(file: JsonFile<SequencerPlan>) {
 		if (!this.loadPlan(file.json)) {
-			this.angularService.message('No sequence found', 'warning')
+			this.angularService.message('No sequence found', 'warn')
 			this.add()
 		}
 

@@ -38,7 +38,7 @@ export class AngularService {
 		return ConfirmDialogComponent.open(this, message)
 	}
 
-	message(text: string, severity: 'success' | 'info' | 'warning' | 'error' = 'success') {
+	message(text: string, severity: 'success' | 'info' | 'warn' | 'error' = 'success') {
 		this.messageService.add({ severity, detail: text, life: 4000 })
 	}
 }

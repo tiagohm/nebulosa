@@ -10,6 +10,7 @@ import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
 import { AngularService } from '../../shared/services/angular.service'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
+import { DeviceService } from '../../shared/services/device.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { EquatorialCoordinateJ2000, filterAstronomicalObject } from '../../shared/types/atlas.types'
@@ -68,6 +69,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	private readonly browserWindowService = inject(BrowserWindowService)
 	private readonly preferenceService = inject(PreferenceService)
 	private readonly angularService = inject(AngularService)
+	private readonly deviceService = inject(DeviceService)
 
 	protected readonly preference = structuredClone(DEFAULT_IMAGE_PREFERENCE)
 	protected readonly solver = structuredClone(DEFAULT_IMAGE_SOLVER_DIALOG)
@@ -1485,46 +1487,12 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	}
 
 	private async executeCamera(action: (camera: Camera) => void | Promise<void>, showConfirmation: boolean = true) {
-		if (showConfirmation && (await this.angularService.confirm('Are you sure that you want to proceed?'))) {
-			return false
-		}
-
 		const cameras = await this.api.cameras()
-
-		if (cameras.length === 1) {
-			await action(cameras[0])
-			return true
-		} else {
-			const camera = await this.deviceMenu.show(cameras, undefined, 'CAMERA')
-
-			if (camera && camera !== 'NONE' && camera.connected) {
-				await action(camera)
-				return true
-			}
-		}
-
-		return false
+		return this.deviceService.executeAction(this.deviceMenu, cameras, action, showConfirmation)
 	}
 
 	private async executeMount(action: (mount: Mount) => void | Promise<void>, showConfirmation: boolean = true) {
-		if (showConfirmation && (await this.angularService.confirm('Are you sure that you want to proceed?'))) {
-			return false
-		}
-
 		const mounts = await this.api.mounts()
-
-		if (mounts.length === 1) {
-			await action(mounts[0])
-			return true
-		} else {
-			const mount = await this.deviceMenu.show(mounts, undefined, 'MOUNT')
-
-			if (mount && mount !== 'NONE' && mount.connected) {
-				await action(mount)
-				return true
-			}
-		}
-
-		return false
+		return this.deviceService.executeAction(this.deviceMenu, mounts, action, showConfirmation)
 	}
 }

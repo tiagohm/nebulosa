@@ -5,7 +5,7 @@ import { AngularService } from '../services/angular.service'
 
 export interface ErrorResponse {
 	message: string
-	type: 'success' | 'info' | 'warning' | 'error'
+	type: 'success' | 'info' | 'warn' | 'error'
 }
 
 @Injectable({ providedIn: 'root' })
