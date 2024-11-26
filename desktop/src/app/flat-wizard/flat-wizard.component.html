@@ -117,10 +117,11 @@
 		<div class="col-12">
 			<p-floatLabel class="w-full">
 				<p-multiSelect
-					[disabled]="!wheel?.connected || filters.length <= 0"
+					[disabled]="!wheel?.connected || !filters.length || running"
 					[options]="filters"
-					[(ngModel)]="selectedFilters"
+					[(ngModel)]="request.filters"
 					optionLabel="name"
+					optionValue="position"
 					(ngModelChange)="savePreference()"
 					styleClass="border-0"
 					[style]="{ minHeight: '45px' }"

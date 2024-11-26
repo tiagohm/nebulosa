@@ -27,8 +27,9 @@ class FlatWizardController(
 
     private suspend fun start(ctx: RoutingContext) = with(ctx.call) {
         val camera = connectionService.camera(pathParameters[CAMERA].notNull()).notNull()
+        val wheel = queryParameters[WHEEL]?.let(connectionService::wheel)
         val body = receive<FlatWizardRequest>().valid()
-        flatWizardService.start(camera, body)
+        flatWizardService.start(camera, body, wheel)
     }
 
     private fun stop(ctx: RoutingContext) = with(ctx.call) {
@@ -44,5 +45,6 @@ class FlatWizardController(
     companion object {
 
         private const val CAMERA = "camera"
+        private const val WHEEL = "wheel"
     }
 }

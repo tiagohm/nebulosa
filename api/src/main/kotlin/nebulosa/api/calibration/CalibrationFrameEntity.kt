@@ -28,12 +28,19 @@ data class CalibrationFrameEntity(
 
     override fun validate() {
         id.positive()
-        exposureTime.positive()
+
+        if (type == FrameType.LIGHT || type == FrameType.DARK) {
+            exposureTime.positive()
+        }
+
         width.positive()
         height.positive()
         binX.positive()
         binY.positive()
-        gain.positiveOrZero()
+
+        if (type != FrameType.FLAT) {
+            gain.positiveOrZero()
+        }
     }
 
     fun mapTo(builder: UpdateBuilder<Int>) {

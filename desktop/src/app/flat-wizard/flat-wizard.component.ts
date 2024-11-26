@@ -6,7 +6,7 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { Tickable, Ticker } from '../../shared/services/ticker.service'
-import { Camera, DEFAULT_CAMERA, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
+import { Camera, DEFAULT_CAMERA, cameraCaptureNamingFormatWithDefault, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
 import { DEFAULT_FLAT_WIZARD_PREFERENCE } from '../../shared/types/flat-wizard.types'
 import { DEFAULT_WHEEL, Filter, Wheel, makeFilter } from '../../shared/types/wheel.types'
 import { deviceComparator } from '../../shared/utils/comparators'
@@ -34,7 +34,6 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy, Tickable {
 	protected request = this.preference.request
 
 	protected filters: Filter[] = []
-	protected selectedFilters: Filter[] = []
 
 	protected running = false
 
@@ -184,12 +183,12 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy, Tickable {
 		if (this.wheel?.id) {
 			await this.tick()
 
-			const shutterPosition = this.preferenceService.wheel(this.wheel).get().shutterPosition
-			const filters = makeFilter(this.wheel, this.filters, shutterPosition)
+			const filters = makeFilter(this.wheel, this.filters, 0)
 
 			if (filters !== this.filters) {
 				this.filters = filters
-				this.selectedFilters = []
+				this.request.filters = this.filters.filter((e) => this.request.filters.includes(e.position)).map((e) => e.position)
+				this.savePreference()
 			}
 		}
 	}
@@ -197,9 +196,10 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy, Tickable {
 	protected async start() {
 		if (this.camera) {
 			await this.browserWindowService.openCameraImage(this.camera, 'FLAT_WIZARD')
-			// TODO: Iniciar para cada filtro selecionado. Usar os eventos para percorrer (se houver filtro).
-			// Se Falhar, interrompe todo o fluxo.
-			await this.api.flatWizardStart(this.camera, this.request)
+
+			const settings = this.preferenceService.settings.get()
+			this.request.capture.namingFormat = cameraCaptureNamingFormatWithDefault(this.preferenceService.camera(this.camera).get().request.namingFormat, settings.namingFormat)
+			await this.api.flatWizardStart(this.camera, this.request, this.wheel)
 		}
 	}
 

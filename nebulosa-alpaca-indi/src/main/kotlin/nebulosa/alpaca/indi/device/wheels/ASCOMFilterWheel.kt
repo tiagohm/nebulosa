@@ -93,5 +93,5 @@ data class ASCOMFilterWheel(
         }
     }
 
-    override fun toString() = "FilterWheel(name=$name, count=$count, position=$position, moving=$moving, names=$names)"
+    override fun toString() = "FilterWheel(name=$name, connected=$connected, count=$count, position=$position, moving=$moving, names=$names)"
 }

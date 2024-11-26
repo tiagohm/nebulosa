@@ -110,7 +110,7 @@ data class CameraExposureTask(
                 return
             }
 
-            with(request.makeSavePath(header = header)) {
+            with(request.makeSavePath(header ?: outputPath.fits().use { it.first().header })) {
                 LOG.d { debug("saving FITS image at {}", this) }
                 createParentDirectories()
                 outputPath.moveTo(this, true)
@@ -124,8 +124,8 @@ data class CameraExposureTask(
     }
 
     private fun CameraStartCaptureRequest.makeSavePath(
+        header: ReadableHeader,
         autoSave: Boolean = this.autoSave,
-        header: ReadableHeader? = null,
     ): Path {
         require(savePath != null) { "savePath is required" }
 
@@ -133,7 +133,7 @@ data class CameraExposureTask(
             val now = LocalDateTime.now(formatter.clock)
             val savePath = autoSubFolderMode.pathFor(savePath, now)
             val format = namingFormat.formatFor(frameType)
-            val fileName = formatter.format(format, header ?: outputPath.fits().use { it.first().header })
+            val fileName = formatter.format(format, header)
             Path.of("$savePath", "$fileName.fits")
         } else {
             Path.of("$savePath", "${formatter.camera.name}.fits")

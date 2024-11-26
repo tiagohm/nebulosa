@@ -44,7 +44,7 @@ data class WheelMoveTask(
 
             LOG.d { debug("Wheel Move finished. wheel={}, position={}", wheel, position) }
         } else {
-            LOG.warn("filter wheel not connected or invalid position. position={}, wheel={}", position, wheel)
+            LOG.warn("filter wheel not connected or position is not applicable. position={}, wheel={}", position, wheel)
         }
     }
 

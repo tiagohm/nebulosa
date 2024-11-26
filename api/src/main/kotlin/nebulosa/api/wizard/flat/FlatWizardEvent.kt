@@ -9,6 +9,7 @@ data class FlatWizardEvent(
     @JvmField val camera: Camera,
     @JvmField var state: FlatWizardState = FlatWizardState.IDLE,
     @JvmField var exposureTime: Long = 0L,
+    @JvmField var filter: Int = 0,
     @JvmField @field:JsonIgnoreProperties("camera") val capture: CameraCaptureEvent = CameraCaptureEvent(camera),
 ) : MessageEvent {
 

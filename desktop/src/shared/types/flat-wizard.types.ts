@@ -12,12 +12,14 @@ export interface FlatWizardRequest {
 	exposureMax: number
 	meanTarget: number
 	meanTolerance: number
+	filters: number[]
 }
 
 export interface FlatWizardEvent {
 	camera: Camera
 	state: FlatWizardState
 	exposureTime: number
+	filter: number
 	capture?: Omit<CameraCaptureEvent, 'camera'>
 	savedPath?: string
 }
@@ -33,6 +35,7 @@ export const DEFAULT_FLAT_WIZARD_REQUEST: FlatWizardRequest = {
 	exposureMax: 2000,
 	meanTarget: 32768,
 	meanTolerance: 10,
+	filters: [],
 }
 
 export const DEFAULT_FLAT_WIZARD_PREFERENCE: FlatWizardPreference = {

@@ -740,8 +740,9 @@ export class ApiService {
 
 	// FLAT WIZARD
 
-	flatWizardStart(camera: Camera, request: FlatWizardRequest) {
-		return this.http.put<never>(`flat-wizard/${camera.id}/start`, request)
+	flatWizardStart(camera: Camera, request: FlatWizardRequest, wheel?: Wheel) {
+		const query = this.http.query({ wheel: wheel?.id })
+		return this.http.put<never>(`flat-wizard/${camera.id}/start?${query}`, request)
 	}
 
 	flatWizardStop(camera: Camera) {
