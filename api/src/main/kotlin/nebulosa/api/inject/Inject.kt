@@ -298,7 +298,7 @@ fun servicesModule(preferenceService: PreferenceService) = module {
     single { AutoFocusService(get()) }
     single { LiveStackingService() }
     single { FramingService(get(), get()) }
-    single { INDIService(get()) }
+    single { INDIService(get(), get()) }
     single { DARVExecutor(get(), get(), get()) }
     single { TPPAExecutor(get(), get(), get()) }
     single { PolarAlignmentService(get(), get()) }

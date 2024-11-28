@@ -125,7 +125,7 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
 
 		await this.updateProperties()
 		await this.api.indiListen(device)
-		this.messages = await this.api.indiLog(device)
+		this.messages = await this.api.indiMessages(device)
 	}
 
 	protected changeGroup(group: string) {

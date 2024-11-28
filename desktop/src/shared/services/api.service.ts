@@ -505,8 +505,8 @@ export class ApiService {
 		return this.http.put<never>(`indi/${device.id}/unlisten`)
 	}
 
-	indiLog(device: Device) {
-		return this.http.get<string[]>(`indi/${device.id}/log`)
+	indiMessages(device: Device) {
+		return this.http.get<string[]>(`indi/${device.id}/messages`)
 	}
 
 	// SKY ATLAS

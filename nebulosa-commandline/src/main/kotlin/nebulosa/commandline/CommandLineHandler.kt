@@ -25,6 +25,9 @@ class CommandLineHandler(
     val isRunning
         get() = running.get()
 
+    val pid
+        get() = process?.pid() ?: 0L
+
     fun registerCommandLineListener(listener: CommandLineListener) {
         listeners.add(listener)
     }
@@ -78,6 +81,7 @@ class CommandLineHandler(
         outputThread = null
 
         running.set(false)
+        process = null
     }
 
     internal fun onProcessFailed(e: Throwable) {

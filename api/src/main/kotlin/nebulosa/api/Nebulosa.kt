@@ -15,6 +15,8 @@ import nebulosa.api.converters.DeviceModule
 import nebulosa.api.core.FileLocker
 import nebulosa.api.database.migration.MainDatabaseMigrator
 import nebulosa.api.database.migration.SkyDatabaseMigrator
+import nebulosa.api.indi.INDIServerStart
+import nebulosa.api.indi.INDIService
 import nebulosa.api.inject.controllersModule
 import nebulosa.api.inject.coreModule
 import nebulosa.api.inject.databaseModule
@@ -32,6 +34,7 @@ import nebulosa.api.ktor.configureRouting
 import nebulosa.api.ktor.configureSerialization
 import nebulosa.api.ktor.configureSockets
 import nebulosa.api.preference.PreferenceService
+import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.json.PathModule
 import nebulosa.log.d
 import nebulosa.log.loggerFor
@@ -74,6 +77,9 @@ class Nebulosa : Runnable {
 
     @Option(name = ["-f", "--files"])
     private val files = mutableListOf<String>()
+
+    @Option(name = ["-i", "--indi"])
+    private var indi = preferences[INDI_ENABLED]?.toBoolean() == true
 
     override fun run() {
         if (debug) {
@@ -136,6 +142,17 @@ class Nebulosa : Runnable {
             val executor = get<ExecutorService>()
             executor.submit(get<MainDatabaseMigrator>())
             executor.submit(get<SkyDatabaseMigrator>())
+
+            if (indi) {
+                val executables = preferences[INDI_EXEC]?.split(',')
+
+                if (!executables.isNullOrEmpty()) {
+                    val port = preferences[INDI_PORT]?.toIntOrNull() ?: INDIProtocol.DEFAULT_PORT
+                    val request = INDIServerStart(port, executables)
+                    LOG.info("starting indi server. request={}", request)
+                    get<INDIService>().indiServerStart(request)
+                }
+            }
         }
 
         Thread.currentThread().join()
@@ -159,6 +176,10 @@ class Nebulosa : Runnable {
 
         const val DEFAULT_HOST = "0.0.0.0"
         const val DEFAULT_PORT = 0
+
+        private const val INDI_ENABLED = "indi.enabled"
+        private const val INDI_PORT = "indi.port"
+        private const val INDI_EXEC = "indi.exec"
 
         private val OBJECT_MAPPER = jsonMapper {
             addModule(JavaTimeModule())

@@ -14,6 +14,9 @@ data class PreferenceService(private val properties: Properties) : KoinComponent
 
     constructor(capacity: Int = 16) : this(Properties(capacity))
 
+    val size
+        get() = properties.size
+
     operator fun get(key: String): String? {
         return properties.getProperty(key)
     }
@@ -24,6 +27,10 @@ data class PreferenceService(private val properties: Properties) : KoinComponent
 
     operator fun contains(key: String): Boolean {
         return properties.containsKey(key)
+    }
+
+    fun delete(key: String): String? {
+        return properties.remove(key)?.toString()
     }
 
     fun clear() {
