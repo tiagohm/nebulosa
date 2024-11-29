@@ -137,24 +137,15 @@
 		</div>
 		<div class="col-6 flex flex-column">
 			<div class="flex justify-content-center align-items-center gap-1">
-				<p-floatLabel>
-					<p-inputNumber
-						[disabled]="!camera.connected || !camera.canSetTemperature || running"
-						[(ngModel)]="preference.setpointTemperature"
-						mode="decimal"
-						[showButtons]="true"
-						(ngModelChange)="savePreference()"
-						[step]="0.1"
-						suffix="℃"
-						[min]="-50"
-						[max]="50"
-						locale="en"
-						styleClass="p-inputtext-sm border-0"
-						[allowEmpty]="false"
-						[minFractionDigits]="1"
-						spinnableNumber />
-					<label>Temperature ({{ camera.temperature | number: '1.1-1' }}°C)</label>
-				</p-floatLabel>
+				<neb-input-number
+					label="Temperature ({{ camera.temperature | number: '1.1-1' }}°C)"
+					[disabled]="!camera.connected || !camera.canSetTemperature || running"
+					[(value)]="preference.setpointTemperature"
+					(valueChange)="savePreference()"
+					[step]="0.1"
+					suffix="℃"
+					[min]="-50"
+					[max]="50" />
 				<p-button
 					[disabled]="!camera.connected || !camera.canSetTemperature || running"
 					(onClick)="applySetpointTemperature()"
@@ -210,114 +201,60 @@
 				(ngModelChange)="savePreference()" />
 		</div>
 		<div class="col-3">
-			<p-floatLabel>
-				<p-inputNumber
-					[disabled]="!camera.connected || preference.exposureMode === 'SINGLE' || running"
-					[(ngModel)]="request.exposureDelay"
-					mode="decimal"
-					[showButtons]="true"
-					[step]="1"
-					[min]="0"
-					[max]="60"
-					locale="en"
-					styleClass="p-inputtext-sm border-0"
-					[allowEmpty]="false"
-					(ngModelChange)="savePreference()"
-					spinnableNumber />
-				<label>Delay (s)</label>
-			</p-floatLabel>
+			<neb-input-number
+				label="Delay (s)"
+				[disabled]="!camera.connected || preference.exposureMode === 'SINGLE' || running"
+				[min]="0"
+				[max]="60"
+				[(value)]="request.exposureDelay"
+				(valueChange)="savePreference()" />
 		</div>
 		<div class="col-3">
-			<p-floatLabel>
-				<p-inputNumber
-					[disabled]="!canExposureAmount || !camera.connected || preference.exposureMode !== 'FIXED' || running"
-					[(ngModel)]="request.exposureAmount"
-					mode="decimal"
-					[showButtons]="true"
-					[step]="1.0"
-					[min]="1"
-					[max]="1000"
-					locale="en"
-					styleClass="p-inputtext-sm border-0"
-					[allowEmpty]="false"
-					(ngModelChange)="savePreference()"
-					spinnableNumber />
-				<label>Count</label>
-			</p-floatLabel>
+			<neb-input-number
+				label="Count"
+				[disabled]="!canExposureAmount || !camera.connected || preference.exposureMode !== 'FIXED' || running"
+				[min]="1"
+				[max]="1000"
+				[(value)]="request.exposureAmount"
+				(valueChange)="savePreference()" />
 		</div>
 	</div>
 	<div class="grid py-1 flex align-items-center">
 		<div class="col-3">
-			<p-floatLabel>
-				<p-inputNumber
-					[disabled]="!camera.connected || !preference.subFrame || running"
-					[(ngModel)]="request.x"
-					mode="decimal"
-					[showButtons]="true"
-					[step]="1.0"
-					[min]="camera.minX"
-					[max]="camera.maxX"
-					locale="en"
-					styleClass="p-inputtext-sm border-0"
-					[allowEmpty]="false"
-					(ngModelChange)="savePreference()"
-					spinnableNumber />
-				<label>X</label>
-			</p-floatLabel>
+			<neb-input-number
+				label="X"
+				[disabled]="!camera.connected || !preference.subFrame || running"
+				[min]="camera.minX"
+				[max]="camera.maxX"
+				[(value)]="request.x"
+				(valueChange)="savePreference()" />
 		</div>
 		<div class="col-3">
-			<p-floatLabel>
-				<p-inputNumber
-					[disabled]="!camera.connected || !preference.subFrame || running"
-					[(ngModel)]="request.y"
-					mode="decimal"
-					[showButtons]="true"
-					[step]="1.0"
-					[min]="camera.minY"
-					[max]="camera.maxY"
-					locale="en"
-					styleClass="p-inputtext-sm border-0"
-					[allowEmpty]="false"
-					(ngModelChange)="savePreference()"
-					spinnableNumber />
-				<label>Y</label>
-			</p-floatLabel>
+			<neb-input-number
+				label="Y"
+				[disabled]="!camera.connected || !preference.subFrame || running"
+				[min]="camera.minY"
+				[max]="camera.maxY"
+				[(value)]="request.y"
+				(valueChange)="savePreference()" />
 		</div>
 		<div class="col-3">
-			<p-floatLabel>
-				<p-inputNumber
-					[disabled]="!camera.connected || !preference.subFrame || running"
-					[(ngModel)]="request.width"
-					mode="decimal"
-					[showButtons]="true"
-					[step]="1.0"
-					[min]="camera.minWidth"
-					[max]="camera.maxWidth"
-					locale="en"
-					styleClass="p-inputtext-sm border-0"
-					[allowEmpty]="false"
-					(ngModelChange)="savePreference()"
-					spinnableNumber />
-				<label>Width</label>
-			</p-floatLabel>
+			<neb-input-number
+				label="Width"
+				[disabled]="!camera.connected || !preference.subFrame || running"
+				[min]="camera.minWidth"
+				[max]="camera.maxWidth"
+				[(value)]="request.width"
+				(valueChange)="savePreference()" />
 		</div>
 		<div class="col-3">
-			<p-floatLabel>
-				<p-inputNumber
-					[disabled]="!camera.connected || !preference.subFrame || running"
-					[(ngModel)]="request.height"
-					mode="decimal"
-					[showButtons]="true"
-					[step]="1.0"
-					[min]="camera.minHeight"
-					[max]="camera.maxHeight"
-					locale="en"
-					styleClass="p-inputtext-sm border-0"
-					[allowEmpty]="false"
-					(ngModelChange)="savePreference()"
-					spinnableNumber />
-				<label>Height</label>
-			</p-floatLabel>
+			<neb-input-number
+				label="Height"
+				[disabled]="!camera.connected || !preference.subFrame || running"
+				[min]="camera.minHeight"
+				[max]="camera.maxHeight"
+				[(value)]="request.height"
+				(valueChange)="savePreference()" />
 		</div>
 	</div>
 	<div class="grid py-1 flex align-items-center">
@@ -341,37 +278,24 @@
 		</div>
 		<div class="col-3">
 			<p-floatLabel>
-				<p-inputNumber
+				<neb-input-number
+					label="Bin X"
 					[disabled]="!camera.connected || running"
-					[(ngModel)]="request.binX"
-					mode="decimal"
-					[showButtons]="true"
-					[step]="1.0"
 					[min]="1"
 					[max]="4"
-					styleClass="p-inputtext-sm border-0"
-					[allowEmpty]="false"
-					(ngModelChange)="savePreference()"
-					spinnableNumber />
-				<label>Bin X</label>
+					[(value)]="request.binX"
+					(valueChange)="savePreference()" />
+				<label></label>
 			</p-floatLabel>
 		</div>
 		<div class="col-3">
-			<p-floatLabel>
-				<p-inputNumber
-					[disabled]="!camera.connected || running"
-					[(ngModel)]="request.binY"
-					mode="decimal"
-					[showButtons]="true"
-					[step]="1.0"
-					[min]="1"
-					[max]="4"
-					styleClass="p-inputtext-sm border-0"
-					[allowEmpty]="false"
-					(ngModelChange)="savePreference()"
-					spinnableNumber />
-				<label>Bin Y</label>
-			</p-floatLabel>
+			<neb-input-number
+				label="Bin Y"
+				[disabled]="!camera.connected || running"
+				[min]="1"
+				[max]="4"
+				[(value)]="request.binY"
+				(valueChange)="savePreference()" />
 		</div>
 	</div>
 	<div class="grid py-1 flex align-items-center">
@@ -388,38 +312,22 @@
 			</p-floatLabel>
 		</div>
 		<div class="col-3">
-			<p-floatLabel>
-				<p-inputNumber
-					[disabled]="!camera.connected || running"
-					[(ngModel)]="request.gain"
-					mode="decimal"
-					[showButtons]="true"
-					[step]="1.0"
-					[min]="camera.gainMin"
-					[max]="camera.gainMax"
-					styleClass="p-inputtext-sm border-0"
-					[allowEmpty]="false"
-					(ngModelChange)="savePreference()"
-					spinnableNumber />
-				<label>Gain</label>
-			</p-floatLabel>
+			<neb-input-number
+				label="Gain"
+				[disabled]="!camera.connected || running"
+				[min]="camera.gainMin"
+				[max]="camera.gainMax"
+				[(value)]="request.gain"
+				(valueChange)="savePreference()" />
 		</div>
 		<div class="col-3">
-			<p-floatLabel>
-				<p-inputNumber
-					[disabled]="!camera.connected || running || !camera.offsetMax"
-					[(ngModel)]="request.offset"
-					mode="decimal"
-					[showButtons]="true"
-					[step]="1.0"
-					[min]="camera.offsetMin"
-					[max]="camera.offsetMax"
-					styleClass="p-inputtext-sm border-0"
-					[allowEmpty]="false"
-					(ngModelChange)="savePreference()"
-					spinnableNumber />
-				<label>Offset</label>
-			</p-floatLabel>
+			<neb-input-number
+				label="Offset"
+				[disabled]="!camera.connected || running || !camera.offsetMax"
+				[min]="camera.offsetMin"
+				[max]="camera.offsetMax"
+				[(value)]="request.offset"
+				(valueChange)="savePreference()" />
 		</div>
 	</div>
 	<div class="grid mt-0">
@@ -561,37 +469,23 @@
 				(ngModelChange)="savePreference()" />
 		</div>
 		<div class="col-4">
-			<p-floatLabel>
-				<p-inputNumber
-					[disabled]="!camera.connected || running || !dither.request.enabled"
-					[showButtons]="true"
-					styleClass="border-0 p-inputtext-sm w-full"
-					[min]="0.1"
-					[max]="60"
-					[(ngModel)]="dither.request.amount"
-					[step]="0.1"
-					locale="en"
-					[minFractionDigits]="1"
-					mode="decimal"
-					(ngModelChange)="savePreference()"
-					spinnableNumber />
-				<label>Dither (px)</label>
-			</p-floatLabel>
+			<neb-input-number
+				label="Dither (px)"
+				[disabled]="!camera.connected || running || !dither.request.enabled"
+				[min]="0.1"
+				[max]="60"
+				[step]="0.1"
+				[(value)]="dither.request.amount"
+				(valueChange)="savePreference()" />
 		</div>
 		<div class="col-5">
-			<p-floatLabel>
-				<p-inputNumber
-					[disabled]="!camera.connected || running || !dither.request.enabled"
-					[showButtons]="true"
-					styleClass="border-0 p-inputtext-sm w-full"
-					[min]="1"
-					[max]="1000"
-					[(ngModel)]="dither.request.afterExposures"
-					[step]="1"
-					(ngModelChange)="savePreference()"
-					spinnableNumber />
-				<label>After exposures</label>
-			</p-floatLabel>
+			<neb-input-number
+				label="After exposures"
+				[disabled]="!camera.connected || running || !dither.request.enabled"
+				[min]="1"
+				[max]="1000"
+				[(value)]="dither.request.afterExposures"
+				(valueChange)="savePreference()" />
 		</div>
 	</div>
 </p-dialog>

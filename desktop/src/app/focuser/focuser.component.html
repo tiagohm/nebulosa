@@ -38,15 +38,10 @@
 	</div>
 	<div class="grid mt-1">
 		<div class="col-8">
-			<p-floatLabel>
-				<p-inputNumber
-					readonly
-					styleClass="p-inputtext-sm border-0 max-w-full"
-					[ngModel]="focuser.position"
-					locale="en"
-					spinnableNumber />
-				<label>Position (max: {{ focuser.maxPosition | number }})</label>
-			</p-floatLabel>
+			<neb-input-number
+				label="Position (max: {{ focuser.maxPosition | number }})"
+				[readonly]="true"
+				[value]="focuser.position" />
 		</div>
 		<div class="col-3 text-center justify-content-between gap-2">
 			<p-button
@@ -77,20 +72,13 @@
 				size="small"
 				pTooltip="Move In"
 				tooltipPosition="bottom" />
-			<p-floatLabel>
-				<p-inputNumber
-					[disabled]="!focuser.connected || !focuser.canRelativeMove"
-					[min]="0"
-					[max]="focuser.maxPosition"
-					[showButtons]="true"
-					styleClass="p-inputtext-sm border-0"
-					[(ngModel)]="preference.stepsRelative"
-					(ngModelChange)="savePreference()"
-					[allowEmpty]="false"
-					locale="en"
-					spinnableNumber />
-				<label>Relative</label>
-			</p-floatLabel>
+			<neb-input-number
+				label="Relative"
+				[disabled]="!focuser.connected || !focuser.canRelativeMove"
+				[min]="0"
+				[max]="focuser.maxPosition"
+				[(value)]="preference.stepsRelative"
+				(valueChange)="savePreference()" />
 			<p-button
 				[disabled]="!focuser.connected || !focuser.canRelativeMove || focuser.moving || !preference.stepsRelative"
 				(onClick)="moveOut()"
@@ -101,20 +89,13 @@
 				tooltipPosition="bottom" />
 		</div>
 		<div class="col-12 flex justify-content-end align-items-center gap-1">
-			<p-floatLabel class="w-full">
-				<p-inputNumber
-					[disabled]="!focuser.connected || !focuser.canAbsoluteMove"
-					[min]="0"
-					[max]="focuser.maxPosition"
-					[showButtons]="true"
-					styleClass="p-inputtext-sm border-0 max-w-full"
-					[(ngModel)]="preference.stepsAbsolute"
-					(ngModelChange)="savePreference()"
-					[allowEmpty]="false"
-					locale="en"
-					spinnableNumber />
-				<label>Absolute</label>
-			</p-floatLabel>
+			<neb-input-number
+				label="Absolute"
+				[disabled]="!focuser.connected || !focuser.canAbsoluteMove"
+				[min]="0"
+				[max]="focuser.maxPosition"
+				[(value)]="preference.stepsAbsolute"
+				(valueChange)="savePreference()" />
 			<p-button
 				[disabled]="!focuser.connected || !focuser.canAbsoluteMove || focuser.moving || preference.stepsAbsolute === focuser.position"
 				(onClick)="moveTo()"

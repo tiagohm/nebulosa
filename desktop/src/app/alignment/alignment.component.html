@@ -75,17 +75,12 @@
 							</p-floatLabel>
 						</div>
 						<div class="col-4 align-items-center">
-							<p-floatLabel>
-								<p-inputNumber
-									styleClass="p-inputtext-sm border-0 max-w-full"
-									[(ngModel)]="tppaRequest.stepDuration"
-									[showButtons]="true"
-									[min]="1"
-									[max]="60"
-									(ngModelChange)="savePreference()"
-									spinnableNumber />
-								<label>Step duration (s)</label>
-							</p-floatLabel>
+							<neb-input-number
+								label="Step duration (s)"
+								[min]="1"
+								[max]="60"
+								[(value)]="tppaRequest.stepDuration"
+								(valueChange)="savePreference()" />
 						</div>
 						<div class="col-3 flex flex-column align-items-center justify-content-start">
 							<p-floatLabel class="w-full">
@@ -189,17 +184,12 @@
 				<p-tabPanel header="DARV">
 					<div class="grid mt-3">
 						<div class="col-4">
-							<p-floatLabel>
-								<p-inputNumber
-									styleClass="p-inputtext-sm border-0 max-w-full"
-									[(ngModel)]="darvRequest.capture.exposureDelay"
-									[showButtons]="true"
-									[min]="1"
-									[max]="60"
-									(ngModelChange)="savePreference()"
-									spinnableNumber />
-								<label>Initial pause (s)</label>
-							</p-floatLabel>
+							<neb-input-number
+								label="Initial pause (s)"
+								[min]="1"
+								[max]="60"
+								[(value)]="darvRequest.capture.exposureDelay"
+								(valueChange)="savePreference()" />
 						</div>
 						<div class="col-4">
 							<neb-exposure-time

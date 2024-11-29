@@ -20,52 +20,29 @@
 		</p-floatLabel>
 	</div>
 	<div class="col-6">
-		<p-floatLabel>
-			<p-inputNumber
-				[min]="1"
-				[max]="7680"
-				class="w-full"
-				[showButtons]="true"
-				styleClass="p-inputtext-sm border-0 w-full"
-				[(ngModel)]="preference.width"
-				(ngModelChange)="savePreference(); computeFOV()"
-				locale="en"
-				spinnableNumber />
-			<label>Width</label>
-		</p-floatLabel>
+		<neb-input-number
+			label="Width"
+			[min]="1"
+			[max]="7680"
+			[(value)]="preference.width"
+			(valueChange)="savePreference(); computeFOV()" />
 	</div>
 	<div class="col-6">
-		<p-floatLabel>
-			<p-inputNumber
-				[min]="1"
-				[max]="4320"
-				class="w-full"
-				[showButtons]="true"
-				styleClass="p-inputtext-sm border-0 w-full"
-				[(ngModel)]="preference.height"
-				(ngModelChange)="savePreference(); computeFOV()"
-				locale="en"
-				spinnableNumber />
-			<label>Height</label>
-		</p-floatLabel>
+		<neb-input-number
+			label="Height"
+			[min]="1"
+			[max]="4320"
+			[(value)]="preference.height"
+			(valueChange)="savePreference(); computeFOV()" />
 	</div>
 	<div class="col-6 flex-row gap-1">
-		<p-floatLabel>
-			<p-inputNumber
-				[min]="0.1"
-				[max]="90"
-				[step]="0.1"
-				class="w-full"
-				[showButtons]="true"
-				styleClass="p-inputtext-sm border-0 w-full"
-				[(ngModel)]="preference.fov"
-				(ngModelChange)="savePreference()"
-				locale="en"
-				mode="decimal"
-				[minFractionDigits]="1"
-				spinnableNumber />
-			<label>FOV (°)</label>
-		</p-floatLabel>
+		<neb-input-number
+			label="FOV (°)"
+			[min]="0.1"
+			[max]="90"
+			[step]="0.1"
+			[(value)]="preference.fov"
+			(valueChange)="savePreference()" />
 		<p-button
 			[text]="true"
 			[rounded]="true"
@@ -76,22 +53,13 @@
 			tooltipPosition="bottom" />
 	</div>
 	<div class="col-6">
-		<p-floatLabel>
-			<p-inputNumber
-				[min]="-360"
-				[max]="360"
-				[step]="0.1"
-				class="w-full"
-				[showButtons]="true"
-				styleClass="p-inputtext-sm border-0 w-full"
-				[(ngModel)]="preference.rotation"
-				(ngModelChange)="savePreference()"
-				locale="en"
-				mode="decimal"
-				[minFractionDigits]="1"
-				spinnableNumber />
-			<label>Rotation (°)</label>
-		</p-floatLabel>
+		<neb-input-number
+			label="Rotation (°)"
+			[min]="-360"
+			[max]="360"
+			[step]="0.1"
+			[(value)]="preference.rotation"
+			(valueChange)="savePreference()" />
 	</div>
 	<div class="col-12">
 		<p-floatLabel class="w-full">
@@ -152,35 +120,20 @@
 	[style]="{ width: '80vw' }">
 	<div class="grid mt-1">
 		<div class="col-12 flex-column gap-3">
-			<p-floatLabel>
-				<p-inputNumber
-					[min]="0"
-					[max]="10000"
-					styleClass="p-inputtext-sm border-0 w-full"
-					[showButtons]="true"
-					[(ngModel)]="preference.focalLength"
-					[allowEmpty]="false"
-					locale="en"
-					(ngModelChange)="computeFOV(false)"
-					spinnableNumber />
-				<label>Focal length (mm)</label>
-			</p-floatLabel>
-			<p-floatLabel class="w-full">
-				<p-inputNumber
-					[min]="0"
-					[max]="100"
-					[step]="0.01"
-					[minFractionDigits]="1"
-					styleClass="p-inputtext-sm border-0 w-full"
-					[showButtons]="true"
-					[(ngModel)]="preference.pixelSize"
-					[allowEmpty]="false"
-					locale="en"
-					mode="decimal"
-					(ngModelChange)="computeFOV(false)"
-					spinnableNumber />
-				<label>Pixel size (µm)</label>
-			</p-floatLabel>
+			<neb-input-number
+				label="Focal length (mm)"
+				[min]="0"
+				[max]="10000"
+				[(value)]="preference.focalLength"
+				(valueChange)="computeFOV(false)" />
+			<neb-input-number
+				label="Pixel size (µm)"
+				[min]="0"
+				[max]="100"
+				[step]="0.01"
+				[fractionDigits]="2"
+				[(value)]="preference.pixelSize"
+				(valueChange)="computeFOV(false)" />
 			<neb-checkbox
 				label="Update FOV on width/height change"
 				[(value)]="preference.updateFovOnChange"

@@ -47,11 +47,13 @@ import { TooltipModule } from 'primeng/tooltip'
 import { TreeModule } from 'primeng/tree'
 import { CameraExposureComponent } from '../shared/components/camera-exposure/camera-exposure.component'
 import { CameraInfoComponent } from '../shared/components/camera-info/camera-info.component'
+import { CheckboxComponent } from '../shared/components/checkbox.component'
 import { DeviceChooserComponent } from '../shared/components/device-chooser/device-chooser.component'
 import { DeviceListMenuComponent } from '../shared/components/device-list-menu/device-list-menu.component'
 import { DeviceNameComponent } from '../shared/components/device-name/device-name.component'
 import { DialogMenuComponent } from '../shared/components/dialog-menu/dialog-menu.component'
 import { HistogramComponent } from '../shared/components/histogram/histogram.component'
+import { InputNumberComponent } from '../shared/components/input-number.component'
 import { LocationComponent } from '../shared/components/location/location.dialog'
 import { MapComponent } from '../shared/components/map/map.component'
 import { MenuBarComponent } from '../shared/components/menu-bar/menu-bar.component'
@@ -100,7 +102,6 @@ import { MountComponent } from './mount/mount.component'
 import { RotatorComponent } from './rotator/rotator.component'
 import { SequencerComponent } from './sequencer/sequencer.component'
 import { SettingsComponent } from './settings/settings.component'
-import { CheckboxComponent } from '../shared/components/checkbox'
 
 @NgModule({
 	declarations: [
@@ -113,8 +114,8 @@ import { CheckboxComponent } from '../shared/components/checkbox'
 		CalculatorComponent,
 		CalibrationComponent,
 		CameraComponent,
-		CameraInfoComponent,
 		CameraExposureComponent,
+		CameraInfoComponent,
 		CheckboxComponent,
 		ConfirmDialogComponent,
 		CrossHairComponent,
@@ -124,8 +125,8 @@ import { CheckboxComponent } from '../shared/components/checkbox'
 		DialogMenuComponent,
 		DropdownOptionsPipe,
 		DustCapComponent,
-		EnumPipe,
 		EnumDropdownPipe,
+		EnumPipe,
 		EnvPipe,
 		ExposureTimeComponent,
 		ExposureTimePipe,
@@ -138,9 +139,9 @@ import { CheckboxComponent } from '../shared/components/checkbox'
 		HistogramComponent,
 		HomeComponent,
 		ImageComponent,
-		SpinnableNumberDirective,
 		INDIComponent,
 		INDIPropertyComponent,
+		InputNumberComponent,
 		LightBoxComponent,
 		LocationComponent,
 		MapComponent,
@@ -154,6 +155,7 @@ import { CheckboxComponent } from '../shared/components/checkbox'
 		SequencerComponent,
 		SettingsComponent,
 		SlideMenuComponent,
+		SpinnableNumberDirective,
 		WinPipe,
 	],
 	imports: [

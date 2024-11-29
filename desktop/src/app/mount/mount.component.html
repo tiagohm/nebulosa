@@ -415,17 +415,12 @@
 			</p-floatLabel>
 		</div>
 		<div class="col-3">
-			<p-floatLabel>
-				<p-inputNumber
-					styleClass="p-inputtext-sm border-0 max-w-full"
-					[(ngModel)]="remoteControl.port"
-					[showButtons]="true"
-					[min]="1024"
-					[max]="65535"
-					placeholder="10001"
-					spinnableNumber />
-				<label>Port</label>
-			</p-floatLabel>
+			<neb-input-number
+				label="Port"
+				[min]="1024"
+				[max]="65535"
+				[(value)]="remoteControl.port"
+				placeholder="10001" />
 		</div>
 		<div class="col-12 pt-0 justify-content-center flex align-items-center text-sm">
 			<span *ngIf="remoteControl.protocol === 'LX200'">

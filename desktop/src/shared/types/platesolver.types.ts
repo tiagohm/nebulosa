@@ -16,7 +16,7 @@ export interface PlateSolverRequest extends PlateSolverSettings {
 	blind: boolean
 	centerRA: Angle
 	centerDEC: Angle
-	radius: Angle
+	radius: number
 	pixelSize: number
 	focalLength: number
 	width: number

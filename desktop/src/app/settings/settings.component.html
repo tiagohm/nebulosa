@@ -112,48 +112,30 @@
 			}
 			@if (plateSolverType !== 'PIXINSIGHT') {
 				<div class="col-6">
-					<p-floatLabel>
-						<p-inputNumber
-							styleClass="p-inputtext-sm border-0 w-full"
-							[(ngModel)]="plateSolver.downsampleFactor"
-							(ngModelChange)="savePreference()"
-							[showButtons]="true"
-							[min]="0"
-							[max]="4"
-							spinnableNumber />
-						<label>Downsample factor</label>
-					</p-floatLabel>
+					<neb-input-number
+						label="Downsample factor"
+						[min]="0"
+						[max]="4"
+						[(value)]="plateSolver.downsampleFactor"
+						(valueChange)="savePreference()" />
 				</div>
 				<div class="col-6">
-					<p-floatLabel>
-						<p-inputNumber
-							styleClass="p-inputtext-sm border-0 w-full"
-							[(ngModel)]="plateSolver.timeout"
-							(ngModelChange)="savePreference()"
-							[showButtons]="true"
-							[min]="0"
-							[max]="300"
-							spinnableNumber />
-						<label>Timeout (s)</label>
-					</p-floatLabel>
+					<neb-input-number
+						label="Timeout (s)"
+						[max]="300"
+						[min]="0"
+						[(value)]="plateSolver.timeout"
+						(valueChange)="savePreference()" />
 				</div>
 			}
 			@if (plateSolverType === 'PIXINSIGHT') {
 				<div class="col-4">
-					<p-floatLabel>
-						<p-inputNumber
-							[min]="0"
-							[max]="256"
-							[step]="1"
-							[showButtons]="true"
-							class="w-full"
-							styleClass="p-inputtext-sm border-0 w-full"
-							[(ngModel)]="plateSolver.slot"
-							(ngModelChange)="savePreference()"
-							[allowEmpty]="false"
-							spinnableNumber />
-						<label>Slot</label>
-					</p-floatLabel>
+					<neb-input-number
+						label="Slot"
+						[min]="0"
+						[max]="256"
+						[(value)]="plateSolver.slot"
+						(valueChange)="savePreference()" />
 				</div>
 			}
 		</div>
@@ -184,35 +166,22 @@
 					(pathChange)="savePreference()" />
 			</div>
 			<div class="col-4">
-				<p-floatLabel>
-					<p-inputNumber
-						styleClass="p-inputtext-sm border-0 w-full"
-						[(ngModel)]="starDetector.timeout"
-						(ngModelChange)="savePreference()"
-						[showButtons]="true"
-						[min]="0"
-						[max]="300"
-						spinnableNumber />
-					<label>Timeout (s)</label>
-				</p-floatLabel>
+				<neb-input-number
+					label="Timeout (s)"
+					[(value)]="starDetector.timeout"
+					(valueChange)="savePreference()"
+					[min]="0"
+					[max]="300" />
 			</div>
 			<div
 				class="col-4"
 				*ngIf="starDetectorType === 'PIXINSIGHT'">
-				<p-floatLabel>
-					<p-inputNumber
-						[min]="0"
-						[max]="256"
-						[step]="1"
-						[showButtons]="true"
-						class="w-full"
-						styleClass="p-inputtext-sm border-0 w-full"
-						[(ngModel)]="starDetector.slot"
-						(ngModelChange)="savePreference()"
-						[allowEmpty]="false"
-						spinnableNumber />
-					<label>Slot</label>
-				</p-floatLabel>
+				<neb-input-number
+					label="Slot"
+					[min]="0"
+					[max]="256"
+					[(value)]="starDetector.slot"
+					(valueChange)="savePreference()" />
 			</div>
 		</div>
 	</div>
@@ -244,20 +213,12 @@
 			<div
 				class="col-4"
 				*ngIf="liveStackerType === 'PIXINSIGHT'">
-				<p-floatLabel>
-					<p-inputNumber
-						[min]="0"
-						[max]="256"
-						[step]="1"
-						[showButtons]="true"
-						class="w-full"
-						styleClass="p-inputtext-sm border-0 w-full"
-						[(ngModel)]="liveStacker.slot"
-						(ngModelChange)="savePreference()"
-						[allowEmpty]="false"
-						spinnableNumber />
-					<label>Slot</label>
-				</p-floatLabel>
+				<neb-input-number
+					label="Slot"
+					[min]="0"
+					[max]="256"
+					[(value)]="liveStacker.slot"
+					(valueChange)="savePreference()" />
 			</div>
 		</div>
 	</div>

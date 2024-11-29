@@ -32,15 +32,10 @@
 	</div>
 	<div class="grid mt-1">
 		<div class="col-6">
-			<p-floatLabel>
-				<p-inputNumber
-					readonly
-					styleClass="p-inputtext-sm border-0 max-w-full"
-					[(ngModel)]="rotator.angle"
-					locale="en"
-					spinnableNumber />
-				<label>Angle (°)</label>
-			</p-floatLabel>
+			<neb-input-number
+				label="Angle (°)"
+				[readonly]="true"
+				[(value)]="rotator.angle" />
 		</div>
 		<div class="col-6 text-center align-items-center justify-content-between gap-2">
 			<p-button
@@ -70,23 +65,14 @@
 			</div>
 		</div>
 		<div class="col-12 flex align-items-center gap-1">
-			<p-floatLabel>
-				<p-inputNumber
-					[disabled]="!rotator.connected"
-					[step]="0.1"
-					[minFractionDigits]="1"
-					[min]="rotator.minAngle"
-					[max]="rotator.maxAngle"
-					[showButtons]="true"
-					styleClass="p-inputtext-sm border-0 max-w-full"
-					[(ngModel)]="angle"
-					(ngModelChange)="savePreference()"
-					[allowEmpty]="false"
-					locale="en"
-					mode="decimal"
-					spinnableNumber />
-				<label>Move</label>
-			</p-floatLabel>
+			<neb-input-number
+				label="Move"
+				[disabled]="!rotator.connected"
+				[step]="0.1"
+				[min]="rotator.minAngle"
+				[max]="rotator.maxAngle"
+				[(value)]="angle"
+				(valueChange)="savePreference()" />
 			<p-button
 				[disabled]="!rotator.connected || rotator.moving || !canSync"
 				(onClick)="sync()"

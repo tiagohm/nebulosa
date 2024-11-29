@@ -11,20 +11,12 @@
 				<span class="text-xl text-bold">{{ item.prefix }}</span>
 			</div>
 			<div class="col-8 flex justify-content-center">
-				<p-floatLabel>
-					<p-inputNumber
-						[(ngModel)]="item.value"
-						(ngModelChange)="calculateFormula()"
-						[minFractionDigits]="item.minFractionDigits ?? 0"
-						[maxFractionDigits]="item.maxFractionDigits ?? 4"
-						[min]="item.min ?? 0"
-						[showButtons]="true"
-						styleClass="border-0 p-inputtext-sm"
-						mode="decimal"
-						locale="en"
-						spinnableNumber />
-					<label>{{ item.label }}</label>
-				</p-floatLabel>
+				<neb-input-number
+					[label]="item.label"
+					[value]="item.value ?? 0"
+					(valueChange)="item.value = $event; calculateFormula()"
+					[fractionDigits]="item.maxFractionDigits ?? 4"
+					[min]="item.min ?? 0" />
 			</div>
 			<div class="col-2 align-items-center justify-content-start">
 				<span class="text-xl text-bold">{{ item.suffix }}</span>
@@ -35,17 +27,11 @@
 <p class="text-bold text-center text-5xl mt-0 mb-1">=</p>
 <div class="flex flex-row justify-content-center align-items-center gap-2">
 	<span class="text-2xl text-bold">{{ formula.result.prefix }}</span>
-	<p-floatLabel>
-		<p-inputNumber
-			readonly
-			[ngModel]="formula.result.value"
-			[minFractionDigits]="formula.result.minFractionDigits ?? 0"
-			[maxFractionDigits]="formula.result.maxFractionDigits ?? 4"
-			mode="decimal"
-			styleClass="border-0 p-inputtext-sm"
-			locale="en" />
-		<label>{{ formula.result.label }}</label>
-	</p-floatLabel>
+	<neb-input-number
+		[label]="formula.result.label"
+		[readonly]="true"
+		[value]="formula.result.value ?? 0"
+		[fractionDigits]="formula.result.maxFractionDigits ?? 4" />
 	<span class="text-xl text-bold">{{ formula.result.suffix }}</span>
 </div>
 <div

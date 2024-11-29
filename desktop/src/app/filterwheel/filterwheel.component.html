@@ -138,19 +138,13 @@
 				(deviceChange)="focuserChanged()"
 				(deviceConnect)="focuserChanged()"
 				style="max-width: 60%" />
-			<p-floatLabel>
-				<p-inputNumber
-					[disabled]="!wheel.connected || moving || !focuser?.connected || !canChangeFocusOffset"
-					[(ngModel)]="focuserOffset"
-					[min]="focuserMinPosition"
-					[max]="focuserMaxPosition"
-					[showButtons]="true"
-					locale="en"
-					styleClass="border-0 w-full p-inputtext-sm"
-					(ngModelChange)="focusOffsetChanged()"
-					spinnableNumber />
-				<label>Focus offset</label>
-			</p-floatLabel>
+			<neb-input-number
+				label="Focus offset"
+				[disabled]="!wheel.connected || moving || !focuser?.connected || !canChangeFocusOffset"
+				[min]="focuserMinPosition"
+				[max]="focuserMaxPosition"
+				[(value)]="focuserOffset"
+				(valueChange)="focusOffsetChanged()" />
 		</div>
 	</div>
 	<div

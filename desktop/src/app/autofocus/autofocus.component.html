@@ -72,32 +72,22 @@
 				leftIcon="mdi mdi-wrench">
 				<div class="grid mt-3">
 					<div class="col-4 align-items-center">
-						<p-floatLabel>
-							<p-inputNumber
-								[disabled]="!focuser?.connected"
-								styleClass="p-inputtext-sm border-0 max-w-full"
-								[(ngModel)]="request.stepSize"
-								[showButtons]="true"
-								[min]="1"
-								[max]="focuser?.maxPosition ?? 1"
-								(ngModelChange)="savePreference()"
-								spinnableNumber />
-							<label>Step Size</label>
-						</p-floatLabel>
+						<neb-input-number
+							label="Step Size"
+							[disabled]="!focuser?.connected"
+							[min]="1"
+							[max]="focuser?.maxPosition ?? 1"
+							[(value)]="request.stepSize"
+							(valueChange)="savePreference()" />
 					</div>
 					<div class="col-5 align-items-center">
-						<p-floatLabel>
-							<p-inputNumber
-								[disabled]="!focuser?.connected"
-								styleClass="p-inputtext-sm border-0 max-w-full"
-								[(ngModel)]="request.initialOffsetSteps"
-								[showButtons]="true"
-								[min]="1"
-								[max]="1000"
-								(ngModelChange)="savePreference()"
-								spinnableNumber />
-							<label>Initial Offset Steps ({{ request.initialOffsetSteps * request.stepSize }})</label>
-						</p-floatLabel>
+						<neb-input-number
+							label="Initial Offset Steps ({{ request.initialOffsetSteps * request.stepSize }})"
+							[disabled]="!focuser?.connected"
+							[min]="1"
+							[max]="1000"
+							[(value)]="request.initialOffsetSteps"
+							(valueChange)="savePreference()" />
 					</div>
 					<div class="col-5 align-items-center">
 						<p-floatLabel class="w-full">
@@ -126,21 +116,13 @@
 						</p-floatLabel>
 					</div>
 					<div class="col-3">
-						<p-floatLabel>
-							<p-inputNumber
-								styleClass="p-inputtext-sm border-0 max-w-full"
-								[(ngModel)]="request.rSquaredThreshold"
-								[showButtons]="true"
-								[min]="0"
-								[max]="1"
-								[step]="0.1"
-								[minFractionDigits]="1"
-								(ngModelChange)="savePreference()"
-								mode="decimal"
-								locale="en"
-								spinnableNumber />
-							<label>R-Squared</label>
-						</p-floatLabel>
+						<neb-input-number
+							label="R-Squared"
+							[min]="0"
+							[max]="1"
+							[step]="0.1"
+							[(value)]="request.rSquaredThreshold"
+							(valueChange)="savePreference()" />
 					</div>
 					<div class="col-10">
 						<div class="grid">
@@ -158,32 +140,22 @@
 								</p-floatLabel>
 							</div>
 							<div class="col-3 align-items-center">
-								<p-floatLabel>
-									<p-inputNumber
-										[disabled]="request.backlashCompensation.mode === 'NONE'"
-										styleClass="p-inputtext-sm border-0 max-w-full"
-										[(ngModel)]="request.backlashCompensation.backlashIn"
-										[showButtons]="true"
-										[min]="1"
-										[max]="1000"
-										(ngModelChange)="savePreference()"
-										spinnableNumber />
-									<label>In</label>
-								</p-floatLabel>
+								<neb-input-number
+									label="In"
+									[disabled]="request.backlashCompensation.mode === 'NONE'"
+									[min]="0"
+									[max]="1000"
+									[(value)]="request.backlashCompensation.backlashIn"
+									(valueChange)="savePreference()" />
 							</div>
 							<div class="col-3 align-items-center">
-								<p-floatLabel>
-									<p-inputNumber
-										[disabled]="request.backlashCompensation.mode === 'NONE'"
-										styleClass="p-inputtext-sm border-0 max-w-full"
-										[(ngModel)]="request.backlashCompensation.backlashOut"
-										[showButtons]="true"
-										[min]="1"
-										[max]="1000"
-										(ngModelChange)="savePreference()"
-										spinnableNumber />
-									<label>Out</label>
-								</p-floatLabel>
+								<neb-input-number
+									label="Out"
+									[disabled]="request.backlashCompensation.mode === 'NONE'"
+									[min]="0"
+									[max]="1000"
+									[(value)]="request.backlashCompensation.backlashOut"
+									(valueChange)="savePreference()" />
 							</div>
 						</div>
 					</div>

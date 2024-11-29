@@ -10,66 +10,38 @@
 		</p-floatLabel>
 	</div>
 	<div class="col-6">
-		<p-floatLabel>
-			<p-inputNumber
-				locale="en"
-				type="number"
-				styleClass="p-inputtext-sm border-0 w-full"
-				[min]="-720"
-				[max]="720"
-				[(ngModel)]="location.offsetInMinutes"
-				(ngModelChange)="locationChanged()"
-				[showButtons]="true"
-				[allowEmpty]="false"
-				spinnableNumber />
-			<label>UTC Offset (min)</label>
-		</p-floatLabel>
+		<neb-input-number
+			label="UTC Offset (min)"
+			[min]="-720"
+			[max]="720"
+			[(value)]="location.offsetInMinutes"
+			(valueChange)="locationChanged()" />
 	</div>
 	<div class="col-6">
-		<p-floatLabel>
-			<p-inputNumber
-				locale="en"
-				type="number"
-				styleClass="p-inputtext-sm border-0 w-full"
-				[min]="-1000"
-				[max]="10000"
-				[(ngModel)]="location.elevation"
-				(ngModelChange)="locationChanged()"
-				[showButtons]="true"
-				[allowEmpty]="false"
-				spinnableNumber />
-			<label>Elevation (m)</label>
-		</p-floatLabel>
+		<neb-input-number
+			label="Elevation (m)"
+			[min]="-1000"
+			[max]="10000"
+			[(value)]="location.elevation"
+			(valueChange)="locationChanged()" />
 	</div>
 	<div class="col-6">
-		<p-floatLabel>
-			<p-inputNumber
-				locale="en"
-				styleClass="p-inputtext-sm border-0 w-full"
-				[min]="-90"
-				[max]="90"
-				[maxFractionDigits]="5"
-				[(ngModel)]="location.latitude"
-				(ngModelChange)="locationChanged()"
-				[allowEmpty]="false"
-				spinnableNumber />
-			<label>Latitude</label>
-		</p-floatLabel>
+		<neb-input-number
+			label="Latitude"
+			[min]="-90"
+			[max]="90"
+			[fractionDigits]="5"
+			[(value)]="location.latitude"
+			(valueChange)="locationChanged()" />
 	</div>
 	<div class="col-6">
-		<p-floatLabel>
-			<p-inputNumber
-				locale="en"
-				styleClass="p-inputtext-sm border-0 w-full"
-				[min]="-180"
-				[max]="180"
-				[maxFractionDigits]="5"
-				[(ngModel)]="location.longitude"
-				(ngModelChange)="locationChanged()"
-				[allowEmpty]="false"
-				spinnableNumber />
-			<label>Longitude</label>
-		</p-floatLabel>
+		<neb-input-number
+			label="Longitude"
+			[min]="-180"
+			[max]="180"
+			[fractionDigits]="5"
+			[(value)]="location.longitude"
+			(valueChange)="locationChanged()" />
 	</div>
 	<div class="col-12">
 		<neb-map

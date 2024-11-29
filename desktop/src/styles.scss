@@ -111,18 +111,6 @@ p-table {
 	font-size: 2rem;
 }
 
-span.p-inputnumber {
-	width: 100%;
-}
-
-p-inputnumber .p-inputnumber-buttons-stacked input {
-	width: 100%;
-}
-
-.p-inputnumber-button-group .p-button.p-button-icon-only {
-	width: 2rem;
-}
-
 .p-selectbutton {
 	display: flex;
 	flex-direction: row;
@@ -191,8 +179,7 @@ p-dropdown,
 
 .border-0,
 .p-selectbutton.border-0 .p-button,
-.p-inputwrapper.border-0 .p-inputtext,
-.p-inputnumber.border-0 .p-inputtext {
+.p-inputwrapper.border-0 .p-inputtext {
 	border: 1px solid rgba(255, 255, 255, 0) !important;
 }
 

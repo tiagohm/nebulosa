@@ -368,18 +368,14 @@
 			</p-floatLabel>
 		</div>
 		<div class="col-4">
-			<p-floatLabel style="min-width: 80px">
-				<p-inputNumber
-					[showButtons]="true"
-					styleClass="border-0 p-inputtext-sm w-full"
-					placeholder="7624"
-					[(ngModel)]="connectionDialog.connection.port"
-					[min]="80"
-					[max]="65535"
-					[format]="false"
-					spinnableNumber />
-				<label>Port</label>
-			</p-floatLabel>
+			<neb-input-number
+				label="Port"
+				style="min-width: 80px"
+				placeholder="7624"
+				[min]="80"
+				[max]="65535"
+				[(value)]="connectionDialog.connection.port"
+				[format]="false" />
 		</div>
 		<div class="col-8">
 			<p-selectButton

@@ -226,22 +226,14 @@
 					</div>
 				</ng-template>
 				<div class="align-content-start justify-content-center align-items-center flex flex-row flex-wrap gap-3 justify-content-start pt-3 px-4">
-					<p-floatLabel class="max-w-10rem">
-						<p-inputNumber
-							[disabled]="running"
-							[(ngModel)]="plan.initialDelay"
-							mode="decimal"
-							[showButtons]="true"
-							[step]="1"
-							[min]="0"
-							[max]="60"
-							locale="en"
-							styleClass="p-inputtext-sm border-0"
-							[allowEmpty]="false"
-							(ngModelChange)="savePreference()"
-							spinnableNumber />
-						<label>Initial Delay (s)</label>
-					</p-floatLabel>
+					<neb-input-number
+						label="Initial Delay (s)"
+						class="max-w-10rem"
+						[disabled]="running"
+						[min]="0"
+						[max]="60"
+						[(value)]="plan.initialDelay"
+						(valueChange)="savePreference()" />
 					<p-floatLabel class="min-w-14rem">
 						<p-dropdown
 							[disabled]="running"
@@ -362,35 +354,23 @@
 						label="RA only"
 						[(value)]="plan.dither.raOnly"
 						(valueChange)="savePreference()" />
-					<p-floatLabel class="max-w-12rem">
-						<p-inputNumber
-							[disabled]="running || !plan.dither.enabled"
-							[showButtons]="true"
-							styleClass="border-0 p-inputtext-sm w-full"
-							[min]="0.1"
-							[max]="60"
-							[(ngModel)]="plan.dither.amount"
-							[step]="0.1"
-							locale="en"
-							[minFractionDigits]="1"
-							mode="decimal"
-							(ngModelChange)="savePreference()"
-							spinnableNumber />
-						<label>Dither (px)</label>
-					</p-floatLabel>
-					<p-floatLabel class="max-w-12rem">
-						<p-inputNumber
-							[disabled]="running || !plan.dither.enabled"
-							[showButtons]="true"
-							styleClass="border-0 p-inputtext-sm w-full"
-							[min]="1"
-							[max]="1000"
-							[(ngModel)]="plan.dither.afterExposures"
-							[step]="1"
-							(ngModelChange)="savePreference()"
-							spinnableNumber />
-						<label>After exposures</label>
-					</p-floatLabel>
+					<neb-input-number
+						label="Dither (px)"
+						class="max-w-12rem"
+						[disabled]="running || !plan.dither.enabled"
+						[min]="0.1"
+						[max]="60"
+						[step]="0.1"
+						[(value)]="plan.dither.amount"
+						(valueChange)="savePreference()" />
+					<neb-input-number
+						label="After exposures"
+						class="max-w-12rem"
+						[disabled]="running || !plan.dither.enabled"
+						[min]="1"
+						[max]="1000"
+						[(value)]="plan.dither.afterExposures"
+						(valueChange)="savePreference()" />
 				</div>
 			</p-tabPanel>
 			<p-tabPanel>
@@ -422,76 +402,56 @@
 							[disabled]="running || !plan.autoFocus.enabled"
 							[(value)]="plan.autoFocus.afterElapsedTimeEnabled"
 							(valueChange)="savePreference()" />
-						<p-floatLabel class="max-w-12rem">
-							<p-inputNumber
-								[disabled]="running || !plan.autoFocus.afterElapsedTimeEnabled || !plan.autoFocus.enabled"
-								[showButtons]="true"
-								styleClass="border-0 p-inputtext-sm w-full"
-								[min]="1"
-								[max]="86400"
-								[(ngModel)]="plan.autoFocus.afterElapsedTime"
-								[step]="1"
-								(ngModelChange)="savePreference()"
-								spinnableNumber />
-							<label>After elapsed time (s)</label>
-						</p-floatLabel>
+						<neb-input-number
+							label="After elapsed time (s)"
+							class="max-w-12rem"
+							[disabled]="running || !plan.autoFocus.afterElapsedTimeEnabled || !plan.autoFocus.enabled"
+							[min]="1"
+							[max]="86400"
+							[(value)]="plan.autoFocus.afterElapsedTime"
+							(valueChange)="savePreference()" />
 					</div>
 					<div class="flex align-items-center gap-1">
 						<neb-checkbox
 							[disabled]="running || !plan.autoFocus.enabled"
 							[(value)]="plan.autoFocus.afterExposuresEnabled"
 							(valueChange)="savePreference()" />
-						<p-floatLabel class="max-w-10rem">
-							<p-inputNumber
-								[disabled]="running || !plan.autoFocus.afterExposuresEnabled || !plan.autoFocus.enabled"
-								[showButtons]="true"
-								styleClass="border-0 p-inputtext-sm w-full"
-								[min]="1"
-								[max]="1000"
-								[(ngModel)]="plan.autoFocus.afterExposures"
-								[step]="1"
-								(ngModelChange)="savePreference()"
-								spinnableNumber />
-							<label>After exposures</label>
-						</p-floatLabel>
+						<neb-input-number
+							label="After exposures"
+							class="max-w-10rem"
+							[disabled]="running || !plan.autoFocus.afterExposuresEnabled || !plan.autoFocus.enabled"
+							[min]="1"
+							[max]="1000"
+							[(value)]="plan.autoFocus.afterExposures"
+							(valueChange)="savePreference()" />
 					</div>
 					<div class="flex align-items-center gap-1">
 						<neb-checkbox
 							[disabled]="running || !plan.autoFocus.enabled"
 							[(value)]="plan.autoFocus.afterHFDIncreaseEnabled"
 							(valueChange)="savePreference()" />
-						<p-floatLabel class="max-w-12rem">
-							<p-inputNumber
-								[disabled]="running || !plan.autoFocus.afterHFDIncreaseEnabled || !plan.autoFocus.enabled"
-								[showButtons]="true"
-								styleClass="border-0 p-inputtext-sm w-full"
-								[min]="1"
-								[max]="1000"
-								[(ngModel)]="plan.autoFocus.afterHFDIncrease"
-								[step]="1"
-								(ngModelChange)="savePreference()"
-								spinnableNumber />
-							<label>After HFD increase (%)</label>
-						</p-floatLabel>
+						<neb-input-number
+							label="After HFD increase (%)"
+							class="max-w-12rem"
+							[disabled]="running || !plan.autoFocus.afterHFDIncreaseEnabled || !plan.autoFocus.enabled"
+							[min]="1"
+							[max]="1000"
+							[(value)]="plan.autoFocus.afterHFDIncrease"
+							(valueChange)="savePreference()" />
 					</div>
 					<div class="flex align-items-center gap-1">
 						<neb-checkbox
 							[disabled]="running || !plan.autoFocus.enabled"
 							[(value)]="plan.autoFocus.afterTemperatureChangeEnabled"
 							(valueChange)="savePreference()" />
-						<p-floatLabel class="max-w-15rem">
-							<p-inputNumber
-								[disabled]="running || !plan.autoFocus.afterTemperatureChangeEnabled || !plan.autoFocus.enabled"
-								[showButtons]="true"
-								styleClass="border-0 p-inputtext-sm w-full"
-								[min]="1"
-								[max]="10"
-								[(ngModel)]="plan.autoFocus.afterTemperatureChange"
-								[step]="1"
-								(ngModelChange)="savePreference()"
-								spinnableNumber />
-							<label>After temperature change (°C)</label>
-						</p-floatLabel>
+						<neb-input-number
+							label="After temperature change (°C)"
+							class="max-w-15rem"
+							[disabled]="running || !plan.autoFocus.afterTemperatureChangeEnabled || !plan.autoFocus.enabled"
+							[min]="1"
+							[max]="10"
+							[(value)]="plan.autoFocus.afterTemperatureChange"
+							(valueChange)="savePreference()" />
 					</div>
 				</div>
 			</p-tabPanel>

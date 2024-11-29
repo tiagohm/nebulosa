@@ -1,19 +1,12 @@
 <div class="relative flex justify-content-center align-items-center">
-	<p-floatLabel class="w-full">
-		<p-inputNumber
-			[disabled]="!canExposureTime || disabled"
-			[ngModel]="current.exposureTime"
-			(ngModelChange)="exposureTimeChanged($event)"
-			[showButtons]="true"
-			[step]="1"
-			[min]="current.min"
-			[max]="current.max"
-			locale="en"
-			styleClass="p-inputtext-sm border-0"
-			[allowEmpty]="false"
-			spinnableNumber />
-		<label>{{ label || 'Exposure Time' }}</label>
-	</p-floatLabel>
+	<neb-input-number
+		[label]="label || 'Exposure Time'"
+		[disabled]="!canExposureTime || disabled"
+		[value]="current.exposureTime"
+		(valueChange)="exposureTimeChanged($event)"
+		[min]="current.min"
+		[max]="current.max" />
+
 	<p-menu
 		#exposureTimeMenu
 		[model]="model"
