@@ -43,104 +43,64 @@
 	</div>
 	<div class="grid pt-2">
 		<div class="col-3">
-			<p-floatLabel>
-				<input
-					pInputText
-					readonly
-					class="p-inputtext-sm border-0 w-full"
-					[value]="currentComputedLocation.rightAscensionJ2000" />
-				<label>RA (J2000)</label>
-			</p-floatLabel>
+			<neb-input-text
+				label="RA (J2000)"
+				[readonly]="true"
+				[value]="currentComputedLocation.rightAscensionJ2000" />
 		</div>
 		<div class="col-3">
-			<p-floatLabel>
-				<input
-					pInputText
-					readonly
-					class="p-inputtext-sm border-0 w-full"
-					[value]="currentComputedLocation.declinationJ2000" />
-				<label>DEC (J2000)</label>
-			</p-floatLabel>
+			<neb-input-text
+				label="DEC (J2000)"
+				[readonly]="true"
+				[value]="currentComputedLocation.declinationJ2000" />
 		</div>
 		<div class="col-3">
-			<p-floatLabel>
-				<input
-					pInputText
-					readonly
-					class="p-inputtext-sm border-0 w-full"
-					[value]="mount.rightAscension" />
-				<label>RA</label>
-			</p-floatLabel>
+			<neb-input-text
+				label="RA"
+				[readonly]="true"
+				[value]="mount.rightAscension" />
 		</div>
 		<div class="col-3">
-			<p-floatLabel>
-				<input
-					pInputText
-					readonly
-					class="p-inputtext-sm border-0 w-full"
-					[value]="mount.declination" />
-				<label>DEC</label>
-			</p-floatLabel>
+			<neb-input-text
+				label="DEC"
+				[readonly]="true"
+				[value]="mount.declination" />
 		</div>
 		<div class="col-3">
-			<p-floatLabel>
-				<input
-					pInputText
-					readonly
-					class="p-inputtext-sm border-0 w-full"
-					[value]="currentComputedLocation.azimuth" />
-				<label>Azimuth</label>
-			</p-floatLabel>
+			<neb-input-text
+				label="Azimuth"
+				[readonly]="true"
+				[value]="currentComputedLocation.azimuth" />
 		</div>
 		<div class="col-3">
-			<p-floatLabel>
-				<input
-					pInputText
-					readonly
-					class="p-inputtext-sm border-0 w-full"
-					[value]="currentComputedLocation.altitude" />
-				<label>Altitude</label>
-			</p-floatLabel>
+			<neb-input-text
+				label="Altitude"
+				[readonly]="true"
+				[value]="currentComputedLocation.altitude" />
 		</div>
 		<div class="col-3">
-			<p-floatLabel>
-				<input
-					pInputText
-					readonly
-					class="p-inputtext-sm border-0 w-full"
-					[value]="currentComputedLocation.lst" />
-				<label>LST</label>
-			</p-floatLabel>
+			<neb-input-text
+				label="LST"
+				[readonly]="true"
+				[value]="currentComputedLocation.lst" />
 		</div>
 		<div class="col-3">
-			<p-floatLabel>
-				<input
-					pInputText
-					readonly
-					class="p-inputtext-sm border-0 w-full"
-					[value]="currentComputedLocation.constellation" />
-				<label>Constellation</label>
-			</p-floatLabel>
+			<neb-input-text
+				label="Constellation"
+				[readonly]="true"
+				[value]="currentComputedLocation.constellation" />
 		</div>
 		<div class="col-3">
-			<p-floatLabel>
-				<input
-					pInputText
-					readonly
-					class="p-inputtext-sm border-0 w-full"
-					value="{{ currentComputedLocation.meridianAt }} (-{{ currentComputedLocation.timeLeftToMeridianFlip }})" />
-				<label>Meridian at</label>
-			</p-floatLabel>
+			<neb-input-text
+				label="Meridian at"
+				[readonly]="true"
+				value="{{ currentComputedLocation.meridianAt }} (-{{ currentComputedLocation.timeLeftToMeridianFlip }})" />
 		</div>
 		<div class="col-3">
-			<p-floatLabel>
-				<input
-					pInputText
-					readonly
-					class="p-inputtext-sm border-0 w-full"
-					[value]="currentComputedLocation.pierSide" />
-				<label>Pier</label>
-			</p-floatLabel>
+			<neb-input-text
+				label="Pier"
+				[readonly]="true"
+				[value]="currentComputedLocation.pierSide" />
 		</div>
 		<div class="col-3"></div>
 		<div class="col-3 justify-content-center">
@@ -186,28 +146,18 @@
 			</div>
 		</div>
 		<div class="col-4">
-			<p-floatLabel>
-				<input
-					pInputText
-					noDropdown
-					[disabled]="!mount.connected || mount.slewing || mount.parking || mount.parked"
-					class="p-inputtext-sm border-0 w-full"
-					[(ngModel)]="preference.targetRightAscension"
-					(ngModelChange)="computeTargetCoordinates()" />
-				<label>RA (h)</label>
-			</p-floatLabel>
+			<neb-input-text
+				label="RA (h)"
+				[disabled]="!mount.connected || mount.slewing || mount.parking || mount.parked"
+				[(value)]="preference.targetRightAscension"
+				(valueChange)="computeTargetCoordinates()" />
 		</div>
 		<div class="col-4">
-			<p-floatLabel>
-				<input
-					pInputText
-					noDropdown
-					[disabled]="!mount.connected || mount.slewing || mount.parking || mount.parked"
-					class="p-inputtext-sm border-0 w-full"
-					[(ngModel)]="preference.targetDeclination"
-					(ngModelChange)="computeTargetCoordinates()" />
-				<label>DEC (°)</label>
-			</p-floatLabel>
+			<neb-input-text
+				label="DEC (°)"
+				[disabled]="!mount.connected || mount.slewing || mount.parking || mount.parked"
+				[(value)]="preference.targetDeclination"
+				(valueChange)="computeTargetCoordinates()" />
 		</div>
 		<div class="col-4">
 			<p-splitButton
@@ -405,14 +355,10 @@
 			</p-floatLabel>
 		</div>
 		<div class="col-5">
-			<p-floatLabel>
-				<input
-					pInputText
-					class="p-inputtext-sm border-0 w-full"
-					[(ngModel)]="remoteControl.host"
-					placeholder="0.0.0.0" />
-				<label>Host</label>
-			</p-floatLabel>
+			<neb-input-text
+				label="Host"
+				[(value)]="remoteControl.host"
+				placeholder="0.0.0.0" />
 		</div>
 		<div class="col-3">
 			<neb-input-number

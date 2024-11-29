@@ -90,24 +90,16 @@
 			</div>
 			@if (plateSolverType === 'ASTROMETRY_NET_ONLINE') {
 				<div class="col-8">
-					<p-floatLabel class="w-full">
-						<input
-							pInputText
-							class="p-inputtext-sm border-0 w-full"
-							[(ngModel)]="plateSolver.apiUrl"
-							(ngModelChange)="savePreference()" />
-						<label>API URL</label>
-					</p-floatLabel>
+					<neb-input-text
+						label="API URL"
+						[(value)]="plateSolver.apiUrl"
+						(valueChange)="savePreference()" />
 				</div>
 				<div class="col-4">
-					<p-floatLabel class="w-full">
-						<input
-							pInputText
-							class="p-inputtext-sm border-0 w-full"
-							[(ngModel)]="plateSolver.apiKey"
-							(ngModelChange)="savePreference()" />
-						<label>API Key</label>
-					</p-floatLabel>
+					<neb-input-text
+						label="API Key"
+						[(value)]="plateSolver.apiKey"
+						(valueChange)="savePreference()" />
 				</div>
 			}
 			@if (plateSolverType !== 'PIXINSIGHT') {
@@ -227,14 +219,10 @@
 		*ngIf="tab === 'CAPTURE_NAMING_FORMAT'">
 		<div class="grid">
 			<div class="col-12 gap-1">
-				<p-floatLabel class="w-full">
-					<input
-						pInputText
-						class="p-inputtext-sm border-0"
-						[(ngModel)]="preference.namingFormat.light"
-						(ngModelChange)="savePreference()" />
-					<label>Light</label>
-				</p-floatLabel>
+				<neb-input-text
+					label="Light"
+					[(value)]="preference.namingFormat.light"
+					(valueChange)="savePreference()" />
 				<p-button
 					[text]="true"
 					icon="mdi mdi-restore"
@@ -243,14 +231,10 @@
 					tooltipPosition="bottom" />
 			</div>
 			<div class="col-12 gap-1">
-				<p-floatLabel class="w-full">
-					<input
-						pInputText
-						class="p-inputtext-sm border-0"
-						[(ngModel)]="preference.namingFormat.dark"
-						(ngModelChange)="savePreference()" />
-					<label>Dark</label>
-				</p-floatLabel>
+				<neb-input-text
+					label="Dark"
+					[(value)]="preference.namingFormat.dark"
+					(valueChange)="savePreference()" />
 				<p-button
 					[text]="true"
 					icon="mdi mdi-restore"
@@ -259,14 +243,10 @@
 					tooltipPosition="bottom" />
 			</div>
 			<div class="col-12 gap-1">
-				<p-floatLabel class="w-full">
-					<input
-						pInputText
-						class="p-inputtext-sm border-0"
-						[(ngModel)]="preference.namingFormat.flat"
-						(ngModelChange)="savePreference()" />
-					<label>Flat</label>
-				</p-floatLabel>
+				<neb-input-text
+					label="Flat"
+					[(value)]="preference.namingFormat.flat"
+					(valueChange)="savePreference()" />
 				<p-button
 					[text]="true"
 					icon="mdi mdi-restore"
@@ -275,14 +255,10 @@
 					tooltipPosition="bottom" />
 			</div>
 			<div class="col-12 gap-1">
-				<p-floatLabel class="w-full">
-					<input
-						pInputText
-						class="p-inputtext-sm border-0"
-						[(ngModel)]="preference.namingFormat.bias"
-						(ngModelChange)="savePreference()" />
-					<label>Bias</label>
-				</p-floatLabel>
+				<neb-input-text
+					label="Bias"
+					[(value)]="preference.namingFormat.bias"
+					(valueChange)="savePreference()" />
 				<p-button
 					[text]="true"
 					icon="mdi mdi-restore"

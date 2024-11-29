@@ -246,15 +246,10 @@
 			</ng-template>
 			<div class="mt-3 flex flex-column align-items-center justify-content-center gap-2">
 				<div class="flex align-items-center justify-content-center gap-1">
-					<p-floatLabel class="w-full">
-						<input
-							pInputText
-							class="p-inputtext-sm border-0 w-full"
-							[(ngModel)]="annotation.search.text"
-							(ngModelChange)="searchAnnotations()"
-							tooltipPosition="bottom" />
-						<label>Search</label>
-					</p-floatLabel>
+					<neb-input-text
+						label="Search"
+						[(value)]="annotation.search.text"
+						(valueChange)="searchAnnotations()" />
 					<neb-input-number
 						label="Mag. min"
 						[min]="-30"
@@ -320,82 +315,54 @@
 	<div class="grid mt-2">
 		<ng-container *ngIf="astronomicalObject.info">
 			<div class="col-12">
-				<p-floatLabel class="w-full">
-					<input
-						pInputText
-						readonly
-						[value]="astronomicalObject.info.name.join(' · ')"
-						class="border-0 p-inputtext-sm" />
-					<label>Name</label>
-				</p-floatLabel>
+				<neb-input-text
+					label="Name"
+					[readonly]="true"
+					[value]="astronomicalObject.info.name.join(' · ')" />
 			</div>
 			<div class="col-4">
-				<p-floatLabel class="w-full">
-					<input
-						pInputText
-						readonly
-						[value]="astronomicalObject.info.rightAscensionJ2000 | angle: true : 24"
-						class="border-0 p-inputtext-sm" />
-					<label>RA (J2000)</label>
-				</p-floatLabel>
+				<neb-input-text
+					label="RA (J2000)"
+					[readonly]="true"
+					[value]="astronomicalObject.info.rightAscensionJ2000 | angle: true : 24" />
 			</div>
 			<div class="col-4">
-				<p-floatLabel class="w-full">
-					<input
-						pInputText
-						readonly
-						[value]="astronomicalObject.info.declinationJ2000 | angle: true : 360"
-						class="border-0 p-inputtext-sm" />
-					<label>DEC (J2000)</label>
-				</p-floatLabel>
+				<neb-input-text
+					label="DEC (J2000)"
+					[readonly]="true"
+					[value]="astronomicalObject.info.declinationJ2000 | angle: true : 360" />
 			</div>
 			<div
 				class="col-4"
 				*ngIf="astronomicalObject.info.constellation">
-				<p-floatLabel class="w-full">
-					<input
-						pInputText
-						readonly
-						value="{{ astronomicalObject.info.constellation }} | {{ astronomicalObject.info.constellation | enum }}"
-						class="border-0 p-inputtext-sm" />
-					<label>Constellation</label>
-				</p-floatLabel>
+				<neb-input-text
+					label="Constellation"
+					[readonly]="true"
+					value="{{ astronomicalObject.info.constellation }} | {{ astronomicalObject.info.constellation | enum }}" />
 			</div>
 			<div
 				class="col-3"
 				*ngIf="astronomicalObject.info.magnitude">
-				<p-floatLabel class="w-full">
-					<input
-						pInputText
-						readonly
-						value="{{ astronomicalObject.info.magnitude < 30.0 ? astronomicalObject.info.magnitude.toFixed(2) : '-' }}"
-						class="border-0 p-inputtext-sm" />
-					<label>Magnitude</label>
-				</p-floatLabel>
+				<neb-input-text
+					label="Magnitude"
+					[readonly]="true"
+					value="{{ astronomicalObject.info.magnitude < 30.0 ? astronomicalObject.info.magnitude.toFixed(2) : '-' }}" />
 			</div>
 			<div
 				class="col-6"
 				*ngIf="astronomicalObject.info.type">
-				<p-floatLabel class="w-full">
-					<input
-						pInputText
-						readonly
-						value="{{ astronomicalObject.info.type | enum }}"
-						class="border-0 p-inputtext-sm" />
-					<label>Type</label>
-				</p-floatLabel>
+				<neb-input-text
+					label="Type"
+					[readonly]="true"
+					value="{{ astronomicalObject.info.type | enum }}" />
 			</div>
 			<div
 				class="col-3"
 				*ngIf="astronomicalObject.info.distance">
-				<p-floatLabel class="w-full">
-					<input
-						pInputText
-						readonly
-						value="{{ astronomicalObject.info.distance <= 0 ? '-' : astronomicalObject.info.distance.toFixed(3) }}"
-						class="border-0 p-inputtext-sm" />
-					<label>Dist. (ly)</label>
-				</p-floatLabel>
+				<neb-input-text
+					label="Dist. (ly)"
+					[readonly]="true"
+					value="{{ astronomicalObject.info.distance <= 0 ? '-' : astronomicalObject.info.distance.toFixed(3) }}" />
 			</div>
 		</ng-container>
 		<div
@@ -475,26 +442,18 @@
 		<div class="col-8">
 			<div class="grid">
 				<div class="col-6">
-					<p-floatLabel>
-						<input
-							pInputText
-							[disabled]="solver.request.blind && solver.request.type !== 'SIRIL'"
-							class="p-inputtext-sm border-0 w-full"
-							[(ngModel)]="solver.request.centerRA"
-							(ngModelChange)="savePreference()" />
-						<label>Center RA (h)</label>
-					</p-floatLabel>
+					<neb-input-text
+						label="Center RA (h)"
+						[disabled]="solver.request.blind && solver.request.type !== 'SIRIL'"
+						[(value)]="solver.request.centerRA"
+						(valueChange)="savePreference()" />
 				</div>
 				<div class="col-6">
-					<p-floatLabel>
-						<input
-							pInputText
-							[disabled]="solver.request.blind && solver.request.type !== 'SIRIL'"
-							class="p-inputtext-sm border-0 w-full"
-							[(ngModel)]="solver.request.centerDEC"
-							(ngModelChange)="savePreference()" />
-						<label>Center DEC (°)</label>
-					</p-floatLabel>
+					<neb-input-text
+						label="Center DEC (°)"
+						[disabled]="solver.request.blind && solver.request.type !== 'SIRIL'"
+						[(value)]="solver.request.centerDEC"
+						(valueChange)="savePreference()" />
 				</div>
 			</div>
 		</div>
@@ -529,64 +488,40 @@
 	<ng-template pTemplate="footer">
 		<div class="grid pt-2">
 			<div class="col-4">
-				<p-floatLabel>
-					<input
-						pInputText
-						readonly
-						class="p-inputtext-sm border-0 w-full"
-						[value]="solver.solved.rightAscensionJ2000" />
-					<label>RA (J2000)</label>
-				</p-floatLabel>
+				<neb-input-text
+					label="RA (J2000)"
+					[readonly]="true"
+					[value]="solver.solved.rightAscensionJ2000" />
 			</div>
 			<div class="col-4">
-				<p-floatLabel>
-					<input
-						pInputText
-						readonly
-						class="p-inputtext-sm border-0 w-full"
-						[value]="solver.solved.declinationJ2000" />
-					<label>DEC (J2000)</label>
-				</p-floatLabel>
+				<neb-input-text
+					label="DEC (J2000)"
+					[readonly]="true"
+					[value]="solver.solved.declinationJ2000" />
 			</div>
 			<div class="col-4">
-				<p-floatLabel>
-					<input
-						pInputText
-						readonly
-						class="p-inputtext-sm border-0 w-full"
-						[value]="solver.solved.orientation.toFixed(4)" />
-					<label>Orientation (°)</label>
-				</p-floatLabel>
+				<neb-input-text
+					label="Orientation (°)"
+					[readonly]="true"
+					[value]="solver.solved.orientation.toFixed(4)" />
 			</div>
 			<div class="col-4">
-				<p-floatLabel>
-					<input
-						pInputText
-						readonly
-						class="p-inputtext-sm border-0 w-full"
-						[value]="solver.solved.scale.toFixed(4)" />
-					<label>Scale (arcsec/px)</label>
-				</p-floatLabel>
+				<neb-input-text
+					label="Scale (arcsec/px)"
+					[readonly]="true"
+					[value]="solver.solved.scale.toFixed(4)" />
 			</div>
 			<div class="col-4">
-				<p-floatLabel>
-					<input
-						pInputText
-						readonly
-						class="p-inputtext-sm border-0 w-full"
-						[value]="solver.solved.width.toFixed(2) + ' x ' + solver.solved.height.toFixed(2)" />
-					<label>Field size (arcmin)</label>
-				</p-floatLabel>
+				<neb-input-text
+					label="Field size (arcmin)"
+					[readonly]="true"
+					[value]="solver.solved.width.toFixed(2) + ' x ' + solver.solved.height.toFixed(2)" />
 			</div>
 			<div class="col-4">
-				<p-floatLabel>
-					<input
-						pInputText
-						readonly
-						class="p-inputtext-sm border-0 w-full"
-						[value]="solver.solved.radius.toFixed(4)" />
-					<label>Radius (°)</label>
-				</p-floatLabel>
+				<neb-input-text
+					label="Radius (°)"
+					[readonly]="true"
+					[value]="solver.solved.radius.toFixed(4)" />
 			</div>
 		</div>
 		<div class="grid mb-2 mt-2">
@@ -843,84 +778,52 @@
 					[multiple]="false" />
 			</div>
 			<div class="col-4">
-				<p-floatLabel>
-					<input
-						pInputText
-						readonly
-						class="p-inputtext-sm border-0 w-full"
-						[value]="statistics.statistics.count" />
-					<label>Count (px)</label>
-				</p-floatLabel>
+				<neb-input-text
+					label="Count (px)"
+					[readonly]="true"
+					[value]="statistics.statistics.count" />
 			</div>
 			<div class="col-4">
-				<p-floatLabel>
-					<input
-						pInputText
-						readonly
-						class="p-inputtext-sm border-0 w-full"
-						[value]="(statistics.statistics.mean * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
-					<label>Mean</label>
-				</p-floatLabel>
+				<neb-input-text
+					label="Mean"
+					[readonly]="true"
+					[value]="(statistics.statistics.mean * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
 			</div>
 			<div class="col-4">
-				<p-floatLabel>
-					<input
-						pInputText
-						readonly
-						class="p-inputtext-sm border-0 w-full"
-						[value]="(statistics.statistics.median * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
-					<label>Median</label>
-				</p-floatLabel>
+				<neb-input-text
+					label="Median"
+					[readonly]="true"
+					[value]="(statistics.statistics.median * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
 			</div>
 			<div class="col-4">
-				<p-floatLabel>
-					<input
-						pInputText
-						readonly
-						class="p-inputtext-sm border-0 w-full"
-						[value]="(statistics.statistics.variance * statistics.bitOption.rangeMax * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
-					<label>Variance</label>
-				</p-floatLabel>
+				<neb-input-text
+					label="Variance"
+					[readonly]="true"
+					[value]="(statistics.statistics.variance * statistics.bitOption.rangeMax * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
 			</div>
 			<div class="col-4">
-				<p-floatLabel>
-					<input
-						pInputText
-						readonly
-						class="p-inputtext-sm border-0 w-full"
-						[value]="(statistics.statistics.avgDev * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
-					<label>Avg Dev</label>
-				</p-floatLabel>
+				<neb-input-text
+					label="Avg Dev"
+					[readonly]="true"
+					[value]="(statistics.statistics.avgDev * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
 			</div>
 			<div class="col-4">
-				<p-floatLabel>
-					<input
-						pInputText
-						readonly
-						class="p-inputtext-sm border-0 w-full"
-						[value]="(statistics.statistics.stdDev * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
-					<label>Std Dev</label>
-				</p-floatLabel>
+				<neb-input-text
+					label="Std Dev"
+					[readonly]="true"
+					[value]="(statistics.statistics.stdDev * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
 			</div>
 			<div class="col-3">
-				<p-floatLabel>
-					<input
-						pInputText
-						readonly
-						class="p-inputtext-sm border-0 w-full"
-						[value]="(statistics.statistics.minimum * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
-					<label>Minimum</label>
-				</p-floatLabel>
+				<neb-input-text
+					label="Minimum"
+					[readonly]="true"
+					[value]="(statistics.statistics.minimum * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
 			</div>
 			<div class="col-3">
-				<p-floatLabel>
-					<input
-						pInputText
-						readonly
-						class="p-inputtext-sm border-0 w-full"
-						[value]="(statistics.statistics.maximum * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
-					<label>Maximum</label>
-				</p-floatLabel>
+				<neb-input-text
+					label="Maximum"
+					[readonly]="true"
+					[value]="(statistics.statistics.maximum * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
 			</div>
 			<div class="col-6">
 				<p-floatLabel class="w-full">
@@ -978,57 +881,38 @@
 		<div
 			class="col-5 align-items-center"
 			*ngIf="starDetector.request.type === 'SIRIL'">
-			<p-floatLabel>
-				<neb-input-number
-					label="Max Stars"
-					[min]="0"
-					[max]="2000"
-					[(value)]="starDetector.request.maxStars" />
-				<label></label>
-			</p-floatLabel>
+			<neb-input-number
+				label="Max Stars"
+				[min]="0"
+				[max]="2000"
+				[(value)]="starDetector.request.maxStars" />
 		</div>
 		<div class="col-12 mt-1">
 			<span class="font-bold text-sm">COMPUTED</span>
 		</div>
 		<div class="col-2 align-items-center">
-			<p-floatLabel>
-				<input
-					pInputText
-					readonly
-					class="p-inputtext-sm border-0 w-full"
-					[value]="starDetector.stars.length" />
-				<label>Stars</label>
-			</p-floatLabel>
+			<neb-input-text
+				label="Stars"
+				[readonly]="true"
+				[value]="starDetector.stars.length" />
 		</div>
 		<div class="col-4 align-items-center">
-			<p-floatLabel>
-				<input
-					pInputText
-					readonly
-					class="p-inputtext-sm border-0 w-full"
-					value="{{ starDetector.computed.hfd.toFixed(2) }} | {{ starDetector.computed.stdDev.toFixed(4) }}" />
-				<label>HFD (Std Dev)</label>
-			</p-floatLabel>
+			<neb-input-text
+				label="HFD (Std Dev)"
+				[readonly]="true"
+				value="{{ starDetector.computed.hfd.toFixed(2) }} | {{ starDetector.computed.stdDev.toFixed(4) }}" />
 		</div>
 		<div class="col-2 align-items-center">
-			<p-floatLabel>
-				<input
-					pInputText
-					readonly
-					class="p-inputtext-sm border-0 w-full"
-					[value]="starDetector.computed.snr.toFixed(1)" />
-				<label>SNR</label>
-			</p-floatLabel>
+			<neb-input-text
+				label="SNR"
+				[readonly]="true"
+				[value]="starDetector.computed.snr.toFixed(1)" />
 		</div>
 		<div class="col-4 align-items-center">
-			<p-floatLabel>
-				<input
-					pInputText
-					readonly
-					class="p-inputtext-sm border-0 w-full"
-					value="{{ starDetector.computed.fluxMin.toFixed(0) }} | {{ starDetector.computed.fluxMax.toFixed(0) }}" />
-				<label>Flux (min | max)</label>
-			</p-floatLabel>
+			<neb-input-text
+				label="Flux (min | max)"
+				[readonly]="true"
+				value="{{ starDetector.computed.fluxMin.toFixed(0) }} | {{ starDetector.computed.fluxMax.toFixed(0) }}" />
 		</div>
 		<div class="col-12 mt-1">
 			<span class="font-bold text-sm">SELECTED</span>
@@ -1041,44 +925,28 @@
 		<div class="col-7">
 			<div class="grid">
 				<div class="col-6 align-items-center">
-					<p-floatLabel>
-						<input
-							pInputText
-							readonly
-							class="p-inputtext-sm border-0 w-full"
-							value="{{ starDetector.selected.x.toFixed(0) }} | {{ starDetector.selected.y.toFixed(0) }}" />
-						<label>Coordinates</label>
-					</p-floatLabel>
+					<neb-input-text
+						label="Coordinates"
+						[readonly]="true"
+						value="{{ starDetector.selected.x.toFixed(0) }} | {{ starDetector.selected.y.toFixed(0) }}" />
 				</div>
 				<div class="col-6 align-items-center">
-					<p-floatLabel>
-						<input
-							pInputText
-							readonly
-							class="p-inputtext-sm border-0 w-full"
-							[value]="starDetector.selected.flux.toFixed(0)" />
-						<label>Flux</label>
-					</p-floatLabel>
+					<neb-input-text
+						label="Flux"
+						[readonly]="true"
+						[value]="starDetector.selected.flux.toFixed(0)" />
 				</div>
 				<div class="col-6 align-items-center">
-					<p-floatLabel>
-						<input
-							pInputText
-							readonly
-							class="p-inputtext-sm border-0 w-full"
-							[value]="starDetector.selected.hfd.toFixed(2)" />
-						<label>HFD</label>
-					</p-floatLabel>
+					<neb-input-text
+						label="HFD"
+						[readonly]="true"
+						[value]="starDetector.selected.hfd.toFixed(2)" />
 				</div>
 				<div class="col-6 align-items-center">
-					<p-floatLabel>
-						<input
-							pInputText
-							readonly
-							class="p-inputtext-sm border-0 w-full"
-							[value]="starDetector.selected.snr.toFixed(1)" />
-						<label>SNR</label>
-					</p-floatLabel>
+					<neb-input-text
+						label="SNR"
+						[readonly]="true"
+						[value]="starDetector.selected.snr.toFixed(1)" />
 				</div>
 			</div>
 		</div>

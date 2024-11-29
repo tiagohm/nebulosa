@@ -120,13 +120,9 @@
 	[style]="{ width: '80vw', maxWidth: '240px' }">
 	<div class="grid p-2">
 		<div class="col-12">
-			<p-floatLabel class="w-full">
-				<input
-					pInputText
-					class="p-inputtext-sm border-0 w-full"
-					[(ngModel)]="groupDialog.group" />
-				<label>Name</label>
-			</p-floatLabel>
+			<neb-input-text
+				label="Name"
+				[(value)]="groupDialog.group" />
 		</div>
 	</div>
 	<ng-template pTemplate="footer">

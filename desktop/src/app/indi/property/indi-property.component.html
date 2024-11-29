@@ -62,25 +62,17 @@
 					<div
 						class="col-6"
 						*ngIf="property.perm !== 'WO'">
-						<p-floatLabel class="w-full">
-							<input
-								pInputText
-								readonly
-								class="p-inputtext-sm border-0 min-w-full max-w-0"
-								[value]="item.value" />
-							<label>{{ item.label }}</label>
-						</p-floatLabel>
+						<neb-input-text
+							[label]="item.label"
+							[readonly]="true"
+							[value]="item.value" />
 					</div>
 					<div
 						class="col-6"
 						*ngIf="property.perm !== 'RO'">
-						<p-floatLabel class="w-full">
-							<input
-								pInputText
-								class="p-inputtext-sm border-0 min-w-full max-w-0"
-								[(ngModel)]="item.valueToSend" />
-							<label>{{ item.label }}</label>
-						</p-floatLabel>
+						<neb-input-text
+							label="item.label"
+							[(value)]="item.valueToSend" />
 					</div>
 				</div>
 			</div>
@@ -105,25 +97,17 @@
 					<div
 						class="col-6"
 						*ngIf="property.perm !== 'WO'">
-						<p-floatLabel class="w-full">
-							<input
-								pInputText
-								readonly
-								class="p-inputtext-sm border-0 min-w-full max-w-0"
-								[value]="item.value" />
-							<label>{{ item.label }}</label>
-						</p-floatLabel>
+						<neb-input-text
+							[label]="item.label"
+							[readonly]="true"
+							[value]="item.value" />
 					</div>
 					<div
 						class="col-6"
 						*ngIf="property.perm !== 'RO'">
-						<p-floatLabel class="w-full">
-							<input
-								pInputText
-								class="p-inputtext-sm border-0 min-w-full max-w-0"
-								[(ngModel)]="item.valueToSend" />
-							<label>{{ item.label }}</label>
-						</p-floatLabel>
+						<neb-input-text
+							[label]="item.label"
+							[(value)]="item.valueToSend" />
 					</div>
 				</div>
 			</div>

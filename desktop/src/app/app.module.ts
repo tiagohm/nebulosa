@@ -54,6 +54,7 @@ import { DeviceNameComponent } from '../shared/components/device-name/device-nam
 import { DialogMenuComponent } from '../shared/components/dialog-menu/dialog-menu.component'
 import { HistogramComponent } from '../shared/components/histogram/histogram.component'
 import { InputNumberComponent } from '../shared/components/input-number.component'
+import { InputTextComponent } from '../shared/components/input-text.component'
 import { LocationComponent } from '../shared/components/location/location.dialog'
 import { MapComponent } from '../shared/components/map/map.component'
 import { MenuBarComponent } from '../shared/components/menu-bar/menu-bar.component'
@@ -142,6 +143,7 @@ import { SettingsComponent } from './settings/settings.component'
 		INDIComponent,
 		INDIPropertyComponent,
 		InputNumberComponent,
+		InputTextComponent,
 		LightBoxComponent,
 		LocationComponent,
 		MapComponent,

@@ -1,22 +1,17 @@
 <div class="flex align-items-center gap-1">
-	<p-floatLabel class="w-full">
-		<input
-			pInputText
-			[disabled]="disabled"
-			[readonly]="readonly"
-			class="p-inputtext-sm border-0 w-full"
-			[placeholder]="placeholder ?? ''"
-			[ngModel]="path"
-			(ngModelChange)="pathChange.emit($event)" />
-		<label>{{ label ?? 'Path' }}</label>
-	</p-floatLabel>
+	<neb-input-text
+		[label]="label() ?? 'Path'"
+		[disabled]="disabled()"
+		[readonly]="readonly()"
+		[placeholder]="placeholder() ?? ''"
+		[(value)]="path" />
 	<p-button
-		[disabled]="disabled || readonly"
+		[disabled]="disabled() || readonly()"
 		icon="mdi mdi-folder-open"
 		size="small"
 		[text]="true"
 		(onClick)="choosePath()"
-		pTooltip="{{ directory ? 'Choose directory' : 'Choose file' }}"
+		pTooltip="{{ directory() ? 'Choose directory' : 'Choose file' }}"
 		tooltipPosition="left"
 		positionTop="1"
 		positionLeft="-1" />

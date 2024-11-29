@@ -6,16 +6,12 @@
 				leftIcon="mdi mdi-target">
 				<div class="grid mt-3 px-4 flex align-items-center">
 					<div class="col-6 px-0">
-						<p-floatLabel class="w-full">
-							<input
-								pInputText
-								[disabled]="guider.connected"
-								class="border-0 p-inputtext-sm w-full"
-								placeholder="localhost"
-								[(ngModel)]="preference.host"
-								(ngModelChange)="savePreference()" />
-							<label>Host</label>
-						</p-floatLabel>
+						<neb-input-text
+							label="Host"
+							[disabled]="guider.connected"
+							placeholder="localhost"
+							[(value)]="preference.host"
+							(valueChange)="savePreference()" />
 					</div>
 					<div class="col-3 pr-0">
 						<neb-input-number
@@ -64,64 +60,40 @@
 								leftIcon="mdi mdi-chart-bell-curve">
 								<div class="grid mt-2">
 									<div class="col-3">
-										<p-floatLabel>
-											<input
-												pInputText
-												readonly
-												class="p-inputtext-sm border-0 w-full"
-												value="{{ chartInfo.rmsRA.toFixed(2) + ' (' + (chartInfo.rmsRA * chartInfo.pixelScale).toFixed(2) + '&quot; )' }}" />
-											<label>RMS RA</label>
-										</p-floatLabel>
+										<neb-input-text
+											label="RMS RA"
+											[readonly]="true"
+											value="{{ chartInfo.rmsRA.toFixed(2) + ' (' + (chartInfo.rmsRA * chartInfo.pixelScale).toFixed(2) + '&quot; )' }}" />
 									</div>
 									<div class="col-3">
-										<p-floatLabel>
-											<input
-												pInputText
-												readonly
-												class="p-inputtext-sm border-0 w-full"
-												value="{{ chartInfo.rmsDEC.toFixed(2) + ' (' + (chartInfo.rmsDEC * chartInfo.pixelScale).toFixed(2) + '&quot; )' }}" />
-											<label>RMS DEC</label>
-										</p-floatLabel>
+										<neb-input-text
+											label="RMS DEC"
+											[readonly]="true"
+											value="{{ chartInfo.rmsDEC.toFixed(2) + ' (' + (chartInfo.rmsDEC * chartInfo.pixelScale).toFixed(2) + '&quot; )' }}" />
 									</div>
 									<div class="col-3">
-										<p-floatLabel>
-											<input
-												pInputText
-												readonly
-												class="p-inputtext-sm border-0 w-full"
-												value="{{ chartInfo.rmsTotal.toFixed(2) + ' (' + (chartInfo.rmsTotal * chartInfo.pixelScale).toFixed(2) + '&quot; )' }}" />
-											<label>RMS Total</label>
-										</p-floatLabel>
+										<neb-input-text
+											label="RMS Total"
+											[readonly]="true"
+											value="{{ chartInfo.rmsTotal.toFixed(2) + ' (' + (chartInfo.rmsTotal * chartInfo.pixelScale).toFixed(2) + '&quot; )' }}" />
 									</div>
 									<div class="col-3">
-										<p-floatLabel>
-											<input
-												pInputText
-												readonly
-												class="p-inputtext-sm border-0 w-full"
-												[value]="guider.step?.starMass ?? 0" />
-											<label>Star mass</label>
-										</p-floatLabel>
+										<neb-input-text
+											label="Star mass"
+											[readonly]="true"
+											[value]="guider.step?.starMass ?? 0" />
 									</div>
 									<div class="col-2">
-										<p-floatLabel>
-											<input
-												pInputText
-												readonly
-												class="p-inputtext-sm border-0 w-full"
-												[value]="guider.step?.hfd ?? 0" />
-											<label>HFD</label>
-										</p-floatLabel>
+										<neb-input-text
+											label="HFD"
+											[readonly]="true"
+											[value]="guider.step?.hfd ?? 0" />
 									</div>
 									<div class="col-2">
-										<p-floatLabel>
-											<input
-												pInputText
-												readonly
-												class="p-inputtext-sm border-0 w-full"
-												[value]="guider.step?.snr ?? 0" />
-											<label>SNR</label>
-										</p-floatLabel>
+										<neb-input-text
+											label="SNR"
+											[readonly]="true"
+											[value]="guider.step?.snr ?? 0" />
 									</div>
 									<div class="col-4">
 										<p-floatLabel class="w-full">

@@ -266,15 +266,12 @@
 							[disabled]="running" />
 					</div>
 					<div class="flex gap-1">
-						<p-floatLabel class="w-full min-w-22rem">
-							<input
-								pInputText
-								class="p-inputtext-sm border-0"
-								[disabled]="running"
-								[(ngModel)]="plan.namingFormat.light"
-								(ngModelChange)="savePreference()" />
-							<label>Light</label>
-						</p-floatLabel>
+						<neb-input-text
+							label="Light"
+							class="min-w-22rem"
+							[disabled]="running"
+							[(value)]="plan.namingFormat.light"
+							(valueChange)="savePreference()" />
 						<p-button
 							[text]="true"
 							icon="mdi mdi-restore"
@@ -283,15 +280,12 @@
 							tooltipPosition="bottom" />
 					</div>
 					<div class="flex gap-1">
-						<p-floatLabel class="w-full min-w-22rem">
-							<input
-								pInputText
-								class="p-inputtext-sm border-0"
-								[disabled]="running"
-								[(ngModel)]="plan.namingFormat.dark"
-								(ngModelChange)="savePreference()" />
-							<label>Dark</label>
-						</p-floatLabel>
+						<neb-input-text
+							label="Dark"
+							class="min-w-22rem"
+							[disabled]="running"
+							[(value)]="plan.namingFormat.dark"
+							(valueChange)="savePreference()" />
 						<p-button
 							[text]="true"
 							icon="mdi mdi-restore"
@@ -300,15 +294,12 @@
 							tooltipPosition="bottom" />
 					</div>
 					<div class="flex gap-1">
-						<p-floatLabel class="w-full min-w-22rem">
-							<input
-								pInputText
-								class="p-inputtext-sm border-0"
-								[disabled]="running"
-								[(ngModel)]="plan.namingFormat.flat"
-								(ngModelChange)="savePreference()" />
-							<label>Flat</label>
-						</p-floatLabel>
+						<neb-input-text
+							label="Flat"
+							class="min-w-22rem"
+							[disabled]="running"
+							[(value)]="plan.namingFormat.flat"
+							(valueChange)="savePreference()" />
 						<p-button
 							[text]="true"
 							icon="mdi mdi-restore"
@@ -317,15 +308,12 @@
 							tooltipPosition="bottom" />
 					</div>
 					<div class="flex gap-1">
-						<p-floatLabel class="w-full min-w-22rem">
-							<input
-								pInputText
-								class="p-inputtext-sm border-0"
-								[disabled]="running"
-								[(ngModel)]="plan.namingFormat.bias"
-								(ngModelChange)="savePreference()" />
-							<label>Bias</label>
-						</p-floatLabel>
+						<neb-input-text
+							label="Bias"
+							class="min-w-22rem"
+							[disabled]="running"
+							[(value)]="plan.namingFormat.bias"
+							(valueChange)="savePreference()" />
 						<p-button
 							[text]="true"
 							icon="mdi mdi-restore"

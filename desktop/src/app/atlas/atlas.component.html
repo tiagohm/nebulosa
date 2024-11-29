@@ -169,15 +169,11 @@
 					<p-tabPanel header="Search">
 						<div class="relative flex mt-3 flex-column align-items-center justify-content-center">
 							<div class="flex w-full align-items-center px-4 gap-2">
-								<p-floatLabel class="w-full">
-									<input
-										pInputText
-										class="p-inputtext-sm border-0 w-full"
-										[(ngModel)]="minorPlanet.search.text"
-										pTooltip="Enter the IAU number, designation, name or SPK-ID for the object of interest."
-										tooltipPosition="bottom" />
-									<label>Search</label>
-								</p-floatLabel>
+								<neb-input-text
+									label="Search"
+									[(value)]="minorPlanet.search.text"
+									pTooltip="Enter the IAU number, designation, name or SPK-ID for the object of interest."
+									tooltipPosition="bottom" />
 								<p-button
 									[disabled]="minorPlanet.search.text.length < 3"
 									(onClick)="searchMinorPlanet()"
@@ -305,13 +301,9 @@
 				</ng-template>
 				<div class="flex mt-2 align-items-center justify-content-center">
 					<div class="flex w-full align-items-center px-4 gap-2">
-						<p-floatLabel class="w-full">
-							<input
-								pInputText
-								class="p-inputtext-sm border-0 w-full"
-								[(ngModel)]="skyObject.search.filter.text" />
-							<label>Search</label>
-						</p-floatLabel>
+						<neb-input-text
+							label="Search"
+							[(value)]="skyObject.search.filter.text" />
 						<div class="flex flex-row gap-1">
 							<p-button
 								(onClick)="searchSkyObject()"
@@ -400,13 +392,9 @@
 				</ng-template>
 				<div class="flex mt-2 flex-column align-items-center justify-content-center">
 					<div class="flex w-full align-items-center px-4 gap-2">
-						<p-floatLabel class="w-full">
-							<input
-								pInputText
-								class="p-inputtext-sm border-0 w-full"
-								[(ngModel)]="satellite.search.filter.text" />
-							<label>Search</label>
-						</p-floatLabel>
+						<neb-input-text
+							label="Search"
+							[(value)]="satellite.search.filter.text" />
 						<div class="flex flex-row gap-1">
 							<p-button
 								(onClick)="searchSatellite()"
@@ -489,114 +477,70 @@
 				<div class="col-12 pb-0">
 					<div class="grid">
 						<div class="col-3">
-							<p-floatLabel>
-								<input
-									pInputText
-									readonly
-									class="p-inputtext-sm border-0 w-full"
-									[value]="position.rightAscensionJ2000" />
-								<label>RA (J2000)</label>
-							</p-floatLabel>
+							<neb-input-text
+								label="RA (J2000)"
+								[readonly]="true"
+								[value]="position.rightAscensionJ2000" />
 						</div>
 						<div class="col-3">
-							<p-floatLabel>
-								<input
-									pInputText
-									readonly
-									class="p-inputtext-sm border-0 w-full"
-									[value]="position.declinationJ2000" />
-								<label>DEC (J2000)</label>
-							</p-floatLabel>
+							<neb-input-text
+								label="DEC (J2000)"
+								[readonly]="true"
+								[value]="position.declinationJ2000" />
 						</div>
 						<div class="col-3">
-							<p-floatLabel>
-								<input
-									pInputText
-									readonly
-									class="p-inputtext-sm border-0 w-full"
-									[value]="position.rightAscension" />
-								<label>RA</label>
-							</p-floatLabel>
+							<neb-input-text
+								label="RA"
+								[readonly]="true"
+								[value]="position.rightAscension" />
 						</div>
 						<div class="col-3">
-							<p-floatLabel>
-								<input
-									pInputText
-									readonly
-									class="p-inputtext-sm border-0 w-full"
-									[value]="position.declination" />
-								<label>DEC</label>
-							</p-floatLabel>
+							<neb-input-text
+								label="DEC"
+								[readonly]="true"
+								[value]="position.declination" />
 						</div>
 						<div class="col-3">
-							<p-floatLabel>
-								<input
-									pInputText
-									readonly
-									class="p-inputtext-sm border-0 w-full"
-									[value]="position.azimuth" />
-								<label>Azimuth</label>
-							</p-floatLabel>
+							<neb-input-text
+								label="Azimuth"
+								[readonly]="true"
+								[value]="position.azimuth" />
 						</div>
 						<div class="col-3">
-							<p-floatLabel>
-								<input
-									pInputText
-									readonly
-									class="p-inputtext-sm border-0 w-full"
-									[value]="position.altitude" />
-								<label>Altitude</label>
-							</p-floatLabel>
+							<neb-input-text
+								label="Altitude"
+								[readonly]="true"
+								[value]="position.altitude" />
 						</div>
 						<div class="col-3">
-							<p-floatLabel>
-								<input
-									pInputText
-									readonly
-									class="p-inputtext-sm border-0 w-full"
-									[value]="position.magnitude < 30 ? position.magnitude.toFixed(2) : '-'" />
-								<label>Magnitude</label>
-							</p-floatLabel>
+							<neb-input-text
+								label="Magnitude"
+								[readonly]="true"
+								[value]="position.magnitude < 30 ? position.magnitude.toFixed(2) : '-'" />
 						</div>
 						<div class="col-3">
-							<p-floatLabel>
-								<input
-									pInputText
-									readonly
-									class="p-inputtext-sm border-0 w-full"
-									[value]="position.constellation" />
-								<label>Constellation</label>
-							</p-floatLabel>
+							<neb-input-text
+								label="Constellation"
+								[readonly]="true"
+								[value]="position.constellation" />
 						</div>
 						<div class="col-3">
-							<p-floatLabel>
-								<input
-									pInputText
-									readonly
-									class="p-inputtext-sm border-0 w-full"
-									[value]="position.distance.toFixed(3)" />
-								<label>Distance ({{ position.distanceUnit }})</label>
-							</p-floatLabel>
+							<neb-input-text
+								label="Distance ({{ position.distanceUnit }})"
+								[readonly]="true"
+								[value]="position.distance.toFixed(3)" />
 						</div>
 						<div class="col-3">
-							<p-floatLabel>
-								<input
-									pInputText
-									readonly
-									class="p-inputtext-sm border-0 w-full"
-									[value]="position.illuminated.toFixed(3)" />
-								<label>Illuminated (%)</label>
-							</p-floatLabel>
+							<neb-input-text
+								label="Illuminated (%)"
+								[readonly]="true"
+								[value]="position.illuminated.toFixed(3)" />
 						</div>
 						<div class="col-3">
-							<p-floatLabel>
-								<input
-									pInputText
-									readonly
-									class="p-inputtext-sm border-0 w-full"
-									[value]="position.elongation.toFixed(3)" />
-								<label>Elongation (°)</label>
-							</p-floatLabel>
+							<neb-input-text
+								label="Elongation (°)"
+								[readonly]="true"
+								[value]="position.elongation.toFixed(3)" />
 						</div>
 					</div>
 				</div>
@@ -711,24 +655,16 @@
 	[style]="{ width: '80vw' }">
 	<div class="grid mt-2">
 		<div class="col-4">
-			<p-floatLabel>
-				<input
-					pInputText
-					[disabled]="skyObject.search.filter.radius <= 0"
-					class="p-inputtext-sm border-0 w-full"
-					[value]="skyObject.search.filter.rightAscension" />
-				<label>RA (h)</label>
-			</p-floatLabel>
+			<neb-input-text
+				label="RA (h)"
+				[disabled]="skyObject.search.filter.radius <= 0"
+				[(value)]="skyObject.search.filter.rightAscension" />
 		</div>
 		<div class="col-4">
-			<p-floatLabel>
-				<input
-					pInputText
-					[disabled]="skyObject.search.filter.radius <= 0"
-					class="p-inputtext-sm border-0 w-full"
-					[value]="skyObject.search.filter.declination" />
-				<label>DEC (°)</label>
-			</p-floatLabel>
+			<neb-input-text
+				label="DEC (°)"
+				[disabled]="skyObject.search.filter.radius <= 0"
+				[(value)]="skyObject.search.filter.declination" />
 		</div>
 		<div class="col-4">
 			<neb-input-number

@@ -1,13 +1,9 @@
 <div class="grid pt-2">
 	<div class="col-12">
-		<p-floatLabel class="w-full">
-			<input
-				pInputText
-				class="p-inputtext-sm border-0 w-full"
-				[(ngModel)]="location.name"
-				(ngModelChange)="locationChanged()" />
-			<label>Name</label>
-		</p-floatLabel>
+		<neb-input-text
+			label="Name"
+			[(value)]="location.name"
+			(valueChange)="locationChanged()" />
 	</div>
 	<div class="col-6">
 		<neb-input-number

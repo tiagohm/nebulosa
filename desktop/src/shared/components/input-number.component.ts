@@ -27,6 +27,9 @@ import { Component, computed, input, model, ViewEncapsulation } from '@angular/c
 	`,
 	styles: `
 		neb-input-number {
+			display: flex;
+			align-items: center;
+
 			.p-button-icon-only.p-inputnumber-button {
 				width: 2rem;
 			}
@@ -43,7 +46,7 @@ export class InputNumberComponent {
 	readonly min = input<number>()
 	readonly max = input<number>()
 	readonly step = input(1)
-	readonly value = model(0)
+	readonly value = model<number | undefined>(0)
 	readonly disabled = input(false)
 	readonly fractionDigits = input(0)
 	readonly format = input(true)

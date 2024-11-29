@@ -106,16 +106,12 @@
 		class="grid mt-2"
 		*ngIf="filter && canEdit">
 		<div class="col-8">
-			<p-floatLabel>
-				<input
-					pInputText
-					[disabled]="!wheel.connected || moving"
-					[(ngModel)]="filter.name"
-					(ngModelChange)="filterNameChanged(filter)"
-					[maxLength]="16"
-					class="border-0 w-full p-inputtext-sm" />
-				<label>Name</label>
-			</p-floatLabel>
+			<neb-input-text
+				label="Name"
+				[disabled]="!wheel.connected || moving"
+				[maxLength]="16"
+				[(value)]="filter.name"
+				(valueChange)="filterNameChanged(filter)" />
 		</div>
 		<div class="col-4 flex flex-column justify-content-center gap-2">
 			<neb-checkbox

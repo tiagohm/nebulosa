@@ -1,23 +1,15 @@
 <div class="grid px-4 py-2 mt-1">
 	<div class="col-6">
-		<p-floatLabel>
-			<input
-				pInputText
-				class="p-inputtext-sm border-0 w-full"
-				[(ngModel)]="preference.rightAscension"
-				(ngModelChange)="savePreference()" />
-			<label>RA (J2000)</label>
-		</p-floatLabel>
+		<neb-input-text
+			label="RA (J2000)"
+			[(value)]="preference.rightAscension"
+			(valueChange)="savePreference()" />
 	</div>
 	<div class="col-6">
-		<p-floatLabel>
-			<input
-				pInputText
-				class="p-inputtext-sm border-0 w-full"
-				[(ngModel)]="preference.declination"
-				(ngModelChange)="savePreference()" />
-			<label>DEC (J2000)</label>
-		</p-floatLabel>
+		<neb-input-text
+			label="DEC (J2000)"
+			[(value)]="preference.declination"
+			(valueChange)="savePreference()" />
 	</div>
 	<div class="col-6">
 		<neb-input-number

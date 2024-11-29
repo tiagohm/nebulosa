@@ -349,23 +349,15 @@
 	[style]="{ width: '90vw' }">
 	<div class="grid p-2">
 		<div class="col-12">
-			<p-floatLabel class="w-full">
-				<input
-					pInputText
-					class="p-inputtext-sm border-0 w-full"
-					[maxLength]="32"
-					[(ngModel)]="connectionDialog.connection.name" />
-				<label>Name</label>
-			</p-floatLabel>
+			<neb-input-text
+				label="Name"
+				[maxLength]="32"
+				[(value)]="connectionDialog.connection.name" />
 		</div>
 		<div class="col-12">
-			<p-floatLabel class="w-full">
-				<input
-					pInputText
-					class="p-inputtext-sm border-0 w-full"
-					[(ngModel)]="connectionDialog.connection.host" />
-				<label>Host</label>
-			</p-floatLabel>
+			<neb-input-text
+				label="Host"
+				[(value)]="connectionDialog.connection.host" />
 		</div>
 		<div class="col-4">
 			<neb-input-number

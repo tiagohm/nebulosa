@@ -576,14 +576,10 @@
 	[style]="{ width: '80vw', maxWidth: '320px' }">
 	<div class="grid mt-2">
 		<div class="col-12 gap-1">
-			<p-floatLabel class="w-full">
-				<input
-					pInputText
-					class="p-inputtext-sm border-0"
-					[(ngModel)]="namingFormat.format.light"
-					(ngModelChange)="savePreference()" />
-				<label>Light</label>
-			</p-floatLabel>
+			<neb-input-text
+				label="Light"
+				[(value)]="namingFormat.format.light"
+				(valueChange)="savePreference()" />
 			<p-button
 				[text]="true"
 				icon="mdi mdi-restore"
@@ -592,14 +588,10 @@
 				tooltipPosition="bottom" />
 		</div>
 		<div class="col-12 gap-1">
-			<p-floatLabel class="w-full">
-				<input
-					pInputText
-					class="p-inputtext-sm border-0"
-					[(ngModel)]="namingFormat.format.dark"
-					(ngModelChange)="savePreference()" />
-				<label>Dark</label>
-			</p-floatLabel>
+			<neb-input-text
+				label="Dark"
+				[(value)]="namingFormat.format.dark"
+				(valueChange)="savePreference()" />
 			<p-button
 				[text]="true"
 				icon="mdi mdi-restore"
@@ -608,14 +600,10 @@
 				tooltipPosition="bottom" />
 		</div>
 		<div class="col-12 gap-1">
-			<p-floatLabel class="w-full">
-				<input
-					pInputText
-					class="p-inputtext-sm border-0"
-					[(ngModel)]="namingFormat.format.flat"
-					(ngModelChange)="savePreference()" />
-				<label>Flat</label>
-			</p-floatLabel>
+			<neb-input-text
+				label="Flat"
+				[(value)]="namingFormat.format.flat"
+				(valueChange)="savePreference()" />
 			<p-button
 				[text]="true"
 				icon="mdi mdi-restore"
@@ -624,14 +612,10 @@
 				tooltipPosition="bottom" />
 		</div>
 		<div class="col-12 gap-1">
-			<p-floatLabel class="w-full">
-				<input
-					pInputText
-					class="p-inputtext-sm border-0"
-					[(ngModel)]="namingFormat.format.bias"
-					(ngModelChange)="savePreference()" />
-				<label>Bias</label>
-			</p-floatLabel>
+			<neb-input-text
+				label="Bias"
+				[(value)]="namingFormat.format.bias"
+				(valueChange)="savePreference()" />
 			<p-button
 				[text]="true"
 				icon="mdi mdi-restore"

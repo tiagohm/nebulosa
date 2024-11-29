@@ -35,34 +35,22 @@
 	</div>
 	<div class="col-12 pb-0">
 		<div class="col-3 align-items-center">
-			<p-floatLabel>
-				<input
-					pInputText
-					readonly
-					class="p-inputtext-sm border-0 max-w-full"
-					[value]="focuser?.position ?? 0" />
-				<label>Position</label>
-			</p-floatLabel>
+			<neb-input-text
+				label="Position"
+				[readonly]="true"
+				[value]="focuser?.position ?? 0" />
 		</div>
 		<div class="col-3 align-items-center">
-			<p-floatLabel>
-				<input
-					pInputText
-					readonly
-					class="p-inputtext-sm border-0 max-w-full"
-					[value]="starCount" />
-				<label>Star Count</label>
-			</p-floatLabel>
+			<neb-input-text
+				label="Star Count"
+				[readonly]="true"
+				[value]="starCount" />
 		</div>
 		<div class="col-3 align-items-center">
-			<p-floatLabel>
-				<input
-					pInputText
-					readonly
-					class="p-inputtext-sm border-0 max-w-full"
-					[value]="starHFD.toFixed(2)" />
-				<label>HFD</label>
-			</p-floatLabel>
+			<neb-input-text
+				label="HFD"
+				[readonly]="true"
+				[value]="starHFD.toFixed(2)" />
 		</div>
 	</div>
 	<div class="col-12 pt-0">
