@@ -52,11 +52,9 @@
 										<div class="flex flex-column justify-content-center gap-2 flex-1">
 											<div class="flex align-items-center justify-content-between gap-2 text-gray-400">
 												<div class="flex align-items-center justify-content-start gap-2 text-xs">
-													<p-checkbox
-														[binary]="true"
-														[(ngModel)]="item.enabled"
-														(ngModelChange)="toggleFrame(item, $event)"
-														(onChange)="$event.originalEvent?.stopImmediatePropagation()" />
+													<neb-checkbox
+														[(value)]="item.enabled"
+														(valueChange)="toggleFrame(item, $event)" />
 													<div class="flex flex-column justify-content-center">
 														<span class="text-base font-bold">{{ item.type }}</span>
 														<div class="flex flex-row flex-nowrap align-items-center justify-content-start gap-2 w-full text-xs text-gray-200">

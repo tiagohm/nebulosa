@@ -100,6 +100,7 @@ import { MountComponent } from './mount/mount.component'
 import { RotatorComponent } from './rotator/rotator.component'
 import { SequencerComponent } from './sequencer/sequencer.component'
 import { SettingsComponent } from './settings/settings.component'
+import { CheckboxComponent } from '../shared/components/checkbox'
 
 @NgModule({
 	declarations: [
@@ -114,6 +115,7 @@ import { SettingsComponent } from './settings/settings.component'
 		CameraComponent,
 		CameraInfoComponent,
 		CameraExposureComponent,
+		CheckboxComponent,
 		ConfirmDialogComponent,
 		CrossHairComponent,
 		DeviceChooserComponent,

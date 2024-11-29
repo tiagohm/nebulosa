@@ -115,11 +115,10 @@
 							</p-floatLabel>
 						</div>
 						<div class="col-7 flex align-items-center justify-content-center text-center gap-2 text-sm">
-							<p-checkbox
-								[binary]="true"
-								[(ngModel)]="tppaRequest.stopTrackingWhenDone"
+							<neb-checkbox
 								label="Stop tracking when done"
-								(ngModelChange)="savePreference()" />
+								[(value)]="tppaRequest.stopTrackingWhenDone"
+								(valueChange)="savePreference()" />
 						</div>
 					</div>
 					<div class="grid mt-2">

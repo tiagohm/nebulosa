@@ -189,11 +189,10 @@
 										tooltipPosition="bottom"
 										size="small"
 										(onClick)="duplicateSequence(sequence, i)" />
-									<p-checkbox
-										[binary]="true"
+									<neb-checkbox
 										[disabled]="running"
-										[(ngModel)]="sequence.enabled"
-										(ngModelChange)="savePreference()" />
+										[(value)]="sequence.enabled"
+										(valueChange)="savePreference()" />
 								</div>
 							</div>
 						</ng-template>
@@ -351,21 +350,18 @@
 						pTooltip="Dither"
 						tooltipPosition="bottom">
 						<i class="mdi mdi-pulse"></i>
-						<p-checkbox
-							[binary]="true"
+						<neb-checkbox
 							[disabled]="running"
-							[(ngModel)]="plan.dither.enabled"
-							(ngModelChange)="savePreference()"
-							(onChange)="$event.originalEvent?.stopImmediatePropagation()" />
+							[(value)]="plan.dither.enabled"
+							(valueChange)="savePreference()" />
 					</div>
 				</ng-template>
 				<div class="align-content-start justify-content-center align-items-center flex flex-row flex-wrap gap-3 justify-content-start pt-3 px-4">
-					<p-checkbox
-						[binary]="true"
+					<neb-checkbox
 						[disabled]="running || !plan.dither.enabled"
 						label="RA only"
-						[(ngModel)]="plan.dither.raOnly"
-						(ngModelChange)="savePreference()" />
+						[(value)]="plan.dither.raOnly"
+						(valueChange)="savePreference()" />
 					<p-floatLabel class="max-w-12rem">
 						<p-inputNumber
 							[disabled]="running || !plan.dither.enabled"
@@ -404,33 +400,28 @@
 						pTooltip="Auto Focus"
 						tooltipPosition="bottom">
 						<i class="mdi mdi-image-filter-center-focus"></i>
-						<p-checkbox
-							[binary]="true"
+						<neb-checkbox
 							[disabled]="running"
-							[(ngModel)]="plan.autoFocus.enabled"
-							(ngModelChange)="savePreference()"
-							(onChange)="$event.originalEvent?.stopImmediatePropagation()" />
+							[(value)]="plan.autoFocus.enabled"
+							(valueChange)="savePreference()" />
 					</div>
 				</ng-template>
 				<div class="align-content-start justify-content-center align-items-center flex flex-row flex-wrap gap-3 justify-content-start pt-3 px-4">
-					<p-checkbox
-						[binary]="true"
+					<neb-checkbox
 						[disabled]="running || !plan.autoFocus.enabled"
 						label="On start"
-						[(ngModel)]="plan.autoFocus.onStart"
-						(ngModelChange)="savePreference()" />
-					<p-checkbox
-						[binary]="true"
+						[(value)]="plan.autoFocus.onStart"
+						(valueChange)="savePreference()" />
+					<neb-checkbox
 						[disabled]="running || !plan.autoFocus.enabled"
 						label="On filter change"
-						[(ngModel)]="plan.autoFocus.onFilterChange"
-						(ngModelChange)="savePreference()" />
+						[(value)]="plan.autoFocus.onFilterChange"
+						(valueChange)="savePreference()" />
 					<div class="flex align-items-center gap-1">
-						<p-checkbox
-							[binary]="true"
+						<neb-checkbox
 							[disabled]="running || !plan.autoFocus.enabled"
-							[(ngModel)]="plan.autoFocus.afterElapsedTimeEnabled"
-							(ngModelChange)="savePreference()" />
+							[(value)]="plan.autoFocus.afterElapsedTimeEnabled"
+							(valueChange)="savePreference()" />
 						<p-floatLabel class="max-w-12rem">
 							<p-inputNumber
 								[disabled]="running || !plan.autoFocus.afterElapsedTimeEnabled || !plan.autoFocus.enabled"
@@ -446,11 +437,10 @@
 						</p-floatLabel>
 					</div>
 					<div class="flex align-items-center gap-1">
-						<p-checkbox
-							[binary]="true"
+						<neb-checkbox
 							[disabled]="running || !plan.autoFocus.enabled"
-							[(ngModel)]="plan.autoFocus.afterExposuresEnabled"
-							(ngModelChange)="savePreference()" />
+							[(value)]="plan.autoFocus.afterExposuresEnabled"
+							(valueChange)="savePreference()" />
 						<p-floatLabel class="max-w-10rem">
 							<p-inputNumber
 								[disabled]="running || !plan.autoFocus.afterExposuresEnabled || !plan.autoFocus.enabled"
@@ -466,11 +456,10 @@
 						</p-floatLabel>
 					</div>
 					<div class="flex align-items-center gap-1">
-						<p-checkbox
-							[binary]="true"
+						<neb-checkbox
 							[disabled]="running || !plan.autoFocus.enabled"
-							[(ngModel)]="plan.autoFocus.afterHFDIncreaseEnabled"
-							(ngModelChange)="savePreference()" />
+							[(value)]="plan.autoFocus.afterHFDIncreaseEnabled"
+							(valueChange)="savePreference()" />
 						<p-floatLabel class="max-w-12rem">
 							<p-inputNumber
 								[disabled]="running || !plan.autoFocus.afterHFDIncreaseEnabled || !plan.autoFocus.enabled"
@@ -486,11 +475,10 @@
 						</p-floatLabel>
 					</div>
 					<div class="flex align-items-center gap-1">
-						<p-checkbox
-							[binary]="true"
+						<neb-checkbox
 							[disabled]="running || !plan.autoFocus.enabled"
-							[(ngModel)]="plan.autoFocus.afterTemperatureChangeEnabled"
-							(ngModelChange)="savePreference()" />
+							[(value)]="plan.autoFocus.afterTemperatureChangeEnabled"
+							(valueChange)="savePreference()" />
 						<p-floatLabel class="max-w-15rem">
 							<p-inputNumber
 								[disabled]="running || !plan.autoFocus.afterTemperatureChangeEnabled || !plan.autoFocus.enabled"
@@ -514,12 +502,10 @@
 						pTooltip="Live Stacking"
 						tooltipPosition="bottom">
 						<i class="mdi mdi-image-multiple"></i>
-						<p-checkbox
-							[binary]="true"
+						<neb-checkbox
 							[disabled]="running"
-							[(ngModel)]="plan.liveStacking.enabled"
-							(ngModelChange)="savePreference()"
-							(onChange)="$event.originalEvent?.stopImmediatePropagation()" />
+							[(value)]="plan.liveStacking.enabled"
+							(valueChange)="savePreference()" />
 					</div>
 				</ng-template>
 				<div class="align-content-start justify-content-center align-items-center flex flex-row flex-wrap gap-3 justify-content-start pt-3 px-4">
@@ -543,12 +529,11 @@
 							[(ngModel)]="plan.liveStacking.use32Bits"
 							(ngModelChange)="savePreference()" />
 					</div>
-					<p-checkbox
-						[binary]="true"
+					<neb-checkbox
 						[disabled]="!plan.liveStacking.enabled || running"
 						label="Use calibration group"
-						[(ngModel)]="plan.liveStacking.useCalibrationGroup"
-						(ngModelChange)="savePreference()" />
+						[(value)]="plan.liveStacking.useCalibrationGroup"
+						(valueChange)="savePreference()" />
 					<neb-path-chooser
 						[disabled]="!plan.liveStacking.enabled || plan.liveStacking.useCalibrationGroup || running"
 						[directory]="false"
@@ -645,90 +630,76 @@
 				(onClick)="selectSequenceProperty(false)" />
 		</div>
 		<div class="col-6">
-			<p-checkbox
-				[binary]="true"
+			<neb-checkbox
 				label="Exposure Time"
-				[(ngModel)]="property.properties.EXPOSURE_TIME" />
+				[(value)]="property.properties.EXPOSURE_TIME" />
 		</div>
 		<div class="col-6">
-			<p-checkbox
-				[binary]="true"
+			<neb-checkbox
 				label="Exposure Amount"
-				[(ngModel)]="property.properties.EXPOSURE_AMOUNT" />
+				[(value)]="property.properties.EXPOSURE_AMOUNT" />
 		</div>
 		<div class="col-6">
-			<p-checkbox
-				[binary]="true"
+			<neb-checkbox
 				label="Exposure Delay"
-				[(ngModel)]="property.properties.EXPOSURE_DELAY" />
+				[(value)]="property.properties.EXPOSURE_DELAY" />
 		</div>
 		<div class="col-6">
-			<p-checkbox
-				[binary]="true"
+			<neb-checkbox
 				label="Frame Type"
-				[(ngModel)]="property.properties.FRAME_TYPE" />
+				[(value)]="property.properties.FRAME_TYPE" />
 		</div>
 		<div class="col-6">
-			<p-checkbox
-				[binary]="true"
+			<neb-checkbox
 				label="X"
-				[(ngModel)]="property.properties.X" />
+				[(value)]="property.properties.X" />
 		</div>
 		<div class="col-6">
-			<p-checkbox
-				[binary]="true"
+			<neb-checkbox
 				label="Y"
-				[(ngModel)]="property.properties.Y" />
+				[(value)]="property.properties.Y" />
 		</div>
 		<div class="col-6">
-			<p-checkbox
-				[binary]="true"
+			<neb-checkbox
 				label="Width"
-				[(ngModel)]="property.properties.WIDTH" />
+				[(value)]="property.properties.WIDTH" />
 		</div>
 		<div class="col-6">
-			<p-checkbox
-				[binary]="true"
+			<neb-checkbox
 				label="Height"
-				[(ngModel)]="property.properties.HEIGHT" />
+				[(value)]="property.properties.HEIGHT" />
 		</div>
 		<div class="col-6">
-			<p-checkbox
-				[binary]="true"
+			<neb-checkbox
 				label="Bin"
-				[(ngModel)]="property.properties.BIN" />
+				[(value)]="property.properties.BIN" />
 		</div>
 		<div class="col-6">
-			<p-checkbox
-				[binary]="true"
+			<neb-checkbox
 				label="Frame Format"
-				[(ngModel)]="property.properties.FRAME_FORMAT" />
+				[(value)]="property.properties.FRAME_FORMAT" />
 		</div>
 		<div class="col-6">
-			<p-checkbox
-				[binary]="true"
+			<neb-checkbox
 				label="Gain"
-				[(ngModel)]="property.properties.GAIN" />
+				[(value)]="property.properties.GAIN" />
 		</div>
 		<div class="col-6">
-			<p-checkbox
-				[binary]="true"
+			<neb-checkbox
 				label="Offset"
-				[(ngModel)]="property.properties.OFFSET" />
+				[(value)]="property.properties.OFFSET" />
 		</div>
 		<div class="col-6">
-			<p-checkbox
-				[binary]="true"
+			<neb-checkbox
 				label="Calibration Group"
-				[(ngModel)]="property.properties.CALIBRATION_GROUP" />
+				[(value)]="property.properties.CALIBRATION_GROUP" />
 		</div>
 		<div
 			*ngIf="plan.liveStacking.enabled"
 			class="col-6">
-			<p-checkbox
-				[binary]="true"
+			<neb-checkbox
 				label="Stacking Group"
-				[(ngModel)]="property.properties.STACKING_GROUP" />
+				[(value)]="property.properties.STACKING_GROUP" />
 		</div>
 	</div>
 	<ng-template pTemplate="footer">

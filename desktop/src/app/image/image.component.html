@@ -163,22 +163,19 @@
 			<ng-template pTemplate="header">
 				<div class="flex gap-2 align-items-center">
 					<span>Stars & DSOs</span>
-					<p-checkbox
-						[(ngModel)]="annotation.request.starsAndDSOs"
-						(ngModelChange)="savePreference()"
-						(onChange)="$event.originalEvent?.stopImmediatePropagation()"
-						class="py-1"
-						[binary]="true" />
+					<neb-checkbox
+						[(value)]="annotation.request.starsAndDSOs"
+						(valueChange)="savePreference()"
+						class="py-1" />
 				</div>
 			</ng-template>
 			<div class="grid mt-2">
 				<div class="col-12">
-					<p-checkbox
+					<neb-checkbox
 						[disabled]="!annotation.request.starsAndDSOs"
-						[(ngModel)]="annotation.request.useSimbad"
-						(ngModelChange)="savePreference()"
+						[(value)]="annotation.request.useSimbad"
+						(valueChange)="savePreference()"
 						class="py-1"
-						[binary]="true"
 						label="Search on SIMBAD Database Service" />
 				</div>
 				<div class="col-12 mt-2">
@@ -196,12 +193,10 @@
 			<ng-template pTemplate="header">
 				<div class="flex gap-2 align-items-center">
 					<span>Minor Planets</span>
-					<p-checkbox
-						[(ngModel)]="annotation.request.minorPlanets"
-						(ngModelChange)="savePreference()"
-						(onChange)="$event.originalEvent?.stopImmediatePropagation()"
-						class="py-1"
-						[binary]="true" />
+					<neb-checkbox
+						[(value)]="annotation.request.minorPlanets"
+						(valueChange)="savePreference()"
+						class="py-1" />
 				</div>
 			</ng-template>
 			<div class="grid mt-2">
@@ -224,12 +219,11 @@
 					</p-floatLabel>
 				</div>
 				<div class="col-7">
-					<p-checkbox
+					<neb-checkbox
 						[disabled]="!annotation.request.minorPlanets"
-						[(ngModel)]="annotation.request.includeMinorPlanetsWithoutMagnitude"
-						(ngModelChange)="savePreference()"
+						[(value)]="annotation.request.includeMinorPlanetsWithoutMagnitude"
+						(valueChange)="savePreference()"
 						class="py-1"
-						[binary]="true"
 						label="Include objects without magnitude" />
 				</div>
 				@if (annotation.request.minorPlanetsMagLimit >= 20 || annotation.request.includeMinorPlanetsWithoutMagnitude) {
@@ -307,10 +301,9 @@
 					</p-floatLabel>
 				</div>
 				<div class="flex align-items-center w-full justify-content-center">
-					<p-checkbox
-						[binary]="true"
+					<neb-checkbox
 						label="Display only filtered annotations"
-						[(ngModel)]="annotation.displayOnlyFiltered" />
+						[(value)]="annotation.displayOnlyFiltered" />
 				</div>
 				<p-scroller
 					[items]="annotation.filtered"
@@ -503,12 +496,11 @@
 					appendTo="body" />
 				<label>Solver</label>
 			</p-floatLabel>
-			<p-checkbox
-				[binary]="true"
+			<neb-checkbox
 				[disabled]="solver.request.type === 'SIRIL' || solver.request.type === 'PIXINSIGHT'"
 				label="Blind"
-				[(ngModel)]="solver.request.blind"
-				(ngModelChange)="savePreference()" />
+				[(value)]="solver.request.blind"
+				(valueChange)="savePreference()" />
 		</div>
 		<div class="col-8">
 			<div class="grid">
@@ -1390,10 +1382,7 @@
 					[style.border-color]="item.color"
 					(click)="selectFOV(item)">
 					<div class="flex align-items-center justify-content-center">
-						<p-checkbox
-							[binary]="true"
-							[(ngModel)]="item.enabled"
-							(onChange)="$event.originalEvent?.stopImmediatePropagation()" />
+						<neb-checkbox [(value)]="item.enabled" />
 					</div>
 					<div class="flex align-items-center flex-wrap gap-1">
 						<p-tag
@@ -1654,10 +1643,10 @@
 			</p-floatLabel>
 		</div>
 		<div class="col-5 flex-column align-items-center justify-content-center gap-1">
-			<span class="text-sm">Transformed</span>
-			<p-checkbox
-				[binary]="true"
-				[(ngModel)]="saveAs.shouldBeTransformed" />
+			<neb-checkbox
+				label="Transformed"
+				[vertical]="true"
+				[(value)]="saveAs.shouldBeTransformed" />
 		</div>
 	</div>
 	<ng-template pTemplate="footer">
@@ -1679,15 +1668,13 @@
 	[style]="{ width: 'min-content', minWidth: '338px' }">
 	<div class="grid">
 		<div class="col-12 flex-column gap-2">
-			<p-checkbox
-				[binary]="true"
-				[(ngModel)]="settings.preference.transformation.useJPEG"
-				(ngModelChange)="savePreference()"
+			<neb-checkbox
+				[(value)]="settings.preference.transformation.useJPEG"
+				(valueChange)="savePreference()"
 				label="JPEG (reduces the loading time but less quality)" />
-			<p-checkbox
-				[binary]="true"
-				[(ngModel)]="settings.preference.pixelated"
-				(ngModelChange)="savePreference()"
+			<neb-checkbox
+				[(value)]="settings.preference.pixelated"
+				(valueChange)="savePreference()"
 				label="Pixelated (scaling algorithm)" />
 		</div>
 	</div>

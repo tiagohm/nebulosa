@@ -635,12 +635,11 @@
 				(ngModelChange)="savePreference()" />
 		</div>
 		<div class="col-12 align-items-center">
-			<p-checkbox
-				[binary]="true"
+			<neb-checkbox
 				[disabled]="!liveStacking.request.enabled"
 				label="Use Camera's calibration group"
-				[(ngModel)]="liveStacking.request.useCalibrationGroup"
-				(ngModelChange)="savePreference()" />
+				[(value)]="liveStacking.request.useCalibrationGroup"
+				(valueChange)="savePreference()" />
 		</div>
 		<div class="col-12 align-items-center">
 			<neb-path-chooser

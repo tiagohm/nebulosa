@@ -118,11 +118,10 @@
 			</p-floatLabel>
 		</div>
 		<div class="col-4 flex flex-column justify-content-center gap-2">
-			<p-checkbox
-				[binary]="true"
+			<neb-checkbox
 				[disabled]="!wheel.connected || moving"
-				[ngModel]="filter.dark"
-				(onChange)="shutterToggled(filter, $event)"
+				[value]="filter.dark"
+				(valueChange)="shutterToggled(filter, $event)"
 				label="Shutter" />
 		</div>
 	</div>

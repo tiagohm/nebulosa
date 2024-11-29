@@ -181,11 +181,10 @@
 					spinnableNumber />
 				<label>Pixel size (µm)</label>
 			</p-floatLabel>
-			<p-checkbox
-				[binary]="true"
-				[(ngModel)]="preference.updateFovOnChange"
+			<neb-checkbox
 				label="Update FOV on width/height change"
-				(ngModelChange)="savePreference()" />
+				[(value)]="preference.updateFovOnChange"
+				(valueChange)="savePreference()" />
 		</div>
 	</div>
 	<ng-template pTemplate="footer">

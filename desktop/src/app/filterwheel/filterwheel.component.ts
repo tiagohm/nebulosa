@@ -1,7 +1,6 @@
 import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, inject } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
 import hotkeys from 'hotkeys-js'
-import { CheckboxChangeEvent } from 'primeng/checkbox'
 import { Subject, Subscription, debounceTime } from 'rxjs'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
@@ -312,8 +311,8 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Tickab
 		}
 	}
 
-	protected shutterToggled(filter: Filter, event: CheckboxChangeEvent) {
-		this.filters.forEach((e) => (e.dark = !!event.checked && e === filter))
+	protected shutterToggled(filter: Filter, checked: boolean) {
+		this.filters.forEach((e) => (e.dark = checked && e === filter))
 		this.preference.shutterPosition = this.filters.find((e) => e.dark)?.position ?? 0
 		this.savePreference()
 	}

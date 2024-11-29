@@ -852,12 +852,11 @@
 			@let groups = 'SATELLITE_GROUP_TYPE' | dropdownOptions;
 
 			@for (group of groups; track $index) {
-				<p-checkbox
-					[binary]="true"
-					[(ngModel)]="satellite.search.filter.groups[group]"
-					(ngModelChange)="savePreference()"
+				<neb-checkbox
+					[(value)]="satellite.search.filter.groups[group]"
+					(valueChange)="savePreference()"
 					[label]="group | enum"
-					class="white-space-nowrap" />
+					[noWrap]="true" />
 			}
 		</div>
 	</div>
@@ -886,10 +885,9 @@
 	[style]="{ width: '80vw' }">
 	<div class="grid">
 		<div class="col-12 flex-column gap-2">
-			<p-checkbox
-				[binary]="true"
-				[(ngModel)]="preference.settings.useTopocentricForMoonPhases"
-				(ngModelChange)="settingsChanged('useTopocentricForMoonPhases')"
+			<neb-checkbox
+				[(value)]="preference.settings.useTopocentricForMoonPhases"
+				(valueChange)="settingsChanged('useTopocentricForMoonPhases')"
 				label="Use topocentric coordinates for Moon phases" />
 		</div>
 	</div>

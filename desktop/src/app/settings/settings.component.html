@@ -4,11 +4,10 @@
 		*ngIf="tab === 'GENERAL'">
 		<div class="grid">
 			<div class="col-12">
-				<p-checkbox
-					[binary]="true"
+				<neb-checkbox
 					label="Check for new version on startup"
-					[(ngModel)]="preference.checkVersion"
-					(ngModelChange)="savePreference()" />
+					[(value)]="preference.checkVersion"
+					(valueChange)="savePreference()" />
 			</div>
 		</div>
 	</div>
