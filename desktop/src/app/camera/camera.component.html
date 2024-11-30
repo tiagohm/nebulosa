@@ -2,55 +2,39 @@
 	<div class="grid py-1 flex align-items-center">
 		<div class="col-8 align-items-center gap-2">
 			<neb-device-name [device]="camera" />
-			<p-button
-				*ngIf="!camera || camera.connected"
-				[disabled]="!camera || running"
-				(onClick)="connect()"
-				icon="mdi mdi-close"
-				size="small"
-				severity="danger"
-				pTooltip="Disconnect"
-				tooltipPosition="bottom"
-				[text]="true" />
-			<p-button
-				*ngIf="!camera.connected"
-				[disabled]="!camera || running"
-				(onClick)="connect()"
-				icon="mdi mdi-connection"
-				size="small"
-				severity="info"
-				pTooltip="Connect"
-				tooltipPosition="bottom"
-				[text]="true" />
+			@if (camera.connected) {
+				<neb-button
+					[disabled]="running"
+					(action)="connect()"
+					icon="mdi mdi-close"
+					severity="danger"
+					tooltip="Disconnect" />
+			} @else {
+				<neb-button
+					[disabled]="running"
+					(action)="connect()"
+					icon="mdi mdi-connection"
+					severity="info"
+					tooltip="Connect" />
+			}
 		</div>
 		<div class="col-4 flex justify-content-end align-items-center gap-2">
-			<p-button
+			<neb-button
 				[disabled]="!camera"
-				[text]="true"
-				[rounded]="true"
 				icon="mdi mdi-image-multiple"
-				(onClick)="openCameraImage()"
-				pTooltip="View image"
-				tooltipPosition="bottom"
-				size="small" />
-			<p-button
+				(action)="openCameraImage()"
+				tooltip="View image" />
+			<neb-button
 				*ngIf="hasCalibration"
 				[disabled]="!camera"
-				[text]="true"
-				[rounded]="true"
 				icon="mdi mdi-wrench"
-				(onClick)="calibrationMenu.show()"
-				pTooltip="Calibration"
-				tooltipPosition="bottom"
-				size="small" />
-			<p-button
+				(action)="calibrationMenu.show()"
+				tooltip="Calibration" />
+			<neb-button
 				*ngIf="canShowMenu"
 				[disabled]="!camera || !camera.connected || running"
-				[text]="true"
-				[rounded]="true"
 				icon="mdi mdi-dots-vertical"
-				(onClick)="cameraMenu.show()"
-				size="small" />
+				(action)="cameraMenu.show()" />
 		</div>
 		<div
 			*ngIf="canShowSavePath"
@@ -146,15 +130,12 @@
 					suffix="℃"
 					[min]="-50"
 					[max]="50" />
-				<p-button
+				<neb-button
 					[disabled]="!camera.connected || !camera.canSetTemperature || running"
-					(onClick)="applySetpointTemperature()"
+					(action)="applySetpointTemperature()"
 					icon="mdi mdi-check"
-					size="small"
 					severity="success"
-					pTooltip="Apply"
-					tooltipPosition="bottom"
-					[text]="true" />
+					tooltip="Apply" />
 			</div>
 		</div>
 	</div>
@@ -266,15 +247,12 @@
 				(ngModelChange)="savePreference()" />
 		</div>
 		<div class="col-3 flex pt-3 flex-row align-items-center justify-content-center">
-			<p-button
+			<neb-button
 				[disabled]="!camera.connected || running"
 				icon="mdi mdi-fullscreen"
-				(onClick)="fullsize()"
+				(action)="fullsize()"
 				severity="info"
-				size="small"
-				pTooltip="Full size"
-				tooltipPosition="bottom"
-				[text]="true" />
+				tooltip="Full size" />
 		</div>
 		<div class="col-3">
 			<p-floatLabel>
@@ -384,52 +362,42 @@
 		</div>
 		<div class="col-12 flex align-items-center justify-content-center gap-1">
 			@if (pausingOrPaused) {
-				<p-button
+				<neb-button
 					*ngIf="canStartOrAbort"
 					[disabled]="status === 'PAUSING'"
 					label="Unpause"
-					(onClick)="unpauseCapture()"
+					(action)="unpauseCapture()"
 					icon="mdi mdi-play"
-					severity="success"
-					size="small"
-					[text]="true" />
+					severity="success" />
 			} @else if (!running) {
-				<p-button
+				<neb-button
 					*ngIf="canStartOrAbort"
 					[disabled]="!camera.connected || running"
 					label="Start"
-					(onClick)="startCapture()"
+					(action)="startCapture()"
 					icon="mdi mdi-play"
-					severity="success"
-					size="small"
-					[text]="true" />
+					severity="success" />
 			}
-			<p-button
+			<neb-button
 				*ngIf="canStartOrAbort && running && !pausingOrPaused"
 				label="Pause"
-				(onClick)="pauseCapture()"
+				(action)="pauseCapture()"
 				icon="mdi mdi-pause"
-				severity="info"
-				size="small"
-				[text]="true" />
-			<p-button
+				severity="info" />
+			<neb-button
 				*ngIf="canStartOrAbort"
 				[disabled]="!camera.connected || !running"
 				label="Abort"
-				(onClick)="abortCapture()"
+				(action)="abortCapture()"
 				icon="mdi mdi-stop"
-				severity="danger"
-				size="small"
-				[text]="true" />
-			<p-button
+				severity="danger" />
+			<neb-button
 				*ngIf="canSave"
 				[disabled]="!camera.connected"
 				label="Save"
-				(onClick)="apply()"
+				(action)="apply()"
 				icon="mdi mdi-content-save"
-				severity="info"
-				size="small"
-				[text]="true" />
+				severity="info" />
 		</div>
 	</div>
 </div>
@@ -580,48 +548,40 @@
 				label="Light"
 				[(value)]="namingFormat.format.light"
 				(valueChange)="savePreference()" />
-			<p-button
-				[text]="true"
+			<neb-button
 				icon="mdi mdi-restore"
-				(onClick)="resetCameraCaptureNamingFormat('LIGHT')"
-				pTooltip="Reset"
-				tooltipPosition="bottom" />
+				(action)="resetCameraCaptureNamingFormat('LIGHT')"
+				tooltip="Reset" />
 		</div>
 		<div class="col-12 gap-1">
 			<neb-input-text
 				label="Dark"
 				[(value)]="namingFormat.format.dark"
 				(valueChange)="savePreference()" />
-			<p-button
-				[text]="true"
+			<neb-button
 				icon="mdi mdi-restore"
-				(onClick)="resetCameraCaptureNamingFormat('DARK')"
-				pTooltip="Reset"
-				tooltipPosition="bottom" />
+				(action)="resetCameraCaptureNamingFormat('DARK')"
+				tooltip="Reset" />
 		</div>
 		<div class="col-12 gap-1">
 			<neb-input-text
 				label="Flat"
 				[(value)]="namingFormat.format.flat"
 				(valueChange)="savePreference()" />
-			<p-button
-				[text]="true"
+			<neb-button
 				icon="mdi mdi-restore"
-				(onClick)="resetCameraCaptureNamingFormat('FLAT')"
-				pTooltip="Reset"
-				tooltipPosition="bottom" />
+				(action)="resetCameraCaptureNamingFormat('FLAT')"
+				tooltip="Reset" />
 		</div>
 		<div class="col-12 gap-1">
 			<neb-input-text
 				label="Bias"
 				[(value)]="namingFormat.format.bias"
 				(valueChange)="savePreference()" />
-			<p-button
-				[text]="true"
+			<neb-button
 				icon="mdi mdi-restore"
-				(onClick)="resetCameraCaptureNamingFormat('BIAS')"
-				pTooltip="Reset"
-				tooltipPosition="bottom" />
+				(action)="resetCameraCaptureNamingFormat('BIAS')"
+				tooltip="Reset" />
 		</div>
 	</div>
 </p-dialog>

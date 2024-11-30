@@ -11,7 +11,9 @@ import { Component, input, model, ViewEncapsulation } from '@angular/core'
 				[readonly]="readonly()"
 				[maxLength]="maxLength()"
 				[placeholder]="placeholder()"
-				[(ngModel)]="value" />
+				[(ngModel)]="value"
+				[pTooltip]="tooltip()"
+				tooltipPosition="bottom" />
 			<label>{{ label() }}</label>
 		</p-floatLabel>
 	`,
@@ -36,4 +38,5 @@ export class InputTextComponent {
 	readonly disabled = input(false)
 	readonly placeholder = input('')
 	readonly readonly = input(false)
+	readonly tooltip = input<string>()
 }

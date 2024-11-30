@@ -6,14 +6,11 @@
 			[devices]="cameras"
 			[(device)]="camera"
 			(deviceChange)="cameraChanged()" />
-		<p-button
-			[text]="true"
+		<neb-button
 			[disabled]="!camera?.name || running"
 			icon="mdi mdi-cog"
-			(onClick)="showCameraDialog()"
-			size="small"
-			pTooltip="Camera"
-			tooltipPosition="bottom" />
+			(action)="showCameraDialog()"
+			tooltip="Camera" />
 		<neb-device-chooser
 			title="FOCUSER"
 			icon="mdi mdi-target"
@@ -165,30 +162,24 @@
 		</p-tabView>
 	</div>
 	<div class="col-12 flex align-items-center justify-content-center gap-1">
-		<p-button
+		<neb-button
 			[disabled]="!camera?.connected || !focuser?.connected || running"
 			label="Start"
-			(onClick)="start()"
+			(action)="start()"
 			icon="mdi mdi-play"
-			severity="success"
-			size="small"
-			[text]="true" />
-		<p-button
+			severity="success" />
+		<neb-button
 			[disabled]="!camera?.connected || !focuser?.connected || !running"
 			label="Abort"
-			(onClick)="stop()"
+			(action)="stop()"
 			icon="mdi mdi-stop"
-			severity="danger"
-			size="small"
-			[text]="true" />
-		<p-button
+			severity="danger" />
+		<neb-button
 			[disabled]="!camera?.connected"
-			(onClick)="openCameraImage()"
+			(action)="openCameraImage()"
 			icon="mdi mdi-image"
-			[text]="true"
-			styleClass="ml-4"
-			pTooltip="View image"
-			tooltipPosition="bottom"
-			size="small" />
+			class="ml-4"
+			tooltip="View image"
+			tooltipPosition="top" />
 	</div>
 </div>

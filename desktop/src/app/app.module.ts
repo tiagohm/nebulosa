@@ -45,6 +45,8 @@ import { TieredMenuModule } from 'primeng/tieredmenu'
 import { ToastModule } from 'primeng/toast'
 import { TooltipModule } from 'primeng/tooltip'
 import { TreeModule } from 'primeng/tree'
+import { ButtonImageComponent } from '../shared/components/button-image.component'
+import { ButtonComponent } from '../shared/components/button.component'
 import { CameraExposureComponent } from '../shared/components/camera-exposure/camera-exposure.component'
 import { CameraInfoComponent } from '../shared/components/camera-info/camera-info.component'
 import { CheckboxComponent } from '../shared/components/checkbox.component'
@@ -53,6 +55,7 @@ import { DeviceListMenuComponent } from '../shared/components/device-list-menu/d
 import { DeviceNameComponent } from '../shared/components/device-name/device-name.component'
 import { DialogMenuComponent } from '../shared/components/dialog-menu/dialog-menu.component'
 import { HistogramComponent } from '../shared/components/histogram/histogram.component'
+import { IndicatorComponent } from '../shared/components/indicator.component'
 import { InputNumberComponent } from '../shared/components/input-number.component'
 import { InputTextComponent } from '../shared/components/input-text.component'
 import { LocationComponent } from '../shared/components/location/location.dialog'
@@ -112,6 +115,8 @@ import { SettingsComponent } from './settings/settings.component'
 		AppComponent,
 		AtlasComponent,
 		AutoFocusComponent,
+		ButtonComponent,
+		ButtonImageComponent,
 		CalculatorComponent,
 		CalibrationComponent,
 		CameraComponent,
@@ -140,6 +145,7 @@ import { SettingsComponent } from './settings/settings.component'
 		HistogramComponent,
 		HomeComponent,
 		ImageComponent,
+		IndicatorComponent,
 		INDIComponent,
 		INDIPropertyComponent,
 		InputNumberComponent,

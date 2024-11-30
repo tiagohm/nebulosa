@@ -5,14 +5,9 @@
 		[readonly]="readonly()"
 		[placeholder]="placeholder() ?? ''"
 		[(value)]="path" />
-	<p-button
+	<neb-button
 		[disabled]="disabled() || readonly()"
 		icon="mdi mdi-folder-open"
-		size="small"
-		[text]="true"
-		(onClick)="choosePath()"
-		pTooltip="{{ directory() ? 'Choose directory' : 'Choose file' }}"
-		tooltipPosition="left"
-		positionTop="1"
-		positionLeft="-1" />
+		(action)="choosePath()"
+		tooltip="{{ directory() ? 'Choose directory' : 'Choose file' }}" />
 </div>

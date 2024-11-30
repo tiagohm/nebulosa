@@ -2,26 +2,21 @@
 	<div class="grid flex align-items-center">
 		<div class="col-12 align-items-center gap-2">
 			<neb-device-name [device]="focuser" />
-			<p-button
-				*ngIf="focuser.connected"
-				[disabled]="!focuser || focuser.moving"
-				(onClick)="connect()"
-				icon="mdi mdi-close"
-				size="small"
-				severity="danger"
-				pTooltip="Disconnect"
-				tooltipPosition="bottom"
-				[text]="true" />
-			<p-button
-				*ngIf="!focuser.connected"
-				[disabled]="!focuser || focuser.moving"
-				(onClick)="connect()"
-				icon="mdi mdi-connection"
-				size="small"
-				severity="info"
-				pTooltip="Connect"
-				tooltipPosition="bottom"
-				[text]="true" />
+			@if (focuser.connected) {
+				<neb-button
+					[disabled]="focuser.moving"
+					(action)="connect()"
+					icon="mdi mdi-close"
+					severity="danger"
+					tooltip="Disconnect" />
+			} @else {
+				<neb-button
+					[disabled]="focuser.moving"
+					(action)="connect()"
+					icon="mdi mdi-connection"
+					severity="info"
+					tooltip="Connect" />
+			}
 		</div>
 		<div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center justify-content-between my-1 gap-1">
 			<div class="flex align-items-center gap-1">
@@ -44,34 +39,25 @@
 				[value]="focuser.position" />
 		</div>
 		<div class="col-3 text-center justify-content-between gap-2">
-			<p-button
+			<neb-button
 				[disabled]="!focuser.connected || !focuser.canAbort || !focuser.moving"
 				icon="mdi mdi-stop"
-				[text]="true"
 				severity="danger"
-				size="small"
-				pTooltip="Abort"
-				tooltipPosition="bottom"
-				(onClick)="abort()" />
-			<p-button
+				tooltip="Abort"
+				(action)="abort()" />
+			<neb-button
 				[disabled]="!focuser.connected || !focuser.canSync || focuser.moving"
-				(onClick)="sync()"
+				(action)="sync()"
 				icon="mdi mdi-sync"
-				[text]="true"
 				severity="info"
-				size="small"
-				pTooltip="Sync"
-				tooltipPosition="bottom" />
+				tooltip="Sync" />
 		</div>
 		<div class="col-12 flex align-items-center gap-1">
-			<p-button
+			<neb-button
 				[disabled]="!focuser.connected || !focuser.canRelativeMove || focuser.moving || !preference.stepsRelative"
-				(onClick)="moveIn()"
+				(action)="moveIn()"
 				icon="mdi mdi-arrow-left-bold"
-				[text]="true"
-				size="small"
-				pTooltip="Move In"
-				tooltipPosition="bottom" />
+				tooltip="Move In" />
 			<neb-input-number
 				label="Relative"
 				[disabled]="!focuser.connected || !focuser.canRelativeMove"
@@ -79,14 +65,11 @@
 				[max]="focuser.maxPosition"
 				[(value)]="preference.stepsRelative"
 				(valueChange)="savePreference()" />
-			<p-button
+			<neb-button
 				[disabled]="!focuser.connected || !focuser.canRelativeMove || focuser.moving || !preference.stepsRelative"
-				(onClick)="moveOut()"
+				(action)="moveOut()"
 				icon="mdi mdi-arrow-right-bold"
-				[text]="true"
-				size="small"
-				pTooltip="Move Out"
-				tooltipPosition="bottom" />
+				tooltip="Move Out" />
 		</div>
 		<div class="col-12 flex justify-content-end align-items-center gap-1">
 			<neb-input-number
@@ -96,15 +79,12 @@
 				[max]="focuser.maxPosition"
 				[(value)]="preference.stepsAbsolute"
 				(valueChange)="savePreference()" />
-			<p-button
+			<neb-button
 				[disabled]="!focuser.connected || !focuser.canAbsoluteMove || focuser.moving || preference.stepsAbsolute === focuser.position"
-				(onClick)="moveTo()"
+				(action)="moveTo()"
 				icon="mdi mdi-check"
-				[text]="true"
 				severity="success"
-				size="small"
-				pTooltip="Move To"
-				tooltipPosition="bottom" />
+				tooltip="Move To" />
 		</div>
 	</div>
 </div>

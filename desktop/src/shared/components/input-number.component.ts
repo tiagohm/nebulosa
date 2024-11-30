@@ -46,7 +46,7 @@ export class InputNumberComponent {
 	readonly min = input<number>()
 	readonly max = input<number>()
 	readonly step = input(1)
-	readonly value = model<number | undefined>(0)
+	readonly value = model<number>(0)
 	readonly disabled = input(false)
 	readonly fractionDigits = input(0)
 	readonly format = input(true)

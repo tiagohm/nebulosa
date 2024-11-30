@@ -8,8 +8,8 @@ export interface StarDetectorSettings {
 
 export interface StarDetectionRequest extends StarDetectorSettings {
 	type: StarDetectorType
-	minSNR?: number
-	maxStars?: number
+	minSNR: number
+	maxStars: number
 }
 
 export const DEFAULT_STAR_DETECTOR_SETTINGS: StarDetectorSettings = {

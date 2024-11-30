@@ -133,13 +133,10 @@
 	*ngIf="hasROI"
 	class="roi-coordinates fixed flex flex-row align-items-center gap-2">
 	<span>X: {{ imageROI.area.x.toFixed(0) }} Y: {{ imageROI.area.y.toFixed(0) }} W: {{ imageROI.area.width.toFixed(0) }} H: {{ imageROI.area.height.toFixed(0) }}</span>
-	<p-button
-		[text]="true"
-		(onClick)="roiForCamera()"
+	<neb-button
+		(action)="roiForCamera()"
 		icon="mdi mdi-camera-iris"
-		size="small"
-		pTooltip="Apply"
-		tooltipPosition="bottom" />
+		tooltip="Apply" />
 </div>
 
 <p-contextMenu
@@ -296,13 +293,11 @@
 		</p-tabPanel>
 	</p-tabView>
 	<ng-template pTemplate="footer">
-		<p-button
+		<neb-button
 			[disabled]="annotation.running || (!annotation.request.starsAndDSOs && !annotation.request.minorPlanets)"
 			icon="mdi mdi-check"
 			label="Annotate"
-			(onClick)="annotateImage()"
-			[text]="true"
-			size="small" />
+			(action)="annotateImage()" />
 	</ng-template>
 </p-dialog>
 
@@ -377,37 +372,29 @@
 	</div>
 	<ng-template pTemplate="footer">
 		<div class="col-12 flex justify-content-center">
-			<p-button
+			<neb-button
 				[disabled]="!astronomicalObject.info"
-				(onClick)="mountSync(astronomicalObject.info!)"
+				(action)="mountSync(astronomicalObject.info!)"
 				icon="mdi mdi-sync"
 				label="Sync"
-				[text]="true"
-				severity="info"
-				size="small" />
-			<p-button
+				severity="info" />
+			<neb-button
 				[disabled]="!astronomicalObject.info"
-				(onClick)="mountGoTo(astronomicalObject.info!)"
+				(action)="mountGoTo(astronomicalObject.info!)"
 				icon="mdi mdi-telescope"
 				label="Go To"
-				[text]="true"
-				severity="success"
-				size="small" />
-			<p-button
+				severity="success" />
+			<neb-button
 				[disabled]="!astronomicalObject.info"
-				(onClick)="mountSlew(astronomicalObject.info!)"
+				(action)="mountSlew(astronomicalObject.info!)"
 				icon="mdi mdi-telescope"
 				label="Slew"
-				[text]="true"
-				severity="success"
-				size="small" />
-			<p-button
+				severity="success" />
+			<neb-button
 				[disabled]="!astronomicalObject.info"
-				(onClick)="frame(astronomicalObject.info!)"
+				(action)="frame(astronomicalObject.info!)"
 				icon="mdi mdi-image"
-				label="Frame"
-				[text]="true"
-				size="small" />
+				label="Frame" />
 		</div>
 	</ng-template>
 </p-dialog>
@@ -526,55 +513,43 @@
 		</div>
 		<div class="grid mb-2 mt-2">
 			<div class="col-12 flex justify-content-center">
-				<p-button
+				<neb-button
 					[disabled]="solver.running || !solver.solved.solved"
-					(onClick)="mountSync(solver.solved)"
+					(action)="mountSync(solver.solved)"
 					icon="mdi mdi-sync"
 					label="Sync"
-					[text]="true"
-					severity="info"
-					size="small" />
-				<p-button
+					severity="info" />
+				<neb-button
 					[disabled]="solver.running || !solver.solved.solved"
-					(onClick)="mountGoTo(solver.solved)"
+					(action)="mountGoTo(solver.solved)"
 					icon="mdi mdi-telescope"
 					label="Go To"
-					[text]="true"
-					severity="success"
-					size="small" />
-				<p-button
+					severity="success" />
+				<neb-button
 					[disabled]="solver.running || !solver.solved.solved"
-					(onClick)="mountSlew(solver.solved)"
+					(action)="mountSlew(solver.solved)"
 					icon="mdi mdi-telescope"
 					label="Slew"
-					[text]="true"
-					severity="success"
-					size="small" />
-				<p-button
+					severity="success" />
+				<neb-button
 					[disabled]="solver.running || !solver.solved.solved"
-					(onClick)="frame(solver.solved)"
+					(action)="frame(solver.solved)"
 					icon="mdi mdi-image"
-					label="Frame"
-					[text]="true"
-					size="small" />
+					label="Frame" />
 			</div>
 		</div>
 
-		<p-button
+		<neb-button
 			[disabled]="!solver.running || !canPlateSolve"
 			icon="mdi mdi-stop"
 			label="Stop"
-			(onClick)="solverStop()"
-			[text]="true"
-			size="small"
+			(action)="solverStop()"
 			severity="danger" />
-		<p-button
+		<neb-button
 			[disabled]="solver.running || !canPlateSolve"
 			icon="mdi mdi-sigma"
 			label="Solve"
-			(onClick)="solverStart()"
-			[text]="true"
-			size="small" />
+			(action)="solverStart()" />
 	</ng-template>
 </p-dialog>
 
@@ -633,43 +608,33 @@
 					[(value)]="stretch.transformation.meanBackground" />
 				<label></label>
 			</p-floatLabel>
-			<p-button
-				[text]="true"
+			<neb-button
 				icon="mdi mdi-check"
 				severity="success"
-				(onClick)="applyAutoStretchMeanBackground()"
-				pTooltip="Apply"
-				tooltipPosition="bottom" />
-			<p-button
-				[text]="true"
+				(action)="applyAutoStretchMeanBackground()"
+				tooltip="Apply" />
+			<neb-button
 				icon="mdi mdi-restore"
 				severity="info"
-				(onClick)="restoreAutoStretchMeanBackground()"
-				pTooltip="Reset"
-				tooltipPosition="bottom" />
+				(action)="restoreAutoStretchMeanBackground()"
+				tooltip="Reset" />
 		</div>
 	</div>
 	<ng-template pTemplate="footer">
-		<p-button
+		<neb-button
 			icon="mdi mdi-auto-fix"
 			label="Auto"
-			(onClick)="autoStretch()"
-			[text]="true"
-			severity="info"
-			size="small" />
-		<p-button
+			(action)="autoStretch()"
+			severity="info" />
+		<neb-button
 			icon="mdi mdi-restore"
 			label="Reset"
-			(onClick)="resetStretch()"
-			[text]="true"
-			severity="danger"
-			size="small" />
-		<p-button
+			(action)="resetStretch()"
+			severity="danger" />
+		<neb-button
 			icon="mdi mdi-check"
 			label="Stretch"
-			(onClick)="stretchImage()"
-			[text]="true"
-			size="small" />
+			(action)="stretchImage()" />
 	</ng-template>
 </p-dialog>
 
@@ -717,12 +682,10 @@
 		</div>
 	</div>
 	<ng-template pTemplate="footer">
-		<p-button
+		<neb-button
 			icon="mdi mdi-check"
 			label="Apply"
-			(onClick)="scnrImage()"
-			[text]="true"
-			size="small" />
+			(action)="scnrImage()" />
 	</ng-template>
 </p-dialog>
 
@@ -952,13 +915,11 @@
 		</div>
 	</div>
 	<ng-template pTemplate="footer">
-		<p-button
+		<neb-button
 			[disabled]="starDetector.running"
 			icon="mdi mdi-check"
 			label="Detect"
-			(onClick)="detectStars()"
-			[text]="true"
-			size="small" />
+			(action)="detectStars()" />
 	</ng-template>
 </p-dialog>
 
@@ -979,12 +940,10 @@
 				[style]="{ width: '23px', height: '23px' }" />
 		</div>
 		<div class="col-6 align-items-center justify-content-start gap-2">
-			<p-button
-				[text]="true"
+			<neb-button
 				icon="mdi mdi-telescope"
-				(onClick)="showFOVTelescopeDialog()"
-				pTooltip="Choose telescope"
-				tooltipPosition="bottom" />
+				(action)="showFOVTelescopeDialog()"
+				tooltip="Choose telescope" />
 			<neb-input-number
 				label="Focal Length (mm)"
 				[(value)]="fov.selected.focalLength"
@@ -998,12 +957,10 @@
 		</div>
 		<div class="col-4 justify-content-center align-items-center">Resolution (px)</div>
 		<div class="col-4 justify-content-center align-items-center gap-2">
-			<p-button
-				[text]="true"
+			<neb-button
 				icon="mdi mdi-camera-iris"
-				(onClick)="showFOVCameraDialog()"
-				pTooltip="Choose camera"
-				tooltipPosition="bottom" />
+				(action)="showFOVCameraDialog()"
+				tooltip="Choose camera" />
 		</div>
 		<div class="col-4 justify-content-center align-items-center">Pixel Size (µm)</div>
 		<div class="col-3">
@@ -1073,15 +1030,12 @@
 				(valueChange)="saveFOV(false)" />
 		</div>
 		<div class="col-1 flex align-items-center justify-content-center gap-2">
-			<p-button
+			<neb-button
 				[disabled]="!canAddFOV"
-				[text]="true"
 				icon="mdi mdi-plus"
 				severity="success"
-				size="small"
-				pTooltip="Add"
-				tooltipPosition="bottom"
-				(onClick)="addFOV()" />
+				tooltip="Add"
+				(action)="addFOV()" />
 		</div>
 		<div
 			class="col-12 p-0 flex-column overflow-auto mt-2 gap-1"
@@ -1131,23 +1085,15 @@
 						}
 					</div>
 					<div class="flex px-1 flex-column gap-0 align-items-center justify-content-between">
-						<p-button
-							[text]="true"
-							[rounded]="true"
-							(onClick)="frameFOV(item); $event.stopImmediatePropagation()"
+						<neb-button
+							(action)="frameFOV(item)"
 							icon="mdi mdi-image"
-							size="small"
-							pTooltip="Frame"
-							tooltipPosition="bottom" />
-						<p-button
-							[text]="true"
-							[rounded]="true"
+							tooltip="Frame" />
+						<neb-button
 							severity="danger"
 							icon="mdi mdi-delete"
-							size="small"
-							pTooltip="Remove"
-							tooltipPosition="bottom"
-							(onClick)="deleteFOV(item); $event.stopImmediatePropagation()" />
+							tooltip="Remove"
+							(action)="deleteFOV(item)" />
 					</div>
 				</div>
 			}
@@ -1189,13 +1135,11 @@
 		</div>
 	</div>
 	<ng-template pTemplate="footer">
-		<p-button
+		<neb-button
 			[disabled]="!fov.camera"
 			icon="mdi mdi-check"
 			label="Choose"
-			(onClick)="chooseCamera()"
-			[text]="true"
-			size="small" />
+			(action)="chooseCamera()" />
 	</ng-template>
 </p-dialog>
 
@@ -1232,13 +1176,11 @@
 		</div>
 	</div>
 	<ng-template pTemplate="footer">
-		<p-button
+		<neb-button
 			[disabled]="!fov.telescope"
 			icon="mdi mdi-check"
 			label="Choose"
-			(onClick)="chooseTelescope()"
-			[text]="true"
-			size="small" />
+			(action)="chooseTelescope()" />
 	</ng-template>
 </p-dialog>
 
@@ -1269,14 +1211,11 @@
 		</div>
 		@if (imageInfo) {
 			<div class="col-2">
-				<p-button
+				<neb-button
 					[disabled]="!hasROI"
-					[text]="true"
 					icon="mdi mdi-artboard"
-					size="small"
-					pTooltip="ROI Size"
-					tooltipPosition="bottom"
-					(onClick)="useROIAreaForSaveAs()" />
+					tooltip="ROI Size"
+					(action)="useROIAreaForSaveAs()" />
 			</div>
 			<div class="col-5">
 				<neb-input-number
@@ -1293,13 +1232,10 @@
 					[(value)]="saveAs.subFrame.y" />
 			</div>
 			<div class="col-2">
-				<p-button
-					[text]="true"
+				<neb-button
 					icon="mdi mdi-restore"
-					size="small"
-					pTooltip="Image Size"
-					tooltipPosition="bottom"
-					(onClick)="useImageAreaForSaveAs()" />
+					tooltip="Image Size"
+					(action)="useImageAreaForSaveAs()" />
 			</div>
 			<div class="col-5">
 				<neb-input-number
@@ -1338,13 +1274,11 @@
 		</div>
 	</div>
 	<ng-template pTemplate="footer">
-		<p-button
+		<neb-button
 			[disabled]="!saveAs.path"
 			icon="mdi mdi-content-save"
 			label="Save"
-			(onClick)="saveImageAs()"
-			[text]="true"
-			size="small" />
+			(action)="saveImageAs()" />
 	</ng-template>
 </p-dialog>
 
@@ -1395,22 +1329,18 @@
 				[fractionDigits]="2" />
 		</div>
 		<div class="col-12 flex-row align-items-center justify-content-center gap-1">
-			<p-button
+			<neb-button
 				label="0°"
-				[text]="true"
-				(onClick)="rotate(0)" />
-			<p-button
+				(action)="rotate(0)" />
+			<neb-button
 				label="90°"
-				[text]="true"
-				(onClick)="rotate(90)" />
-			<p-button
+				(action)="rotate(90)" />
+			<neb-button
 				label="180°"
-				[text]="true"
-				(onClick)="rotate(180)" />
-			<p-button
+				(action)="rotate(180)" />
+			<neb-button
 				label="270°"
-				[text]="true"
-				(onClick)="rotate(270)" />
+				(action)="rotate(270)" />
 		</div>
 	</div>
 </p-dialog>

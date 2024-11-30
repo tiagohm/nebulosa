@@ -26,7 +26,6 @@ function scrollPageOf(element: Element) {
 @Component({
 	selector: 'neb-home',
 	templateUrl: 'home.component.html',
-	styleUrls: ['home.component.scss'],
 	encapsulation: ViewEncapsulation.None,
 })
 export class HomeComponent implements AfterContentInit {
@@ -669,7 +668,7 @@ export class HomeComponent implements AfterContentInit {
 		}
 
 		let page = 0
-		const scrollChidren = document.getElementsByClassName('scroll-child')
+		const scrollChidren = document.querySelectorAll('[scroll-page]')
 
 		for (let i = 0; i < scrollChidren.length; i++) {
 			const child = scrollChidren[i]
@@ -684,14 +683,8 @@ export class HomeComponent implements AfterContentInit {
 		event.stopImmediatePropagation()
 	}
 
-	protected scrollTo(event: Event, page: number) {
-		this.page = page
-		this.scrollToPage(page)
-		event.stopImmediatePropagation()
-	}
-
 	protected scrollToPage(page: number) {
-		const scrollChidren = document.getElementsByClassName('scroll-child')
+		const scrollChidren = document.querySelectorAll('[scroll-page]')
 
 		for (let i = 0; i < scrollChidren.length; i++) {
 			const child = scrollChidren[i]

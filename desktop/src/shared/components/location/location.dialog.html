@@ -51,12 +51,10 @@
 <div
 	*ngIf="isDialog"
 	class="p-dialog-footer px-0">
-	<p-button
+	<neb-button
 		[disabled]="!location.name"
 		icon="mdi mdi-check"
 		label="OK"
-		(onClick)="save()"
-		[text]="true"
-		severity="success"
-		size="small" />
+		(action)="save()"
+		severity="success" />
 </div>

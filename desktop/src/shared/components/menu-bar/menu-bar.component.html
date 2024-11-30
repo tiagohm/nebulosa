@@ -43,16 +43,12 @@
 					[value]="item.badge"
 					styleClass="absolute flex justify-content-center align-items-center top-0"
 					[style]="{ width: '14px', minWidth: '14px', height: '14px', minHeight: '14px', right: '-2px' }" />
-				<p-button
-					[text]="true"
-					[rounded]="true"
+				<neb-button
 					[icon]="item.icon"
 					[disabled]="item.disabled"
-					[pTooltip]="item.tooltip ?? item.label"
-					[tooltipPosition]="item.tooltipPosition ?? 'bottom'"
+					[tooltip]="item.tooltip ?? item.label"
 					[severity]="item.severity"
-					(onClick)="item.command?.({ originalEvent: $event, item: item, index: i }); $event.stopImmediatePropagation()"
-					size="small" />
+					(action)="item.command?.({ originalEvent: $event, item: item, index: i })" />
 			}
 		}
 	</span>

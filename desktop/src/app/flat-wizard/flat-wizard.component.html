@@ -7,14 +7,11 @@
 				[devices]="cameras"
 				[(device)]="camera"
 				(deviceChange)="cameraChanged()" />
-			<p-button
-				[text]="true"
+			<neb-button
 				[disabled]="!camera?.id || running"
 				icon="mdi mdi-cog"
-				size="small"
-				(onClick)="showCameraDialog()"
-				pTooltip="Camera"
-				tooltipPosition="bottom" />
+				(action)="showCameraDialog()"
+				tooltip="Camera" />
 			<neb-device-chooser
 				title="FILTER WHEEL"
 				icon="mdi mdi-palette"
@@ -100,22 +97,18 @@
 	</div>
 	<div class="grid mt-1">
 		<div class="col-12 flex align-items-center justify-content-center gap-1">
-			<p-button
+			<neb-button
 				[disabled]="!camera?.connected || !request.capture.savePath || running"
 				label="Start"
-				(onClick)="start()"
+				(action)="start()"
 				icon="mdi mdi-play"
-				severity="success"
-				size="small"
-				[text]="true" />
-			<p-button
+				severity="success" />
+			<neb-button
 				[disabled]="!camera?.connected || !running"
 				label="Abort"
-				(onClick)="stop()"
+				(action)="stop()"
 				icon="mdi mdi-stop"
-				severity="danger"
-				size="small"
-				[text]="true" />
+				severity="danger" />
 		</div>
 	</div>
 </div>

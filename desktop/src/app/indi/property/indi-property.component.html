@@ -7,50 +7,34 @@
 		<div
 			class="flex align-items-center gap-1"
 			*ngIf="property.type === 'SWITCH' && property.rule === 'ONE_OF_MANY'">
-			<p-button
+			<neb-button
 				*ngFor="let item of property.items"
 				[disabled]="property.perm === 'RO' || disabled"
 				[label]="item.label"
-				(onClick)="sendSwitch(item)"
-				icon="pi"
-				[severity]="item.value ? 'success' : 'danger'"
-				size="small"
-				[text]="true">
-				<span
-					[class.mdi-check]="item.value"
-					[class.mdi-close]="!item.value"
-					class="mdi"></span>
-			</p-button>
+				(action)="sendSwitch(item)"
+				icon="mdi mdi-{{item.value ? 'check' : 'close'}}"
+				[severity]="item.value ? 'success' : 'danger'"/>
 		</div>
 		<div
 			class="flex align-items-center gap-1"
 			*ngIf="property.type === 'SWITCH' && property.rule === 'AT_MOST_ONE'">
-			<p-button
+			<neb-button
 				*ngFor="let item of property.items"
 				[disabled]="property.perm === 'RO' || disabled"
 				[label]="item.label"
-				(onClick)="sendSwitch(item)"
-				icon="mdi mdi-check"
-				size="small"
-				[text]="true" />
+				(action)="sendSwitch(item)"
+				icon="mdi mdi-check" />
 		</div>
 		<div
 			class="flex align-items-center gap-1"
 			*ngIf="property.type === 'SWITCH' && property.rule === 'ANY_OF_MANY'">
-			<p-button
+			<neb-button
 				*ngFor="let item of property.items"
 				[disabled]="property.perm === 'RO' || disabled"
 				[label]="item.label"
-				(onClick)="sendSwitch(item)"
-				icon="pi"
-				[severity]="item.value ? 'success' : 'danger'"
-				size="small"
-				[text]="true">
-				<span
-					[class.mdi-check]="item.value"
-					[class.mdi-close]="!item.value"
-					class="mdi"></span>
-			</p-button>
+				(action)="sendSwitch(item)"
+				icon="mdi mdi-{{item.value ? 'check' : 'close'}}"
+				[severity]="item.value ? 'success' : 'danger'"/>
 		</div>
 		<div
 			class="grid flex align-items-center"
@@ -77,14 +61,12 @@
 				</div>
 			</div>
 			<div class="col-3 text-center">
-				<p-button
-					[disabled]="disabled"
+				<neb-button
 					*ngIf="property.perm !== 'RO'"
+					[disabled]="disabled"
 					label="Send"
-					(onClick)="sendNumber()"
-					icon="mdi mdi-send"
-					size="small"
-					[text]="true" />
+					(action)="sendNumber()"
+					icon="mdi mdi-send" />
 			</div>
 		</div>
 		<div
@@ -112,14 +94,12 @@
 				</div>
 			</div>
 			<div class="col-3 text-center">
-				<p-button
-					[disabled]="disabled"
+				<neb-button
 					*ngIf="property.perm !== 'RO'"
+					[disabled]="disabled"
 					label="Send"
-					(onClick)="sendText()"
-					icon="mdi mdi-send"
-					size="small"
-					[text]="true" />
+					(action)="sendText()"
+					icon="mdi mdi-send" />
 			</div>
 		</div>
 	</div>

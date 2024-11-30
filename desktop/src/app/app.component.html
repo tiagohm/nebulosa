@@ -13,49 +13,28 @@
 	<span
 		class="separator flex justify-content-center"
 		*ngIf="topMenu.length"></span>
-	<p-button
+	<neb-button
 		*ngIf="pinned && !modal"
-		[text]="true"
-		[rounded]="true"
-		size="small"
 		icon="mdi mdi-sm mdi-pin text-gray-200"
-		(onClick)="pin()"
-		pTooltip="Unpin Window"
-		tooltipPosition="bottom"
-		styleClass="select-none cursor-pointer"></p-button>
-	<p-button
+		(action)="pin()"
+		tooltip="Unpin Window" />
+	<neb-button
 		*ngIf="!pinned && !modal"
-		[text]="true"
-		[rounded]="true"
-		size="small"
 		icon="mdi mdi-sm mdi-pin-off text-gray-200"
-		(onClick)="pin()"
-		pTooltip="Pin Window"
-		tooltipPosition="bottom"
-		styleClass="select-none cursor-pointer"></p-button>
-	<p-button
+		(action)="pin()"
+		tooltip="Pin Window" />
+	<neb-button
 		*ngIf="!modal"
-		[text]="true"
-		[rounded]="true"
-		size="small"
 		icon="mdi mdi-sm mdi-window-minimize text-gray-200"
-		(onClick)="minimize()"
-		styleClass="select-none cursor-pointer"></p-button>
-	<p-button
+		(action)="minimize()" />
+	<neb-button
 		*ngIf="!modal && maximizable"
-		[text]="true"
-		[rounded]="true"
-		size="small"
 		icon="mdi mdi-sm mdi-window-maximize text-gray-200"
-		(onClick)="maximize()"
-		styleClass="select-none cursor-pointer"></p-button>
-	<p-button
-		[text]="true"
-		[rounded]="true"
-		size="small"
+		(action)="maximize()" />
+	<neb-button
+		class="mr-1"
 		icon="mdi mdi-sm mdi-window-close text-danger"
-		(onClick)="close()"
-		styleClass="select-none cursor-pointer mr-1"></p-button>
+		(action)="close()" />
 </section>
 
 <section id="main">

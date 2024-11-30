@@ -7,14 +7,11 @@
 				[devices]="cameras"
 				[(device)]="camera"
 				(deviceChange)="cameraChanged()" />
-			<p-button
-				[text]="true"
+			<neb-button
 				[disabled]="!camera?.name || running"
 				icon="mdi mdi-cog"
-				(onClick)="showCameraDialog()"
-				size="small"
-				pTooltip="Camera"
-				tooltipPosition="bottom" />
+				(action)="showCameraDialog()"
+				tooltip="Camera" />
 			@if (tab === 0) {
 				<neb-device-chooser
 					title="MOUNT"
@@ -135,49 +132,39 @@
 					<div class="grid mt-2">
 						<div class="col-12 flex align-items-center justify-content-center gap-1">
 							@if (pausingOrPaused) {
-								<p-button
+								<neb-button
 									[disabled]="status === 'PAUSING'"
 									label="Unpause"
-									(onClick)="tppaUnpause()"
+									(action)="tppaUnpause()"
 									icon="mdi mdi-play"
-									severity="success"
-									size="small"
-									[text]="true" />
+									severity="success" />
 							} @else if (!running) {
-								<p-button
+								<neb-button
 									[disabled]="!camera || !camera.connected || !mount || !mount.connected || mount.parked || mount.parking || mount.slewing || running"
 									label="Start"
-									(onClick)="tppaStart()"
+									(action)="tppaStart()"
 									icon="mdi mdi-play"
-									severity="success"
-									size="small"
-									[text]="true" />
+									severity="success" />
 							}
-							<p-button
+							<neb-button
 								*ngIf="running && !pausingOrPaused"
 								label="Pause"
-								(onClick)="tppaPause()"
+								(action)="tppaPause()"
 								icon="mdi mdi-pause"
-								severity="info"
-								size="small"
-								[text]="true" />
-							<p-button
+								severity="info" />
+							<neb-button
 								[disabled]="!camera || !camera.connected || !mount || !mount.connected || !running"
 								label="Abort"
-								(onClick)="tppaStop()"
+								(action)="tppaStop()"
 								icon="mdi mdi-stop"
-								severity="danger"
-								size="small"
-								[text]="true" />
-							<p-button
+								severity="danger" />
+							<neb-button
 								[disabled]="!camera?.connected"
-								(onClick)="openCameraImage()"
+								(action)="openCameraImage()"
 								icon="mdi mdi-image"
-								[text]="true"
-								styleClass="ml-4"
-								pTooltip="View image"
-								tooltipPosition="bottom"
-								size="small" />
+								class="ml-4"
+								tooltip="View image"
+								tooltipPosition="top" />
 						</div>
 					</div>
 				</p-tabPanel>
@@ -216,44 +203,36 @@
 					</div>
 					<div class="grid mt-2">
 						<div class="col-12 flex align-items-center justify-content-center gap-1">
-							<p-button
+							<neb-button
 								[disabled]="!camera || !camera.connected || !guideOutput || !guideOutput.connected || running"
 								label="Start"
-								(onClick)="darvStart()"
+								(action)="darvStart()"
 								icon="mdi mdi-play"
-								severity="success"
-								size="small"
-								[text]="true" />
-							<p-button
+								severity="success" />
+							<neb-button
 								[disabled]="!camera || !camera.connected || !guideOutput || !guideOutput.connected || !running"
 								label="Abort"
-								(onClick)="darvStop()"
+								(action)="darvStop()"
 								icon="mdi mdi-stop"
-								severity="danger"
-								size="small"
-								[text]="true" />
-							<p-button
+								severity="danger" />
+							<neb-button
 								[disabled]="!camera?.connected"
-								(onClick)="openCameraImage()"
+								(action)="openCameraImage()"
 								icon="mdi mdi-image"
-								[text]="true"
-								styleClass="ml-4"
-								pTooltip="View image"
-								tooltipPosition="bottom"
-								size="small"
-								[text]="true" />
+								class="ml-4"
+								tooltip="View image"
+								tooltipPosition="top" />
 						</div>
 					</div>
 				</p-tabPanel>
 			</p-tabView>
 		</div>
-		<p-button
-			[text]="true"
+		<neb-button
 			severity="info"
 			icon="mdi mdi-information"
-			styleClass="absolute"
+			class="absolute"
 			[style]="{ right: '8px', top: '5px' }"
-			(onClick)="tab === 0 ? tppaInfo.toggle($event) : darvInfo.toggle($event)" />
+			(action)="tab === 0 ? tppaInfo.toggle($event) : darvInfo.toggle($event)" />
 
 		<p-overlayPanel
 			#tppaInfo

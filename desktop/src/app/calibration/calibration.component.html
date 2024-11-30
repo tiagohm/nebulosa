@@ -7,16 +7,14 @@
 					<div class="grid px-3 mt-1">
 						<div class="col-12 flex align-items-center justify-content-between">
 							<div class="flex align-items-center justify-content-start gap-2">
-								<p-button
+								<neb-button
 									label="Files"
 									icon="mdi mdi-file-plus"
-									size="small"
-									(onClick)="openFilesToUpload(key)" />
-								<p-button
+									(action)="openFilesToUpload(key)" />
+								<neb-button
 									label="Directory"
 									icon="mdi mdi-folder-plus"
-									size="small"
-									(onClick)="openDirectoryToUpload(key)" />
+									(action)="openDirectoryToUpload(key)" />
 							</div>
 							<span class="text-sm text-gray-500">{{ this.frames.get(key)?.length ?? 0 }} frames</span>
 							<div class="flex align-items-center justify-content-end gap-2">
@@ -25,12 +23,9 @@
 									[model]="groupModel"
 									(onShow)="activeGroup = key"
 									[popup]="true" />
-								<p-button
+								<neb-button
 									icon="mdi mdi-dots-vertical"
-									[text]="true"
-									[rounded]="true"
-									size="small"
-									(onClick)="groupMenu.toggle($event)" />
+									(action)="groupMenu.toggle($event)" />
 							</div>
 						</div>
 						<div class="col-12">
@@ -72,33 +67,19 @@
 													</div>
 												</div>
 												<div class="flex align-items-center justify-content-end gap-1">
-													<p-button
+													<neb-button
 														icon="mdi mdi-image"
-														[text]="true"
-														[rounded]="true"
-														pTooltip="View image"
-														tooltipPosition="bottom"
-														size="small"
-														(onClick)="openFrame(item); $event.stopImmediatePropagation()" />
-													<p-button
-														[text]="true"
-														[rounded]="true"
+														tooltip="View image"
+														(action)="openFrame(item)" />
+													<neb-button
 														icon="mdi mdi-pencil"
-														size="small"
-														pTooltip="Rename Group"
-														tooltipPosition="bottom"
-														styleClass="p-button-sm"
-														(onClick)="showEditGroupDialog(item); $event.stopImmediatePropagation()" />
-													<p-button
-														[text]="true"
-														[rounded]="true"
+														tooltip="Rename Group"
+														(action)="showEditGroupDialog(item)" />
+													<neb-button
 														icon="mdi mdi-delete"
 														severity="danger"
-														size="small"
-														pTooltip="Remove"
-														tooltipPosition="bottom"
-														styleClass="p-button-sm"
-														(onClick)="deleteFrame(item, frameListBox); $event.stopImmediatePropagation()" />
+														tooltip="Remove"
+														(action)="deleteFrame(item, frameListBox)" />
 												</div>
 											</div>
 										</div>
@@ -126,12 +107,10 @@
 		</div>
 	</div>
 	<ng-template pTemplate="footer">
-		<p-button
+		<neb-button
 			[disabled]="!groupDialog.group.length"
-			[text]="true"
 			icon="mdi mdi-check"
 			label="OK"
-			size="small"
-			(onClick)="groupDialog.save?.()" />
+			(action)="groupDialog.save?.()" />
 	</ng-template>
 </p-dialog>

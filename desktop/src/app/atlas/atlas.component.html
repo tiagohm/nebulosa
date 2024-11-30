@@ -172,15 +172,12 @@
 								<neb-input-text
 									label="Search"
 									[(value)]="minorPlanet.search.text"
-									pTooltip="Enter the IAU number, designation, name or SPK-ID for the object of interest."
-									tooltipPosition="bottom" />
-								<p-button
+									tooltip="Enter the IAU number, designation, name or SPK-ID for the object of interest." />
+								<neb-button
 									[disabled]="minorPlanet.search.text.length < 3"
-									(onClick)="searchMinorPlanet()"
+									(action)="searchMinorPlanet()"
 									icon="mdi mdi-magnify"
-									severity="info"
-									size="small"
-									[text]="true" />
+									severity="info" />
 							</div>
 							<span
 								class="text-xs absolute text-gray-500"
@@ -230,12 +227,10 @@
 									[max]="100"
 									[step]="0.1"
 									[(value)]="minorPlanet.closeApproach.lunarDistance" />
-								<p-button
-									(onClick)="closeApproachesOfMinorPlanets()"
+								<neb-button
+									(action)="closeApproachesOfMinorPlanets()"
 									icon="mdi mdi-magnify"
-									severity="info"
-									size="small"
-									[text]="true" />
+									severity="info" />
 							</div>
 							<span
 								class="text-xs absolute text-gray-500"
@@ -305,21 +300,15 @@
 							label="Search"
 							[(value)]="skyObject.search.filter.text" />
 						<div class="flex flex-row gap-1">
-							<p-button
-								(onClick)="searchSkyObject()"
+							<neb-button
+								(action)="searchSkyObject()"
 								icon="mdi mdi-magnify"
-								size="small"
 								severity="info"
-								[text]="true"
-								pTooltip="Search"
-								tooltipPosition="bottom" />
-							<p-button
-								(onClick)="skyObject.search.showDialog = true"
+								tooltip="Search" />
+							<neb-button
+								(action)="skyObject.search.showDialog = true"
 								icon="mdi mdi-filter"
-								size="small"
-								[text]="true"
-								pTooltip="Filter"
-								tooltipPosition="bottom" />
+								tooltip="Filter" />
 						</div>
 					</div>
 				</div>
@@ -396,21 +385,15 @@
 							label="Search"
 							[(value)]="satellite.search.filter.text" />
 						<div class="flex flex-row gap-1">
-							<p-button
-								(onClick)="searchSatellite()"
+							<neb-button
+								(action)="searchSatellite()"
 								icon="mdi mdi-magnify"
-								size="small"
 								severity="info"
-								[text]="true"
-								pTooltip="Search"
-								tooltipPosition="bottom" />
-							<p-button
-								(onClick)="satellite.search.showDialog = true"
+								tooltip="Search" />
+							<neb-button
+								(action)="satellite.search.showDialog = true"
 								icon="mdi mdi-filter"
-								size="small"
-								[text]="true"
-								pTooltip="Filter"
-								tooltipPosition="bottom" />
+								tooltip="Filter" />
 						</div>
 					</div>
 				</div>
@@ -554,37 +537,29 @@
 					</a>
 				</div>
 				<div class="col-12 pt-0 flex justify-content-center">
-					<p-button
+					<neb-button
 						[disabled]="!body.name"
-						[text]="true"
 						severity="info"
-						(onClick)="mountSync()"
+						(action)="mountSync()"
 						icon="mdi mdi-sync"
-						label="Sync"
-						size="small" />
-					<p-button
+						label="Sync" />
+					<neb-button
 						[disabled]="!body.name"
-						[text]="true"
 						severity="success"
-						(onClick)="mountGoTo()"
+						(action)="mountGoTo()"
 						icon="mdi mdi-telescope"
-						label="Go To"
-						size="small" />
-					<p-button
+						label="Go To" />
+					<neb-button
 						[disabled]="!body.name"
-						[text]="true"
 						severity="success"
-						(onClick)="mountSlew()"
+						(action)="mountSlew()"
 						icon="mdi mdi-telescope"
-						label="Slew"
-						size="small" />
-					<p-button
+						label="Slew" />
+					<neb-button
 						[disabled]="!body.name"
-						[text]="true"
-						(onClick)="frame()"
+						(action)="frame()"
 						icon="mdi mdi-image"
-						label="Frame"
-						size="small" />
+						label="Frame" />
 				</div>
 			</div>
 		</p-tabPanel>
@@ -603,20 +578,15 @@
 	<div
 		class="col-9 flex align-items-center justify-content-between absolute gap-1 overflow-hidden"
 		style="height: 32px; left: 95px; top: 2px; padding-right: 70px">
-		<p-button
+		<neb-button
 			[disabled]="!body.name"
-			[text]="true"
-			[rounded]="true"
 			icon="mdi mdi-md mdi-dots-vertical"
-			(click)="ephemerisMenu.show()" />
+			(action)="ephemerisMenu.show()" />
 		@if (body.name && canFavorite) {
-			<p-button
-				[text]="true"
-				[rounded]="true"
+			<neb-button
 				icon="{{ favorited ? 'mdi mdi-star' : 'mdi mdi-star-outline' }}"
-				pTooltip="{{ favorited ? 'Unfavorite' : 'Favorite' }}"
-				tooltipPosition="bottom"
-				(onClick)="favorite()" />
+				tooltip="{{ favorited ? 'Unfavorite' : 'Favorite' }}"
+				(action)="favorite()" />
 		}
 		<span
 			class="flex w-full align-items-center gap-1 justify-content-center"
@@ -722,12 +692,10 @@
 		</div>
 	</div>
 	<ng-template pTemplate="footer">
-		<p-button
-			[text]="true"
+		<neb-button
 			icon="mdi mdi-filter"
 			label="Filter"
-			size="small"
-			(onClick)="searchSkyObject()" />
+			(action)="searchSkyObject()" />
 	</ng-template>
 </p-dialog>
 
@@ -751,19 +719,15 @@
 		</div>
 	</div>
 	<ng-template pTemplate="footer">
-		<p-button
-			[text]="true"
+		<neb-button
 			severity="danger"
 			icon="mdi mdi-restore"
 			label="Reset"
-			size="small"
-			(onClick)="resetSatelliteSearchGroups()" />
-		<p-button
-			[text]="true"
+			(action)="resetSatelliteSearchGroups()" />
+		<neb-button
 			icon="mdi mdi-filter"
 			label="Filter"
-			size="small"
-			(onClick)="searchSatellite()" />
+			(action)="searchSatellite()" />
 	</ng-template>
 </p-dialog>
 
@@ -871,15 +835,11 @@
 							<span class="font-bold">{{ item.type | enum }}</span>
 							<span class="ml-1">{{ item.name }}</span>
 						</span>
-						<p-button
-							[text]="true"
-							[rounded]="true"
+						<neb-button
 							icon="mdi mdi-delete"
 							severity="danger"
-							size="small"
-							pTooltip="Remove"
-							tooltipPosition="bottom"
-							(onClick)="deleteFavorite(item); $event.stopImmediatePropagation()" />
+							tooltip="Remove"
+							(action)="deleteFavorite(item)" />
 					</div>
 				</ng-template>
 			</p-listbox>

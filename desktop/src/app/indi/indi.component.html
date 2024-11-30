@@ -21,13 +21,11 @@
 				[model]="groups"
 				class="w-auto"
 				[style]="{ width: '260px' }" />
-			<p-button
+			<neb-button
 				label="Log"
 				icon="mdi mdi-post"
-				(onClick)="showLog = true"
-				[text]="!showLog"
-				severity="success"
-				size="small" />
+				(action)="showLog = true"
+				severity="success" />
 		</div>
 	</div>
 	<div class="grid properties mt-2">

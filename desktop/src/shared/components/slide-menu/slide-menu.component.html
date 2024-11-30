@@ -9,10 +9,9 @@
 			<neb-menu-item [item]="item" />
 		</ng-template>
 	</p-menu>
-	<p-button
+	<neb-button
 		*ngIf="currentMenu !== model"
-		[text]="true"
 		icon="mdi mdi-arrow-left"
 		label="Back"
-		(onClick)="back($event)" />
+		(action)="back($event)" />
 </div>

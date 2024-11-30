@@ -35,23 +35,17 @@
 					<label>Location</label>
 				</p-floatLabel>
 				<div class="flex gap-1">
-					<p-button
+					<neb-button
 						icon="mdi mdi-plus"
-						size="small"
 						severity="success"
-						[text]="true"
-						pTooltip="New"
-						tooltipPosition="bottom"
-						(onClick)="addLocation()" />
-					<p-button
+						tooltip="New"
+						(action)="addLocation()" />
+					<neb-button
 						[disabled]="preference.locations.length <= 1"
 						icon="mdi mdi-delete"
-						size="small"
 						severity="danger"
-						[text]="true"
-						pTooltip="Delete"
-						tooltipPosition="bottom"
-						(onClick)="deleteLocation()" />
+						tooltip="Delete"
+						(action)="deleteLocation()" />
 				</div>
 			</div>
 			<div class="col-12">
@@ -223,48 +217,40 @@
 					label="Light"
 					[(value)]="preference.namingFormat.light"
 					(valueChange)="savePreference()" />
-				<p-button
-					[text]="true"
+				<neb-button
 					icon="mdi mdi-restore"
-					(onClick)="resetCameraCaptureNamingFormat('LIGHT')"
-					pTooltip="Reset"
-					tooltipPosition="bottom" />
+					(action)="resetCameraCaptureNamingFormat('LIGHT')"
+					tooltip="Reset" />
 			</div>
 			<div class="col-12 gap-1">
 				<neb-input-text
 					label="Dark"
 					[(value)]="preference.namingFormat.dark"
 					(valueChange)="savePreference()" />
-				<p-button
-					[text]="true"
+				<neb-button
 					icon="mdi mdi-restore"
-					(onClick)="resetCameraCaptureNamingFormat('DARK')"
-					pTooltip="Reset"
-					tooltipPosition="bottom" />
+					(action)="resetCameraCaptureNamingFormat('DARK')"
+					tooltip="Reset" />
 			</div>
 			<div class="col-12 gap-1">
 				<neb-input-text
 					label="Flat"
 					[(value)]="preference.namingFormat.flat"
 					(valueChange)="savePreference()" />
-				<p-button
-					[text]="true"
+				<neb-button
 					icon="mdi mdi-restore"
-					(onClick)="resetCameraCaptureNamingFormat('FLAT')"
-					pTooltip="Reset"
-					tooltipPosition="bottom" />
+					(action)="resetCameraCaptureNamingFormat('FLAT')"
+					tooltip="Reset" />
 			</div>
 			<div class="col-12 gap-1">
 				<neb-input-text
 					label="Bias"
 					[(value)]="preference.namingFormat.bias"
 					(valueChange)="savePreference()" />
-				<p-button
-					[text]="true"
+				<neb-button
 					icon="mdi mdi-restore"
-					(onClick)="resetCameraCaptureNamingFormat('BIAS')"
-					pTooltip="Reset"
-					tooltipPosition="bottom" />
+					(action)="resetCameraCaptureNamingFormat('BIAS')"
+					tooltip="Reset" />
 			</div>
 		</div>
 	</div>

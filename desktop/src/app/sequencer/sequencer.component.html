@@ -112,33 +112,24 @@
 									<span class="font-bold text-xl ml-3">#{{ i + 1 }}</span>
 								</div>
 								<div class="col pb-1 align-items-center gap-1">
-									<p-button
+									<neb-button
 										[disabled]="running || !plan.camera || !sequence.enabled"
 										icon="mdi mdi-camera-iris"
 										label="Camera"
 										[severity]="plan.camera?.connected ? 'success' : 'danger'"
-										styleClass="px-2"
-										[text]="true"
-										(onClick)="showCameraDialog(sequence)"
-										size="small" />
-									<p-button
+										(action)="showCameraDialog(sequence)" />
+									<neb-button
 										[disabled]="running || !plan.wheel || !sequence.enabled"
 										icon="mdi mdi-palette"
 										label="Filter Wheel"
 										[severity]="plan.wheel?.connected ? 'success' : 'danger'"
-										styleClass="px-2"
-										[text]="true"
-										(onClick)="showWheelDialog(sequence)"
-										size="small" />
-									<p-button
+										(action)="showWheelDialog(sequence)" />
+									<neb-button
 										[disabled]="running || !plan.rotator || !sequence.enabled"
 										icon="mdi mdi-restore"
 										label="Rotator"
 										[severity]="plan.rotator?.connected ? 'success' : 'danger'"
-										styleClass="px-2"
-										[text]="true"
-										(onClick)="showRotatorDialog(sequence)"
-										size="small" />
+										(action)="showRotatorDialog(sequence)" />
 									<p-dropdown
 										*ngIf="plan.liveStacking.enabled"
 										[disabled]="running"
@@ -161,34 +152,22 @@
 										appendTo="body" />
 								</div>
 								<div class="col pb-1 pr-4 align-items-center justify-content-end gap-2">
-									<p-button
+									<neb-button
 										[disabled]="plan.sequences.length <= 1 || running"
-										[text]="true"
-										[rounded]="true"
 										icon="mdi mdi-md mdi-dots-vertical"
 										(click)="showSequenceMenu(sequence, entryMenu)" />
-									<p-button
+									<neb-button
 										[disabled]="running || plan.sequences.length <= 1"
-										[text]="true"
-										[rounded]="true"
 										icon="mdi mdi-delete"
 										severity="danger"
-										size="small"
-										pTooltip="Delete"
-										tooltipPosition="bottom"
-										size="small"
-										(onClick)="deleteSequence(sequence, i)" />
-									<p-button
+										tooltip="Delete"
+										(action)="deleteSequence(sequence, i)" />
+									<neb-button
 										[disabled]="running"
-										[text]="true"
-										[rounded]="true"
 										icon="mdi mdi-content-duplicate"
 										severity="info"
-										size="small"
-										pTooltip="Duplicate"
-										tooltipPosition="bottom"
-										size="small"
-										(onClick)="duplicateSequence(sequence, i)" />
+										tooltip="Duplicate"
+										(action)="duplicateSequence(sequence, i)" />
 									<neb-checkbox
 										[disabled]="running"
 										[(value)]="sequence.enabled"
@@ -247,15 +226,11 @@
 						<label>Mode</label>
 					</p-floatLabel>
 					<div class="flex flex-row align-items-center gap-2">
-						<p-button
-							[text]="true"
-							[rounded]="true"
+						<neb-button
 							[disabled]="running"
 							icon="mdi {{ plan.autoSubFolderMode === 'OFF' ? 'mdi-folder-off text-gray-500' : plan.autoSubFolderMode === 'NOON' ? 'mdi-weather-sunny text-yellow-600' : 'mdi-weather-night text-info' }}"
-							size="small"
-							pTooltip="{{ 'Auto sub folder: ' + plan.autoSubFolderMode }}"
-							tooltipPosition="bottom"
-							(onClick)="toggleAutoSubFolder()" />
+							tooltip="{{ 'Auto sub folder: ' + plan.autoSubFolderMode }}"
+							(action)="toggleAutoSubFolder()" />
 						<neb-path-chooser
 							key="sequencerOutputDirectory"
 							[directory]="true"
@@ -272,12 +247,10 @@
 							[disabled]="running"
 							[(value)]="plan.namingFormat.light"
 							(valueChange)="savePreference()" />
-						<p-button
-							[text]="true"
+						<neb-button
 							icon="mdi mdi-restore"
-							(onClick)="resetCameraCaptureNamingFormat('LIGHT')"
-							pTooltip="Reset"
-							tooltipPosition="bottom" />
+							(action)="resetCameraCaptureNamingFormat('LIGHT')"
+							tooltip="Reset" />
 					</div>
 					<div class="flex gap-1">
 						<neb-input-text
@@ -286,12 +259,10 @@
 							[disabled]="running"
 							[(value)]="plan.namingFormat.dark"
 							(valueChange)="savePreference()" />
-						<p-button
-							[text]="true"
+						<neb-button
 							icon="mdi mdi-restore"
-							(onClick)="resetCameraCaptureNamingFormat('DARK')"
-							pTooltip="Reset"
-							tooltipPosition="bottom" />
+							(action)="resetCameraCaptureNamingFormat('DARK')"
+							tooltip="Reset" />
 					</div>
 					<div class="flex gap-1">
 						<neb-input-text
@@ -300,12 +271,10 @@
 							[disabled]="running"
 							[(value)]="plan.namingFormat.flat"
 							(valueChange)="savePreference()" />
-						<p-button
-							[text]="true"
+						<neb-button
 							icon="mdi mdi-restore"
-							(onClick)="resetCameraCaptureNamingFormat('FLAT')"
-							pTooltip="Reset"
-							tooltipPosition="bottom" />
+							(action)="resetCameraCaptureNamingFormat('FLAT')"
+							tooltip="Reset" />
 					</div>
 					<div class="flex gap-1">
 						<neb-input-text
@@ -314,12 +283,10 @@
 							[disabled]="running"
 							[(value)]="plan.namingFormat.bias"
 							(valueChange)="savePreference()" />
-						<p-button
-							[text]="true"
+						<neb-button
 							icon="mdi mdi-restore"
-							(onClick)="resetCameraCaptureNamingFormat('BIAS')"
-							pTooltip="Reset"
-							tooltipPosition="bottom" />
+							(action)="resetCameraCaptureNamingFormat('BIAS')"
+							tooltip="Reset" />
 					</div>
 				</div>
 			</p-tabPanel>
@@ -514,48 +481,38 @@
 	<div class="fixed flex w-full justify-content-between align-items-center left-0 bottom-0 px-6 pb-3">
 		<div class="flex align-items-center justify-content-center flex-1 gap-1">
 			@if (pausingOrPaused) {
-				<p-button
+				<neb-button
 					[disabled]="event?.state === 'PAUSING'"
 					label="Unpause"
-					(onClick)="unpause()"
+					(action)="unpause()"
 					icon="mdi mdi-play"
-					severity="success"
-					size="small"
-					[text]="true" />
+					severity="success" />
 			} @else if (!running) {
-				<p-button
+				<neb-button
 					[disabled]="!plan.sequences.length || !canStart || running"
 					label="Start"
-					(onClick)="start()"
+					(action)="start()"
 					icon="mdi mdi-play"
-					severity="success"
-					size="small"
-					[text]="true" />
+					severity="success" />
 			}
-			<p-button
+			<neb-button
 				*ngIf="canStart && running && !pausingOrPaused"
 				label="Pause"
-				(onClick)="pause()"
+				(action)="pause()"
 				icon="mdi mdi-pause"
-				severity="info"
-				size="small"
-				[text]="true" />
-			<p-button
+				severity="info" />
+			<neb-button
 				[disabled]="!plan.sequences.length || !canStart || !running"
 				label="Abort"
-				(onClick)="stop()"
+				(action)="stop()"
 				icon="mdi mdi-stop"
-				severity="danger"
-				size="small"
-				[text]="true" />
+				severity="danger" />
 		</div>
-		<p-button
+		<neb-button
 			[disabled]="running || plan.sequences.length > 32"
-			[rounded]="true"
 			icon="mdi mdi-plus"
-			size="large"
 			severity="success"
-			(onClick)="add()" />
+			(action)="add()" />
 	</div>
 </div>
 
@@ -566,16 +523,14 @@
 	[style]="{ maxWidth: '400px' }">
 	<div class="grid p-2">
 		<div class="col-12 gap-2 justify-content-end">
-			<p-button
-				[text]="true"
+			<neb-button
 				icon="mdi mdi-checkbox-marked"
 				label="Select All"
-				(onClick)="selectSequenceProperty(true)" />
-			<p-button
-				[text]="true"
+				(action)="selectSequenceProperty(true)" />
+			<neb-button
 				icon="mdi mdi-checkbox-blank-outline"
 				label="Unselect All"
-				(onClick)="selectSequenceProperty(false)" />
+				(action)="selectSequenceProperty(false)" />
 		</div>
 		<div class="col-6">
 			<neb-checkbox
@@ -651,12 +606,10 @@
 		</div>
 	</div>
 	<ng-template pTemplate="footer">
-		<p-button
-			[text]="true"
+		<neb-button
 			icon="mdi mdi-check"
 			label="Apply"
-			size="small"
-			(onClick)="copySequencePropertyToSequencies()" />
+			(action)="copySequencePropertyToSequencies()" />
 	</ng-template>
 </p-dialog>
 

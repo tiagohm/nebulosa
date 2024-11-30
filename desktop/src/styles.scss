@@ -38,6 +38,10 @@ body {
 	font-family: 'Roboto';
 }
 
+a {
+	display: inline-flex;
+}
+
 a:any-link {
 	color: $infoButtonBg;
 }
@@ -180,15 +184,6 @@ p-dropdown,
 .border-0,
 .p-selectbutton.border-0 .p-button {
 	border: 1px solid rgba(255, 255, 255, 0) !important;
-}
-
-.p-button {
-	white-space: nowrap;
-	max-width: 100%;
-
-	&.p-button-icon-only {
-		min-width: fit-content;
-	}
 }
 
 p-calendar.border-0 .p-calendar-w-btn {
@@ -504,4 +499,8 @@ p-tieredmenu *,
 
 ::-webkit-scrollbar-corner {
 	background-color: transparent;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+	display: none;
 }

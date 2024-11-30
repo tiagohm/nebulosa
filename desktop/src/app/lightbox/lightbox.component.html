@@ -2,24 +2,19 @@
 	<div class="grid flex align-items-center">
 		<div class="col-12 align-items-center gap-2">
 			<neb-device-name [device]="lightBox" />
-			<p-button
-				*ngIf="lightBox.connected"
-				(onClick)="connect()"
-				icon="mdi mdi-close"
-				size="small"
-				severity="danger"
-				pTooltip="Disconnect"
-				tooltipPosition="bottom"
-				[text]="true" />
-			<p-button
-				*ngIf="!lightBox.connected"
-				(onClick)="connect()"
-				icon="mdi mdi-connection"
-				size="small"
-				severity="info"
-				pTooltip="Connect"
-				tooltipPosition="bottom"
-				[text]="true" />
+			@if (lightBox.connected) {
+				<neb-button
+					(action)="connect()"
+					icon="mdi mdi-close"
+					severity="danger"
+					tooltip="Disconnect" />
+			} @else {
+				<neb-button
+					(action)="connect()"
+					icon="mdi mdi-connection"
+					severity="info"
+					tooltip="Connect" />
+			}
 		</div>
 	</div>
 	<div class="grid mt-1">

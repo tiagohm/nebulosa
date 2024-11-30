@@ -12,12 +12,11 @@
 		[model]="model"
 		[popup]="true"
 		appendTo="body" />
-	<p-button
-		[text]="true"
+	<neb-button
 		[disabled]="!canExposureTime || !canExposureTimeUnit || disabled"
-		(onClick)="exposureTimeMenu.toggle($event)"
-		styleClass="absolute"
-		[style]="{ right: '30px', top: '4px', maxHeight: '22px' }"
+		(action)="exposureTimeMenu.toggle($event)"
+		class="absolute"
+		[style]="{ right: '30px', top: '2.5px', maxHeight: '22px' }"
 		[label]="unit | enum"
 		severity="info"
 		(wheel)="exposureTimeUnitWheeled($event)" />
