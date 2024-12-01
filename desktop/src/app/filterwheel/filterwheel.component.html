@@ -23,13 +23,12 @@
 			class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1">
 			<i class="mdi mdi-information text-info"></i>
 			<span class="mr-3">{{ moving ? 'moving' : 'idle' }}</span>
-			<p-tag
-				*ngIf="wheel.connected && currentFilter && currentFilter.position"
-				value="#{{ currentFilter.position }}" />
-			<p-tag
-				*ngIf="wheel.connected && currentFilter"
-				[value]="currentFilter.name"
-				severity="info" />
+			@if (wheel.connected && currentFilter) {
+				@if (currentFilter.position) {
+					<neb-tag label="#{{ currentFilter.position }}" />
+				}
+				<neb-info [label]="currentFilter.name" />
+			}
 		</div>
 	</div>
 	<div class="grid mt-2">
@@ -51,16 +50,13 @@
 							<span
 								class="flex align-items-center text-xs gap-1"
 								style="min-height: 15px">
-								<p-tag
-									*ngIf="filter"
-									value="#{{ filter.position }}" />
-								<p-tag
-									*ngIf="filter"
-									value="OFFSET: {{ focusOffsetForFilter(filter) }}"
-									severity="success" />
-								<i
-									*ngIf="filter?.dark"
-									class="mdi mdi-camera-iris"></i>
+								@if (filter) {
+									<neb-tag label="#{{ filter.position }}" />
+									<neb-success label="OFFSET: {{ focusOffsetForFilter(filter) }}" />
+									@if (filter.dark) {
+										<i class="mdi mdi-camera-iris"></i>
+									}
+								}
 							</span>
 							<span>{{ filter?.name }}</span>
 						</div>
@@ -72,13 +68,11 @@
 							<span
 								class="flex align-items-center text-xs gap-1"
 								style="min-height: 15px">
-								<p-tag value="#{{ item.position }}" />
-								<p-tag
-									value="OFFSET: {{ focusOffsetForFilter(item) }}"
-									severity="success" />
+								<neb-tag label="#{{ item.position }}" />
+								<neb-success label="OFFSET: {{ focusOffsetForFilter(item) }}" />
 								<i
 									*ngIf="item.dark"
-									class="mdi mdi-camera-iris"></i>
+									class="mdi mdi-camera-iris text-gray-300"></i>
 							</span>
 							<span>{{ item.name }}</span>
 						</div>

@@ -307,55 +307,45 @@
 	</div>
 	<div class="grid mt-0">
 		<div class="col-12 gap-1 justify-content-center align-items-center flex-wrap">
-			<p-tag
+			<neb-info
 				*ngIf="hasCalibration"
-				icon="mdi mdi-wrench mdi-sm"
-				value="{{ request.calibrationGroup || 'None' }}"
-				styleClass="cursor-pointer text-xs"
-				severity="info"
-				(click)="calibrationMenu.show()" />
-			<p-tag
+				icon="mdi mdi-wrench"
+				label="{{ request.calibrationGroup || 'None' }}"
+				(action)="calibrationMenu.show()" />
+			<neb-info
 				*ngIf="hasDither"
-				icon="mdi mdi-pulse mdi-sm"
-				value="Dither: {{ request.dither.enabled ? 'ON' : 'OFF' }}"
-				styleClass="cursor-pointer text-xs"
-				severity="info"
-				(click)="dither.showDialog = true" />
-			<p-tag
+				icon="mdi mdi-pulse"
+				label="Dither: {{ request.dither.enabled ? 'ON' : 'OFF' }}"
+				(action)="dither.showDialog = true" />
+			<neb-info
 				*ngIf="hasLiveStacking"
-				icon="mdi mdi-image-multiple mdi-sm"
-				value="Live stacking: {{ request.liveStacking.enabled ? 'ON' : 'OFF' }}"
-				styleClass="cursor-pointer text-xs"
-				severity="info"
-				(click)="liveStacking.showDialog = true" />
-			<p-tag
+				icon="mdi mdi-image-multiple"
+				label="Live stacking: {{ request.liveStacking.enabled ? 'ON' : 'OFF' }}"
+				(action)="liveStacking.showDialog = true" />
+			<neb-error
 				*ngIf="preference.mount"
-				icon="mdi mdi-telescope mdi-sm"
-				[value]="preference.mount.name"
+				icon="mdi mdi-telescope"
+				[label]="preference.mount.name"
 				[severity]="preference.mount.connected ? 'success' : 'danger'"
-				styleClass="cursor-pointer text-xs"
-				(click)="openMount(preference.mount)" />
-			<p-tag
+				(action)="openMount(preference.mount)" />
+			<neb-error
 				*ngIf="preference.focuser"
-				icon="mdi mdi-image-filter-center-focus mdi-sm"
-				[value]="preference.focuser.name"
+				icon="mdi mdi-image-filter-center-focus"
+				label="{{ preference.focuser.name }}: {{ preference.focuser.position }}"
 				[severity]="preference.focuser.connected ? 'success' : 'danger'"
-				styleClass="cursor-pointer text-xs"
-				(click)="openFocuser(preference.focuser)" />
-			<p-tag
+				(action)="openFocuser(preference.focuser)" />
+			<neb-error
 				*ngIf="preference.wheel"
-				icon="mdi mdi-palette mdi-sm"
-				value="{{ preference.wheel.name }}: {{ currentWheelFilter }}"
+				icon="mdi mdi-palette"
+				label="{{ preference.wheel.name }}: {{ currentWheelFilter ?? 'None' }}"
 				[severity]="preference.wheel.connected ? 'success' : 'danger'"
-				styleClass="cursor-pointer text-xs"
-				(click)="openWheel(preference.wheel)" />
-			<p-tag
+				(action)="openWheel(preference.wheel)" />
+			<neb-error
 				*ngIf="preference.rotator"
-				icon="mdi mdi-rotate-right mdi-sm"
-				[value]="preference.rotator.name"
+				icon="mdi mdi-rotate-right"
+				label="{{ preference.rotator.name }}: {{ preference.rotator.angle.toFixed(0) }}°"
 				[severity]="preference.rotator.connected ? 'success' : 'danger'"
-				styleClass="cursor-pointer text-xs"
-				(click)="openRotator(preference.rotator)" />
+				(action)="openRotator(preference.rotator)" />
 		</div>
 		<div class="col-12 flex align-items-center justify-content-center gap-1">
 			@if (pausingOrPaused) {

@@ -66,6 +66,7 @@ import { MoonComponent } from '../shared/components/moon/moon.component'
 import { PathChooserComponent } from '../shared/components/path-chooser/path-chooser.component'
 import { SlideMenuComponent } from '../shared/components/slide-menu/slide-menu.component'
 import { SwitchComponent } from '../shared/components/switch.component'
+import { TagComponent } from '../shared/components/tag.component'
 import { ConfirmDialogComponent } from '../shared/dialogs/confirm/confirm.dialog'
 import { NoDropdownDirective } from '../shared/directives/no-dropdown.directive'
 import { SpinnableNumberDirective } from '../shared/directives/spinnable-number.directive'
@@ -165,6 +166,7 @@ import { SettingsComponent } from './settings/settings.component'
 		SettingsComponent,
 		SlideMenuComponent,
 		SpinnableNumberDirective,
+		TagComponent,
 		SwitchComponent,
 		WinPipe,
 	],

@@ -12,7 +12,6 @@ import { InputSwitchChangeEvent } from 'primeng/inputswitch'
 				[(ngModel)]="value" />
 		</div>
 	`,
-	styles: ``,
 	encapsulation: ViewEncapsulation.None,
 })
 export class SwitchComponent {

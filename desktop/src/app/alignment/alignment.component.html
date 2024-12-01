@@ -44,11 +44,11 @@
 				*ngIf="method === 'TPPA'"
 				class="absolute flex flex-row align-items-center gap-1"
 				style="right: 8px; top: -2px">
-				<p-tag
-					value="RA: {{ tppaResult.rightAscension }}"
+				<neb-tag
+					label="RA: {{ tppaResult.rightAscension }}"
 					[severity]="tppaResult.failed ? 'danger' : 'info'" />
-				<p-tag
-					value="DEC: {{ tppaResult.declination }}"
+				<neb-tag
+					label="DEC: {{ tppaResult.declination }}"
 					[severity]="tppaResult.failed ? 'danger' : 'info'" />
 			</div>
 		</div>

@@ -1,8 +1,8 @@
 <p class="text-center mb-2">{{ formula.description }}</p>
 <div class="flex align-items-center justify-content-center">
-	<p-tag
-		styleClass="text-lg py-1"
-		[value]="formula.expression" />
+	<neb-tag
+		[label]="formula.expression"
+		size="large" />
 </div>
 <div class="flex flex-column align-items-center justify-content-center gap-1 mt-4">
 	@for (item of formula.operands; track $index) {

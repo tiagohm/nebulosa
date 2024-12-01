@@ -21,17 +21,16 @@
 					<img
 						[src]="sun.image"
 						style="width: 223px" />
-					<a
-						class="text-sm absolute"
-						style="bottom: -8px"
-						target="_blank"
-						href="https://sdo.gsfc.nasa.gov/assets/img/latest/latest_1024_HMIIC.jpg">
-						<p-tag severity="success">SDO/HMI</p-tag>
-					</a>
 					<div
 						*ngIf="sun.seasons.length"
 						class="absolute w-full text-sm left-0 top-0 p-4 flex flex-row align-items-start justify-content-between">
-						<div class="flex flex-column gap-2"></div>
+						<div class="flex flex-column">
+							<a
+								target="_blank"
+								href="https://sdo.gsfc.nasa.gov/assets/img/latest/latest_1024_HMIIC.jpg">
+								SDO/HMI
+							</a>
+						</div>
 						<div class="flex flex-column gap-2 mr-2">
 							@for (season of sun.seasons; track $index) {
 								<div class="flex flex-column gap-1">
@@ -436,10 +435,9 @@
 								<td class="w-8rem">{{ item.id }}</td>
 								<td>{{ item.name }}</td>
 								<td class="flex flex-row flex-wrap gap-1 max-w-16rem">
-									<p-tag
-										*ngFor="let item of item.groups"
-										severity="success"
-										[value]="item" />
+									@for (group of item.groups; track $index) {
+										<neb-success [label]="group" />
+									}
 								</td>
 							</tr>
 						</ng-template>
@@ -592,11 +590,11 @@
 			class="flex w-full align-items-center gap-1 justify-content-center"
 			style="min-width: -webkit-fill-available">
 			<span class="text-overflow-scroll font-bold">{{ body.name }}</span>
-			<p-tag
-				*ngFor="let tag of body.tags"
-				[severity]="tag.severity"
-				[value]="tag.label"
-				styleClass="white-space-nowrap" />
+			@for (tag of body.tags; track $index) {
+				<neb-tag
+					[severity]="tag.severity"
+					[label]="tag.label" />
+			}
 		</span>
 	</div>
 </div>

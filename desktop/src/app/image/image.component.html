@@ -1051,37 +1051,17 @@
 						<neb-checkbox [(value)]="item.enabled" />
 					</div>
 					<div class="flex align-items-center flex-wrap gap-1">
-						<p-tag
-							severity="info"
-							value="FL: {{ item.focalLength }} mm" />
-						<p-tag
-							severity="info"
-							value="AP: {{ item.aperture }} mm" />
-						<p-tag
-							severity="info"
-							value="RES: {{ item.cameraSize.width }}x{{ item.cameraSize.height }}" />
-						<p-tag
-							severity="info"
-							value="PS: {{ item.pixelSize.width }}x{{ item.pixelSize.height }} µm" />
-						<p-tag
-							severity="info"
-							value="MULT: {{ item.barlowReducer.toFixed(2) }}x" />
-						<p-tag
-							severity="info"
-							value="BIN: {{ item.bin }}" />
-						<p-tag
-							severity="info"
-							value="ANGLE: {{ item.rotation }}°" />
+						<neb-info label="FL: {{ item.focalLength }} mm" />
+						<neb-info label="AP: {{ item.aperture }} mm" />
+						<neb-info label="RES: {{ item.cameraSize.width }}x{{ item.cameraSize.height }}" />
+						<neb-info label="PS: {{ item.pixelSize.width }}x{{ item.pixelSize.height }} µm" />
+						<neb-info label="MULT: {{ item.barlowReducer.toFixed(2) }}x" />
+						<neb-info label="BIN: {{ item.bin }}" />
+						<neb-info label="ANGLE: {{ item.rotation }}°" />
 						@if (item.computed) {
-							<p-tag
-								severity="success"
-								value="F/{{ item.computed.focalRatio.toFixed(1) }}" />
-							<p-tag
-								severity="success"
-								value="SCALE: {{ item.computed.cameraResolution.width.toFixed(2) }}&quot;x{{ item.computed.cameraResolution.height.toFixed(2) }}&quot;" />
-							<p-tag
-								severity="success"
-								value="FOV: {{ item.computed.fieldSize.width.toFixed(2) }}°x{{ item.computed.fieldSize.height.toFixed(2) }}°" />
+							<neb-success label="F/{{ item.computed.focalRatio.toFixed(1) }}" />
+							<neb-success label="SCALE: {{ item.computed.cameraResolution.width.toFixed(2) }}&quot;x{{ item.computed.cameraResolution.height.toFixed(2) }}&quot;" />
+							<neb-success label="FOV: {{ item.computed.fieldSize.width.toFixed(2) }}°x{{ item.computed.fieldSize.height.toFixed(2) }}°" />
 						}
 					</div>
 					<div class="flex px-1 flex-column gap-0 align-items-center justify-content-between">
