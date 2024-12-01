@@ -766,12 +766,10 @@
 					styleClass="w-full" />
 			</div>
 			<div class="col-5 flex-column gap-3 align-items-center justify-content-start gap-1">
-				<div class="flex flex-column justify-content-center align-items-center gap-1">
-					<span>Date Time</span>
-					<p-inputSwitch
-						[(ngModel)]="dateTimeAndLocation.manual"
-						(ngModelChange)="manualDateTimeChanged()" />
-				</div>
+				<neb-switch
+					label="Date Time"
+					[(value)]="dateTimeAndLocation.manual"
+					(valueChange)="manualDateTimeChanged()" />
 				<div class="flex flex-column align-items-center gap-3">
 					<div class="flex align-items-center justify-content-center gap-2">
 						<neb-input-number

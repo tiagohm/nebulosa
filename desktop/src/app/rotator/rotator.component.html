@@ -45,12 +45,12 @@
 				severity="info"
 				tooltip="Home"
 				(action)="home()" />
-			<div class="flex flex-column align-items-center justify-content-center text-center gap-2">
-				<span class="text-xs text-gray-100">Reversed</span>
-				<p-inputSwitch
+			<div class="flex align-items-center justify-content-center text-center">
+				<neb-switch
+					label="Reversed"
 					[disabled]="!rotator.connected || rotator.moving || !canReverse"
-					(onChange)="reverse($event.checked)"
-					[(ngModel)]="rotator.reversed" />
+					[(value)]="rotator.reversed"
+					(valueChange)="reverse($event)" />
 			</div>
 		</div>
 		<div class="col-12 flex align-items-center gap-1">

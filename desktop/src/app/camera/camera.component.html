@@ -106,18 +106,18 @@
 		</div>
 	</div>
 	<div class="grid py-1 flex align-items-center">
-		<div class="col-3 flex flex-column justify-content-center text-center gap-2">
-			<span class="text-xs text-gray-100">Cooler ({{ camera.coolerPower | number: '1.1-1' }}%)</span>
-			<p-inputSwitch
+		<div class="col-3 flex flex-column justify-content-center text-center">
+			<neb-switch
+				label="Cooler ({{ camera.coolerPower | number: '1.1-1' }}%)"
 				[disabled]="!camera.connected || !camera.hasCooler || running"
-				(onChange)="toggleCooler()"
-				[(ngModel)]="camera!.cooler" />
+				[(value)]="camera!.cooler"
+				(valueChange)="toggleCooler()" />
 		</div>
-		<div class="col-3 flex flex-column justify-content-center text-center gap-2">
-			<span class="text-xs text-gray-100">Dew heater</span>
-			<p-inputSwitch
+		<div class="col-3 flex flex-column justify-content-center text-center">
+			<neb-switch
+				label="Dew heater"
 				[disabled]="!camera.connected || !hasDewHeater || running"
-				[(ngModel)]="camera!.dewHeater" />
+				[(value)]="camera!.dewHeater" />
 		</div>
 		<div class="col-6 flex flex-column">
 			<div class="flex justify-content-center align-items-center gap-1">
@@ -239,14 +239,14 @@
 		</div>
 	</div>
 	<div class="grid py-1 flex align-items-center">
-		<div class="col-3 flex flex-column justify-content-center text-center gap-2">
-			<span class="text-xs text-gray-100">Subframe</span>
-			<p-inputSwitch
+		<div class="col-3 flex flex-row align-items-center justify-content-center">
+			<neb-switch
+				label="Subframe"
 				[disabled]="!camera.connected || running"
-				[(ngModel)]="preference.subFrame"
-				(ngModelChange)="savePreference()" />
+				[(value)]="preference.subFrame"
+				(valueChange)="savePreference()" />
 		</div>
-		<div class="col-3 flex pt-3 flex-row align-items-center justify-content-center">
+		<div class="col-3 flex flex-row align-items-center justify-content-center">
 			<neb-button
 				[disabled]="!camera.connected || running"
 				icon="mdi mdi-fullscreen"
@@ -255,16 +255,13 @@
 				tooltip="Full size" />
 		</div>
 		<div class="col-3">
-			<p-floatLabel>
-				<neb-input-number
-					label="Bin X"
-					[disabled]="!camera.connected || running"
-					[min]="1"
-					[max]="4"
-					[(value)]="request.binX"
-					(valueChange)="savePreference()" />
-				<label></label>
-			</p-floatLabel>
+			<neb-input-number
+				label="Bin X"
+				[disabled]="!camera.connected || running"
+				[min]="1"
+				[max]="4"
+				[(value)]="request.binX"
+				(valueChange)="savePreference()" />
 		</div>
 		<div class="col-3">
 			<neb-input-number
@@ -420,21 +417,21 @@
 	<ng-template pTemplate="header">
 		<div class="flex w-full align-items-center justify-content-start gap-2 ng-star-inserted">
 			<span class="p-dialog-title">Dither</span>
-			<div class="flex flex-1 flex-column align-items-center justify-content-center text-center gap-2">
-				<span class="text-xs text-gray-100">Enabled</span>
-				<p-inputSwitch
-					[(ngModel)]="dither.request.enabled"
-					(ngModelChange)="savePreference()" />
+			<div class="flex-1 align-items-center justify-content-center">
+				<neb-switch
+					label="Enabled"
+					[(value)]="dither.request.enabled"
+					(valueChange)="savePreference()" />
 			</div>
 		</div>
 	</ng-template>
 	<div class="grid mt-2">
-		<div class="col-3 flex flex-column justify-content-center text-center gap-2">
-			<span class="text-xs text-gray-100">RA only</span>
-			<p-inputSwitch
+		<div class="col-3 flex flex-column justify-content-center text-center">
+			<neb-switch
+				label="RA only"
 				[disabled]="!camera.connected || running || !dither.request.enabled"
-				[(ngModel)]="dither.request.raOnly"
-				(ngModelChange)="savePreference()" />
+				[(value)]="dither.request.raOnly"
+				(valueChange)="savePreference()" />
 		</div>
 		<div class="col-4">
 			<neb-input-number
@@ -466,11 +463,11 @@
 	<ng-template pTemplate="header">
 		<div class="flex w-full align-items-center justify-content-start gap-2 ng-star-inserted">
 			<span class="p-dialog-title">Live Stacking</span>
-			<div class="flex flex-1 flex-column align-items-center justify-content-center text-center gap-2">
-				<span class="text-xs text-gray-100">Enabled</span>
-				<p-inputSwitch
-					[(ngModel)]="liveStacking.request.enabled"
-					(ngModelChange)="savePreference()" />
+			<div class="flex-1 align-items-center justify-content-center">
+				<neb-switch
+					label="Enabled"
+					[(value)]="liveStacking.request.enabled"
+					(valueChange)="savePreference()" />
 			</div>
 		</div>
 	</ng-template>
@@ -489,12 +486,12 @@
 				<label>Live Stacker</label>
 			</p-floatLabel>
 		</div>
-		<div class="col-4 flex flex-column align-items-center justify-content-center text-center gap-2">
-			<span class="text-xs text-gray-100">32-bit (slower)</span>
-			<p-inputSwitch
+		<div class="col-4">
+			<neb-switch
+				label="32-bit (slower)"
 				[disabled]="!liveStacking.request.enabled"
-				[(ngModel)]="liveStacking.request.use32Bits"
-				(ngModelChange)="savePreference()" />
+				[(value)]="liveStacking.request.use32Bits"
+				(valueChange)="savePreference()" />
 		</div>
 		<div class="col-12 align-items-center">
 			<neb-checkbox

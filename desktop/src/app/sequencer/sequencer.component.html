@@ -437,12 +437,12 @@
 							appendTo="body" />
 						<label>Live Stacker</label>
 					</p-floatLabel>
-					<div class="col-2 flex flex-column align-items-center justify-content-center text-center gap-2">
-						<span class="text-sm text-gray-100">32-bit (slower)</span>
-						<p-inputSwitch
+					<div class="col-2 flex align-items-center justify-content-center text-center">
+						<neb-switch
+							label="32-bit (slower)"
 							[disabled]="!plan.liveStacking.enabled || running"
-							[(ngModel)]="plan.liveStacking.use32Bits"
-							(ngModelChange)="savePreference()" />
+							[(value)]="plan.liveStacking.use32Bits"
+							(valueChange)="savePreference()" />
 					</div>
 					<neb-checkbox
 						[disabled]="!plan.liveStacking.enabled || running"

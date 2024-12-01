@@ -6,23 +6,25 @@
 			@if (item.toggleable) {
 				<div
 					*ngIf="item.visible"
-					class="flex flex-column align-items-center justify-content-center gap-1">
-					<span class="text-xs">{{ item.label }}</span>
-					<p-inputSwitch
+					class="flex align-items-center justify-content-center">
+					<neb-switch
+						[label]="item.label"
 						[disabled]="item.disabled ?? false"
-						[(ngModel)]="item.toggled"
-						(onChange)="item.toggle?.($event)" />
+						[value]="item.toggled ?? false"
+						(valueChange)="item.toggled = $event"
+						(action)="item.toggle?.($event)" />
 				</div>
 			} @else if (item.checkable) {
 				<div
 					*ngIf="item.visible"
-					class="flex flex-column align-items-center justify-content-center gap-1">
-					<span class="text-xs">{{ item.label }}</span>
-					<p-checkbox
-						[binary]="true"
+					class="flex align-items-center justify-content-center">
+					<neb-checkbox
+						[label]="item.label"
 						[disabled]="item.disabled ?? false"
-						[(ngModel)]="item.checked"
-						(onChange)="item.check?.($event); $event.originalEvent?.stopImmediatePropagation()" />
+						[vertical]="true"
+						[value]="item.checked ?? false"
+						(valueChange)="item.checked = $event"
+						(action)="item.check?.($event)" />
 				</div>
 			} @else if (item.label && item.splitButtonMenu?.length) {
 				<p-splitButton

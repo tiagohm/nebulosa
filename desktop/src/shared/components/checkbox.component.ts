@@ -1,4 +1,5 @@
-import { Component, input, model, ViewEncapsulation } from '@angular/core'
+import { Component, input, model, output, ViewEncapsulation } from '@angular/core'
+import { CheckboxChangeEvent } from 'primeng/checkbox'
 
 @Component({
 	selector: 'neb-checkbox',
@@ -10,7 +11,7 @@ import { Component, input, model, ViewEncapsulation } from '@angular/core'
 			[(ngModel)]="value"
 			[class.white-space-nowrap]="noWrap()"
 			[class.vertical]="vertical()"
-			(onChange)="$event.originalEvent?.stopImmediatePropagation()" />
+			(onChange)="action.emit($event); $event.originalEvent?.stopImmediatePropagation()" />
 	`,
 	styles: `
 		neb-checkbox {
@@ -32,4 +33,5 @@ export class CheckboxComponent {
 	readonly disabled = input(false)
 	readonly noWrap = input(false)
 	readonly vertical = input(false)
+	readonly action = output<CheckboxChangeEvent>()
 }

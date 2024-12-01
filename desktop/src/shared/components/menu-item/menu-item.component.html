@@ -9,10 +9,10 @@
 		<neb-menu-bar [model]="item.toolbarMenu!" />
 	}
 	@if (item.checkable) {
-		<p-checkbox
-			[binary]="true"
-			[(ngModel)]="item.checked"
-			(onChange)="item.check?.($event); $event.originalEvent?.stopImmediatePropagation()" />
+		<neb-checkbox
+			[value]="item.checked ?? false"
+			(valueChange)="item.checked = $event"
+			(action)="item.check?.($event)" />
 	}
 	@if (item.items?.length || item.slideMenu?.length) {
 		<i class="mdi mdi-menu-right mdi"></i>

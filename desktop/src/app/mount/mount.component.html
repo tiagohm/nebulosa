@@ -236,12 +236,12 @@
 		</div>
 		<div class="col-8">
 			<div class="grid">
-				<div class="col-6 flex flex-column gap-2 justify-content-center align-items-center text-center">
-					<span class="text-gray-100">Tracking</span>
-					<p-inputSwitch
+				<div class="col-6 flex flex-column justify-content-center align-items-center text-center">
+					<neb-switch
+						label="Tracking"
 						[disabled]="!mount.connected || mount.slewing || mount.parking || mount.parked"
-						[(ngModel)]="tracking"
-						(ngModelChange)="trackingToggled()" />
+						[(value)]="tracking"
+						(valueChange)="trackingToggled()" />
 				</div>
 				<div class="col-6 flex flex-row gap-2 justify-content-center align-items-center">
 					<neb-button

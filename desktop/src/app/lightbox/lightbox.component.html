@@ -19,13 +19,11 @@
 	</div>
 	<div class="grid mt-1">
 		<div class="col-4 text-center align-items-center justify-content-center">
-			<div class="flex flex-column align-items-center justify-content-center text-center gap-2">
-				<span class="text-xs text-gray-100">Enabled</span>
-				<p-inputSwitch
-					[disabled]="!lightBox.connected"
-					[ngModel]="lightBox.enabled"
-					(ngModelChange)="toggleEnable()" />
-			</div>
+			<neb-switch
+				label="Enabled"
+				[disabled]="!lightBox.connected"
+				[value]="lightBox.enabled"
+				(valueChange)="toggleEnable()" />
 		</div>
 		<div class="col-8 flex align-items-center justify-content-center">
 			<p-knob
