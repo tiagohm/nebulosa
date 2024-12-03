@@ -50,40 +50,41 @@
 				</p-dropdown>
 				<label>Connection</label>
 			</p-floatLabel>
-			<neb-button
-				*ngIf="!connected"
-				[disabled]="!connection"
-				(action)="connect()"
-				icon="mdi mdi-connection"
-				severity="info"
-				tooltip="Connect" />
-			<neb-button
-				*ngIf="connected"
-				[disabled]="!connection"
-				(action)="disconnect()"
-				icon="mdi mdi-close"
-				severity="danger"
-				tooltip="Disconnect" />
+			@if (!connected) {
+				<neb-button
+					[disabled]="!connection"
+					(action)="connect()"
+					icon="mdi mdi-connection"
+					severity="info"
+					tooltip="Connect" />
+			} @else {
+				<neb-button
+					[disabled]="!connection"
+					(action)="disconnect()"
+					icon="mdi mdi-close"
+					severity="danger"
+					tooltip="Disconnect" />
+			}
 		</div>
-		<div
-			*ngIf="newVersion"
-			class="col-12 py-0">
-			<div class="m-0 p-message p-message-info w-full flex align-items-center justify-content-between px-2">
-				<div class="flex align-items-center">
-					<span class="p-message-summary">New version:</span>
-					<span class="p-message-detail">{{ newVersion }}</span>
+		@if (newVersion) {
+			<div class="col-12 py-0">
+				<div class="m-0 p-message p-message-info w-full flex align-items-center justify-content-between px-2">
+					<div class="flex align-items-center">
+						<span class="p-message-summary">New version:</span>
+						<span class="p-message-detail">{{ newVersion }}</span>
+					</div>
+					<a
+						target="_blank"
+						href="https://github.com/tiagohm/nebulosa/releases/latest">
+						<neb-button
+							icon="mdi mdi-download"
+							label="Download"
+							severity="info"
+							class="py-1 text-blue-900" />
+					</a>
 				</div>
-				<a
-					target="_blank"
-					href="https://github.com/tiagohm/nebulosa/releases/latest">
-					<neb-button
-						icon="mdi mdi-download"
-						label="Download"
-						severity="info"
-						class="py-1 text-blue-900" />
-				</a>
 			</div>
-		</div>
+		}
 	</div>
 	<div
 		class="no-scrollbar my-2 overflow-y-auto relative"

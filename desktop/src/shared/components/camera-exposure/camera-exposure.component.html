@@ -8,7 +8,9 @@
 		<span class="bg-warning state counter flex align-items-center gap-1 justify-content-center text-gray-900">
 			<i class="mdi mdi-counter"></i>
 			{{ capture.count }}
-			<span *ngIf="!capture.looping">/ {{ capture.amount }}</span>
+			@if (!capture.looping) {
+				<span>/ {{ capture.amount }}</span>
+			}
 		</span>
 		@if (!capture.looping) {
 			<span class="bg-success state percentage flex align-items-center gap-1 justify-content-center text-gray-900">
@@ -25,18 +27,17 @@
 			<span
 				class="bg-info state time flex align-items-center gap-1 justify-content-center text-gray-900 cursor-pointer"
 				(click)="showRemainingTime = !showRemainingTime">
-				<span
-					class="flex align-items-center gap-1"
-					*ngIf="showRemainingTime">
-					<i class="mdi mdi-timer-sand"></i>
-					{{ capture.remainingTime | exposureTime }}
-				</span>
-				<span
-					class="flex align-items-center gap-1"
-					*ngIf="!showRemainingTime">
-					<i class="mdi mdi-timer-sand-complete"></i>
-					{{ capture.elapsedTime | exposureTime }}
-				</span>
+				@if (showRemainingTime) {
+					<span class="flex align-items-center gap-1">
+						<i class="mdi mdi-timer-sand"></i>
+						{{ capture.remainingTime | exposureTime }}
+					</span>
+				} @else {
+					<span class="flex align-items-center gap-1">
+						<i class="mdi mdi-timer-sand-complete"></i>
+						{{ capture.elapsedTime | exposureTime }}
+					</span>
+				}
 			</span>
 		}
 
@@ -44,18 +45,17 @@
 			<span
 				class="bg-cyan-300 state time flex align-items-center gap-1 justify-content-center text-gray-900 cursor-pointer"
 				(click)="showRemainingTime = !showRemainingTime">
-				<span
-					class="flex align-items-center gap-1"
-					*ngIf="showRemainingTime">
-					<i class="mdi mdi-timer-sand"></i>
-					{{ step.remainingTime | exposureTime }}
-				</span>
-				<span
-					class="flex align-items-center gap-1"
-					*ngIf="!showRemainingTime">
-					<i class="mdi mdi-timer-sand-complete"></i>
-					{{ step.elapsedTime | exposureTime }}
-				</span>
+				@if (showRemainingTime) {
+					<span class="flex align-items-center gap-1">
+						<i class="mdi mdi-timer-sand"></i>
+						{{ step.remainingTime | exposureTime }}
+					</span>
+				} @else {
+					<span class="flex align-items-center gap-1">
+						<i class="mdi mdi-timer-sand-complete"></i>
+						{{ step.elapsedTime | exposureTime }}
+					</span>
+				}
 			</span>
 			<span class="bg-cyan-300 state percentage flex align-items-center gap-1 justify-content-center text-gray-900">
 				<i class="mdi mdi-percent"></i>

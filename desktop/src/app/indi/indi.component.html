@@ -30,23 +30,26 @@
 	</div>
 	<div class="grid properties mt-2">
 		<div class="col-12 flex-column">
-			<div *ngFor="let property of properties">
-				<neb-indi-property
-					*ngIf="!showLog && property.group === group"
-					[property]="property"
-					(send)="send($event)" />
-			</div>
-			<div
-				class="col-12 flex flex-column text-gray-200 h-full"
-				*ngIf="showLog">
-				<p-listbox
-					#listbox
-					[options]="messages"
-					[filter]="true"
-					class="h-full"
-					styleClass="border-0 h-full"
-					[listStyle]="{ maxHeight: 'calc(100vh - 174px)' }" />
-			</div>
+			@for (property of properties; track property.name) {
+				<div>
+					@if (!showLog && property.group === group) {
+						<neb-indi-property
+							[property]="property"
+							(send)="send($event)" />
+					}
+				</div>
+			}
+			@if (showLog) {
+				<div class="col-12 flex flex-column text-gray-200 h-full">
+					<p-listbox
+						#listbox
+						[options]="messages"
+						[filter]="true"
+						class="h-full"
+						styleClass="border-0 h-full"
+						[listStyle]="{ maxHeight: 'calc(100vh - 174px)' }" />
+				</div>
+			}
 		</div>
 	</div>
 </div>

@@ -4,103 +4,108 @@
 		<span class="ml-2">{{ property.label }}</span>
 	</div>
 	<div class="col-9">
-		<div
-			class="flex align-items-center gap-1"
-			*ngIf="property.type === 'SWITCH' && property.rule === 'ONE_OF_MANY'">
-			<neb-button
-				*ngFor="let item of property.items"
-				[disabled]="property.perm === 'RO' || disabled"
-				[label]="item.label"
-				(action)="sendSwitch(item)"
-				icon="mdi mdi-{{item.value ? 'check' : 'close'}}"
-				[severity]="item.value ? 'success' : 'danger'"/>
-		</div>
-		<div
-			class="flex align-items-center gap-1"
-			*ngIf="property.type === 'SWITCH' && property.rule === 'AT_MOST_ONE'">
-			<neb-button
-				*ngFor="let item of property.items"
-				[disabled]="property.perm === 'RO' || disabled"
-				[label]="item.label"
-				(action)="sendSwitch(item)"
-				icon="mdi mdi-check" />
-		</div>
-		<div
-			class="flex align-items-center gap-1"
-			*ngIf="property.type === 'SWITCH' && property.rule === 'ANY_OF_MANY'">
-			<neb-button
-				*ngFor="let item of property.items"
-				[disabled]="property.perm === 'RO' || disabled"
-				[label]="item.label"
-				(action)="sendSwitch(item)"
-				icon="mdi mdi-{{item.value ? 'check' : 'close'}}"
-				[severity]="item.value ? 'success' : 'danger'"/>
-		</div>
-		<div
-			class="grid flex align-items-center"
-			*ngIf="property.type === 'NUMBER'">
-			<div class="col-9 flex-column">
-				<div
-					*ngFor="let item of property.items"
-					class="grid my-0 flex align-items-center">
-					<div
-						class="col-6"
-						*ngIf="property.perm !== 'WO'">
-						<neb-input-text
+		@if (property.type === 'SWITCH') {
+			@if (property.rule === 'ONE_OF_MANY') {
+				<div class="flex align-items-center gap-1">
+					@for (item of property.items; track item.name) {
+						<neb-button
+							[disabled]="property.perm === 'RO' || disabled"
 							[label]="item.label"
-							[readonly]="true"
-							[value]="item.value" />
-					</div>
-					<div
-						class="col-6"
-						*ngIf="property.perm !== 'RO'">
-						<neb-input-text
-							label="item.label"
-							[(value)]="item.valueToSend" />
-					</div>
+							(action)="sendSwitch(item)"
+							icon="mdi mdi-{{ item.value ? 'check' : 'close' }}"
+							[severity]="item.value ? 'success' : 'danger'" />
+					}
+				</div>
+			}
+			@if (property.rule === 'AT_MOST_ONE') {
+				<div class="flex align-items-center gap-1">
+					@for (item of property.items; track item.name) {
+						<neb-button
+							[disabled]="property.perm === 'RO' || disabled"
+							[label]="item.label"
+							(action)="sendSwitch(item)"
+							icon="mdi mdi-check" />
+					}
+				</div>
+			}
+			@if (property.rule === 'ANY_OF_MANY') {
+				<div class="flex align-items-center gap-1">
+					@for (item of property.items; track item.name) {
+						<neb-button
+							[disabled]="property.perm === 'RO' || disabled"
+							[label]="item.label"
+							(action)="sendSwitch(item)"
+							icon="mdi mdi-{{ item.value ? 'check' : 'close' }}"
+							[severity]="item.value ? 'success' : 'danger'" />
+					}
+				</div>
+			}
+		} @else if (property.type === 'NUMBER') {
+			<div class="grid flex align-items-center">
+				<div class="col-9 flex-column">
+					@for (item of property.items; track item.name) {
+						<div class="grid my-0 flex align-items-center">
+							@if (property.perm !== 'WO') {
+								<div class="col-6">
+									<neb-input-text
+										[label]="item.label"
+										[readonly]="true"
+										[value]="item.value" />
+								</div>
+							}
+							@if (property.perm !== 'RO') {
+								<div class="col-6">
+									<neb-input-text
+										label="item.label"
+										[(value)]="item.valueToSend" />
+								</div>
+							}
+						</div>
+					}
+				</div>
+				<div class="col-3 text-center">
+					@if (property.perm !== 'RO') {
+						<neb-button
+							[disabled]="disabled"
+							label="Send"
+							(action)="sendNumber()"
+							icon="mdi mdi-send" />
+					}
 				</div>
 			</div>
-			<div class="col-3 text-center">
-				<neb-button
-					*ngIf="property.perm !== 'RO'"
-					[disabled]="disabled"
-					label="Send"
-					(action)="sendNumber()"
-					icon="mdi mdi-send" />
-			</div>
-		</div>
-		<div
-			class="grid flex align-items-center"
-			*ngIf="property.type === 'TEXT'">
-			<div class="col-9 flex-column">
-				<div
-					*ngFor="let item of property.items"
-					class="grid my-0 flex align-items-center">
-					<div
-						class="col-6"
-						*ngIf="property.perm !== 'WO'">
-						<neb-input-text
-							[label]="item.label"
-							[readonly]="true"
-							[value]="item.value" />
-					</div>
-					<div
-						class="col-6"
-						*ngIf="property.perm !== 'RO'">
-						<neb-input-text
-							[label]="item.label"
-							[(value)]="item.valueToSend" />
-					</div>
+		} @else if (property.type === 'TEXT') {
+			<div class="grid flex align-items-center">
+				<div class="col-9 flex-column">
+					@for (item of property.items; track item.name) {
+						<div class="grid my-0 flex align-items-center">
+							@if (property.perm !== 'WO') {
+								<div class="col-6">
+									<neb-input-text
+										[label]="item.label"
+										[readonly]="true"
+										[value]="item.value" />
+								</div>
+							}
+							@if (property.perm !== 'RO') {
+								<div class="col-6">
+									<neb-input-text
+										[label]="item.label"
+										[(value)]="item.valueToSend" />
+								</div>
+							}
+						</div>
+					}
+				</div>
+				<div class="col-3 text-center">
+					@if (property.perm !== 'RO') {
+						<neb-button
+							[disabled]="disabled"
+							label="Send"
+							(action)="sendText()"
+							icon="mdi mdi-send" />
+					}
 				</div>
 			</div>
-			<div class="col-3 text-center">
-				<neb-button
-					*ngIf="property.perm !== 'RO'"
-					[disabled]="disabled"
-					label="Send"
-					(action)="sendText()"
-					icon="mdi mdi-send" />
-			</div>
-		</div>
+		}
 	</div>
 </div>

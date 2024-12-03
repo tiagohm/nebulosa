@@ -9,15 +9,14 @@
 	[draggable]="false"
 	(onHide)="hide()"
 	[style]="{ width: 'auto' }">
-	<span
-		*ngIf="currentHeader"
-		class="text-sm font-bold uppercase">
-		{{ currentHeader }}
-	</span>
-	<neb-slide-menu
-		*ngIf="visible"
-		[model]="model"
-		appendTo="body"
-		(forward)="next($event)"
-		(backward)="back()" />
+	@if (currentHeader) {
+		<span class="text-sm font-bold uppercase">{{ currentHeader }}</span>
+	}
+	@if (visible) {
+		<neb-slide-menu
+			[model]="model"
+			appendTo="body"
+			(forward)="next($event)"
+			(backward)="back()" />
+	}
 </p-dialog>

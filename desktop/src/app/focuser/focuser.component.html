@@ -23,12 +23,12 @@
 				<i class="mdi mdi-information text-info"></i>
 				<span style="display: contents">{{ focuser.moving ? 'moving' : 'idle' }}</span>
 			</div>
-			<div
-				class="flex align-items-center gap-1"
-				*ngIf="focuser.hasThermometer">
-				<i class="mdi mdi-thermometer text-danger"></i>
-				<span style="display: contents">{{ focuser.temperature | number: '1.2-2' }}°C</span>
-			</div>
+			@if (focuser.hasThermometer) {
+				<div class="flex align-items-center gap-1">
+					<i class="mdi mdi-thermometer text-danger"></i>
+					<span style="display: contents">{{ focuser.temperature | number: '1.2-2' }}°C</span>
+				</div>
+			}
 		</div>
 	</div>
 	<div class="grid mt-1">

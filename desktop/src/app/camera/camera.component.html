@@ -24,86 +24,92 @@
 				icon="mdi mdi-image-multiple"
 				(action)="openCameraImage()"
 				tooltip="View image" />
-			<neb-button
-				*ngIf="hasCalibration"
-				[disabled]="!camera"
-				icon="mdi mdi-wrench"
-				(action)="calibrationMenu.show()"
-				tooltip="Calibration" />
-			<neb-button
-				*ngIf="canShowMenu"
-				[disabled]="!camera || !camera.connected || running"
-				icon="mdi mdi-dots-vertical"
-				(action)="cameraMenu.show()" />
+			@if (hasCalibration) {
+				<neb-button
+					[disabled]="!camera"
+					icon="mdi mdi-wrench"
+					(action)="calibrationMenu.show()"
+					tooltip="Calibration" />
+			}
+			@if (canShowMenu) {
+				<neb-button
+					[disabled]="!camera || !camera.connected || running"
+					icon="mdi mdi-dots-vertical"
+					(action)="cameraMenu.show()" />
+			}
 		</div>
-		<div
-			*ngIf="canShowSavePath"
-			class="col-12 py-0 text-sm text-gray-400 flex align-items-center gap-2">
-			<i
-				*ngIf="request.autoSave"
-				class="mdi mdi-content-save cursor-pointer"
-				(click)="toggleAutoSaveAllExposures()"
-				pTooltip="Auto save: ON"
-				tooltipPosition="bottom"
-				[positionLeft]="24"
-				[positionTop]="8"></i>
-			<i
-				*ngIf="!request.autoSave"
-				class="mdi mdi-content-save-off cursor-pointer"
-				(click)="toggleAutoSaveAllExposures()"
-				pTooltip="Auto save: OFF"
-				tooltipPosition="bottom"
-				[positionLeft]="24"
-				[positionTop]="8"></i>
-			<i
-				*ngIf="request.autoSubFolderMode === 'OFF'"
-				(click)="toggleAutoSubFolder()"
-				class="mdi mdi-folder-off cursor-pointer"
-				pTooltip="Auto sub folder: OFF"
-				tooltipPosition="bottom"
-				[positionLeft]="24"
-				[positionTop]="8"></i>
-			<i
-				*ngIf="request.autoSubFolderMode === 'NOON'"
-				(click)="toggleAutoSubFolder()"
-				class="mdi mdi-weather-sunny text-yellow-600 cursor-pointer"
-				pTooltip="Auto sub folder: NOON"
-				tooltipPosition="bottom"
-				[positionLeft]="24"
-				[positionTop]="8"></i>
-			<i
-				*ngIf="request.autoSubFolderMode === 'MIDNIGHT'"
-				(click)="toggleAutoSubFolder()"
-				class="mdi mdi-weather-night text-info cursor-pointer"
-				pTooltip="Auto sub folder: MIDNIGHT"
-				tooltipPosition="bottom"
-				[positionLeft]="32"
-				[positionTop]="8"></i>
-			<span
-				*ngIf="camera && (preference.request.savePath || camera.capturesPath)"
-				style="padding-top: 1px; padding-bottom: 1px; height: 14px"
-				class="flex flex-1 align-items-center gap-2 bg-gray-800 border-round px-3 text-overflow-scroll">
-				<i
-					class="mdi mdi-folder-open cursor-pointer"
-					pTooltip="Choose new folder"
-					tooltipPosition="bottom"
-					(click)="chooseSavePath()"
-					[positionTop]="8"></i>
-				<i
-					*ngIf="preference.request.savePath || camera.capturesPath"
-					class="mdi mdi-close cursor-pointer"
-					pTooltip="Reset"
-					tooltipPosition="bottom"
-					(click)="clearSavePath()"
-					[positionTop]="8"></i>
-				{{ preference.request.savePath || camera.capturesPath }}
-			</span>
-		</div>
-		<div
-			*ngIf="canShowInfo"
-			class="col-12 pt-0 pb-1 text-sm text-gray-400 flex align-items-center my-1 gap-1 text-center text-xs">
-			<neb-camera-exposure #cameraExposure />
-		</div>
+		@if (canShowSavePath) {
+			<div class="col-12 py-0 text-sm text-gray-400 flex align-items-center gap-2">
+				@if (request.autoSave) {
+					<i
+						class="mdi mdi-content-save cursor-pointer"
+						(click)="toggleAutoSaveAllExposures()"
+						pTooltip="Auto save: ON"
+						tooltipPosition="bottom"
+						[positionLeft]="24"
+						[positionTop]="8"></i>
+				} @else {
+					<i
+						class="mdi mdi-content-save-off cursor-pointer"
+						(click)="toggleAutoSaveAllExposures()"
+						pTooltip="Auto save: OFF"
+						tooltipPosition="bottom"
+						[positionLeft]="24"
+						[positionTop]="8"></i>
+				}
+				@if (request.autoSubFolderMode === 'OFF') {
+					<i
+						(click)="toggleAutoSubFolder()"
+						class="mdi mdi-folder-off cursor-pointer"
+						pTooltip="Auto sub folder: OFF"
+						tooltipPosition="bottom"
+						[positionLeft]="24"
+						[positionTop]="8"></i>
+				} @else if (request.autoSubFolderMode === 'NOON') {
+					<i
+						(click)="toggleAutoSubFolder()"
+						class="mdi mdi-weather-sunny text-yellow-600 cursor-pointer"
+						pTooltip="Auto sub folder: NOON"
+						tooltipPosition="bottom"
+						[positionLeft]="24"
+						[positionTop]="8"></i>
+				} @else if (request.autoSubFolderMode === 'MIDNIGHT') {
+					<i
+						(click)="toggleAutoSubFolder()"
+						class="mdi mdi-weather-night text-info cursor-pointer"
+						pTooltip="Auto sub folder: MIDNIGHT"
+						tooltipPosition="bottom"
+						[positionLeft]="32"
+						[positionTop]="8"></i>
+				}
+				@if (camera && (preference.request.savePath || camera.capturesPath)) {
+					<span
+						style="padding-top: 1px; padding-bottom: 1px; height: 14px"
+						class="flex flex-1 align-items-center gap-2 bg-gray-800 border-round px-3 text-overflow-scroll">
+						<i
+							class="mdi mdi-folder-open cursor-pointer"
+							pTooltip="Choose new folder"
+							tooltipPosition="bottom"
+							(click)="chooseSavePath()"
+							[positionTop]="8"></i>
+						@if (preference.request.savePath || camera.capturesPath) {
+							<i
+								class="mdi mdi-close cursor-pointer"
+								pTooltip="Reset"
+								tooltipPosition="bottom"
+								(click)="clearSavePath()"
+								[positionTop]="8"></i>
+						}
+						{{ preference.request.savePath || camera.capturesPath }}
+					</span>
+				}
+			</div>
+		}
+		@if (canShowInfo) {
+			<div class="col-12 pt-0 pb-1 text-sm text-gray-400 flex align-items-center my-1 gap-1 text-center text-xs">
+				<neb-camera-exposure #cameraExposure />
+			</div>
+		}
 	</div>
 	<div class="grid py-1 flex align-items-center">
 		<div class="col-3 flex flex-column justify-content-center text-center">
@@ -307,84 +313,96 @@
 	</div>
 	<div class="grid mt-0">
 		<div class="col-12 gap-1 justify-content-center align-items-center flex-wrap">
-			<neb-info
-				*ngIf="hasCalibration"
-				icon="mdi mdi-wrench"
-				label="{{ request.calibrationGroup || 'None' }}"
-				(action)="calibrationMenu.show()" />
-			<neb-info
-				*ngIf="hasDither"
-				icon="mdi mdi-pulse"
-				label="Dither: {{ request.dither.enabled ? 'ON' : 'OFF' }}"
-				(action)="dither.showDialog = true" />
-			<neb-info
-				*ngIf="hasLiveStacking"
-				icon="mdi mdi-image-multiple"
-				label="Live stacking: {{ request.liveStacking.enabled ? 'ON' : 'OFF' }}"
-				(action)="liveStacking.showDialog = true" />
-			<neb-error
-				*ngIf="preference.mount"
-				icon="mdi mdi-telescope"
-				[label]="preference.mount.name"
-				[severity]="preference.mount.connected ? 'success' : 'danger'"
-				(action)="openMount(preference.mount)" />
-			<neb-error
-				*ngIf="preference.focuser"
-				icon="mdi mdi-image-filter-center-focus"
-				label="{{ preference.focuser.name }}: {{ preference.focuser.position }}"
-				[severity]="preference.focuser.connected ? 'success' : 'danger'"
-				(action)="openFocuser(preference.focuser)" />
-			<neb-error
-				*ngIf="preference.wheel"
-				icon="mdi mdi-palette"
-				label="{{ preference.wheel.name }}: {{ currentWheelFilter ?? 'None' }}"
-				[severity]="preference.wheel.connected ? 'success' : 'danger'"
-				(action)="openWheel(preference.wheel)" />
-			<neb-error
-				*ngIf="preference.rotator"
-				icon="mdi mdi-rotate-right"
-				label="{{ preference.rotator.name }}: {{ preference.rotator.angle.toFixed(0) }}°"
-				[severity]="preference.rotator.connected ? 'success' : 'danger'"
-				(action)="openRotator(preference.rotator)" />
+			@if (hasCalibration) {
+				<neb-info
+					icon="mdi mdi-wrench"
+					label="{{ request.calibrationGroup || 'None' }}"
+					(action)="calibrationMenu.show()" />
+			}
+			@if (hasDither) {
+				<neb-info
+					icon="mdi mdi-pulse"
+					label="Dither: {{ request.dither.enabled ? 'ON' : 'OFF' }}"
+					(action)="dither.showDialog = true" />
+			}
+			@if (hasLiveStacking) {
+				<neb-info
+					icon="mdi mdi-image-multiple"
+					label="Live stacking: {{ request.liveStacking.enabled ? 'ON' : 'OFF' }}"
+					(action)="liveStacking.showDialog = true" />
+			}
+			@if (preference.mount) {
+				<neb-error
+					icon="mdi mdi-telescope"
+					[label]="preference.mount.name"
+					[severity]="preference.mount.connected ? 'success' : 'danger'"
+					(action)="openMount(preference.mount)" />
+			}
+			@if (preference.focuser) {
+				<neb-error
+					icon="mdi mdi-image-filter-center-focus"
+					label="{{ preference.focuser.name }}: {{ preference.focuser.position }}"
+					[severity]="preference.focuser.connected ? 'success' : 'danger'"
+					(action)="openFocuser(preference.focuser)" />
+			}
+			@if (preference.wheel) {
+				<neb-error
+					icon="mdi mdi-palette"
+					label="{{ preference.wheel.name }}: {{ currentWheelFilter ?? 'None' }}"
+					[severity]="preference.wheel.connected ? 'success' : 'danger'"
+					(action)="openWheel(preference.wheel)" />
+			}
+			@if (preference.rotator) {
+				<neb-error
+					icon="mdi mdi-rotate-right"
+					label="{{ preference.rotator.name }}: {{ preference.rotator.angle.toFixed(0) }}°"
+					[severity]="preference.rotator.connected ? 'success' : 'danger'"
+					(action)="openRotator(preference.rotator)" />
+			}
 		</div>
 		<div class="col-12 flex align-items-center justify-content-center gap-1">
 			@if (pausingOrPaused) {
-				<neb-button
-					*ngIf="canStartOrAbort"
-					[disabled]="status === 'PAUSING'"
-					label="Unpause"
-					(action)="unpauseCapture()"
-					icon="mdi mdi-play"
-					severity="success" />
+				@if (canStartOrAbort) {
+					<neb-button
+						[disabled]="status === 'PAUSING'"
+						label="Unpause"
+						(action)="unpauseCapture()"
+						icon="mdi mdi-play"
+						severity="success" />
+				}
 			} @else if (!running) {
-				<neb-button
-					*ngIf="canStartOrAbort"
-					[disabled]="!camera.connected || running"
-					label="Start"
-					(action)="startCapture()"
-					icon="mdi mdi-play"
-					severity="success" />
+				@if (canStartOrAbort) {
+					<neb-button
+						[disabled]="!camera.connected || running"
+						label="Start"
+						(action)="startCapture()"
+						icon="mdi mdi-play"
+						severity="success" />
+				}
 			}
-			<neb-button
-				*ngIf="canStartOrAbort && running && !pausingOrPaused"
-				label="Pause"
-				(action)="pauseCapture()"
-				icon="mdi mdi-pause"
-				severity="info" />
-			<neb-button
-				*ngIf="canStartOrAbort"
-				[disabled]="!camera.connected || !running"
-				label="Abort"
-				(action)="abortCapture()"
-				icon="mdi mdi-stop"
-				severity="danger" />
-			<neb-button
-				*ngIf="canSave"
-				[disabled]="!camera.connected"
-				label="Save"
-				(action)="apply()"
-				icon="mdi mdi-content-save"
-				severity="info" />
+			@if (canStartOrAbort && running && !pausingOrPaused) {
+				<neb-button
+					label="Pause"
+					(action)="pauseCapture()"
+					icon="mdi mdi-pause"
+					severity="info" />
+			}
+			@if (canStartOrAbort) {
+				<neb-button
+					[disabled]="!camera.connected || !running"
+					label="Abort"
+					(action)="abortCapture()"
+					icon="mdi mdi-stop"
+					severity="danger" />
+			}
+			@if (canSave) {
+				<neb-button
+					[disabled]="!camera.connected"
+					label="Save"
+					(action)="apply()"
+					icon="mdi mdi-content-save"
+					severity="info" />
+			}
 		</div>
 	</div>
 </div>

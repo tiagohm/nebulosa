@@ -32,81 +32,86 @@
 		(mousemove)="imageMouseMoved($event)"
 		[class.cursor-crosshair]="isMouseCoordinateVisible" />
 
-	<neb-crosshair
-		*ngIf="preference.crossHair && zoom.panZoom"
-		[style]="'transform: rotate(' + rotation.transformation.angle + 'deg)'"
-		class="absolute left-0 top-0" />
+	@if (preference.crossHair && zoom.panZoom) {
+		<neb-crosshair
+			[style]="'transform: rotate(' + rotation.transformation.angle + 'deg)'"
+			class="absolute left-0 top-0" />
+	}
 
-	<svg
-		*ngIf="!transformation.mirrorHorizontal && !transformation.mirrorVertical && annotation.visible"
-		[style]="'transform: rotate(' + rotation.transformation.angle + 'deg)'"
-		class="absolute left-0 top-0 w-full h-full pointer-events-none select-none">
-		<g
-			*ngFor="let a of annotation.displayOnlyFiltered ? annotation.filtered : annotation.data"
-			(dblclick)="showAnnotationInfo(a)"
-			class="pointer-events-auto cursor-pointer">
-			<circle
-				[attr.cx]="a.x - 0.5"
-				[attr.cy]="a.y - 0.5"
-				r="4"
-				stroke="#FDD835"
-				stroke-width="1"
-				(contextmenu)="imageClicked($event, true)"
-				fill="transparent"></circle>
-			<text
-				[attr.x]="a.x"
-				[attr.y]="a.y"
-				fill="#00897B"
-				[style]="'font-size: 5px; transform: rotate(' + -rotation.transformation.angle + 'deg); transform-origin: ' + (a.x - 0.5) + 'px ' + (a.y - 0.5) + 'px 0px'"
-				class="pointer-events-none select-none">
-				{{ (a.star ?? a.dso ?? a.minorPlanet)?.name?.join(' · ') }}
-			</text>
-		</g>
-	</svg>
-
-	<svg
-		*ngIf="!transformation.mirrorHorizontal && !transformation.mirrorVertical && starDetector.visible"
-		[style]="'transform: rotate(' + rotation.transformation.angle + 'deg)'"
-		class="absolute left-0 top-0 w-full h-full pointer-events-none select-none">
-		<g
-			*ngFor="let s of starDetector.stars"
-			class="pointer-events-auto cursor-pointer">
-			<circle
-				[attr.cx]="s.x - 0.5"
-				[attr.cy]="s.y - 0.5"
-				r="4"
-				stroke="#FDD835"
-				stroke-width="1"
-				fill="transparent"
-				(click)="drawDetectedStar(s)"
-				(contextmenu)="imageClicked($event, true)"></circle>
-			<text
-				[attr.x]="s.x"
-				[attr.y]="s.y"
-				fill="#00897B"
-				[style]="'font-size: 5px; transform: rotate(-' + rotation.transformation.angle + 'deg); transform-origin: ' + (s.x - 0.5) + 'px ' + (s.y - 0.5) + 'px 0px'"
-				class="pointer-events-none select-none">
-				{{ s.hfd.toFixed(1) }}
-			</text>
-		</g>
-	</svg>
-
-	<svg
-		*ngIf="imageInfo"
-		[style]="'transform: rotate(' + rotation.transformation.angle + 'deg)'"
-		class="absolute left-0 top-0 w-full h-full pointer-events-none select-none fov overflow-visible">
-		@for (item of fov.fovs; track $index) {
-			@if (item.enabled && item.computed) {
-				<rect
-					[attr.width]="item.computed.svg.width"
-					[attr.height]="item.computed.svg.height"
-					[attr.x]="item.computed.svg.x"
-					[attr.y]="item.computed.svg.y"
-					[attr.stroke]="item.color"
-					[style]="'transform-box: fill-box; transform-origin: center; transform: translate(-50%, -50%) rotate(' + item.rotation + 'deg)'" />
+	@if (!transformation.mirrorHorizontal && !transformation.mirrorVertical && annotation.visible) {
+		<svg
+			[style]="'transform: rotate(' + rotation.transformation.angle + 'deg)'"
+			class="absolute left-0 top-0 w-full h-full pointer-events-none select-none">
+			@for (a of annotation.displayOnlyFiltered ? annotation.filtered : annotation.data; track a) {
+				<g
+					(dblclick)="showAnnotationInfo(a)"
+					class="pointer-events-auto cursor-pointer">
+					<circle
+						[attr.cx]="a.x - 0.5"
+						[attr.cy]="a.y - 0.5"
+						r="4"
+						stroke="#FDD835"
+						stroke-width="1"
+						(contextmenu)="imageClicked($event, true)"
+						fill="transparent"></circle>
+					<text
+						[attr.x]="a.x"
+						[attr.y]="a.y"
+						fill="#00897B"
+						[style]="'font-size: 5px; transform: rotate(' + -rotation.transformation.angle + 'deg); transform-origin: ' + (a.x - 0.5) + 'px ' + (a.y - 0.5) + 'px 0px'"
+						class="pointer-events-none select-none">
+						{{ (a.star ?? a.dso ?? a.minorPlanet)?.name?.join(' · ') }}
+					</text>
+				</g>
 			}
-		}
-	</svg>
+		</svg>
+	}
+
+	@if (!transformation.mirrorHorizontal && !transformation.mirrorVertical && starDetector.visible) {
+		<svg
+			[style]="'transform: rotate(' + rotation.transformation.angle + 'deg)'"
+			class="absolute left-0 top-0 w-full h-full pointer-events-none select-none">
+			@for (s of starDetector.stars; track s) {
+				<g class="pointer-events-auto cursor-pointer">
+					<circle
+						[attr.cx]="s.x - 0.5"
+						[attr.cy]="s.y - 0.5"
+						r="4"
+						stroke="#FDD835"
+						stroke-width="1"
+						fill="transparent"
+						(click)="drawDetectedStar(s)"
+						(contextmenu)="imageClicked($event, true)"></circle>
+					<text
+						[attr.x]="s.x"
+						[attr.y]="s.y"
+						fill="#00897B"
+						[style]="'font-size: 5px; transform: rotate(-' + rotation.transformation.angle + 'deg); transform-origin: ' + (s.x - 0.5) + 'px ' + (s.y - 0.5) + 'px 0px'"
+						class="pointer-events-none select-none">
+						{{ s.hfd.toFixed(1) }}
+					</text>
+				</g>
+			}
+		</svg>
+	}
+
+	@if (imageInfo) {
+		<svg
+			[style]="'transform: rotate(' + rotation.transformation.angle + 'deg)'"
+			class="absolute left-0 top-0 w-full h-full pointer-events-none select-none fov overflow-visible">
+			@for (item of fov.fovs; track $index) {
+				@if (item.enabled && item.computed) {
+					<rect
+						[attr.width]="item.computed.svg.width"
+						[attr.height]="item.computed.svg.height"
+						[attr.x]="item.computed.svg.x"
+						[attr.y]="item.computed.svg.y"
+						[attr.stroke]="item.color"
+						[style]="'transform-box: fill-box; transform-origin: center; transform: translate(-50%, -50%) rotate(' + item.rotation + 'deg)'" />
+				}
+			}
+		</svg>
+	}
 
 	<div
 		#roi
@@ -114,30 +119,31 @@
 		[style]="'transform: rotate(' + rotation.transformation.angle + 'deg)'"
 		class="roi absolute left-0 top-0"
 		(contextmenu)="imageClicked($event, true)"></div>
-	<ngx-moveable
-		#moveable
-		[target]="roi"
-		[origin]="true"
-		*ngIf="hasROI"
-		[draggable]="true"
-		[resizable]="true"
-		[rotatable]="false"
-		[edgeDraggable]="true"
-		[zoom]="1"
-		(drag)="roiDrag($event)"
-		(rotate)="roiRotate($event)"
-		(resize)="roiResize($event)" />
+	@if (hasROI) {
+		<ngx-moveable
+			#moveable
+			[target]="roi"
+			[origin]="true"
+			[draggable]="true"
+			[resizable]="true"
+			[rotatable]="false"
+			[edgeDraggable]="true"
+			[zoom]="1"
+			(drag)="roiDrag($event)"
+			(rotate)="roiRotate($event)"
+			(resize)="roiResize($event)" />
+	}
 </div>
 
-<div
-	*ngIf="hasROI"
-	class="roi-coordinates fixed flex flex-row align-items-center gap-2">
-	<span>X: {{ imageROI.area.x.toFixed(0) }} Y: {{ imageROI.area.y.toFixed(0) }} W: {{ imageROI.area.width.toFixed(0) }} H: {{ imageROI.area.height.toFixed(0) }}</span>
-	<neb-button
-		(action)="roiForCamera()"
-		icon="mdi mdi-camera-iris"
-		tooltip="Apply" />
-</div>
+@if (hasROI) {
+	<div class="roi-coordinates fixed flex flex-row align-items-center gap-2">
+		<span>X: {{ imageROI.area.x.toFixed(0) }} Y: {{ imageROI.area.y.toFixed(0) }} W: {{ imageROI.area.width.toFixed(0) }} H: {{ imageROI.area.height.toFixed(0) }}</span>
+		<neb-button
+			(action)="roiForCamera()"
+			icon="mdi mdi-camera-iris"
+			tooltip="Apply" />
+	</div>
+}
 
 <p-contextMenu
 	#menu
@@ -308,7 +314,7 @@
 	[modal]="false"
 	[style]="{ width: 'min-content', minWidth: '325px' }">
 	<div class="grid mt-2">
-		<ng-container *ngIf="astronomicalObject.info">
+		@if (astronomicalObject.info) {
 			<div class="col-12">
 				<neb-input-text
 					label="Name"
@@ -327,48 +333,48 @@
 					[readonly]="true"
 					[value]="astronomicalObject.info.declinationJ2000 | angle: true : 360" />
 			</div>
-			<div
-				class="col-4"
-				*ngIf="astronomicalObject.info.constellation">
-				<neb-input-text
-					label="Constellation"
-					[readonly]="true"
-					value="{{ astronomicalObject.info.constellation }} | {{ astronomicalObject.info.constellation | enum }}" />
+			@if (astronomicalObject.info.constellation) {
+				<div class="col-4">
+					<neb-input-text
+						label="Constellation"
+						[readonly]="true"
+						value="{{ astronomicalObject.info.constellation }} | {{ astronomicalObject.info.constellation | enum }}" />
+				</div>
+			}
+			@if (astronomicalObject.info.magnitude) {
+				<div class="col-3">
+					<neb-input-text
+						label="Magnitude"
+						[readonly]="true"
+						value="{{ astronomicalObject.info.magnitude < 30.0 ? astronomicalObject.info.magnitude.toFixed(2) : '-' }}" />
+				</div>
+			}
+			@if (astronomicalObject.info.type) {
+				<div class="col-6">
+					<neb-input-text
+						label="Type"
+						[readonly]="true"
+						value="{{ astronomicalObject.info.type | enum }}" />
+				</div>
+			}
+			@if (astronomicalObject.info.distance) {
+				<div class="col-3">
+					<neb-input-text
+						label="Dist. (ly)"
+						[readonly]="true"
+						value="{{ astronomicalObject.info.distance <= 0 ? '-' : astronomicalObject.info.distance.toFixed(3) }}" />
+				</div>
+			}
+		}
+		@if (astronomicalObject.info?.type) {
+			<div class="col-12 justify-content-center text-sm">
+				<a
+					target="_blank"
+					href="{{ 'https://simbad.cds.unistra.fr/simbad/sim-id?Ident=' + astronomicalObject.info!.name[0] }}">
+					Simbad
+				</a>
 			</div>
-			<div
-				class="col-3"
-				*ngIf="astronomicalObject.info.magnitude">
-				<neb-input-text
-					label="Magnitude"
-					[readonly]="true"
-					value="{{ astronomicalObject.info.magnitude < 30.0 ? astronomicalObject.info.magnitude.toFixed(2) : '-' }}" />
-			</div>
-			<div
-				class="col-6"
-				*ngIf="astronomicalObject.info.type">
-				<neb-input-text
-					label="Type"
-					[readonly]="true"
-					value="{{ astronomicalObject.info.type | enum }}" />
-			</div>
-			<div
-				class="col-3"
-				*ngIf="astronomicalObject.info.distance">
-				<neb-input-text
-					label="Dist. (ly)"
-					[readonly]="true"
-					value="{{ astronomicalObject.info.distance <= 0 ? '-' : astronomicalObject.info.distance.toFixed(3) }}" />
-			</div>
-		</ng-container>
-		<div
-			class="col-12 justify-content-center text-sm"
-			*ngIf="astronomicalObject.info?.type">
-			<a
-				target="_blank"
-				href="{{ 'https://simbad.cds.unistra.fr/simbad/sim-id?Ident=' + astronomicalObject.info!.name[0] }}">
-				Simbad
-			</a>
-		</div>
+		}
 	</div>
 	<ng-template pTemplate="footer">
 		<div class="col-12 flex justify-content-center">
@@ -832,24 +838,24 @@
 				<label>Detector</label>
 			</p-floatLabel>
 		</div>
-		<div
-			class="col-5 align-items-center"
-			*ngIf="starDetector.request.type !== 'SIRIL'">
-			<neb-input-number
-				label="Min SNR"
-				[min]="0"
-				[max]="500"
-				[(value)]="starDetector.request.minSNR" />
-		</div>
-		<div
-			class="col-5 align-items-center"
-			*ngIf="starDetector.request.type === 'SIRIL'">
-			<neb-input-number
-				label="Max Stars"
-				[min]="0"
-				[max]="2000"
-				[(value)]="starDetector.request.maxStars" />
-		</div>
+		@if (starDetector.request.type !== 'SIRIL') {
+			<div class="col-5 align-items-center">
+				<neb-input-number
+					label="Min SNR"
+					[min]="0"
+					[max]="500"
+					[(value)]="starDetector.request.minSNR" />
+			</div>
+		}
+		@if (starDetector.request.type === 'SIRIL') {
+			<div class="col-5 align-items-center">
+				<neb-input-number
+					label="Max Stars"
+					[min]="0"
+					[max]="2000"
+					[(value)]="starDetector.request.maxStars" />
+			</div>
+		}
 		<div class="col-12 mt-1">
 			<span class="font-bold text-sm">COMPUTED</span>
 		</div>
@@ -1037,47 +1043,48 @@
 				tooltip="Add"
 				(action)="addFOV()" />
 		</div>
-		<div
-			class="col-12 p-0 flex-column overflow-auto mt-2 gap-1"
-			*ngIf="fov.fovs.length"
-			style="max-height: 112px">
-			@for (item of fov.fovs; track $index) {
-				<div
-					class="flex align-items-center gap-2 border-left-3 p-2 border-round cursor-pointer"
-					[class.bg-blue-900]="fov.selected === item"
-					[style.border-color]="item.color"
-					(click)="selectFOV(item)">
-					<div class="flex align-items-center justify-content-center">
-						<neb-checkbox [(value)]="item.enabled" />
+		@if (fov.fovs.length) {
+			<div
+				class="col-12 p-0 flex-column overflow-auto mt-2 gap-1"
+				style="max-height: 112px">
+				@for (item of fov.fovs; track $index) {
+					<div
+						class="flex align-items-center gap-2 border-left-3 p-2 border-round cursor-pointer"
+						[class.bg-blue-900]="fov.selected === item"
+						[style.border-color]="item.color"
+						(click)="selectFOV(item)">
+						<div class="flex align-items-center justify-content-center">
+							<neb-checkbox [(value)]="item.enabled" />
+						</div>
+						<div class="flex align-items-center flex-wrap gap-1">
+							<neb-info label="FL: {{ item.focalLength }} mm" />
+							<neb-info label="AP: {{ item.aperture }} mm" />
+							<neb-info label="RES: {{ item.cameraSize.width }}x{{ item.cameraSize.height }}" />
+							<neb-info label="PS: {{ item.pixelSize.width }}x{{ item.pixelSize.height }} µm" />
+							<neb-info label="MULT: {{ item.barlowReducer.toFixed(2) }}x" />
+							<neb-info label="BIN: {{ item.bin }}" />
+							<neb-info label="ANGLE: {{ item.rotation }}°" />
+							@if (item.computed) {
+								<neb-success label="F/{{ item.computed.focalRatio.toFixed(1) }}" />
+								<neb-success label="SCALE: {{ item.computed.cameraResolution.width.toFixed(2) }}&quot;x{{ item.computed.cameraResolution.height.toFixed(2) }}&quot;" />
+								<neb-success label="FOV: {{ item.computed.fieldSize.width.toFixed(2) }}°x{{ item.computed.fieldSize.height.toFixed(2) }}°" />
+							}
+						</div>
+						<div class="flex px-1 flex-column gap-0 align-items-center justify-content-between">
+							<neb-button
+								(action)="frameFOV(item)"
+								icon="mdi mdi-image"
+								tooltip="Frame" />
+							<neb-button
+								severity="danger"
+								icon="mdi mdi-delete"
+								tooltip="Remove"
+								(action)="deleteFOV(item)" />
+						</div>
 					</div>
-					<div class="flex align-items-center flex-wrap gap-1">
-						<neb-info label="FL: {{ item.focalLength }} mm" />
-						<neb-info label="AP: {{ item.aperture }} mm" />
-						<neb-info label="RES: {{ item.cameraSize.width }}x{{ item.cameraSize.height }}" />
-						<neb-info label="PS: {{ item.pixelSize.width }}x{{ item.pixelSize.height }} µm" />
-						<neb-info label="MULT: {{ item.barlowReducer.toFixed(2) }}x" />
-						<neb-info label="BIN: {{ item.bin }}" />
-						<neb-info label="ANGLE: {{ item.rotation }}°" />
-						@if (item.computed) {
-							<neb-success label="F/{{ item.computed.focalRatio.toFixed(1) }}" />
-							<neb-success label="SCALE: {{ item.computed.cameraResolution.width.toFixed(2) }}&quot;x{{ item.computed.cameraResolution.height.toFixed(2) }}&quot;" />
-							<neb-success label="FOV: {{ item.computed.fieldSize.width.toFixed(2) }}°x{{ item.computed.fieldSize.height.toFixed(2) }}°" />
-						}
-					</div>
-					<div class="flex px-1 flex-column gap-0 align-items-center justify-content-between">
-						<neb-button
-							(action)="frameFOV(item)"
-							icon="mdi mdi-image"
-							tooltip="Frame" />
-						<neb-button
-							severity="danger"
-							icon="mdi mdi-delete"
-							tooltip="Remove"
-							(action)="deleteFOV(item)" />
-					</div>
-				</div>
-			}
-		</div>
+				}
+			</div>
+		}
 	</div>
 </p-dialog>
 
@@ -1325,17 +1332,17 @@
 	</div>
 </p-dialog>
 
-<div
-	class="fixed p-3 text-sm coordinates monospaced"
-	*ngIf="mouseCoordinate && isMouseCoordinateVisible">
-	<div class="grid m-0">
-		<div class="col-6 m-0 p-0">X: {{ mouseCoordinate.x }}</div>
-		<div class="col-6 m-0 p-0">Y: {{ mouseCoordinate.y }}</div>
-		<div class="col-6 m-0 p-0">α: {{ mouseCoordinate.alpha }}</div>
-		<div class="col-6 m-0 p-0">δ: {{ mouseCoordinate.delta }}</div>
-		<div class="col-6 m-0 p-0">l: {{ mouseCoordinate.l }}</div>
-		<div class="col-6 m-0 p-0">b: {{ mouseCoordinate.b }}</div>
+@if (mouseCoordinate && isMouseCoordinateVisible) {
+	<div class="fixed p-3 text-sm coordinates monospaced">
+		<div class="grid m-0">
+			<div class="col-6 m-0 p-0">X: {{ mouseCoordinate.x }}</div>
+			<div class="col-6 m-0 p-0">Y: {{ mouseCoordinate.y }}</div>
+			<div class="col-6 m-0 p-0">α: {{ mouseCoordinate.alpha }}</div>
+			<div class="col-6 m-0 p-0">δ: {{ mouseCoordinate.delta }}</div>
+			<div class="col-6 m-0 p-0">l: {{ mouseCoordinate.l }}</div>
+			<div class="col-6 m-0 p-0">b: {{ mouseCoordinate.b }}</div>
+		</div>
 	</div>
-</div>
+}
 
 <neb-device-list-menu #deviceMenu />

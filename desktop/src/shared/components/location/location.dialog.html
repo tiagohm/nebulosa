@@ -48,13 +48,13 @@
 			(longitudeChange)="locationChanged()" />
 	</div>
 </div>
-<div
-	*ngIf="isDialog"
-	class="p-dialog-footer px-0">
-	<neb-button
-		[disabled]="!location.name"
-		icon="mdi mdi-check"
-		label="OK"
-		(action)="save()"
-		severity="success" />
-</div>
+@if (isDialog) {
+	<div class="p-dialog-footer px-0">
+		<neb-button
+			[disabled]="!location.name"
+			icon="mdi mdi-check"
+			label="OK"
+			(action)="save()"
+			severity="success" />
+	</div>
+}

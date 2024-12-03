@@ -76,16 +76,16 @@
 				tooltip="Move" />
 		</div>
 	</div>
-	<div
-		class="grid mt-2"
-		*ngIf="canApply">
-		<div class="col-12 flex justify-content-center gap-2">
-			<neb-button
-				[disabled]="!rotator.connected"
-				label="Save"
-				(action)="apply()"
-				icon="mdi mdi-content-save"
-				severity="info" />
+	@if (canApply) {
+		<div class="grid mt-2">
+			<div class="col-12 flex justify-content-center gap-2">
+				<neb-button
+					[disabled]="!rotator.connected"
+					label="Save"
+					(action)="apply()"
+					icon="mdi mdi-content-save"
+					severity="info" />
+			</div>
 		</div>
-	</div>
+	}
 </div>

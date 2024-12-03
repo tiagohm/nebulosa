@@ -1,7 +1,7 @@
 <div class="grid pb-3">
 	<div class="col-12">
 		<p-tabView [(activeIndex)]="tab">
-			@for (key of groups; track $index) {
+			@for (key of groups; track key) {
 				@let value = frames.get(key) ?? [];
 				<p-tabPanel [header]="key">
 					<div class="grid px-3 mt-1">
@@ -56,12 +56,12 @@
 															<span class="text-orange-300">{{ item.exposureTime | exposureTime }}</span>
 															<span class="text-cyan-300">{{ item.width }}x{{ item.height }}</span>
 															<span class="text-yellow-300">{{ item.binX }}x{{ item.binY }}</span>
-															<span *ngIf="item.gain">GAIN: {{ item.gain }}</span>
-															<span
-																*ngIf="item.temperature < 100 && item.temperature > -100"
-																class="text-red-300">
-																{{ item.temperature }}°C
-															</span>
+															@if (item.gain) {
+																<span>GAIN: {{ item.gain }}</span>
+															}
+															@if (item.temperature < 100 && item.temperature > -100) {
+																<span class="text-red-300">{{ item.temperature }}°C</span>
+															}
 														</div>
 														<span class="text-xs text-gray-200 text-nowrap">{{ item.path }}</span>
 													</div>

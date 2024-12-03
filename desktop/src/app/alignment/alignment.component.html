@@ -40,17 +40,18 @@
 				#cameraExposure
 				[info]="status" />
 
-			<div
-				*ngIf="method === 'TPPA'"
-				class="absolute flex flex-row align-items-center gap-1"
-				style="right: 8px; top: -2px">
-				<neb-tag
-					label="RA: {{ tppaResult.rightAscension }}"
-					[severity]="tppaResult.failed ? 'danger' : 'info'" />
-				<neb-tag
-					label="DEC: {{ tppaResult.declination }}"
-					[severity]="tppaResult.failed ? 'danger' : 'info'" />
-			</div>
+			@if (method === 'TPPA') {
+				<div
+					class="absolute flex flex-row align-items-center gap-1"
+					style="right: 8px; top: -2px">
+					<neb-tag
+						label="RA: {{ tppaResult.rightAscension }}"
+						[severity]="tppaResult.failed ? 'danger' : 'info'" />
+					<neb-tag
+						label="DEC: {{ tppaResult.declination }}"
+						[severity]="tppaResult.failed ? 'danger' : 'info'" />
+				</div>
+			}
 		</div>
 	</div>
 	<div class="grid relative">
@@ -145,13 +146,13 @@
 									(action)="tppaStart()"
 									icon="mdi mdi-play"
 									severity="success" />
+							} @else {
+								<neb-button
+									label="Pause"
+									(action)="tppaPause()"
+									icon="mdi mdi-pause"
+									severity="info" />
 							}
-							<neb-button
-								*ngIf="running && !pausingOrPaused"
-								label="Pause"
-								(action)="tppaPause()"
-								icon="mdi mdi-pause"
-								severity="info" />
 							<neb-button
 								[disabled]="!camera || !camera.connected || !mount || !mount.connected || !running"
 								label="Abort"

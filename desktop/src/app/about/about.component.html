@@ -54,13 +54,14 @@
 					<div
 						class="w-full flex flex-column overflow-y-auto py-2 gap-1"
 						style="height: 100px">
-						@for (dep of dependencies; track $index) {
-							<a
-								*ngIf="dep.link"
-								target="_blank"
-								[attr.href]="dep.link">
-								{{ dep.name }} ({{ dep.version }})
-							</a>
+						@for (dep of dependencies; track dep.name) {
+							@if (dep.link) {
+								<a
+									target="_blank"
+									[attr.href]="dep.link">
+									{{ dep.name }} ({{ dep.version }})
+								</a>
+							}
 						}
 					</div>
 				</p-tabPanel>

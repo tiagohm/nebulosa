@@ -1,41 +1,45 @@
-<section
-	*ngIf="showTopBar"
-	id="titlebar"
-	class="flex flex-row align-items-center justify-content-end gap-2 sticky pr-1"
-	[style]="{ height: '42px', zIndex: '1000', backgroundColor: '#212121' }">
-	<span class="align-items-center draggable-region flex flex-column flex-1 font-bold justify-content-center min-h-full text-center">
-		<div>{{ title }}</div>
-		<div class="text-xs text-gray-200 font-normal">{{ subTitle }}</div>
-	</span>
-	<neb-menu-bar
-		*ngIf="topMenu.length"
-		[model]="topMenu" />
-	<span
-		class="separator flex justify-content-center"
-		*ngIf="topMenu.length"></span>
-	<neb-button
-		*ngIf="pinned && !modal"
-		icon="mdi mdi-sm mdi-pin text-gray-200"
-		(action)="pin()"
-		tooltip="Unpin Window" />
-	<neb-button
-		*ngIf="!pinned && !modal"
-		icon="mdi mdi-sm mdi-pin-off text-gray-200"
-		(action)="pin()"
-		tooltip="Pin Window" />
-	<neb-button
-		*ngIf="!modal"
-		icon="mdi mdi-sm mdi-window-minimize text-gray-200"
-		(action)="minimize()" />
-	<neb-button
-		*ngIf="!modal && maximizable"
-		icon="mdi mdi-sm mdi-window-maximize text-gray-200"
-		(action)="maximize()" />
-	<neb-button
-		class="mr-1"
-		icon="mdi mdi-sm mdi-window-close text-danger"
-		(action)="close()" />
-</section>
+@if (showTopBar) {
+	<section
+		id="titlebar"
+		class="flex flex-row align-items-center justify-content-end gap-2 sticky pr-1"
+		[style]="{ height: '42px', zIndex: '1000', backgroundColor: '#212121' }">
+		<span class="align-items-center draggable-region flex flex-column flex-1 font-bold justify-content-center min-h-full text-center">
+			<div>{{ title }}</div>
+			<div class="text-xs text-gray-200 font-normal">{{ subTitle }}</div>
+		</span>
+		@if (topMenu.length) {
+			<neb-menu-bar [model]="topMenu" />
+		}
+		@if (!modal) {
+			@if (topMenu.length) {
+				<span class="separator flex justify-content-center"></span>
+			}
+			@if (pinned) {
+				<neb-button
+					icon="mdi mdi-sm mdi-pin text-gray-200"
+					(action)="pin()"
+					tooltip="Unpin Window" />
+			} @else {
+				<neb-button
+					icon="mdi mdi-sm mdi-pin-off text-gray-200"
+					(action)="pin()"
+					tooltip="Pin Window" />
+			}
+			<neb-button
+				icon="mdi mdi-sm mdi-window-minimize text-gray-200"
+				(action)="minimize()" />
+			@if (maximizable) {
+				<neb-button
+					icon="mdi mdi-sm mdi-window-maximize text-gray-200"
+					(action)="maximize()" />
+			}
+		}
+		<neb-button
+			class="mr-1"
+			icon="mdi mdi-sm mdi-window-close text-danger"
+			(action)="close()" />
+	</section>
+}
 
 <section id="main">
 	<router-outlet></router-outlet>

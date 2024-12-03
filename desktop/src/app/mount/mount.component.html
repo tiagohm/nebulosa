@@ -244,20 +244,21 @@
 						(valueChange)="trackingToggled()" />
 				</div>
 				<div class="col-6 flex flex-row gap-2 justify-content-center align-items-center">
-					<neb-button
-						*ngIf="!mount.parked"
-						[disabled]="!mount.connected || !mount.canPark || mount.slewing || mount.parking"
-						icon="mdi mdi-stop"
-						(action)="park()"
-						tooltip="Park"
-						severity="danger" />
-					<neb-button
-						*ngIf="mount.parked"
-						[disabled]="!mount.connected || !mount.canPark || mount.slewing || mount.parking"
-						icon="mdi mdi-play"
-						(action)="unpark()"
-						tooltip="Unpark"
-						severity="success" />
+					@if (mount.parked) {
+						<neb-button
+							[disabled]="!mount.connected || !mount.canPark || mount.slewing || mount.parking"
+							icon="mdi mdi-play"
+							(action)="unpark()"
+							tooltip="Unpark"
+							severity="success" />
+					} @else {
+						<neb-button
+							[disabled]="!mount.connected || !mount.canPark || mount.slewing || mount.parking"
+							icon="mdi mdi-stop"
+							(action)="park()"
+							tooltip="Park"
+							severity="danger" />
+					}
 					<neb-button
 						[disabled]="!mount.connected || !mount.canHome || mount.slewing || mount.parking || mount.parked"
 						icon="mdi mdi-home"
@@ -330,22 +331,25 @@
 				placeholder="10001" />
 		</div>
 		<div class="col-12 pt-0 justify-content-center flex align-items-center text-sm">
-			<span *ngIf="remoteControl.protocol === 'LX200'">
-				Use together with the
-				<a
-					target="_blank"
-					href="https://stellarium-labs.com/stellarium-mobile-plus/">
-					Stellarium Mobile Plus
-				</a>
-			</span>
-			<span *ngIf="remoteControl.protocol === 'STELLARIUM'">
-				Use together with the
-				<a
-					target="_blank"
-					href="https://stellarium.org/">
-					Stellarium
-				</a>
-			</span>
+			@if (remoteControl.protocol === 'LX200') {
+				<span>
+					Use together with the
+					<a
+						target="_blank"
+						href="https://stellarium-labs.com/stellarium-mobile-plus/">
+						Stellarium Mobile Plus
+					</a>
+				</span>
+			} @else if (remoteControl.protocol === 'STELLARIUM') {
+				<span>
+					Use together with the
+					<a
+						target="_blank"
+						href="https://stellarium.org/">
+						Stellarium
+					</a>
+				</span>
+			}
 		</div>
 		<div class="col-12 flex justify-content-center align-items-center">
 			<neb-button

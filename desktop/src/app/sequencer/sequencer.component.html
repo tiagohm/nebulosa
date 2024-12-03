@@ -99,100 +99,103 @@
 					(cdkDropListDropped)="drop($event)"
 					class="grid px-4 mt-1 flex align-items-center gap-0 overflow-y-auto"
 					style="max-height: calc(100vh - 200px)">
-					<p-card
-						cdkDrag
-						*ngFor="let sequence of plan.sequences; index as i"
-						class="lg:col-6 col-12"
-						styleClass="w-full pt-2">
-						<ng-template pTemplate="header">
+					@for (sequence of plan.sequences; track sequence; let i = $index) {
+						<p-card
+							cdkDrag
+							class="lg:col-6 col-12"
+							styleClass="w-full pt-2">
+							<ng-template pTemplate="header">
+								<div class="grid">
+									<div
+										cdkDragHandle
+										class="cursor-move col-1 pb-1 align-items-center justify-content-center gap-2">
+										<span class="font-bold text-xl ml-3">#{{ i + 1 }}</span>
+									</div>
+									<div class="col pb-1 align-items-center gap-1">
+										<neb-button
+											[disabled]="running || !plan.camera || !sequence.enabled"
+											icon="mdi mdi-camera-iris"
+											label="Camera"
+											[severity]="plan.camera?.connected ? 'success' : 'danger'"
+											(action)="showCameraDialog(sequence)" />
+										<neb-button
+											[disabled]="running || !plan.wheel || !sequence.enabled"
+											icon="mdi mdi-palette"
+											label="Filter Wheel"
+											[severity]="plan.wheel?.connected ? 'success' : 'danger'"
+											(action)="showWheelDialog(sequence)" />
+										<neb-button
+											[disabled]="running || !plan.rotator || !sequence.enabled"
+											icon="mdi mdi-restore"
+											label="Rotator"
+											[severity]="plan.rotator?.connected ? 'success' : 'danger'"
+											(action)="showRotatorDialog(sequence)" />
+										@if (plan.liveStacking.enabled) {
+											<p-dropdown
+												[disabled]="running"
+												[options]="'IMAGE_FILTER_TYPE' | dropdownOptions | enumDropdown"
+												[(ngModel)]="sequence.stackerGroupType"
+												styleClass="border-0 p-inputtext-sm"
+												[autoDisplayFirst]="false"
+												(ngModelChange)="savePreference()"
+												appendTo="body" />
+											@if (plan.liveStacking.useCalibrationGroup) {
+												<p-dropdown
+													[disabled]="sequence.stackerGroupType === 'NONE' || running"
+													[options]="calibrationGroups"
+													optionLabel="label"
+													optionValue="value"
+													[(ngModel)]="sequence.calibrationGroup"
+													styleClass="border-0 p-inputtext-sm"
+													[autoDisplayFirst]="false"
+													(ngModelChange)="savePreference()"
+													appendTo="body" />
+											}
+										}
+									</div>
+									<div class="col pb-1 pr-4 align-items-center justify-content-end gap-2">
+										<neb-button
+											[disabled]="plan.sequences.length <= 1 || running"
+											icon="mdi mdi-md mdi-dots-vertical"
+											(click)="showSequenceMenu(sequence, entryMenu)" />
+										<neb-button
+											[disabled]="running || plan.sequences.length <= 1"
+											icon="mdi mdi-delete"
+											severity="danger"
+											tooltip="Delete"
+											(action)="deleteSequence(sequence, i)" />
+										<neb-button
+											[disabled]="running"
+											icon="mdi mdi-content-duplicate"
+											severity="info"
+											tooltip="Duplicate"
+											(action)="duplicateSequence(sequence, i)" />
+										<neb-checkbox
+											[disabled]="running"
+											[(value)]="sequence.enabled"
+											(valueChange)="savePreference()" />
+									</div>
+								</div>
+							</ng-template>
 							<div class="grid">
-								<div
-									cdkDragHandle
-									class="cursor-move col-1 pb-1 align-items-center justify-content-center gap-2">
-									<span class="font-bold text-xl ml-3">#{{ i + 1 }}</span>
+								<div class="col-12 pt-1 flex">
+									<neb-camera-info
+										[info]="sequence"
+										[wheel]="plan.wheel"
+										[focuser]="plan.focuser"
+										[rotator]="plan.rotator"
+										[canRemoveFilter]="sequence.enabled"
+										[canRemoveAngle]="sequence.enabled"
+										(filterRemoved)="filterRemoved(sequence)"
+										(angleRemoved)="angleRemoved(sequence)"
+										[disabled]="running" />
 								</div>
-								<div class="col pb-1 align-items-center gap-1">
-									<neb-button
-										[disabled]="running || !plan.camera || !sequence.enabled"
-										icon="mdi mdi-camera-iris"
-										label="Camera"
-										[severity]="plan.camera?.connected ? 'success' : 'danger'"
-										(action)="showCameraDialog(sequence)" />
-									<neb-button
-										[disabled]="running || !plan.wheel || !sequence.enabled"
-										icon="mdi mdi-palette"
-										label="Filter Wheel"
-										[severity]="plan.wheel?.connected ? 'success' : 'danger'"
-										(action)="showWheelDialog(sequence)" />
-									<neb-button
-										[disabled]="running || !plan.rotator || !sequence.enabled"
-										icon="mdi mdi-restore"
-										label="Rotator"
-										[severity]="plan.rotator?.connected ? 'success' : 'danger'"
-										(action)="showRotatorDialog(sequence)" />
-									<p-dropdown
-										*ngIf="plan.liveStacking.enabled"
-										[disabled]="running"
-										[options]="'IMAGE_FILTER_TYPE' | dropdownOptions | enumDropdown"
-										[(ngModel)]="sequence.stackerGroupType"
-										styleClass="border-0 p-inputtext-sm"
-										[autoDisplayFirst]="false"
-										(ngModelChange)="savePreference()"
-										appendTo="body" />
-									<p-dropdown
-										*ngIf="plan.liveStacking.enabled && plan.liveStacking.useCalibrationGroup"
-										[disabled]="sequence.stackerGroupType === 'NONE' || running"
-										[options]="calibrationGroups"
-										optionLabel="label"
-										optionValue="value"
-										[(ngModel)]="sequence.calibrationGroup"
-										styleClass="border-0 p-inputtext-sm"
-										[autoDisplayFirst]="false"
-										(ngModelChange)="savePreference()"
-										appendTo="body" />
-								</div>
-								<div class="col pb-1 pr-4 align-items-center justify-content-end gap-2">
-									<neb-button
-										[disabled]="plan.sequences.length <= 1 || running"
-										icon="mdi mdi-md mdi-dots-vertical"
-										(click)="showSequenceMenu(sequence, entryMenu)" />
-									<neb-button
-										[disabled]="running || plan.sequences.length <= 1"
-										icon="mdi mdi-delete"
-										severity="danger"
-										tooltip="Delete"
-										(action)="deleteSequence(sequence, i)" />
-									<neb-button
-										[disabled]="running"
-										icon="mdi mdi-content-duplicate"
-										severity="info"
-										tooltip="Duplicate"
-										(action)="duplicateSequence(sequence, i)" />
-									<neb-checkbox
-										[disabled]="running"
-										[(value)]="sequence.enabled"
-										(valueChange)="savePreference()" />
+								<div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1 text-center text-sm">
+									<neb-camera-exposure #cameraExposure />
 								</div>
 							</div>
-						</ng-template>
-						<div class="grid">
-							<div class="col-12 pt-1 flex">
-								<neb-camera-info
-									[info]="sequence"
-									[wheel]="plan.wheel"
-									[focuser]="plan.focuser"
-									[rotator]="plan.rotator"
-									[canRemoveFilter]="sequence.enabled"
-									[canRemoveAngle]="sequence.enabled"
-									(filterRemoved)="filterRemoved(sequence)"
-									(angleRemoved)="angleRemoved(sequence)"
-									[disabled]="running" />
-							</div>
-							<div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1 text-center text-sm">
-								<neb-camera-exposure #cameraExposure />
-							</div>
-						</div>
-					</p-card>
+						</p-card>
+					}
 				</div>
 			</p-tabPanel>
 			<p-tabPanel>
@@ -494,13 +497,13 @@
 					(action)="start()"
 					icon="mdi mdi-play"
 					severity="success" />
+			} @else if (canStart) {
+				<neb-button
+					label="Pause"
+					(action)="pause()"
+					icon="mdi mdi-pause"
+					severity="info" />
 			}
-			<neb-button
-				*ngIf="canStart && running && !pausingOrPaused"
-				label="Pause"
-				(action)="pause()"
-				icon="mdi mdi-pause"
-				severity="info" />
 			<neb-button
 				[disabled]="!plan.sequences.length || !canStart || !running"
 				label="Abort"
@@ -597,13 +600,13 @@
 				label="Calibration Group"
 				[(value)]="property.properties.CALIBRATION_GROUP" />
 		</div>
-		<div
-			*ngIf="plan.liveStacking.enabled"
-			class="col-6">
-			<neb-checkbox
-				label="Stacking Group"
-				[(value)]="property.properties.STACKING_GROUP" />
-		</div>
+		@if (plan.liveStacking.enabled) {
+			<div class="col-6">
+				<neb-checkbox
+					label="Stacking Group"
+					[(value)]="property.properties.STACKING_GROUP" />
+			</div>
+		}
 	</div>
 	<ng-template pTemplate="footer">
 		<neb-button
