@@ -1,8 +1,7 @@
-<p-button
-	(onClick)="show()"
-	[text]="true"
+<neb-button
+	(action)="show()"
+	[rounded]="false"
 	severity="success"
-	size="small"
 	[disabled]="disabled">
 	<div class="flex align-items-center gap-1">
 		<i [class]="icon"></i>
@@ -15,7 +14,7 @@
 			}
 		</div>
 	</div>
-</p-button>
+</neb-button>
 
 <neb-device-list-menu
 	#deviceMenu

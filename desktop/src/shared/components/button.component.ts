@@ -5,7 +5,7 @@ import { Component, input, output, ViewEncapsulation } from '@angular/core'
 	template: `
 		<p-button
 			[text]="true"
-			[rounded]="!label()"
+			[rounded]="rounded() && !label()"
 			size="small"
 			[label]="label()"
 			[icon]="icon()"
@@ -15,7 +15,9 @@ import { Component, input, output, ViewEncapsulation } from '@angular/core'
 			[pTooltip]="tooltip()"
 			[tooltipPosition]="tooltipPosition()"
 			[life]="2000"
-			styleClass="select-none cursor-pointer" />
+			styleClass="white-space-nowrap select-none cursor-pointer">
+			<ng-content></ng-content>
+		</p-button>
 	`,
 	styles: `
 		neb-button {
@@ -37,6 +39,7 @@ export class ButtonComponent {
 	readonly icon = input<string>()
 	readonly tooltip = input<string>()
 	readonly tooltipPosition = input<'right' | 'left' | 'top' | 'bottom'>('bottom')
+	readonly rounded = input(true)
 	readonly disabled = input<boolean | undefined>(false)
 	readonly severity = input<'success' | 'info' | 'warning' | 'danger' | 'help' | 'primary' | 'secondary' | 'contrast'>()
 	readonly action = output<MouseEvent>()
