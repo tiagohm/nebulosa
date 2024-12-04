@@ -91,30 +91,18 @@
 											[value]="guider.step?.snr ?? 0" />
 									</div>
 									<div class="col-4">
-										<p-floatLabel class="w-full">
-											<p-dropdown
-												[options]="'GUIDER_PLOT_MODE' | dropdownOptions | enumDropdown"
-												[(ngModel)]="preference.plotMode"
-												optionsLabel="label"
-												optionsValue="value"
-												(ngModelChange)="plotModeChanged()"
-												styleClass="p-inputtext-sm border-0"
-												[autoDisplayFirst]="false" />
-											<label>Plot Mode</label>
-										</p-floatLabel>
+										<neb-dropdown-enum
+											label="Plot Mode"
+											[options]="'GUIDER_PLOT_MODE' | dropdownOptions"
+											[(value)]="preference.plotMode"
+											(valueChange)="plotModeChanged()" />
 									</div>
 									<div class="col-4">
-										<p-floatLabel class="w-full">
-											<p-dropdown
-												[options]="'GUIDER_Y_AXIS_UNIT' | dropdownOptions | enumDropdown"
-												[(ngModel)]="preference.yAxisUnit"
-												optionsLabel="label"
-												optionsValue="value"
-												(ngModelChange)="yAxisUnitChanged()"
-												styleClass="p-inputtext-sm border-0"
-												[autoDisplayFirst]="false" />
-											<label>Unit</label>
-										</p-floatLabel>
+										<neb-dropdown-enum
+											label="Unit"
+											[options]="'GUIDER_Y_AXIS_UNIT' | dropdownOptions"
+											[(value)]="preference.yAxisUnit"
+											(valueChange)="yAxisUnitChanged()" />
 									</div>
 								</div>
 								<div class="grid relative">

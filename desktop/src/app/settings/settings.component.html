@@ -22,7 +22,7 @@
 							optionLabel="name"
 							dataKey="id"
 							styleClass="p-inputtext-sm border-0"
-							emptyMessage="No location found"
+							emptyMessage="No location available"
 							[autoDisplayFirst]="false">
 							<ng-template pTemplate="selectedItem">
 								<div class="flex align-items-center gap-2">
@@ -57,16 +57,10 @@
 		<div class="col-12">
 			<div class="grid">
 				<div class="col-8">
-					<p-floatLabel class="w-full">
-						<p-dropdown
-							[options]="'PLATE_SOLVER' | dropdownOptions | enumDropdown"
-							optionsLabel="label"
-							optionsValue="value"
-							[(ngModel)]="plateSolverType"
-							styleClass="p-inputtext-sm border-0"
-							[autoDisplayFirst]="false" />
-						<label>Solver</label>
-					</p-floatLabel>
+					<neb-dropdown-enum
+						label="Solver"
+						[options]="'PLATE_SOLVER' | dropdownOptions"
+						[(value)]="plateSolverType" />
 				</div>
 				@if (plateSolverType !== 'ASTROMETRY_NET_ONLINE') {
 					<div class="col-12">
@@ -125,16 +119,10 @@
 		<div class="col-12">
 			<div class="grid">
 				<div class="col-6">
-					<p-floatLabel class="w-full">
-						<p-dropdown
-							[options]="'STAR_DETECTOR' | dropdownOptions | enumDropdown"
-							optionsLabel="label"
-							optionsValue="value"
-							[(ngModel)]="starDetectorType"
-							styleClass="p-inputtext-sm border-0"
-							[autoDisplayFirst]="false" />
-						<label>Detector</label>
-					</p-floatLabel>
+					<neb-dropdown-enum
+						label="Detector"
+						[options]="'STAR_DETECTOR' | dropdownOptions"
+						[(value)]="starDetectorType" />
 				</div>
 				<div class="col-12">
 					<neb-path-chooser
@@ -169,16 +157,10 @@
 		<div class="col-12">
 			<div class="grid">
 				<div class="col-6">
-					<p-floatLabel class="w-full">
-						<p-dropdown
-							[options]="'LIVE_STACKER' | dropdownOptions | enumDropdown"
-							optionsLabel="label"
-							optionsValue="value"
-							[(ngModel)]="liveStackerType"
-							styleClass="p-inputtext-sm border-0"
-							[autoDisplayFirst]="false" />
-						<label>Stacker</label>
-					</p-floatLabel>
+					<neb-dropdown-enum
+						label="Stacker"
+						[options]="'LIVE_STACKER' | dropdownOptions"
+						[(value)]="liveStackerType" />
 				</div>
 				<div class="col-12">
 					<neb-path-chooser

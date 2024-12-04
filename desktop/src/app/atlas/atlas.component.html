@@ -643,34 +643,20 @@
 				[(value)]="skyObject.search.filter.radius" />
 		</div>
 		<div class="col-6">
-			<p-floatLabel class="w-full">
-				@let constellations = ['ALL'].concat('CONSTELLATION' | dropdownOptions);
-				<p-dropdown
-					[options]="constellations | enumDropdown"
-					[(ngModel)]="skyObject.search.filter.constellation"
-					[filter]="true"
-					appendTo="body"
-					optionLabel="label"
-					optionValue="value"
-					styleClass="p-inputtext-sm border-0"
-					[autoDisplayFirst]="false" />
-				<label>Constellation</label>
-			</p-floatLabel>
+			@let constellations = ['ALL'].concat('CONSTELLATION' | dropdownOptions);
+			<neb-dropdown-enum
+				label="Constellation"
+				[options]="constellations"
+				[(value)]="skyObject.search.filter.constellation"
+				[filter]="true" />
 		</div>
 		<div class="col-6">
-			<p-floatLabel class="w-full">
-				@let skyObjectTypes = ['ALL'].concat('SKY_OBJECT_TYPE' | dropdownOptions);
-				<p-dropdown
-					[options]="skyObjectTypes | enumDropdown"
-					[(ngModel)]="skyObject.search.filter.type"
-					appendTo="body"
-					[filter]="true"
-					optionLabel="label"
-					optionValue="value"
-					styleClass="p-inputtext-sm border-0"
-					[autoDisplayFirst]="false" />
-				<label>Type</label>
-			</p-floatLabel>
+			@let skyObjectTypes = ['ALL'].concat('SKY_OBJECT_TYPE' | dropdownOptions);
+			<neb-dropdown-enum
+				label="Type"
+				[options]="skyObjectTypes"
+				[(value)]="skyObject.search.filter.type"
+				[filter]="true" />
 		</div>
 		<div class="col-4">
 			<neb-input-number
@@ -795,7 +781,7 @@
 							optionLabel="name"
 							dataKey="id"
 							styleClass="p-inputtext-sm border-0"
-							emptyMessage="No location found"
+							emptyMessage="No location available"
 							[autoDisplayFirst]="false" />
 						<label>Location</label>
 					</p-floatLabel>

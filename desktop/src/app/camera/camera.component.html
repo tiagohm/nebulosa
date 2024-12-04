@@ -161,18 +161,12 @@
 				class="w-full" />
 		</div>
 		<div class="col-6">
-			<p-floatLabel class="w-full">
-				<p-dropdown
-					[disabled]="!canFrameType || !camera.connected || running"
-					[options]="'FRAME_TYPE' | dropdownOptions | enumDropdown"
-					[(ngModel)]="request.frameType"
-					optionLabel="label"
-					optionValue="value"
-					styleClass="p-inputtext-sm border-0"
-					[autoDisplayFirst]="false"
-					(ngModelChange)="savePreference()" />
-				<label>Frame Type</label>
-			</p-floatLabel>
+			<neb-dropdown-enum
+				label="Frame Type"
+				[disabled]="!canFrameType || !camera.connected || running"
+				[options]="'FRAME_TYPE' | dropdownOptions"
+				[(value)]="request.frameType"
+				(valueChange)="savePreference()" />
 		</div>
 	</div>
 	<div class="grid py-1 flex align-items-center">
@@ -481,18 +475,12 @@
 	</ng-template>
 	<div class="grid mt-2">
 		<div class="col-8 align-items-center">
-			<p-floatLabel class="w-full">
-				<p-dropdown
-					[disabled]="!liveStacking.request.enabled"
-					[options]="'LIVE_STACKER' | dropdownOptions | enumDropdown"
-					[(ngModel)]="liveStacking.request.type"
-					optionsLabel="label"
-					optionsValue="value"
-					styleClass="p-inputtext-sm border-0"
-					(ngModelChange)="savePreference()"
-					[autoDisplayFirst]="false" />
-				<label>Live Stacker</label>
-			</p-floatLabel>
+			<neb-dropdown-enum
+				label="Live Stacker"
+				[disabled]="!liveStacking.request.enabled"
+				[options]="'LIVE_STACKER' | dropdownOptions"
+				[(value)]="liveStacking.request.type"
+				(valueChange)="savePreference()" />
 		</div>
 		<div class="col-4">
 			<neb-switch

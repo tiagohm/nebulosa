@@ -75,30 +75,18 @@
 							(valueChange)="savePreference()" />
 					</div>
 					<div class="col-5 align-items-center">
-						<p-floatLabel class="w-full">
-							<p-dropdown
-								[options]="'CURVE_FITTING_MODE' | dropdownOptions | enumDropdown"
-								[(ngModel)]="request.fittingMode"
-								optionLabel="label"
-								optionValue="value"
-								styleClass="p-inputtext-sm border-0"
-								[autoDisplayFirst]="false"
-								(ngModelChange)="savePreference()" />
-							<label>Curve Fitting</label>
-						</p-floatLabel>
+						<neb-dropdown-enum
+							label="Curve Fitting"
+							[options]="'CURVE_FITTING_MODE' | dropdownOptions"
+							[(value)]="request.fittingMode"
+							(valueChange)="savePreference()" />
 					</div>
 					<div class="col-4 align-items-center">
-						<p-floatLabel class="w-full">
-							<p-dropdown
-								[options]="'STAR_DETECTOR' | dropdownOptions | enumDropdown"
-								[(ngModel)]="request.starDetector.type"
-								optionLabel="label"
-								optionValue="value"
-								styleClass="p-inputtext-sm border-0"
-								[autoDisplayFirst]="false"
-								(ngModelChange)="savePreference()" />
-							<label>Star Detector</label>
-						</p-floatLabel>
+						<neb-dropdown-enum
+							label="Star Detector"
+							[options]="'STAR_DETECTOR' | dropdownOptions"
+							[(value)]="request.starDetector.type"
+							(valueChange)="savePreference()" />
 					</div>
 					<div class="col-3">
 						<neb-input-number
@@ -112,17 +100,11 @@
 					<div class="col-10">
 						<div class="grid">
 							<div class="col-6 align-items-center">
-								<p-floatLabel class="w-full">
-									<p-dropdown
-										[options]="'BACKLASH_COMPENSATION_MODE' | dropdownOptions | enumDropdown"
-										[(ngModel)]="request.backlashCompensation.mode"
-										optionLabel="label"
-										optionValue="value"
-										styleClass="p-inputtext-sm border-0"
-										[autoDisplayFirst]="false"
-										(ngModelChange)="savePreference()" />
-									<label>Backlash Compensation</label>
-								</p-floatLabel>
+								<neb-dropdown-enum
+									label="Backlash Compensation"
+									[options]="'BACKLASH_COMPENSATION_MODE' | dropdownOptions"
+									[(value)]="request.backlashCompensation.mode"
+									(valueChange)="savePreference()" />
 							</div>
 							<div class="col-3 align-items-center">
 								<neb-input-number

@@ -60,17 +60,11 @@
 				<p-tabPanel header="TPPA">
 					<div class="grid mt-3">
 						<div class="col-5 gap-2 align-items-center">
-							<p-floatLabel class="w-full">
-								<p-dropdown
-									[options]="'PLATE_SOLVER' | dropdownOptions | enumDropdown"
-									[(ngModel)]="tppaRequest.plateSolver.type"
-									styleClass="p-inputtext-sm border-0"
-									optionLabel="label"
-									optionValue="value"
-									[autoDisplayFirst]="false"
-									(ngModelChange)="savePreference()" />
-								<label>Plate Solver</label>
-							</p-floatLabel>
+							<neb-dropdown-enum
+								label="Plate Solver"
+								[options]="'PLATE_SOLVER' | dropdownOptions"
+								[(value)]="tppaRequest.plateSolver.type"
+								(valueChange)="savePreference()" />
 						</div>
 						<div class="col-4 align-items-center">
 							<neb-input-number
@@ -81,17 +75,11 @@
 								(valueChange)="savePreference()" />
 						</div>
 						<div class="col-3 flex flex-column align-items-center justify-content-start">
-							<p-floatLabel class="w-full">
-								<p-dropdown
-									[options]="'GUIDE_DIRECTION_WE' | dropdownOptions | enumDropdown"
-									[(ngModel)]="tppaRequest.stepDirection"
-									optionsLabel="label"
-									optionsValue="value"
-									styleClass="p-inputtext-sm border-0"
-									[autoDisplayFirst]="false"
-									(ngModelChange)="savePreference()" />
-								<label>Direction</label>
-							</p-floatLabel>
+							<neb-dropdown-enum
+								label="Direction"
+								[options]="'GUIDE_DIRECTION_WE' | dropdownOptions"
+								[(value)]="tppaRequest.stepDirection"
+								(valueChange)="savePreference()" />
 						</div>
 						<div class="col-5 align-items-center">
 							<p-floatLabel class="w-full">
@@ -189,17 +177,11 @@
 								label="Drift for" />
 						</div>
 						<div class="col-4">
-							<p-floatLabel class="w-full">
-								<p-dropdown
-									[options]="'HEMISPHERE' | dropdownOptions | enumDropdown"
-									[(ngModel)]="preference.darvHemisphere"
-									styleClass="p-inputtext-sm border-0"
-									optionsLabel="label"
-									optionsValue="value"
-									[autoDisplayFirst]="false"
-									(ngModelChange)="savePreference()" />
-								<label>Hemisphere</label>
-							</p-floatLabel>
+							<neb-dropdown-enum
+								label="Hemisphere"
+								[options]="'HEMISPHERE' | dropdownOptions"
+								[(value)]="preference.darvHemisphere"
+								(valueChange)="savePreference()" />
 						</div>
 					</div>
 					<div class="grid mt-2">

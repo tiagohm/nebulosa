@@ -1,5 +1,5 @@
 <div class="flex align-items-center justify-content-center gap-1">
-	@for (item of model; track item.label; let i = $index) {
+	@for (item of model; track item; let i = $index) {
 		<span class="relative">
 			@if (item.visible !== false) {
 				@if (item.toggleable) {

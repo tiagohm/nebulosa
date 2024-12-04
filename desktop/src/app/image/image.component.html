@@ -414,18 +414,11 @@
 	class="pointer-events-none">
 	<div class="grid pt-2">
 		<div class="col-12 gap-2 align-items-center">
-			<p-floatLabel class="w-full">
-				<p-dropdown
-					[options]="'PLATE_SOLVER' | dropdownOptions | enumDropdown"
-					[(ngModel)]="solver.request.type"
-					optionsLabel="label"
-					optionsValue="value"
-					styleClass="p-inputtext-sm border-0"
-					[autoDisplayFirst]="false"
-					(ngModelChange)="savePreference()"
-					appendTo="body" />
-				<label>Solver</label>
-			</p-floatLabel>
+			<neb-dropdown-enum
+				label="Solver"
+				[options]="'PLATE_SOLVER' | dropdownOptions"
+				[(value)]="solver.request.type"
+				(valueChange)="savePreference()" />
 			<neb-checkbox
 				[disabled]="solver.request.type === 'SIRIL' || solver.request.type === 'PIXINSIGHT'"
 				label="Blind"
@@ -664,18 +657,11 @@
 				[multiple]="false" />
 		</div>
 		<div class="col-7 flex align-items-center">
-			<p-floatLabel class="w-full">
-				<p-dropdown
-					[disabled]="!scnr.transformation.channel"
-					appendTo="body"
-					[(ngModel)]="scnr.transformation.method"
-					[options]="'SCNR_PROTECTION_METHOD' | dropdownOptions | enumDropdown"
-					optionLabel="label"
-					optionValue="value"
-					styleClass="p-inputtext-sm border-0"
-					[autoDisplayFirst]="false" />
-				<label>Protection Method</label>
-			</p-floatLabel>
+			<neb-dropdown-enum
+				label="Protection Method"
+				[disabled]="!scnr.transformation.channel"
+				[options]="'SCNR_PROTECTION_METHOD' | dropdownOptions"
+				[(value)]="scnr.transformation.method" />
 		</div>
 		<div class="col-5 flex align-items-center">
 			<neb-input-number
@@ -826,17 +812,10 @@
 	class="pointer-events-none">
 	<div class="grid mt-2">
 		<div class="col-7 flex align-items-center">
-			<p-floatLabel class="w-full">
-				<p-dropdown
-					appendTo="body"
-					[(ngModel)]="starDetector.request.type"
-					[options]="'STAR_DETECTOR' | dropdownOptions | enumDropdown"
-					optionsLabel="label"
-					optionsValue="value"
-					styleClass="p-inputtext-sm border-0"
-					[autoDisplayFirst]="false" />
-				<label>Detector</label>
-			</p-floatLabel>
+			<neb-dropdown-enum
+				label="Detector"
+				[options]="'STAR_DETECTOR' | dropdownOptions"
+				[(value)]="starDetector.request.type" />
 		</div>
 		@if (starDetector.request.type !== 'SIRIL') {
 			<div class="col-5 align-items-center">
@@ -1240,18 +1219,11 @@
 			</div>
 		}
 		<div class="col-7 align-items-center justify-content-center">
-			<p-floatLabel class="w-full">
-				<p-dropdown
-					[disabled]="saveAs.format !== 'FITS' && saveAs.format !== 'XISF'"
-					[options]="'IMAGE_BITPIX' | dropdownOptions | enumDropdown"
-					optionsLabel="label"
-					optionsValue="value"
-					[(ngModel)]="saveAs.bitpix"
-					styleClass="p-inputtext-sm border-0"
-					[autoDisplayFirst]="false"
-					appendTo="body" />
-				<label>Format</label>
-			</p-floatLabel>
+			<neb-dropdown-enum
+				label="Format"
+				[disabled]="saveAs.format !== 'FITS' && saveAs.format !== 'XISF'"
+				[options]="'IMAGE_BITPIX' | dropdownOptions"
+				[(value)]="saveAs.bitpix" />
 		</div>
 		<div class="col-5 flex-column align-items-center justify-content-center gap-1">
 			<neb-checkbox

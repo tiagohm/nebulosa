@@ -267,17 +267,12 @@
 						severity="info" />
 				</div>
 				<div class="col-6">
-					<p-floatLabel class="w-full">
-						<p-dropdown
-							[disabled]="!mount.connected || mount.slewing || mount.parking || mount.parked"
-							[options]="mount.trackModes"
-							[(ngModel)]="trackMode"
-							(ngModelChange)="trackModeChanged()"
-							[autoDisplayFirst]="false"
-							styleClass="p-inputtext-sm border-0"
-							emptyMessage="No mode found" />
-						<label>Tracking mode</label>
-					</p-floatLabel>
+					<neb-dropdown-enum
+						label="Tracking mode"
+						[disabled]="!mount.connected || mount.slewing || mount.parking || mount.parked"
+						[options]="mount.trackModes"
+						[(value)]="trackMode"
+						(valueChange)="trackModeChanged()" />
 				</div>
 				<div class="col-6">
 					<p-floatLabel class="w-full">
@@ -288,7 +283,7 @@
 							(ngModelChange)="slewRateChanged()"
 							[autoDisplayFirst]="false"
 							styleClass="p-inputtext-sm border-0"
-							emptyMessage="No rate found" />
+							emptyMessage="No rate available" />
 						<label>Slew rate</label>
 					</p-floatLabel>
 				</div>
