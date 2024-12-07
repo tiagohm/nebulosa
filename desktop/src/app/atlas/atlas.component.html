@@ -773,18 +773,12 @@
 							(valueChange)="timeChanged(undefined, $event)"
 							[format]="false" />
 					</div>
-					<p-floatLabel class="w-full">
-						<p-dropdown
-							[options]="locations"
-							[(ngModel)]="dateTimeAndLocation.location"
-							(ngModelChange)="locationChanged()"
-							optionLabel="name"
-							dataKey="id"
-							styleClass="p-inputtext-sm border-0"
-							emptyMessage="No location available"
-							[autoDisplayFirst]="false" />
-						<label>Location</label>
-					</p-floatLabel>
+					<neb-dropdown
+						label="Location"
+						[options]="locations"
+						[(value)]="dateTimeAndLocation.location"
+						(valueChange)="locationChanged()"
+						emptyMessage="No location available" />
 				</div>
 			</div>
 		</div>

@@ -116,7 +116,7 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
 		}
 	}
 
-	protected async deviceChanged(device: Device) {
+	protected async deviceChanged(device?: Device) {
 		if (this.device) {
 			await this.api.indiUnlisten(this.device)
 		}
@@ -124,8 +124,11 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
 		this.device = device
 
 		await this.updateProperties()
-		await this.api.indiListen(device)
-		this.messages = await this.api.indiMessages(device)
+
+		if (device) {
+			await this.api.indiListen(device)
+			this.messages = await this.api.indiMessages(device)
+		}
 	}
 
 	protected changeGroup(group: string) {
@@ -199,6 +202,10 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
 			}
 
 			this.updateGroups()
+		} else {
+			this.properties = []
+			this.groups = []
+			this.group = ''
 		}
 	}
 

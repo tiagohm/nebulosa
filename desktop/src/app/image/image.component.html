@@ -781,17 +781,11 @@
 					[value]="(statistics.statistics.maximum * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
 			</div>
 			<div class="col-6">
-				<p-floatLabel class="w-full">
-					<p-dropdown
-						[options]="'IMAGE_STATISTICS_BIT_OPTION' | dropdownOptions"
-						[(ngModel)]="statistics.bitOption"
-						optionLabel="name"
-						[autoDisplayFirst]="true"
-						styleClass="p-inputtext-sm border-0"
-						appendTo="body"
-						(ngModelChange)="savePreference()" />
-					<label>Bits</label>
-				</p-floatLabel>
+				<neb-dropdown
+					label="Bits"
+					[options]="'IMAGE_STATISTICS_BIT_OPTION' | dropdownOptions"
+					[(value)]="statistics.bitOption"
+					(valueChange)="savePreference()" />
 			</div>
 			<div class="col-12">
 				<neb-histogram
