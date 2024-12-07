@@ -1,25 +1,23 @@
-import { AfterViewInit, Component, ElementRef, Input, OnChanges, ViewChild, ViewEncapsulation } from '@angular/core'
+import { AfterViewInit, Component, ElementRef, OnChanges, ViewEncapsulation, input, viewChild } from '@angular/core'
 
 @Component({
 	selector: 'neb-moon',
-	templateUrl: 'moon.component.html',
+	template: `
+		<canvas
+			#moon
+			[height]="height()"
+			[width]="width()"
+			style="filter: brightness(1.5); background-repeat: no-repeat; background-position: center"></canvas>
+	`,
 	encapsulation: ViewEncapsulation.None,
 })
 export class MoonComponent implements AfterViewInit, OnChanges {
-	@Input()
-	protected height = 256
+	protected readonly height = input(256)
+	protected readonly width = input(256)
+	protected readonly illuminationRatio = input(0)
+	protected readonly waning = input(false)
 
-	@Input()
-	protected width = 256
-
-	@Input()
-	protected illuminationRatio = 0
-
-	@Input()
-	protected waning = false
-
-	@ViewChild('moon')
-	private readonly moon?: ElementRef<HTMLCanvasElement>
+	private readonly moonRef = viewChild.required<ElementRef<HTMLCanvasElement>>('moon')
 
 	ngAfterViewInit() {
 		this.draw()
@@ -31,8 +29,7 @@ export class MoonComponent implements AfterViewInit, OnChanges {
 
 	// Adapted from https://codepen.io/ardathksheyna/pen/adMyXx.
 	private draw() {
-		const canvas = this.moon?.nativeElement
-		if (!canvas) return
+		const canvas = this.moonRef().nativeElement
 		const ctx = canvas.getContext('2d')!
 
 		ctx.clearRect(0, 0, canvas.width, canvas.height)
@@ -54,9 +51,9 @@ export class MoonComponent implements AfterViewInit, OnChanges {
 			let x1 = Math.ceil(Math.cos(angle) * cx)
 			const y1 = Math.ceil(Math.sin(angle) * cy)
 			const w = x1 * 2
-			let x2 = Math.floor(w * this.illuminationRatio)
+			let x2 = Math.floor(w * this.illuminationRatio())
 
-			if (this.waning) {
+			if (this.waning()) {
 				x1 = cx + x1
 				x2 = x1 - (w - x2)
 			} else {

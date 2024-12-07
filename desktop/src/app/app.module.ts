@@ -63,7 +63,7 @@ import { LocationComponent } from '../shared/components/location/location.dialog
 import { MapComponent } from '../shared/components/map/map.component'
 import { MenuBarComponent } from '../shared/components/menu-bar/menu-bar.component'
 import { MenuItemComponent } from '../shared/components/menu-item/menu-item.component'
-import { MoonComponent } from '../shared/components/moon/moon.component'
+import { MoonComponent } from '../shared/components/moon.component'
 import { PathChooserComponent } from '../shared/components/path-chooser/path-chooser.component'
 import { SlideMenuComponent } from '../shared/components/slide-menu/slide-menu.component'
 import { SwitchComponent } from '../shared/components/switch.component'
