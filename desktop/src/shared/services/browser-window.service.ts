@@ -31,12 +31,12 @@ export class BrowserWindowService {
 	}
 
 	openCamera(data: Camera, preference: WindowPreference = {}) {
-		Object.assign(preference, { icon: 'camera', width: 400, height: 477 })
+		Object.assign(preference, { icon: 'camera', width: 390, height: 477 })
 		return this.openWindow({ preference, data, id: `camera.${data.name}`, path: 'camera' })
 	}
 
 	openCameraDialog(data: CameraDialogInput, preference: WindowPreference = {}) {
-		Object.assign(preference, { icon: 'camera', width: 400, height: 424 })
+		Object.assign(preference, { icon: 'camera', width: 390, height: 424 })
 		return this.openModal<CameraStartCapture>({ preference, data, id: `camera.${data.camera.name}.modal`, path: 'camera' })
 	}
 

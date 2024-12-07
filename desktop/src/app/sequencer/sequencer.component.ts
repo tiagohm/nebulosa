@@ -1,7 +1,7 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
 import { AfterContentInit, Component, HostListener, inject, NgZone, OnDestroy, QueryList, ViewChildren, ViewEncapsulation } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
-import { CameraExposureComponent } from '../../shared/components/camera-exposure/camera-exposure.component'
+import { CameraExposureComponent } from '../../shared/components/camera-exposure.component'
 import { DialogMenuComponent } from '../../shared/components/dialog-menu/dialog-menu.component'
 import { DropdownItem } from '../../shared/components/dropdown.component'
 import { MenuItem, SlideMenuItem } from '../../shared/components/menu-item.component'

@@ -2,7 +2,7 @@ import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, ViewChild, i
 import { ChartData, ChartOptions } from 'chart.js'
 import { Point } from 'electron'
 import { UIChart } from 'primeng/chart'
-import { CameraExposureComponent } from '../../shared/components/camera-exposure/camera-exposure.component'
+import { CameraExposureComponent } from '../../shared/components/camera-exposure.component'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
