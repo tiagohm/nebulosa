@@ -1,3 +1,4 @@
+import type { DropdownItem } from '../components/dropdown.component'
 import type { Angle, EquatorialCoordinate } from './atlas.types'
 import type { Device } from './device.types'
 import type { GPS } from './gps.types'
@@ -19,10 +20,7 @@ export type OrdinalDirection = 'NW' | 'NE' | 'SW' | 'SE'
 
 export type MountSlewDirection = CardinalDirection | OrdinalDirection
 
-export interface SlewRate {
-	name: string
-	label: string
-}
+export type SlewRate = DropdownItem<string>
 
 export interface Parkable {
 	canPark: boolean

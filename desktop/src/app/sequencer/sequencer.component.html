@@ -137,16 +137,11 @@
 												[(value)]="sequence.stackerGroupType"
 												(valueChange)="savePreference()" />
 											@if (plan.liveStacking.useCalibrationGroup) {
-												<p-dropdown
+												<neb-dropdown-item
 													[disabled]="sequence.stackerGroupType === 'NONE' || running"
 													[options]="calibrationGroups"
-													optionLabel="label"
-													optionValue="value"
-													[(ngModel)]="sequence.calibrationGroup"
-													styleClass="border-0 p-inputtext-sm"
-													[autoDisplayFirst]="false"
-													(ngModelChange)="savePreference()"
-													appendTo="body" />
+													[(value)]="sequence.calibrationGroup"
+													(valueChange)="savePreference()" />
 											}
 										}
 									</div>

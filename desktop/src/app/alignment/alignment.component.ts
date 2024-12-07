@@ -243,7 +243,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy, Tickable {
 			const mount = await this.api.mount(this.mount.id)
 			Object.assign(this.mount, mount)
 			this.loadPreference()
-			this.tppaRequest.stepSpeed = mount.slewRate?.name
+			this.tppaRequest.stepSpeed = mount.slewRate?.value
 		}
 	}
 

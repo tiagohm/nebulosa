@@ -82,18 +82,12 @@
 								(valueChange)="savePreference()" />
 						</div>
 						<div class="col-5 align-items-center">
-							<p-floatLabel class="w-full">
-								<p-dropdown
-									[disabled]="!mount?.connected"
-									[options]="mount?.slewRates"
-									[(ngModel)]="tppaRequest.stepSpeed"
-									styleClass="p-inputtext-sm border-0"
-									optionLabel="label"
-									optionValue="name"
-									[autoDisplayFirst]="false"
-									(ngModelChange)="savePreference()" />
-								<label>Step speed</label>
-							</p-floatLabel>
+							<neb-dropdown-item
+								label="Step speed"
+								[disabled]="!mount?.connected"
+								[options]="mount?.slewRates ?? []"
+								[(value)]="tppaRequest.stepSpeed"
+								(valueChange)="savePreference()" />
 						</div>
 						<div class="col-7 flex align-items-center justify-content-center text-center gap-2 text-sm">
 							<neb-checkbox

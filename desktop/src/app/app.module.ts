@@ -54,7 +54,7 @@ import { DeviceChooserComponent } from '../shared/components/device-chooser/devi
 import { DeviceListMenuComponent } from '../shared/components/device-list-menu/device-list-menu.component'
 import { DeviceNameComponent } from '../shared/components/device-name/device-name.component'
 import { DialogMenuComponent } from '../shared/components/dialog-menu/dialog-menu.component'
-import { DropdownEnumComponent } from '../shared/components/dropdown.component'
+import { DropdownEnumComponent, DropdownItemComponent } from '../shared/components/dropdown.component'
 import { HistogramComponent } from '../shared/components/histogram/histogram.component'
 import { IndicatorComponent } from '../shared/components/indicator.component'
 import { InputNumberComponent } from '../shared/components/input-number.component'
@@ -132,6 +132,7 @@ import { SettingsComponent } from './settings/settings.component'
 		DeviceListMenuComponent,
 		DeviceNameComponent,
 		DialogMenuComponent,
+		DropdownItemComponent,
 		DropdownEnumComponent,
 		DropdownOptionsPipe,
 		DustCapComponent,

@@ -142,7 +142,7 @@ class MountController(
         val id = pathParameters[ID].notNull()
         val mount = connectionService.mount(id) ?: return
         val rate = queryParameters["rate"].notNullOrBlank()
-        mountService.slewRate(mount, mount.slewRates.first { it.name == rate })
+        mountService.slewRate(mount, mount.slewRates.first { it.value == rate })
     }
 
     private fun move(ctx: RoutingContext) = with(ctx.call) {

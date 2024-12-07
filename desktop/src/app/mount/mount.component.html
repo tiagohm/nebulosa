@@ -164,6 +164,7 @@
 				<div class="col-4">
 					<neb-button
 						[disabled]="!mount.connected || (mount.slewing && slewingDirection !== 'NW') || mount.parking || mount.parked"
+						[rounded]="false"
 						(mousedown)="moveTo('NW', true, $event)"
 						(mouseup)="moveTo('NW', false, $event)"
 						(mouseleave)="moveTo('NW', false, $event)"
@@ -172,6 +173,7 @@
 				<div class="col-4">
 					<neb-button
 						[disabled]="!mount.connected || (mount.slewing && slewingDirection !== 'N') || mount.parking || mount.parked"
+						[rounded]="false"
 						(mousedown)="moveTo('N', true, $event)"
 						(mouseup)="moveTo('N', false, $event)"
 						(mouseleave)="moveTo('N', false, $event)"
@@ -180,6 +182,7 @@
 				<div class="col-4">
 					<neb-button
 						[disabled]="!mount.connected || (mount.slewing && slewingDirection !== 'NE') || mount.parking || mount.parked"
+						[rounded]="false"
 						(mousedown)="moveTo('NE', true, $event)"
 						(mouseup)="moveTo('NE', false, $event)"
 						(mouseleave)="moveTo('NE', false, $event)"
@@ -188,6 +191,7 @@
 				<div class="col-4">
 					<neb-button
 						[disabled]="!mount.connected || (mount.slewing && slewingDirection !== 'W') || mount.parking || mount.parked"
+						[rounded]="false"
 						(mousedown)="moveTo('W', true, $event)"
 						(mouseup)="moveTo('W', false, $event)"
 						(mouseleave)="moveTo('W', false, $event)"
@@ -196,6 +200,7 @@
 				<div class="col-4">
 					<neb-button
 						[disabled]="!mount.connected || mount.parked"
+						[rounded]="false"
 						icon="mdi mdi-lg mdi-close-circle"
 						severity="danger"
 						(action)="abort()" />
@@ -203,6 +208,7 @@
 				<div class="col-4">
 					<neb-button
 						[disabled]="!mount.connected || (mount.slewing && slewingDirection !== 'E') || mount.parking || mount.parked"
+						[rounded]="false"
 						(mousedown)="moveTo('E', true, $event)"
 						(mouseup)="moveTo('E', false, $event)"
 						(mouseleave)="moveTo('E', false, $event)"
@@ -211,6 +217,7 @@
 				<div class="col-4">
 					<neb-button
 						[disabled]="!mount.connected || (mount.slewing && slewingDirection !== 'SW') || mount.parking || mount.parked"
+						[rounded]="false"
 						(mousedown)="moveTo('SW', true, $event)"
 						(mouseup)="moveTo('SW', false, $event)"
 						(mouseleave)="moveTo('SW', false, $event)"
@@ -219,6 +226,7 @@
 				<div class="col-4">
 					<neb-button
 						[disabled]="!mount.connected || (mount.slewing && slewingDirection !== 'S') || mount.parking || mount.parked"
+						[rounded]="false"
 						(mousedown)="moveTo('S', true, $event)"
 						(mouseup)="moveTo('S', false, $event)"
 						(mouseleave)="moveTo('S', false, $event)"
@@ -227,6 +235,7 @@
 				<div class="col-4">
 					<neb-button
 						[disabled]="!mount.connected || (mount.slewing && slewingDirection !== 'SE') || mount.parking || mount.parked"
+						[rounded]="false"
 						(mousedown)="moveTo('SE', true, $event)"
 						(mouseup)="moveTo('SE', false, $event)"
 						(mouseleave)="moveTo('SE', false, $event)"
@@ -300,16 +309,10 @@
 	[style]="{ maxWidth: '90vw' }">
 	<div class="grid p-2">
 		<div class="col-4">
-			<p-floatLabel class="w-full">
-				<p-dropdown
-					[options]="'MOUNT_REMOTE_CONTROL_PROTOCOL' | dropdownOptions | enumDropdown"
-					optionsLabel="label"
-					optionsValue="value"
-					[(ngModel)]="remoteControl.protocol"
-					[autoDisplayFirst]="false"
-					styleClass="p-inputtext-sm border-0" />
-				<label>Protocol</label>
-			</p-floatLabel>
+			<neb-dropdown-enum
+				label="Protocol"
+				[options]="'MOUNT_REMOTE_CONTROL_PROTOCOL' | dropdownOptions"
+				[(value)]="remoteControl.protocol" />
 		</div>
 		<div class="col-5">
 			<neb-input-text

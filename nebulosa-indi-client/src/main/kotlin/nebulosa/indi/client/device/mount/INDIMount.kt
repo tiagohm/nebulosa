@@ -107,8 +107,8 @@ internal open class INDIMount(
 
                         val name = message.firstOnSwitch().name
 
-                        if (slewRate?.name != name) {
-                            slewRate = slewRates.firstOrNull { it.name == name }
+                        if (slewRate?.value != name) {
+                            slewRate = slewRates.firstOrNull { it.value == name }
                             sender.fireOnEventReceived(MountSlewRateChanged(this))
                         }
                     }
@@ -292,7 +292,7 @@ internal open class INDIMount(
 
     override fun slewRate(rate: SlewRate) {
         if (rate in slewRates) {
-            sendNewSwitch("TELESCOPE_SLEW_RATE", rate.name to true)
+            sendNewSwitch("TELESCOPE_SLEW_RATE", rate.value to true)
         }
     }
 

@@ -24,7 +24,7 @@ data class MountMoveTask(
             LOG.d { debug("Mount Move started. mount={}, request={}", mount, request) }
 
             mount.slewRates.takeIf { !request.speed.isNullOrBlank() }
-                ?.find { it.name == request.speed }
+                ?.find { it.value == request.speed }
                 ?.also { mount.slewRate(it) }
 
             start()

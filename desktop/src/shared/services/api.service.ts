@@ -159,7 +159,7 @@ export class ApiService {
 	}
 
 	mountSlewRate(mount: Mount, rate: SlewRate) {
-		return this.http.put<never>(`mounts/${mount.id}/slew-rate?rate=${rate.name}`)
+		return this.http.put<never>(`mounts/${mount.id}/slew-rate?rate=${rate.value}`)
 	}
 
 	mountMove(mount: Mount, direction: GuideDirection, enabled: boolean) {

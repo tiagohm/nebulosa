@@ -275,16 +275,12 @@
 	</div>
 	<div class="grid py-1 flex align-items-center">
 		<div class="col-6">
-			<p-floatLabel class="w-full">
-				<p-dropdown
-					[disabled]="!camera.connected || running || !camera.frameFormats.length"
-					[options]="camera.frameFormats"
-					[(ngModel)]="request.frameFormat"
-					styleClass="p-inputtext-sm border-0"
-					(ngModelChange)="savePreference()"
-					[autoDisplayFirst]="false" />
-				<label>Frame Format</label>
-			</p-floatLabel>
+			<neb-dropdown-enum
+				label="Frame Format"
+				[disabled]="!camera.connected || running || !camera.frameFormats.length"
+				[options]="camera.frameFormats"
+				[(value)]="request.frameFormat"
+				(valueChange)="savePreference()" />
 		</div>
 		<div class="col-3">
 			<neb-input-number
