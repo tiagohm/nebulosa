@@ -1,26 +1,27 @@
-import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnChanges, Output, ViewChild } from '@angular/core'
+import { AfterViewInit, Component, ElementRef, OnChanges, ViewEncapsulation, model, viewChild } from '@angular/core'
 import * as L from 'leaflet'
 
 @Component({
 	selector: 'neb-map',
-	templateUrl: 'map.component.html',
-	styleUrls: ['map.component.scss'],
+	template: `
+		<div
+			#map
+			style="height: 150px"
+			class="border-round-md relative"></div>
+	`,
+	styles: `
+		neb-map {
+			display: block;
+			width: 100%;
+		}
+	`,
+	encapsulation: ViewEncapsulation.None,
 })
 export class MapComponent implements AfterViewInit, OnChanges {
-	@Input()
-	protected latitude = 0
+	protected readonly latitude = model(0)
+	protected readonly longitude = model(0)
 
-	@Output()
-	readonly latitudeChange = new EventEmitter<number>()
-
-	@Input()
-	protected longitude = 0
-
-	@Output()
-	readonly longitudeChange = new EventEmitter<number>()
-
-	@ViewChild('map')
-	private readonly mapRef!: ElementRef<HTMLDivElement>
+	private readonly mapRef = viewChild.required<ElementRef<HTMLDivElement>>('map')
 
 	private map?: L.Map
 	private marker?: L.Marker
@@ -35,15 +36,15 @@ export class MapComponent implements AfterViewInit, OnChanges {
 	})
 
 	ngAfterViewInit() {
-		this.map = L.map(this.mapRef.nativeElement, {
-			center: { lat: this.latitude, lng: this.longitude },
+		this.map = L.map(this.mapRef().nativeElement, {
+			center: { lat: this.latitude(), lng: this.longitude() },
 			zoom: 5,
 			doubleClickZoom: false,
 		})
 
 		this.map.on('dblclick', (event) => {
-			this.latitudeChange.emit(event.latlng.lat)
-			this.longitudeChange.emit(event.latlng.lng)
+			this.latitude.set(event.latlng.lat)
+			this.longitude.set(event.latlng.lng)
 			this.updateMarker(event.latlng)
 		})
 
@@ -60,7 +61,7 @@ export class MapComponent implements AfterViewInit, OnChanges {
 
 	ngOnChanges() {
 		if (this.map) {
-			const coordinate: L.LatLngLiteral = { lat: this.latitude, lng: this.longitude }
+			const coordinate: L.LatLngLiteral = { lat: this.latitude(), lng: this.longitude() }
 			this.map.setView(coordinate)
 			this.updateMarker(coordinate)
 		}

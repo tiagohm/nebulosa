@@ -2,7 +2,7 @@ import { AfterViewInit, Component, EventEmitter, Input, Output, ViewChild, injec
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog'
 import type { Location } from '../../types/atlas.types'
 import { DEFAULT_LOCATION } from '../../types/atlas.types'
-import { MapComponent } from '../map/map.component'
+import { MapComponent } from '../map.component'
 
 @Component({
 	selector: 'neb-location',
