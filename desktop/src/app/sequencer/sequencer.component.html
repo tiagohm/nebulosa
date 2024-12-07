@@ -149,7 +149,7 @@
 										<neb-button
 											[disabled]="plan.sequences.length <= 1 || running"
 											icon="mdi mdi-md mdi-dots-vertical"
-											(click)="showSequenceMenu(sequence, entryMenu)" />
+											(click)="showSequenceMenu(sequence, sequenceMenu)" />
 										<neb-button
 											[disabled]="running || plan.sequences.length <= 1"
 											icon="mdi mdi-delete"
@@ -598,6 +598,5 @@
 </p-dialog>
 
 <neb-dialog-menu
-	#entryMenu
-	[model]="sequenceModel"
+	#sequenceMenu
 	header="Options" />

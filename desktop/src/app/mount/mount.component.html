@@ -97,7 +97,7 @@
 		<div class="col-3 justify-content-center">
 			<neb-button
 				icon="mdi mdi-md mdi-dots-vertical"
-				(action)="ephemerisMenu.show()" />
+				(action)="ephemerisMenu.show(ephemerisModel)" />
 		</div>
 	</div>
 	<div class="grid mt-1">
@@ -155,7 +155,7 @@
 				[icon]="targetCoordinateCommand.icon"
 				styleClass="w-full"
 				(onClick)="targetCoordinateCommandClicked()"
-				(onDropdownClick)="targetMenu.show()" />
+				(onDropdownClick)="targetMenu.show(targetCoordinateModel)" />
 		</div>
 	</div>
 	<div class="grid mt-1">
@@ -284,17 +284,13 @@
 						(valueChange)="trackModeChanged()" />
 				</div>
 				<div class="col-6">
-					<p-floatLabel class="w-full">
-						<p-dropdown
-							[disabled]="!mount.connected || mount.slewing || mount.parking || mount.parked"
-							[options]="mount.slewRates"
-							[(ngModel)]="slewRate"
-							(ngModelChange)="slewRateChanged()"
-							[autoDisplayFirst]="false"
-							styleClass="p-inputtext-sm border-0"
-							emptyMessage="No rate available" />
-						<label>Slew rate</label>
-					</p-floatLabel>
+					<neb-dropdown-item
+						label="Slew rate"
+						[disabled]="!mount.connected || mount.slewing || mount.parking || mount.parked"
+						[options]="mount.slewRates"
+						[(value)]="slewRate"
+						(valueChange)="slewRateChanged()"
+						emptyMessage="No rate available" />
 				</div>
 			</div>
 		</div>
@@ -389,9 +385,7 @@
 
 <neb-dialog-menu
 	#targetMenu
-	[model]="targetCoordinateModel"
 	header="Target Coordinates" />
 <neb-dialog-menu
 	#ephemerisMenu
-	[model]="ephemerisModel"
 	header="Current Coordinates" />

@@ -1,5 +1,4 @@
 import { Component, ElementRef, OnInit, TemplateRef, ViewEncapsulation, input, output } from '@angular/core'
-import type { Nullable } from '../utils/types'
 import { MenuItemCommandEvent, SlideMenuItem } from './menu-item.component'
 
 @Component({
@@ -27,10 +26,10 @@ import { MenuItemCommandEvent, SlideMenuItem } from './menu-item.component'
 	encapsulation: ViewEncapsulation.None,
 })
 export class SlideMenuComponent implements OnInit {
-	protected readonly model = input.required<SlideMenuItem[]>()
-	protected readonly appendTo = input<Nullable<HTMLElement | ElementRef | TemplateRef<unknown> | string>>()
-	protected readonly forward = output<MenuItemCommandEvent>()
-	protected readonly backward = output<MenuItemCommandEvent>()
+	readonly model = input.required<SlideMenuItem[]>()
+	readonly appendTo = input<HTMLElement | ElementRef | TemplateRef<unknown> | 'body' | undefined | null>()
+	readonly forward = output<MenuItemCommandEvent>()
+	readonly backward = output<MenuItemCommandEvent>()
 
 	protected currentMenu!: SlideMenuItem[]
 

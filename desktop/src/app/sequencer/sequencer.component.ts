@@ -2,7 +2,7 @@ import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
 import { AfterContentInit, Component, HostListener, inject, NgZone, OnDestroy, QueryList, ViewChildren, ViewEncapsulation } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
 import { CameraExposureComponent } from '../../shared/components/camera-exposure.component'
-import { DialogMenuComponent } from '../../shared/components/dialog-menu/dialog-menu.component'
+import { DialogMenuComponent } from '../../shared/components/dialog-menu.component'
 import { DropdownItem } from '../../shared/components/dropdown.component'
 import { MenuItem, SlideMenuItem } from '../../shared/components/menu-item.component'
 import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
@@ -57,7 +57,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 	protected path?: string
 
 	// NOTE: Remove the "plan.sequences.length <= 1" on layout if add more options
-	protected readonly sequenceModel: SlideMenuItem[] = [
+	private readonly sequenceModel: SlideMenuItem[] = [
 		{
 			icon: 'mdi mdi-content-copy',
 			label: 'Apply to all',
@@ -539,7 +539,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 		this.savePreference()
 	}
 
-	protected showSequenceMenu(sequence: Sequence, dialogMenu: DialogMenuComponent) {
+	protected showSequenceMenu(sequence: Sequence, menu: DialogMenuComponent) {
 		this.property.sequence = sequence
 
 		const index = this.plan.sequences.indexOf(sequence)
@@ -555,7 +555,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 		this.sequenceModel[7].visible = this.sequenceModel[3].visible
 
 		if (this.sequenceModel.find((e) => e.visible)) {
-			dialogMenu.show()
+			menu.show(this.sequenceModel)
 		}
 	}
 

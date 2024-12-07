@@ -23,14 +23,14 @@ import { ElectronService } from '../services/electron.service'
 export class PathChooserComponent {
 	private readonly electronService = inject(ElectronService)
 
-	protected readonly key = input.required<string>()
-	protected readonly label = input<string>()
-	protected readonly placeholder = input<string>()
-	protected readonly path = model<string>()
-	protected readonly disabled = input(false)
-	protected readonly readonly = input(false)
-	protected readonly directory = input.required()
-	protected readonly save = input(false)
+	readonly key = input.required<string>()
+	readonly label = input<string>()
+	readonly placeholder = input<string>()
+	readonly path = model<string>()
+	readonly disabled = input(false)
+	readonly readonly = input(false)
+	readonly directory = input.required()
+	readonly save = input(false)
 
 	protected async choosePath() {
 		const key = this.key()

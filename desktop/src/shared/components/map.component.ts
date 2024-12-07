@@ -18,8 +18,8 @@ import * as L from 'leaflet'
 	encapsulation: ViewEncapsulation.None,
 })
 export class MapComponent implements AfterViewInit, OnChanges {
-	protected readonly latitude = model(0)
-	protected readonly longitude = model(0)
+	readonly latitude = model(0)
+	readonly longitude = model(0)
 
 	private readonly mapRef = viewChild.required<ElementRef<HTMLDivElement>>('map')
 

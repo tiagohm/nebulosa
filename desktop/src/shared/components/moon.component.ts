@@ -12,10 +12,10 @@ import { AfterViewInit, Component, ElementRef, OnChanges, ViewEncapsulation, inp
 	encapsulation: ViewEncapsulation.None,
 })
 export class MoonComponent implements AfterViewInit, OnChanges {
-	protected readonly height = input(256)
-	protected readonly width = input(256)
-	protected readonly illuminationRatio = input(0)
-	protected readonly waning = input(false)
+	readonly height = input(256)
+	readonly width = input(256)
+	readonly illuminationRatio = input(0)
+	readonly waning = input(false)
 
 	private readonly moonRef = viewChild.required<ElementRef<HTMLCanvasElement>>('moon')
 

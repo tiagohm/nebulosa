@@ -5,7 +5,7 @@ import { isGuideHead } from '../../types/camera.types'
 import { Device } from '../../types/device.types'
 import { deviceComparator } from '../../utils/comparators'
 import { Undefinable } from '../../utils/types'
-import { DialogMenuComponent } from '../dialog-menu/dialog-menu.component'
+import { DialogMenuComponent } from '../dialog-menu.component'
 import { MenuItem, SlideMenuItem } from '../menu-item.component'
 
 export interface DeviceConnectionCommandEvent {
@@ -73,7 +73,7 @@ export class DeviceListMenuComponent {
 				}
 			}
 
-			const subscription = this.menu.visibleChange.subscribe((visible) => {
+			const subscription = this.menu.visible.subscribe((visible) => {
 				if (!visible) {
 					subscription.unsubscribe()
 					resolve(undefined)

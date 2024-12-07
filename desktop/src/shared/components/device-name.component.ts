@@ -15,5 +15,5 @@ import type { Device } from '../types/device.types'
 	encapsulation: ViewEncapsulation.None,
 })
 export class DeviceNameComponent {
-	protected readonly device = input.required<Device>()
+	readonly device = input.required<Device>()
 }

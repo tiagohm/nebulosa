@@ -579,7 +579,7 @@
 		<neb-button
 			[disabled]="!body.name"
 			icon="mdi mdi-md mdi-dots-vertical"
-			(action)="ephemerisMenu.show()" />
+			(action)="ephemerisMenu.show(ephemerisModel)" />
 		@if (body.name && canFavorite) {
 			<neb-button
 				icon="{{ favorited ? 'mdi mdi-star' : 'mdi mdi-star-outline' }}"
@@ -831,7 +831,6 @@
 
 <neb-dialog-menu
 	#ephemerisMenu
-	[model]="ephemerisModel"
 	[header]="body.name.split(' · ')[0]" />
 
 <neb-device-list-menu #deviceMenu />

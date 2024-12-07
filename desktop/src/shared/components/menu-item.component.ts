@@ -82,5 +82,5 @@ export interface SlideMenuItem extends MenuItem {
 	encapsulation: ViewEncapsulation.None,
 })
 export class MenuItemComponent {
-	protected readonly item = input.required<MenuItem>()
+	readonly item = input.required<MenuItem>()
 }

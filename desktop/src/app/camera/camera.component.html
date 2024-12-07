@@ -28,14 +28,14 @@
 				<neb-button
 					[disabled]="!camera"
 					icon="mdi mdi-wrench"
-					(action)="calibrationMenu.show()"
+					(action)="calibrationMenu.show(calibrationModel)"
 					tooltip="Calibration" />
 			}
 			@if (canShowMenu) {
 				<neb-button
 					[disabled]="!camera || !camera.connected || running"
 					icon="mdi mdi-dots-vertical"
-					(action)="cameraMenu.show()" />
+					(action)="cameraMenu.show(cameraModel)" />
 			}
 		</div>
 		@if (canShowSavePath) {
@@ -307,7 +307,7 @@
 				<neb-info
 					icon="mdi mdi-wrench"
 					label="{{ request.calibrationGroup || 'None' }}"
-					(action)="calibrationMenu.show()" />
+					(action)="calibrationMenu.show(calibrationModel)" />
 			}
 			@if (hasDither) {
 				<neb-info
@@ -399,11 +399,9 @@
 
 <neb-dialog-menu
 	#calibrationMenu
-	[model]="calibrationModel"
 	header="Calibration" />
 <neb-dialog-menu
 	#cameraMenu
-	[model]="cameraModel"
 	header="Camera" />
 
 <p-dialog

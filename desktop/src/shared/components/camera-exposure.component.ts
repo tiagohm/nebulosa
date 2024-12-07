@@ -83,8 +83,8 @@ import { CameraCaptureEvent, CameraCaptureState, DEFAULT_CAMERA_CAPTURE_INFO, DE
 	encapsulation: ViewEncapsulation.None,
 })
 export class CameraExposureComponent {
-	protected readonly info = input<string>()
-	protected readonly showRemainingTime = model(true)
+	readonly info = input<string>()
+	readonly showRemainingTime = model(true)
 
 	protected step = structuredClone(DEFAULT_CAMERA_STEP_INFO)
 	protected capture = structuredClone(DEFAULT_CAMERA_CAPTURE_INFO)
