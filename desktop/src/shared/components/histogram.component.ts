@@ -1,23 +1,28 @@
-import { AfterViewInit, Component, ElementRef, ViewChild, ViewEncapsulation } from '@angular/core'
-import { ImageHistrogram } from '../../types/image.types'
+import { Component, ElementRef, ViewEncapsulation, effect, viewChild } from '@angular/core'
+import { ImageHistrogram } from '../types/image.types'
 
 @Component({
 	selector: 'neb-histogram',
-	templateUrl: 'histogram.component.html',
+	template: `
+		<canvas
+			#canvas
+			class="w-full h-full"></canvas>
+	`,
 	encapsulation: ViewEncapsulation.None,
 })
-export class HistogramComponent implements AfterViewInit {
-	@ViewChild('canvas')
-	private readonly canvas!: ElementRef<HTMLCanvasElement>
+export class HistogramComponent {
+	private readonly canvas = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas')
 
 	private ctx?: CanvasRenderingContext2D | null
 
-	ngAfterViewInit() {
-		this.ctx = this.canvas.nativeElement.getContext('2d')
+	constructor() {
+		effect(() => {
+			this.ctx = this.canvas().nativeElement.getContext('2d')
+		})
 	}
 
 	update(data: ImageHistrogram, dontClear: boolean = false) {
-		const canvas = this.canvas.nativeElement
+		const canvas = this.canvas().nativeElement
 
 		if (!dontClear || !data.length) {
 			this.ctx?.clearRect(0, 0, canvas.width, canvas.height)
@@ -36,7 +41,7 @@ export class HistogramComponent implements AfterViewInit {
 
 	private drawColorGraph(data: ImageHistrogram, max: number, start: number = 0, end: number = data.length - 1, color: string | CanvasGradient | CanvasPattern) {
 		if (this.ctx) {
-			const canvas = this.canvas.nativeElement
+			const canvas = this.canvas().nativeElement
 
 			const graphHeight = canvas.height
 			const graphWidth = canvas.width
