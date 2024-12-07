@@ -1,62 +1,66 @@
-import { Component, EventEmitter, Input, Output, ViewChild, ViewEncapsulation, inject } from '@angular/core'
-import { ApiService } from '../../services/api.service'
-import { Device } from '../../types/device.types'
-import { Undefinable } from '../../utils/types'
-import { DeviceConnectionCommandEvent, DeviceListMenuComponent } from '../device-list-menu/device-list-menu.component'
-import { MenuItem } from '../menu-item/menu-item.component'
+import { Component, ViewEncapsulation, inject, input, model, output, viewChild } from '@angular/core'
+import { ApiService } from '../services/api.service'
+import { Device } from '../types/device.types'
+import { DeviceConnectionCommandEvent, DeviceListMenuComponent } from './device-list-menu/device-list-menu.component'
+import { MenuItem } from './menu-item/menu-item.component'
 
 @Component({
 	selector: 'neb-device-chooser',
-	templateUrl: 'device-chooser.component.html',
+	template: `
+		<neb-button
+			(action)="show()"
+			[rounded]="false"
+			severity="success"
+			[disabled]="disabled()">
+			<div class="flex align-items-center gap-1">
+				<i [class]="icon()"></i>
+				<div class="flex flex-column text-left gap-1px">
+					<span class="font-bold text-sm">{{ title() }}</span>
+					@let dev = device();
+
+					@if (dev && dev.id) {
+						<span class="text-xs font-normal">{{ dev.name }}</span>
+					} @else {
+						<span class="text-xs font-normal text-gray-600">{{ noDeviceMessage() || 'Choose a device' }}</span>
+					}
+				</div>
+			</div>
+		</neb-button>
+
+		<neb-device-list-menu
+			#deviceMenu
+			[hasNone]="hasNone()"
+			[disableIfDeviceIsNotConnected]="false"
+			[header]="title()"
+			(deviceConnect)="deviceConnected($event)"
+			(deviceDisconnect)="deviceDisconnected($event)" />
+	`,
 	encapsulation: ViewEncapsulation.None,
 })
 export class DeviceChooserComponent<T extends Device = Device> {
 	private readonly api = inject(ApiService)
+	protected readonly title = input.required<string>()
+	protected readonly noDeviceMessage = input<string>()
+	protected readonly icon = input.required<string>()
+	protected readonly devices = input.required<T[]>()
+	protected readonly hasNone = input<boolean>(false)
+	protected readonly device = model<T>()
+	protected readonly disabled = input<boolean>()
+	protected readonly deviceConnect = output<DeviceConnectionCommandEvent>()
+	protected readonly deviceDisconnect = output<DeviceConnectionCommandEvent>()
 
-	@Input({ required: true })
-	protected readonly title!: string
-
-	@Input()
-	protected readonly noDeviceMessage?: string
-
-	@Input({ required: true })
-	protected readonly icon!: string
-
-	@Input({ required: true })
-	protected readonly devices!: T[]
-
-	@Input()
-	protected readonly hasNone: boolean = false
-
-	@Input()
-	protected device?: T
-
-	@Input()
-	protected readonly disabled?: boolean
-
-	@Output()
-	readonly deviceChange = new EventEmitter<T>()
-
-	@Output()
-	readonly deviceConnect = new EventEmitter<DeviceConnectionCommandEvent>()
-
-	@Output()
-	readonly deviceDisconnect = new EventEmitter<DeviceConnectionCommandEvent>()
-
-	@ViewChild('deviceMenu')
-	private readonly deviceMenu!: DeviceListMenuComponent
+	private readonly deviceMenu = viewChild.required<DeviceListMenuComponent>('deviceMenu')
 
 	async show() {
-		const device = await this.deviceMenu.show(this.devices, this.device)
+		const device = await this.deviceMenu().show(this.devices(), this.device())
 
 		if (device) {
-			this.device = device === 'NONE' ? undefined : device
-			this.deviceChange.emit(this.device)
+			this.device.set(device === 'NONE' ? undefined : device)
 		}
 	}
 
 	hide() {
-		this.deviceMenu.hide()
+		this.deviceMenu().hide()
 	}
 
 	protected async deviceConnected(event: DeviceConnectionCommandEvent) {
@@ -108,7 +112,7 @@ export class DeviceChooserComponent<T extends Device = Device> {
 
 		item.disabled = true
 
-		return new Promise<Undefinable<DeviceConnectionCommandEvent>>((resolve) => {
+		return new Promise<DeviceConnectionCommandEvent | undefined>((resolve) => {
 			let counter = 0
 
 			const timer = setTimeout(async () => {
