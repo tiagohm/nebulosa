@@ -52,7 +52,7 @@ import { CameraInfoComponent } from '../shared/components/camera-info/camera-inf
 import { CheckboxComponent } from '../shared/components/checkbox.component'
 import { DeviceChooserComponent } from '../shared/components/device-chooser/device-chooser.component'
 import { DeviceListMenuComponent } from '../shared/components/device-list-menu/device-list-menu.component'
-import { DeviceNameComponent } from '../shared/components/device-name/device-name.component'
+import { DeviceNameComponent } from '../shared/components/device-name.component'
 import { DialogMenuComponent } from '../shared/components/dialog-menu/dialog-menu.component'
 import { DropdownEnumComponent, DropdownItemComponent } from '../shared/components/dropdown.component'
 import { HistogramComponent } from '../shared/components/histogram.component'
