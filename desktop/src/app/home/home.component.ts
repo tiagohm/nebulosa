@@ -2,7 +2,7 @@ import { AfterContentInit, Component, inject, NgZone, ViewChild, ViewEncapsulati
 import packageJson from '../../../package.json' with { type: 'json' }
 import { DeviceChooserComponent } from '../../shared/components/device-chooser.component'
 import { DeviceConnectionCommandEvent, DeviceListMenuComponent } from '../../shared/components/device-list-menu/device-list-menu.component'
-import { MenuItem, SlideMenuItem } from '../../shared/components/menu-item/menu-item.component'
+import { MenuItem, SlideMenuItem } from '../../shared/components/menu-item.component'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'

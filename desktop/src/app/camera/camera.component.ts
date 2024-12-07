@@ -1,7 +1,7 @@
 import { AfterContentInit, Component, HostListener, inject, NgZone, OnDestroy, ViewChild } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
 import { CameraExposureComponent } from '../../shared/components/camera-exposure/camera-exposure.component'
-import { MenuItemCommandEvent, SlideMenuItem } from '../../shared/components/menu-item/menu-item.component'
+import { MenuItemCommandEvent, SlideMenuItem } from '../../shared/components/menu-item.component'
 import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'

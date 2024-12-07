@@ -5,7 +5,7 @@ import { NgxLegacyMoveableComponent, OnDrag, OnResize, OnRotate } from 'ngx-move
 import { ContextMenu } from 'primeng/contextmenu'
 import { DeviceListMenuComponent } from '../../shared/components/device-list-menu/device-list-menu.component'
 import { HistogramComponent } from '../../shared/components/histogram.component'
-import { MenuItem } from '../../shared/components/menu-item/menu-item.component'
+import { MenuItem } from '../../shared/components/menu-item.component'
 import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
 import { AngularService } from '../../shared/services/angular.service'
 import { ApiService } from '../../shared/services/api.service'

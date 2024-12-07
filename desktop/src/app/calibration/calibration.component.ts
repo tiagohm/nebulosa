@@ -1,6 +1,6 @@
 import { AfterViewInit, Component, HostListener, OnDestroy, QueryList, ViewChildren, ViewEncapsulation, inject } from '@angular/core'
 import { Listbox } from 'primeng/listbox'
-import { MenuItem } from '../../shared/components/menu-item/menu-item.component'
+import { MenuItem } from '../../shared/components/menu-item.component'
 import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'

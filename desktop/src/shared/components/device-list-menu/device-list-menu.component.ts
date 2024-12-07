@@ -6,7 +6,7 @@ import { Device } from '../../types/device.types'
 import { deviceComparator } from '../../utils/comparators'
 import { Undefinable } from '../../utils/types'
 import { DialogMenuComponent } from '../dialog-menu/dialog-menu.component'
-import { MenuItem, SlideMenuItem } from '../menu-item/menu-item.component'
+import { MenuItem, SlideMenuItem } from '../menu-item.component'
 
 export interface DeviceConnectionCommandEvent {
 	device: Device

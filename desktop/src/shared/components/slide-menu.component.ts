@@ -1,6 +1,6 @@
 import { Component, ElementRef, OnInit, TemplateRef, ViewEncapsulation, input, output } from '@angular/core'
 import type { Nullable } from '../utils/types'
-import { MenuItemCommandEvent, SlideMenuItem } from './menu-item/menu-item.component'
+import { MenuItemCommandEvent, SlideMenuItem } from './menu-item.component'
 
 @Component({
 	selector: 'neb-slide-menu',

@@ -2,7 +2,7 @@ import { Component, ViewEncapsulation, inject, input, model, output, viewChild }
 import { ApiService } from '../services/api.service'
 import { Device } from '../types/device.types'
 import { DeviceConnectionCommandEvent, DeviceListMenuComponent } from './device-list-menu/device-list-menu.component'
-import { MenuItem } from './menu-item/menu-item.component'
+import { MenuItem } from './menu-item.component'
 
 @Component({
 	selector: 'neb-device-chooser',
@@ -16,10 +16,10 @@ import { MenuItem } from './menu-item/menu-item.component'
 				<i [class]="icon()"></i>
 				<div class="flex flex-column text-left gap-1px">
 					<span class="font-bold text-sm">{{ title() }}</span>
-					@let dev = device();
+					@let mDevice = device();
 
-					@if (dev && dev.id) {
-						<span class="text-xs font-normal">{{ dev.name }}</span>
+					@if (mDevice && mDevice.id) {
+						<span class="text-xs font-normal">{{ mDevice.name }}</span>
 					} @else {
 						<span class="text-xs font-normal text-gray-600">{{ noDeviceMessage() || 'Choose a device' }}</span>
 					}

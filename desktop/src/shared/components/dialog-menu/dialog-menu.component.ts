@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewEncapsulation } from '@angular/core'
 import { Undefinable } from '../../utils/types'
-import { MenuItemCommandEvent, SlideMenuItem } from '../menu-item/menu-item.component'
+import { MenuItemCommandEvent, SlideMenuItem } from '../menu-item.component'
 
 @Component({
 	selector: 'neb-dialog-menu',

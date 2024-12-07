@@ -1,6 +1,6 @@
 import { AfterViewInit, Component, HostListener, inject, OnDestroy } from '@angular/core'
 import { debounceTime, Subject, Subscription } from 'rxjs'
-import { MenuItem } from '../../shared/components/menu-item/menu-item.component'
+import { MenuItem } from '../../shared/components/menu-item.component'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { DEFAULT_LOCATION, Location } from '../../shared/types/atlas.types'

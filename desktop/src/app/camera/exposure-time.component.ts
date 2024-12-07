@@ -1,5 +1,5 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewEncapsulation } from '@angular/core'
-import { MenuItem } from '../../shared/components/menu-item/menu-item.component'
+import { MenuItem } from '../../shared/components/menu-item.component'
 import type { ExposureTimeUnit } from '../../shared/types/camera.types'
 
 @Component({

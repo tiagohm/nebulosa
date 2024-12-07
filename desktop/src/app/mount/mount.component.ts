@@ -2,7 +2,7 @@ import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, inject } 
 import { ActivatedRoute } from '@angular/router'
 import hotkeys from 'hotkeys-js'
 import { Subject, Subscription, interval, throttleTime } from 'rxjs'
-import { SlideMenuItem } from '../../shared/components/menu-item/menu-item.component'
+import { SlideMenuItem } from '../../shared/components/menu-item.component'
 import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
 import { AngularService } from '../../shared/services/angular.service'
 import { ApiService } from '../../shared/services/api.service'

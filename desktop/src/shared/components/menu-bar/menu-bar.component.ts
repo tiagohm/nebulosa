@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core'
-import { MenuItem } from '../menu-item/menu-item.component'
+import { MenuItem } from '../menu-item.component'
 
 export interface SplitButtonClickEvent {
 	event: MouseEvent
