@@ -1,32 +1,45 @@
-import { Component, ElementRef, EventEmitter, Input, OnInit, Output, TemplateRef, ViewEncapsulation } from '@angular/core'
-import type { Nullable } from '../../utils/types'
-import { MenuItemCommandEvent, SlideMenuItem } from '../menu-item/menu-item.component'
+import { Component, ElementRef, OnInit, TemplateRef, ViewEncapsulation, input, output } from '@angular/core'
+import type { Nullable } from '../utils/types'
+import { MenuItemCommandEvent, SlideMenuItem } from './menu-item/menu-item.component'
 
 @Component({
 	selector: 'neb-slide-menu',
-	templateUrl: 'slide-menu.component.html',
+	template: `
+		<div class="flex flex-column justify-content-center align-items-center gap-1">
+			<p-menu
+				[model]="currentMenu"
+				[appendTo]="appendTo()"
+				styleClass="border-0 w-full min-w-18rem">
+				<ng-template
+					pTemplate="item"
+					let-item>
+					<neb-menu-item [item]="item" />
+				</ng-template>
+			</p-menu>
+			@if (currentMenu !== model()) {
+				<neb-button
+					icon="mdi mdi-arrow-left"
+					label="Back"
+					(action)="back($event)" />
+			}
+		</div>
+	`,
 	encapsulation: ViewEncapsulation.None,
 })
 export class SlideMenuComponent implements OnInit {
-	@Input({ required: true })
-	readonly model!: SlideMenuItem[]
-
-	@Input()
-	readonly appendTo: Nullable<HTMLElement | ElementRef | TemplateRef<unknown> | string>
-
-	@Output()
-	readonly forward = new EventEmitter<MenuItemCommandEvent>()
-
-	@Output()
-	readonly backward = new EventEmitter<MenuItemCommandEvent>()
+	protected readonly model = input.required<SlideMenuItem[]>()
+	protected readonly appendTo = input<Nullable<HTMLElement | ElementRef | TemplateRef<unknown> | string>>()
+	protected readonly forward = output<MenuItemCommandEvent>()
+	protected readonly backward = output<MenuItemCommandEvent>()
 
 	protected currentMenu!: SlideMenuItem[]
 
 	private readonly navigation: SlideMenuItem[][] = []
 
 	ngOnInit() {
-		this.processMenu(this.model, 0)
-		this.currentMenu = this.model
+		const model = this.model()
+		this.processMenu(model, 0)
+		this.currentMenu = model
 	}
 
 	back(event: MouseEvent) {

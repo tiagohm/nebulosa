@@ -65,7 +65,7 @@ import { MenuBarComponent } from '../shared/components/menu-bar/menu-bar.compone
 import { MenuItemComponent } from '../shared/components/menu-item/menu-item.component'
 import { MoonComponent } from '../shared/components/moon.component'
 import { PathChooserComponent } from '../shared/components/path-chooser.component'
-import { SlideMenuComponent } from '../shared/components/slide-menu/slide-menu.component'
+import { SlideMenuComponent } from '../shared/components/slide-menu.component'
 import { SwitchComponent } from '../shared/components/switch.component'
 import { TagComponent } from '../shared/components/tag.component'
 import { ConfirmDialogComponent } from '../shared/dialogs/confirm/confirm.dialog'
