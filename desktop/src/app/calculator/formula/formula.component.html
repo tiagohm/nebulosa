@@ -1,11 +1,13 @@
-<p class="text-center mb-2">{{ formula.description }}</p>
+@let mFormula = formula();
+
+<p class="text-center mb-2">{{ mFormula.description }}</p>
 <div class="flex align-items-center justify-content-center">
 	<neb-tag
-		[label]="formula.expression"
+		[label]="mFormula.expression"
 		size="large" />
 </div>
 <div class="flex flex-column align-items-center justify-content-center gap-1 mt-4">
-	@for (item of formula.operands; track item.label) {
+	@for (item of mFormula.operands; track item.label) {
 		<div class="grid">
 			<div class="col-2 align-items-center justify-content-end">
 				<span class="text-xl text-bold">{{ item.prefix }}</span>
@@ -26,18 +28,18 @@
 </div>
 <p class="text-bold text-center text-5xl mt-0 mb-1">=</p>
 <div class="flex flex-row justify-content-center align-items-center gap-2">
-	<span class="text-2xl text-bold">{{ formula.result.prefix }}</span>
+	<span class="text-2xl text-bold">{{ mFormula.result.prefix }}</span>
 	<neb-input-number
-		[label]="formula.result.label"
+		[label]="mFormula.result.label"
 		[readonly]="true"
-		[value]="formula.result.value ?? 0"
-		[fractionDigits]="formula.result.maxFractionDigits ?? 4" />
-	<span class="text-xl text-bold">{{ formula.result.suffix }}</span>
+		[value]="mFormula.result.value ?? 0"
+		[fractionDigits]="mFormula.result.maxFractionDigits ?? 4" />
+	<span class="text-xl text-bold">{{ mFormula.result.suffix }}</span>
 </div>
-@if (formula.tip) {
+@if (mFormula.tip) {
 	<div class="flex justify-content-center mt-3 text-sm">
 		<p-message
 			severity="info"
-			[text]="formula.tip" />
+			[text]="mFormula.tip" />
 	</div>
 }
