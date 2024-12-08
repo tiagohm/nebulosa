@@ -61,7 +61,7 @@ import { InputNumberComponent } from '../shared/components/input-number.componen
 import { InputTextComponent } from '../shared/components/input-text.component'
 import { LocationComponent } from '../shared/components/location/location.dialog'
 import { MapComponent } from '../shared/components/map.component'
-import { MenuBarComponent } from '../shared/components/menu-bar/menu-bar.component'
+import { MenuBarComponent } from '../shared/components/menu-bar.component'
 import { MenuItemComponent } from '../shared/components/menu-item.component'
 import { MoonComponent } from '../shared/components/moon.component'
 import { PathChooserComponent } from '../shared/components/path-chooser.component'
