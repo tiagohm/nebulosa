@@ -51,7 +51,7 @@ import { CameraExposureComponent } from '../shared/components/camera-exposure.co
 import { CameraInfoComponent } from '../shared/components/camera-info.component'
 import { CheckboxComponent } from '../shared/components/checkbox.component'
 import { DeviceChooserComponent } from '../shared/components/device-chooser.component'
-import { DeviceListMenuComponent } from '../shared/components/device-list-menu/device-list-menu.component'
+import { DeviceListMenuComponent } from '../shared/components/device-list-menu.component'
 import { DeviceNameComponent } from '../shared/components/device-name.component'
 import { DialogMenuComponent } from '../shared/components/dialog-menu.component'
 import { DropdownComponent, DropdownEnumComponent, DropdownItemComponent } from '../shared/components/dropdown.component'

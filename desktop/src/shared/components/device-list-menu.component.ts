@@ -1,12 +1,12 @@
-import { Component, EventEmitter, Input, Output, ViewChild, ViewEncapsulation, inject } from '@angular/core'
-import { SEPARATOR_MENU_ITEM } from '../../constants'
-import { AngularService } from '../../services/angular.service'
-import { isGuideHead } from '../../types/camera.types'
-import { Device } from '../../types/device.types'
-import { deviceComparator } from '../../utils/comparators'
-import { Undefinable } from '../../utils/types'
-import { DialogMenuComponent } from '../dialog-menu.component'
-import { MenuItem, SlideMenuItem } from '../menu-item.component'
+import { Component, ViewEncapsulation, effect, inject, input, output, viewChild } from '@angular/core'
+import { SEPARATOR_MENU_ITEM } from '../constants'
+import { AngularService } from '../services/angular.service'
+import { isGuideHead } from '../types/camera.types'
+import { Device } from '../types/device.types'
+import { deviceComparator } from '../utils/comparators'
+import { Undefinable } from '../utils/types'
+import { DialogMenuComponent } from './dialog-menu.component'
+import { MenuItem, SlideMenuItem } from './menu-item.component'
 
 export interface DeviceConnectionCommandEvent {
 	device: Device
@@ -15,44 +15,47 @@ export interface DeviceConnectionCommandEvent {
 
 @Component({
 	selector: 'neb-device-list-menu',
-	templateUrl: 'device-list-menu.component.html',
-	styleUrls: ['device-list-menu.component.scss'],
+	template: `
+		<neb-dialog-menu
+			#menu
+			[header]="currentHeader" />
+	`,
+	styles: `
+		neb-device-list-menu {
+			.p-menuitem-link {
+				padding: 0.5rem 0.75rem;
+				min-height: 43px;
+			}
+		}
+	`,
 	encapsulation: ViewEncapsulation.None,
 })
 export class DeviceListMenuComponent {
 	private readonly angularService = inject(AngularService)
 
-	@Input()
-	protected readonly model: SlideMenuItem[] = []
+	readonly model = input<SlideMenuItem[]>([])
+	readonly modelAtFirst = input<boolean>(true)
+	readonly disableIfDeviceIsNotConnected = input<boolean>(true)
+	readonly header = input<string>()
+	readonly hasNone = input<boolean>(false)
+	readonly toolbarBuilder = input<(device: Device) => MenuItem[]>()
+	readonly deviceConnect = output<DeviceConnectionCommandEvent>()
+	readonly deviceDisconnect = output<DeviceConnectionCommandEvent>()
 
-	@Input()
-	protected readonly modelAtFirst: boolean = true
+	readonly menu = viewChild.required<DialogMenuComponent>('menu')
 
-	@Input()
-	protected readonly disableIfDeviceIsNotConnected: boolean = true
+	protected currentHeader?: string
 
-	@Input()
-	protected header?: string
-
-	@Input()
-	protected readonly hasNone: boolean = false
-
-	@Input()
-	protected readonly toolbarBuilder?: (device: Device) => MenuItem[]
-
-	@Output()
-	readonly deviceConnect = new EventEmitter<DeviceConnectionCommandEvent>()
-
-	@Output()
-	readonly deviceDisconnect = new EventEmitter<DeviceConnectionCommandEvent>()
-
-	@ViewChild('menu')
-	private readonly menu!: DialogMenuComponent
+	constructor() {
+		effect(() => {
+			this.currentHeader = this.header()
+		})
+	}
 
 	show<T extends Device>(devices: T[], selected?: NoInfer<T>, header?: string) {
 		const model: SlideMenuItem[] = []
 
-		if (header) this.header = header
+		this.currentHeader = header || this.header()
 
 		return new Promise<Undefinable<T | 'NONE'>>((resolve) => {
 			if (devices.length <= 0) {
@@ -62,7 +65,7 @@ export class DeviceListMenuComponent {
 			}
 
 			const populateWithModel = () => {
-				for (const item of this.model) {
+				for (const item of this.model()) {
 					model.push({
 						...item,
 						command: (event) => {
@@ -73,19 +76,20 @@ export class DeviceListMenuComponent {
 				}
 			}
 
-			const subscription = this.menu.visible.subscribe((visible) => {
+			const subscription = this.menu().visible.subscribe((visible) => {
 				if (!visible) {
 					subscription.unsubscribe()
 					resolve(undefined)
 				}
 			})
 
-			if (this.model.length > 0 && this.modelAtFirst) {
+			const modelAtFirst = this.modelAtFirst()
+			if (this.model().length > 0 && modelAtFirst) {
 				populateWithModel()
 				model.push(SEPARATOR_MENU_ITEM)
 			}
 
-			if (this.hasNone) {
+			if (this.hasNone()) {
 				model.push({
 					icon: 'mdi mdi-close',
 					label: 'None',
@@ -98,12 +102,12 @@ export class DeviceListMenuComponent {
 			}
 
 			for (const device of devices.sort(deviceComparator)) {
-				const toolbarMenu = this.toolbarBuilder?.(device) ?? []
+				const toolbarMenu = this.toolbarBuilder()?.(device) ?? []
 
 				model.push({
 					label: device.name,
 					selected: selected === device,
-					disabled: this.disableIfDeviceIsNotConnected && !device.connected,
+					disabled: this.disableIfDeviceIsNotConnected() && !device.connected,
 					slideMenu: [],
 					toolbarMenu: [
 						...toolbarMenu,
@@ -126,16 +130,16 @@ export class DeviceListMenuComponent {
 				})
 			}
 
-			if (this.model.length > 0 && !this.modelAtFirst) {
+			if (this.model().length > 0 && !modelAtFirst) {
 				model.push(SEPARATOR_MENU_ITEM)
 				populateWithModel()
 			}
 
-			this.menu.show(model)
+			this.menu().show(model)
 		})
 	}
 
 	hide() {
-		this.menu.hide()
+		this.menu().hide()
 	}
 }

@@ -1,7 +1,7 @@
 import { Component, ViewEncapsulation, inject, input, model, output, viewChild } from '@angular/core'
 import { ApiService } from '../services/api.service'
 import { Device } from '../types/device.types'
-import { DeviceConnectionCommandEvent, DeviceListMenuComponent } from './device-list-menu/device-list-menu.component'
+import { DeviceConnectionCommandEvent, DeviceListMenuComponent } from './device-list-menu.component'
 import { MenuItem } from './menu-item.component'
 
 @Component({
