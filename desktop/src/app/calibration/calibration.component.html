@@ -1,22 +1,22 @@
 <div class="grid pb-3">
 	<div class="col-12">
 		<p-tabView [(activeIndex)]="tab">
-			@for (key of groups; track $index) {
+			@for (key of groups; track key) {
 				@let value = frames.get(key) ?? [];
 				<p-tabPanel [header]="key">
 					<div class="grid px-3 mt-1">
 						<div class="col-12 flex align-items-center justify-content-between">
 							<div class="flex align-items-center justify-content-start gap-2">
-								<p-button
+								<neb-button
 									label="Files"
 									icon="mdi mdi-file-plus"
-									size="small"
-									(onClick)="openFilesToUpload(key)" />
-								<p-button
+									severity="success"
+									(action)="openFilesToUpload(key)" />
+								<neb-button
 									label="Directory"
 									icon="mdi mdi-folder-plus"
-									size="small"
-									(onClick)="openDirectoryToUpload(key)" />
+									severity="success"
+									(action)="openDirectoryToUpload(key)" />
 							</div>
 							<span class="text-sm text-gray-500">{{ this.frames.get(key)?.length ?? 0 }} frames</span>
 							<div class="flex align-items-center justify-content-end gap-2">
@@ -25,12 +25,9 @@
 									[model]="groupModel"
 									(onShow)="activeGroup = key"
 									[popup]="true" />
-								<p-button
+								<neb-button
 									icon="mdi mdi-dots-vertical"
-									[text]="true"
-									[rounded]="true"
-									size="small"
-									(onClick)="groupMenu.toggle($event)" />
+									(action)="groupMenu.toggle($event)" />
 							</div>
 						</div>
 						<div class="col-12">
@@ -52,55 +49,39 @@
 										<div class="flex flex-column justify-content-center gap-2 flex-1">
 											<div class="flex align-items-center justify-content-between gap-2 text-gray-400">
 												<div class="flex align-items-center justify-content-start gap-2 text-xs">
-													<p-checkbox
-														[binary]="true"
-														[(ngModel)]="item.enabled"
-														(ngModelChange)="toggleFrame(item, $event)"
-														(onChange)="$event.originalEvent?.stopImmediatePropagation()" />
+													<neb-checkbox
+														[(value)]="item.enabled"
+														(valueChange)="toggleFrame(item, $event)" />
 													<div class="flex flex-column justify-content-center">
 														<span class="text-base font-bold">{{ item.type }}</span>
 														<div class="flex flex-row flex-nowrap align-items-center justify-content-start gap-2 w-full text-xs text-gray-200">
 															<span class="text-orange-300">{{ item.exposureTime | exposureTime }}</span>
 															<span class="text-cyan-300">{{ item.width }}x{{ item.height }}</span>
 															<span class="text-yellow-300">{{ item.binX }}x{{ item.binY }}</span>
-															<span *ngIf="item.gain">GAIN: {{ item.gain }}</span>
-															<span
-																*ngIf="item.temperature < 100 && item.temperature > -100"
-																class="text-red-300">
-																{{ item.temperature }}°C
-															</span>
+															@if (item.gain) {
+																<span>GAIN: {{ item.gain }}</span>
+															}
+															@if (item.temperature < 100 && item.temperature > -100) {
+																<span class="text-red-300">{{ item.temperature }}°C</span>
+															}
 														</div>
 														<span class="text-xs text-gray-200 text-nowrap">{{ item.path }}</span>
 													</div>
 												</div>
 												<div class="flex align-items-center justify-content-end gap-1">
-													<p-button
+													<neb-button
 														icon="mdi mdi-image"
-														[text]="true"
-														[rounded]="true"
-														pTooltip="View image"
-														tooltipPosition="bottom"
-														size="small"
-														(onClick)="openFrame(item); $event.stopImmediatePropagation()" />
-													<p-button
-														[text]="true"
-														[rounded]="true"
+														tooltip="View image"
+														(action)="openFrame(item)" />
+													<neb-button
 														icon="mdi mdi-pencil"
-														size="small"
-														pTooltip="Rename Group"
-														tooltipPosition="bottom"
-														styleClass="p-button-sm"
-														(onClick)="showEditGroupDialog(item); $event.stopImmediatePropagation()" />
-													<p-button
-														[text]="true"
-														[rounded]="true"
+														tooltip="Rename Group"
+														(action)="showEditGroupDialog(item)" />
+													<neb-button
 														icon="mdi mdi-delete"
 														severity="danger"
-														size="small"
-														pTooltip="Remove"
-														tooltipPosition="bottom"
-														styleClass="p-button-sm"
-														(onClick)="deleteFrame(item, frameListBox); $event.stopImmediatePropagation()" />
+														tooltip="Remove"
+														(action)="deleteFrame(item, frameListBox)" />
 												</div>
 											</div>
 										</div>
@@ -122,22 +103,16 @@
 	[style]="{ width: '80vw', maxWidth: '240px' }">
 	<div class="grid p-2">
 		<div class="col-12">
-			<p-floatLabel class="w-full">
-				<input
-					pInputText
-					class="p-inputtext-sm border-0 w-full"
-					[(ngModel)]="groupDialog.group" />
-				<label>Name</label>
-			</p-floatLabel>
+			<neb-input-text
+				label="Name"
+				[(value)]="groupDialog.group" />
 		</div>
 	</div>
 	<ng-template pTemplate="footer">
-		<p-button
+		<neb-button
 			[disabled]="!groupDialog.group.length"
-			[text]="true"
 			icon="mdi mdi-check"
 			label="OK"
-			size="small"
-			(onClick)="groupDialog.save?.()" />
+			(action)="groupDialog.save?.()" />
 	</ng-template>
 </p-dialog>

@@ -7,7 +7,7 @@ import { DeviceType } from '../types/device.types'
 import { FlatWizardState } from '../types/flat-wizard.types'
 import { GuideDirection, GuideState, GuiderPlotMode, GuiderYAxisUnit } from '../types/guider.types'
 import { Bitpix, ImageChannel, ImageFilterType, SCNRProtectionMethod } from '../types/image.types'
-import { MountRemoteControlProtocol } from '../types/mount.types'
+import { MountRemoteControlProtocol, TrackMode } from '../types/mount.types'
 import { PlateSolverType } from '../types/platesolver.types'
 import { SequencerCaptureMode, SequencerState } from '../types/sequencer.types'
 import { StarDetectorType } from '../types/stardetector.types'
@@ -44,6 +44,7 @@ export type EnumPipeKey =
 	| ImageChannel
 	| MoonPhase
 	| DeviceType
+	| TrackMode
 	| 'ALL'
 
 @Pipe({ name: 'enum' })
@@ -139,6 +140,7 @@ export class EnumPipe implements PipeTransform {
 		CRV: 'Corvus',
 		CUBESAT: 'CubeSats',
 		CURVE_FITTED: 'Curve fitted',
+		CUSTOM: 'Custom',
 		CVN: 'Canes Venatici',
 		CYG: 'Cygnus',
 		DARK_CLOUD_NEBULA: 'Dark Cloud (nebula)',
@@ -249,6 +251,7 @@ export class EnumPipe implements PipeTransform {
 		IRIDIUM_NEXT: 'Iridium NEXT',
 		IRIDIUM: 'Iridium',
 		IRREGULAR_VARIABLE: 'Irregular Variable',
+		KING: 'King',
 		LAC: 'Lacerta',
 		LAST_30_DAYS: `Last 30 Days' Launches`,
 		LAST_QUARTER: 'Last Quarter',
@@ -268,6 +271,7 @@ export class EnumPipe implements PipeTransform {
 		LOW_MASS_X_RAY_BINARY: 'Low Mass X-ray Binary',
 		LOW_SURFACE_BRIGHTNESS_GALAXY: 'Low Surface Brightness Galaxy',
 		LUMINANCE: 'Luminance',
+		LUNAR: 'Lunar',
 		LUP: 'Lupus',
 		LX200: 'LX200',
 		LYN: 'Lynx',
@@ -387,10 +391,12 @@ export class EnumPipe implements PipeTransform {
 		SGE: 'Sagitta',
 		SGR: 'Sagittarius',
 		SHORT: 'Short',
+		SIDEREAL: 'Sidereal',
 		SINGLE: 'Single',
 		SIRIL: 'Siril',
 		SLEWED: 'Slewed',
 		SLEWING: 'Slewing',
+		SOLAR: 'Solar',
 		SOLVED: 'Solved',
 		SOLVING: 'Solving',
 		SOUTH: 'South',

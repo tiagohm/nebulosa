@@ -38,6 +38,10 @@ body {
 	font-family: 'Roboto';
 }
 
+a {
+	display: inline-flex;
+}
+
 a:any-link {
 	color: $infoButtonBg;
 }
@@ -92,35 +96,33 @@ p-table {
 	width: 100%;
 }
 
-.mdi:before {
-	display: inline-flex;
-	justify-content: center;
+.mdi {
 	align-items: center;
-	aspect-ratio: 1;
-}
+	justify-content: center;
+	vertical-align: middle;
+	line-height: 0px;
 
-.mdi:before {
-	font-size: 1.25rem;
-}
+	&::before {
+		display: inline-flex;
+		justify-content: center;
+		align-items: center;
+		aspect-ratio: 1;
+		font-size: 1.25rem;
+		line-height: 0px;
+		vertical-align: middle;
+	}
 
-.mdi.mdi-sm:before {
-	font-size: 1.05rem;
-}
+	&.mdi-sm::before {
+		font-size: 1rem;
+	}
 
-.mdi.mdi-lg:before {
-	font-size: 2rem;
-}
+	&.mdi-xs::before {
+		font-size: 0.9rem;
+	}
 
-span.p-inputnumber {
-	width: 100%;
-}
-
-p-inputnumber .p-inputnumber-buttons-stacked input {
-	width: 100%;
-}
-
-.p-inputnumber-button-group .p-button.p-button-icon-only {
-	width: 2rem;
+	&.mdi-lg::before {
+		font-size: 2rem;
+	}
 }
 
 .p-selectbutton {
@@ -190,19 +192,8 @@ p-dropdown,
 }
 
 .border-0,
-.p-selectbutton.border-0 .p-button,
-.p-inputwrapper.border-0 .p-inputtext,
-.p-inputnumber.border-0 .p-inputtext {
+.p-selectbutton.border-0 .p-button {
 	border: 1px solid rgba(255, 255, 255, 0) !important;
-}
-
-.p-button {
-	white-space: nowrap;
-	max-width: 100%;
-
-	&.p-button-icon-only {
-		min-width: fit-content;
-	}
 }
 
 p-calendar.border-0 .p-calendar-w-btn {
@@ -216,18 +207,6 @@ p-calendar.border-0 .p-calendar-w-btn {
 
 .p-toast {
 	opacity: 1;
-}
-
-.p-tag {
-	border-radius: 2px;
-	padding: 1px 4px;
-	display: flex;
-	min-height: 1rem;
-
-	.p-tag-icon,
-	.p-tag-value {
-		line-height: normal;
-	}
 }
 
 .text-overflow-scroll {
@@ -299,6 +278,7 @@ p-dropdown *,
 p-dropdownitem *,
 p-tieredmenu *,
 .p-multiselect-header *,
+.p-dropdown-header *,
 .no-draggable-region,
 .p-button.p-dialog-header-close {
 	-webkit-app-region: no-drag;
@@ -518,4 +498,8 @@ p-tieredmenu *,
 
 ::-webkit-scrollbar-corner {
 	background-color: transparent;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+	display: none;
 }

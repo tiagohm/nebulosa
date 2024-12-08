@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, ViewChild, ViewEncapsulation, inject } from '@angular/core'
+import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, ViewEncapsulation, inject, viewChild } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
 import { MenuItem } from 'primeng/api'
 import { Listbox } from 'primeng/listbox'
@@ -27,8 +27,7 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
 	protected showLog = false
 	protected messages: string[] = []
 
-	@ViewChild('listbox')
-	protected readonly messageBox!: Listbox
+	private readonly messageBox = viewChild.required<Listbox>('messageBox')
 
 	constructor() {
 		const app = inject(AppComponent)
@@ -66,7 +65,7 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
 				ngZone.run(() => {
 					if (event.message) {
 						this.messages.splice(0, 0, event.message)
-						this.messageBox.cd.markForCheck()
+						this.messageBox().cd.markForCheck()
 					}
 				})
 			}
@@ -116,7 +115,7 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
 		}
 	}
 
-	protected async deviceChanged(device: Device) {
+	protected async deviceChanged(device?: Device) {
 		if (this.device) {
 			await this.api.indiUnlisten(this.device)
 		}
@@ -124,8 +123,11 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
 		this.device = device
 
 		await this.updateProperties()
-		await this.api.indiListen(device)
-		this.messages = await this.api.indiMessages(device)
+
+		if (device) {
+			await this.api.indiListen(device)
+			this.messages = await this.api.indiMessages(device)
+		}
 	}
 
 	protected changeGroup(group: string) {
@@ -199,6 +201,10 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
 			}
 
 			this.updateGroups()
+		} else {
+			this.properties = []
+			this.groups = []
+			this.group = ''
 		}
 	}
 

@@ -1,11 +1,11 @@
-import { AfterViewInit, Component, ElementRef, HostListener, NgZone, OnDestroy, ViewChild, inject } from '@angular/core'
+import { AfterViewInit, Component, ElementRef, HostListener, NgZone, OnDestroy, inject, viewChild } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
 import hotkeys from 'hotkeys-js'
 import { NgxLegacyMoveableComponent, OnDrag, OnResize, OnRotate } from 'ngx-moveable'
 import { ContextMenu } from 'primeng/contextmenu'
-import { DeviceListMenuComponent } from '../../shared/components/device-list-menu/device-list-menu.component'
-import { HistogramComponent } from '../../shared/components/histogram/histogram.component'
-import { MenuItem } from '../../shared/components/menu-item/menu-item.component'
+import { DeviceListMenuComponent } from '../../shared/components/device-list-menu.component'
+import { HistogramComponent } from '../../shared/components/histogram.component'
+import { MenuItem } from '../../shared/components/menu-item.component'
 import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
 import { AngularService } from '../../shared/services/angular.service'
 import { ApiService } from '../../shared/services/api.service'
@@ -372,26 +372,13 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		],
 	}
 
-	@ViewChild('image')
-	private readonly image!: ElementRef<HTMLImageElement>
-
-	@ViewChild('roi')
-	private readonly roi!: ElementRef<HTMLDivElement>
-
-	@ViewChild('menu')
-	private readonly menu!: ContextMenu
-
-	@ViewChild('deviceMenu')
-	private readonly deviceMenu!: DeviceListMenuComponent
-
-	@ViewChild('histogram')
-	private readonly histogram?: HistogramComponent
-
-	@ViewChild('detectedStarCanvas')
-	private readonly detectedStarCanvas!: ElementRef<HTMLCanvasElement>
-
-	@ViewChild('moveable')
-	private readonly moveable!: NgxLegacyMoveableComponent
+	private readonly image = viewChild.required<ElementRef<HTMLImageElement>>('image')
+	private readonly roi = viewChild.required<ElementRef<HTMLDivElement>>('roi')
+	private readonly menu = viewChild.required<ContextMenu>('menu')
+	private readonly deviceMenu = viewChild.required<DeviceListMenuComponent>('deviceMenu')
+	private readonly histogram = viewChild<HistogramComponent>('histogram')
+	private readonly detectedStarCanvas = viewChild.required<ElementRef<HTMLCanvasElement>>('detectedStarCanvas')
+	private readonly moveable = viewChild.required<NgxLegacyMoveableComponent>('moveable')
 
 	get isMouseCoordinateVisible() {
 		return this.mouseCoordinate.show && !!this.mouseCoordinate.interpolator && !this.transformation.mirrorHorizontal && !this.transformation.mirrorVertical
@@ -651,8 +638,9 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		}
 
 		this.calibrationMenuItem.items = menu
-		this.menu.model = this.contextMenuModel
-		this.menu.cd.markForCheck()
+		const menuValue = this.menu()
+		menuValue.model = this.contextMenuModel
+		menuValue.cd.markForCheck()
 
 		if (reloadImage) {
 			await this.loadImage()
@@ -686,7 +674,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		const { target, transform } = event
 		target.style.transform = transform
 
-		const rect = this.moveable.getRect()
+		const rect = this.moveable().getRect()
 		this.imageROI.area.x = Math.trunc(rect.left)
 		this.imageROI.area.y = Math.trunc(rect.top)
 	}
@@ -695,7 +683,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		const { target, width, height, transform } = event
 		target.style.transform = transform
 
-		const rect = this.moveable.getRect()
+		const rect = this.moveable().getRect()
 
 		target.style.width = `${width}px`
 		this.imageROI.area.x = Math.trunc(rect.left)
@@ -766,7 +754,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
 		Object.assign(this.solver.solved, DEFAULT_IMAGE_SOLVED)
 
-		this.histogram?.update([])
+		this.histogram()?.update([])
 	}
 
 	protected async computeStatistics(force: boolean = false) {
@@ -777,11 +765,12 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 			const statistics = await this.api.imageStatistics(path, transformation, this.statistics.channel, this.imageData.camera)
 			this.statistics.statistics = statistics
 
-			if (this.histogram) {
-				this.histogram.update(statistics.histogram)
+			const histogram = this.histogram()
+			if (histogram) {
+				histogram.update(statistics.histogram)
 			} else {
 				setTimeout(() => {
-					this.histogram?.update(statistics.histogram)
+					this.histogram()?.update(statistics.histogram)
 				}, 1000)
 			}
 		}
@@ -850,9 +839,9 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	protected drawDetectedStar(star: DetectedStar) {
 		Object.assign(this.starDetector.selected, star)
 
-		const canvas = this.detectedStarCanvas.nativeElement
+		const canvas = this.detectedStarCanvas().nativeElement
 		const ctx = canvas.getContext('2d')
-		ctx?.drawImage(this.image.nativeElement, star.x - 8, star.y - 8, 16, 16, 0, 0, canvas.width, canvas.height)
+		ctx?.drawImage(this.image().nativeElement, star.x - 8, star.y - 8, 16, 16, 0, 0, canvas.width, canvas.height)
 	}
 
 	protected async loadImage() {
@@ -896,7 +885,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	}
 
 	private async loadImageFromPath(path: string) {
-		const image = this.image.nativeElement
+		const image = this.image().nativeElement
 
 		const transformation = this.makeImageTransformation()
 		const { info, blob } = await this.api.openImage(path, transformation, this.imageData.camera)
@@ -958,7 +947,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		this.mouseMountCoordinate.y = event.offsetY
 
 		if (contextMenu) {
-			this.menu.show(event)
+			this.menu().show(event)
 		}
 	}
 
@@ -967,7 +956,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	}
 
 	private imageMouseMovedWithCoordinates(x: number, y: number) {
-		if (!this.menu.visible() && this.mouseCoordinate.interpolator) {
+		if (!this.menu().visible() && this.mouseCoordinate.interpolator) {
 			Object.assign(this.mouseCoordinate, this.mouseCoordinate.interpolator.interpolateAsText(x, y, true, true, false))
 			this.mouseCoordinate.x = x
 			this.mouseCoordinate.y = y
@@ -1143,7 +1132,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	private zoomIn() {
 		if (this.zoom.panZoom) {
 			const { innerWidth, innerHeight } = window
-			const { offsetTop, offsetLeft } = this.image.nativeElement.parentElement!.parentElement!
+			const { offsetTop, offsetLeft } = this.image().nativeElement.parentElement!.parentElement!
 			this.zoom.panZoom.zoomIn({ clientX: innerWidth / 2 + offsetLeft / 2, clientY: innerHeight / 2 + offsetTop / 2 })
 		}
 	}
@@ -1151,7 +1140,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	private zoomOut() {
 		if (this.zoom.panZoom) {
 			const { innerWidth, innerHeight } = window
-			const { offsetTop, offsetLeft } = this.image.nativeElement.parentElement!.parentElement!
+			const { offsetTop, offsetLeft } = this.image().nativeElement.parentElement!.parentElement!
 			this.zoom.panZoom.zoomOut({ clientX: innerWidth / 2 + offsetLeft / 2, clientY: innerHeight / 2 + offsetTop / 2 })
 		}
 	}
@@ -1165,12 +1154,12 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	private resetZoom(fitToScreen: boolean = false, center: boolean = true) {
 		if (this.zoom.panZoom) {
 			if (fitToScreen) {
-				const { width: iw, height: ih } = this.image.nativeElement
+				const { width: iw, height: ih } = this.image().nativeElement
 				const angle = this.rotation.transformation.angle * (Math.PI / 180.0)
 				const nw = Math.abs(iw * Math.cos(angle)) + Math.abs(ih * Math.sin(angle))
 				const nh = Math.abs(iw * Math.sin(angle)) + Math.abs(ih * Math.cos(angle))
-				const { clientWidth: cw, clientHeight: ch } = this.image.nativeElement.parentElement!.parentElement!
-				const { offsetTop } = this.image.nativeElement.parentElement!.parentElement!
+				const { clientWidth: cw, clientHeight: ch } = this.image().nativeElement.parentElement!.parentElement!
+				const { offsetTop } = this.image().nativeElement.parentElement!.parentElement!
 				const factor = Math.min(cw / nw, (ch - offsetTop) / nh)
 				this.zoom.panZoom.zoom(factor)
 			} else {
@@ -1303,7 +1292,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	}
 
 	protected imageLoaded() {
-		const image = this.image.nativeElement
+		const image = this.image().nativeElement
 		const wrapper = image.parentElement
 		const owner = wrapper?.parentElement
 
@@ -1323,7 +1312,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 				if (e.shiftKey) {
 					this.rotateWithWheel(e)
 				} else {
-					if (e.target === owner || e.target === wrapper || e.target === image || e.target === this.roi.nativeElement || (e.target as HTMLElement).tagName === 'circle') {
+					if (e.target === owner || e.target === wrapper || e.target === image || e.target === this.roi().nativeElement || (e.target as HTMLElement).tagName === 'circle') {
 						panZoom.zoomWithWheel(e)
 					}
 				}
@@ -1488,11 +1477,11 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
 	private async executeCamera(action: (camera: Camera) => void | Promise<void>, showConfirmation: boolean = true) {
 		const cameras = await this.api.cameras()
-		return this.deviceService.executeAction(this.deviceMenu, cameras, action, showConfirmation)
+		return this.deviceService.executeAction(this.deviceMenu(), cameras, action, showConfirmation)
 	}
 
 	private async executeMount(action: (mount: Mount) => void | Promise<void>, showConfirmation: boolean = true) {
 		const mounts = await this.api.mounts()
-		return this.deviceService.executeAction(this.deviceMenu, mounts, action, showConfirmation)
+		return this.deviceService.executeAction(this.deviceMenu(), mounts, action, showConfirmation)
 	}
 }

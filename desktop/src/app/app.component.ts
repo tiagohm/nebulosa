@@ -2,7 +2,7 @@ import { Component, ElementRef, HostListener, NgZone, OnDestroy, inject } from '
 import { Title } from '@angular/platform-browser'
 import hotkeys from 'hotkeys-js'
 import { APP_CONFIG } from '../environments/environment'
-import { MenuItem } from '../shared/components/menu-item/menu-item.component'
+import { MenuItem } from '../shared/components/menu-item.component'
 import { ConfirmationService } from '../shared/services/confirmation.service'
 import { ElectronService } from '../shared/services/electron.service'
 

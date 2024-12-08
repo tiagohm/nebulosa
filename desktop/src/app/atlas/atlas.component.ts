@@ -1,4 +1,4 @@
-import { AfterContentInit, AfterViewInit, Component, HostListener, NgZone, OnDestroy, OnInit, ViewChild, ViewEncapsulation, inject } from '@angular/core'
+import { AfterContentInit, AfterViewInit, Component, HostListener, NgZone, OnDestroy, OnInit, ViewEncapsulation, inject, viewChild } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
 import { Chart, ChartData, ChartOptions } from 'chart.js'
 import zoomPlugin from 'chartjs-plugin-zoom'
@@ -6,8 +6,8 @@ import { UIChart } from 'primeng/chart'
 import { ListboxChangeEvent } from 'primeng/listbox'
 import { OverlayPanel } from 'primeng/overlaypanel'
 import { timer } from 'rxjs'
-import { DeviceListMenuComponent } from '../../shared/components/device-list-menu/device-list-menu.component'
-import { SlideMenuItem } from '../../shared/components/menu-item/menu-item.component'
+import { DeviceListMenuComponent } from '../../shared/components/device-list-menu.component'
+import { SlideMenuItem } from '../../shared/components/menu-item.component'
 import { ONE_DECIMAL_PLACE_FORMATTER, TWO_DIGITS_FORMATTER } from '../../shared/constants'
 import { AngularService } from '../../shared/services/angular.service'
 import { ApiService } from '../../shared/services/api.service'
@@ -346,17 +346,10 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 		},
 	]
 
-	@ViewChild('deviceMenu')
-	private readonly deviceMenu!: DeviceListMenuComponent
-
-	@ViewChild('dateTimeAndLocationPanel')
-	private readonly dateTimeAndLocationPanel!: OverlayPanel
-
-	@ViewChild('favoritesPanel')
-	private readonly favoritesPanel!: OverlayPanel
-
-	@ViewChild('chart')
-	private readonly chart!: UIChart
+	private readonly deviceMenu = viewChild.required<DeviceListMenuComponent>('deviceMenu')
+	private readonly dateTimeAndLocationPanel = viewChild.required<OverlayPanel>('dateTimeAndLocationPanel')
+	private readonly favoritesPanel = viewChild.required<OverlayPanel>('favoritesPanel')
+	private readonly chart = viewChild.required<UIChart>('chart')
 
 	get body() {
 		switch (this.tab) {
@@ -409,7 +402,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 			icon: 'mdi mdi-bookmark',
 			tooltip: 'Favorites',
 			command: (e) => {
-				this.favoritesPanel.toggle(e.originalEvent)
+				this.favoritesPanel().toggle(e.originalEvent)
 			},
 		})
 
@@ -417,7 +410,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 			icon: 'mdi mdi-calendar',
 			tooltip: 'Date Time and Location',
 			command: (e) => {
-				this.dateTimeAndLocationPanel.toggle(e.originalEvent)
+				this.dateTimeAndLocationPanel().toggle(e.originalEvent)
 			},
 		})
 
@@ -858,7 +851,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 			[24.0, 90],
 		]
 
-		this.chart.refresh()
+		this.chart().refresh()
 	}
 
 	private async refreshChart(force: boolean = false) {
@@ -908,7 +901,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 			}
 		} finally {
 			this.updateAltitudeChart()
-			this.chart.refresh()
+			this.chart().refresh()
 		}
 	}
 
@@ -978,6 +971,6 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 
 	private async executeMount(action: (mount: Mount) => void | Promise<void>, showConfirmation: boolean = true) {
 		const mounts = await this.api.mounts()
-		return this.deviceService.executeAction(this.deviceMenu, mounts, action, showConfirmation)
+		return this.deviceService.executeAction(this.deviceMenu(), mounts, action, showConfirmation)
 	}
 }

@@ -1,6 +1,6 @@
-import { AfterViewInit, Component, HostListener, OnDestroy, QueryList, ViewChildren, ViewEncapsulation, inject } from '@angular/core'
+import { AfterViewInit, Component, HostListener, OnDestroy, ViewEncapsulation, inject, viewChildren } from '@angular/core'
 import { Listbox } from 'primeng/listbox'
-import { MenuItem } from '../../shared/components/menu-item/menu-item.component'
+import { MenuItem } from '../../shared/components/menu-item.component'
 import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
@@ -135,8 +135,7 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
 		},
 	]
 
-	@ViewChildren('frameListBox')
-	private readonly frameListBoxes!: QueryList<Listbox>
+	private readonly frameListBoxes = viewChildren<Listbox>('frameListBox')
 
 	get groups() {
 		return Array.from(this.frames.keys()).sort(textComparator)
@@ -403,7 +402,7 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
 	}
 
 	private markFrameListBoxesForCheck() {
-		for (const box of this.frameListBoxes) {
+		for (const box of this.frameListBoxes()) {
 			box.cd.markForCheck()
 		}
 	}

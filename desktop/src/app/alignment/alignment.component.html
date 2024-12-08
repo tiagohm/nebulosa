@@ -7,14 +7,11 @@
 				[devices]="cameras"
 				[(device)]="camera"
 				(deviceChange)="cameraChanged()" />
-			<p-button
-				[text]="true"
+			<neb-button
 				[disabled]="!camera?.name || running"
 				icon="mdi mdi-cog"
-				(onClick)="showCameraDialog()"
-				size="small"
-				pTooltip="Camera"
-				tooltipPosition="bottom" />
+				(action)="showCameraDialog()"
+				tooltip="Camera" />
 			@if (tab === 0) {
 				<neb-device-chooser
 					title="MOUNT"
@@ -43,17 +40,18 @@
 				#cameraExposure
 				[info]="status" />
 
-			<div
-				*ngIf="method === 'TPPA'"
-				class="absolute flex flex-row align-items-center gap-1"
-				style="right: 8px; top: -2px">
-				<p-tag
-					value="RA: {{ tppaResult.rightAscension }}"
-					[severity]="tppaResult.failed ? 'danger' : 'info'" />
-				<p-tag
-					value="DEC: {{ tppaResult.declination }}"
-					[severity]="tppaResult.failed ? 'danger' : 'info'" />
-			</div>
+			@if (method === 'TPPA') {
+				<div
+					class="absolute flex flex-row align-items-center gap-1"
+					style="right: 8px; top: -2px">
+					<neb-tag
+						label="RA: {{ tppaResult.rightAscension }}"
+						[severity]="tppaResult.failed ? 'danger' : 'info'" />
+					<neb-tag
+						label="DEC: {{ tppaResult.declination }}"
+						[severity]="tppaResult.failed ? 'danger' : 'info'" />
+				</div>
+			}
 		</div>
 	</div>
 	<div class="grid relative">
@@ -62,64 +60,40 @@
 				<p-tabPanel header="TPPA">
 					<div class="grid mt-3">
 						<div class="col-5 gap-2 align-items-center">
-							<p-floatLabel class="w-full">
-								<p-dropdown
-									[options]="'PLATE_SOLVER' | dropdownOptions | enumDropdown"
-									[(ngModel)]="tppaRequest.plateSolver.type"
-									styleClass="p-inputtext-sm border-0"
-									optionLabel="label"
-									optionValue="value"
-									[autoDisplayFirst]="false"
-									(ngModelChange)="savePreference()" />
-								<label>Plate Solver</label>
-							</p-floatLabel>
+							<neb-dropdown-enum
+								label="Plate Solver"
+								[options]="'PLATE_SOLVER' | dropdownOptions"
+								[(value)]="tppaRequest.plateSolver.type"
+								(valueChange)="savePreference()" />
 						</div>
 						<div class="col-4 align-items-center">
-							<p-floatLabel>
-								<p-inputNumber
-									styleClass="p-inputtext-sm border-0 max-w-full"
-									[(ngModel)]="tppaRequest.stepDuration"
-									[showButtons]="true"
-									[min]="1"
-									[max]="60"
-									(ngModelChange)="savePreference()"
-									spinnableNumber />
-								<label>Step duration (s)</label>
-							</p-floatLabel>
+							<neb-input-number
+								label="Step duration (s)"
+								[min]="1"
+								[max]="60"
+								[(value)]="tppaRequest.stepDuration"
+								(valueChange)="savePreference()" />
 						</div>
 						<div class="col-3 flex flex-column align-items-center justify-content-start">
-							<p-floatLabel class="w-full">
-								<p-dropdown
-									[options]="'GUIDE_DIRECTION_WE' | dropdownOptions | enumDropdown"
-									[(ngModel)]="tppaRequest.stepDirection"
-									optionsLabel="label"
-									optionsValue="value"
-									styleClass="p-inputtext-sm border-0"
-									[autoDisplayFirst]="false"
-									(ngModelChange)="savePreference()" />
-								<label>Direction</label>
-							</p-floatLabel>
+							<neb-dropdown-enum
+								label="Direction"
+								[options]="'GUIDE_DIRECTION_WE' | dropdownOptions"
+								[(value)]="tppaRequest.stepDirection"
+								(valueChange)="savePreference()" />
 						</div>
 						<div class="col-5 align-items-center">
-							<p-floatLabel class="w-full">
-								<p-dropdown
-									[disabled]="!mount?.connected"
-									[options]="mount?.slewRates"
-									[(ngModel)]="tppaRequest.stepSpeed"
-									styleClass="p-inputtext-sm border-0"
-									optionLabel="label"
-									optionValue="name"
-									[autoDisplayFirst]="false"
-									(ngModelChange)="savePreference()" />
-								<label>Step speed</label>
-							</p-floatLabel>
+							<neb-dropdown-item
+								label="Step speed"
+								[disabled]="!mount?.connected"
+								[options]="mount?.slewRates ?? []"
+								[(value)]="tppaRequest.stepSpeed"
+								(valueChange)="savePreference()" />
 						</div>
 						<div class="col-7 flex align-items-center justify-content-center text-center gap-2 text-sm">
-							<p-checkbox
-								[binary]="true"
-								[(ngModel)]="tppaRequest.stopTrackingWhenDone"
+							<neb-checkbox
 								label="Stop tracking when done"
-								(ngModelChange)="savePreference()" />
+								[(value)]="tppaRequest.stopTrackingWhenDone"
+								(valueChange)="savePreference()" />
 						</div>
 					</div>
 					<div class="grid mt-2">
@@ -141,66 +115,51 @@
 					<div class="grid mt-2">
 						<div class="col-12 flex align-items-center justify-content-center gap-1">
 							@if (pausingOrPaused) {
-								<p-button
+								<neb-button
 									[disabled]="status === 'PAUSING'"
 									label="Unpause"
-									(onClick)="tppaUnpause()"
+									(action)="tppaUnpause()"
 									icon="mdi mdi-play"
-									severity="success"
-									size="small"
-									[text]="true" />
+									severity="success" />
 							} @else if (!running) {
-								<p-button
+								<neb-button
 									[disabled]="!camera || !camera.connected || !mount || !mount.connected || mount.parked || mount.parking || mount.slewing || running"
 									label="Start"
-									(onClick)="tppaStart()"
+									(action)="tppaStart()"
 									icon="mdi mdi-play"
-									severity="success"
-									size="small"
-									[text]="true" />
+									severity="success" />
+							} @else {
+								<neb-button
+									label="Pause"
+									(action)="tppaPause()"
+									icon="mdi mdi-pause"
+									severity="info" />
 							}
-							<p-button
-								*ngIf="running && !pausingOrPaused"
-								label="Pause"
-								(onClick)="tppaPause()"
-								icon="mdi mdi-pause"
-								severity="info"
-								size="small"
-								[text]="true" />
-							<p-button
+							<neb-button
 								[disabled]="!camera || !camera.connected || !mount || !mount.connected || !running"
 								label="Abort"
-								(onClick)="tppaStop()"
+								(action)="tppaStop()"
 								icon="mdi mdi-stop"
-								severity="danger"
-								size="small"
-								[text]="true" />
-							<p-button
+								severity="danger" />
+							<neb-button
 								[disabled]="!camera?.connected"
-								(onClick)="openCameraImage()"
+								(action)="openCameraImage()"
 								icon="mdi mdi-image"
-								[text]="true"
-								styleClass="ml-4"
-								pTooltip="View image"
-								tooltipPosition="bottom"
-								size="small" />
+								class="ml-4"
+								tooltip="View image"
+								tooltipPosition="top" />
 						</div>
 					</div>
 				</p-tabPanel>
 				<p-tabPanel header="DARV">
 					<div class="grid mt-3">
 						<div class="col-4">
-							<p-floatLabel>
-								<p-inputNumber
-									styleClass="p-inputtext-sm border-0 max-w-full"
-									[(ngModel)]="darvRequest.capture.exposureDelay"
-									[showButtons]="true"
-									[min]="1"
-									[max]="60"
-									(ngModelChange)="savePreference()"
-									spinnableNumber />
-								<label>Initial pause (s)</label>
-							</p-floatLabel>
+							<neb-input-number
+								label="Initial pause (s)"
+								[min]="1"
+								[max]="60"
+								[(value)]="darvRequest.capture.exposureDelay"
+								(valueChange)="savePreference()" />
 						</div>
 						<div class="col-4">
 							<neb-exposure-time
@@ -212,59 +171,45 @@
 								label="Drift for" />
 						</div>
 						<div class="col-4">
-							<p-floatLabel class="w-full">
-								<p-dropdown
-									[options]="'HEMISPHERE' | dropdownOptions | enumDropdown"
-									[(ngModel)]="preference.darvHemisphere"
-									styleClass="p-inputtext-sm border-0"
-									optionsLabel="label"
-									optionsValue="value"
-									[autoDisplayFirst]="false"
-									(ngModelChange)="savePreference()" />
-								<label>Hemisphere</label>
-							</p-floatLabel>
+							<neb-dropdown-enum
+								label="Hemisphere"
+								[options]="'HEMISPHERE' | dropdownOptions"
+								[(value)]="preference.darvHemisphere"
+								(valueChange)="savePreference()" />
 						</div>
 					</div>
 					<div class="grid mt-2">
 						<div class="col-12 flex align-items-center justify-content-center gap-1">
-							<p-button
+							<neb-button
 								[disabled]="!camera || !camera.connected || !guideOutput || !guideOutput.connected || running"
 								label="Start"
-								(onClick)="darvStart()"
+								(action)="darvStart()"
 								icon="mdi mdi-play"
-								severity="success"
-								size="small"
-								[text]="true" />
-							<p-button
+								severity="success" />
+							<neb-button
 								[disabled]="!camera || !camera.connected || !guideOutput || !guideOutput.connected || !running"
 								label="Abort"
-								(onClick)="darvStop()"
+								(action)="darvStop()"
 								icon="mdi mdi-stop"
-								severity="danger"
-								size="small"
-								[text]="true" />
-							<p-button
+								severity="danger" />
+							<neb-button
 								[disabled]="!camera?.connected"
-								(onClick)="openCameraImage()"
+								(action)="openCameraImage()"
 								icon="mdi mdi-image"
-								[text]="true"
-								styleClass="ml-4"
-								pTooltip="View image"
-								tooltipPosition="bottom"
-								size="small"
-								[text]="true" />
+								class="ml-4"
+								tooltip="View image"
+								tooltipPosition="top" />
 						</div>
 					</div>
 				</p-tabPanel>
 			</p-tabView>
 		</div>
-		<p-button
-			[text]="true"
+		<neb-button
 			severity="info"
 			icon="mdi mdi-information"
-			styleClass="absolute"
+			class="absolute"
 			[style]="{ right: '8px', top: '5px' }"
-			(onClick)="tab === 0 ? tppaInfo.toggle($event) : darvInfo.toggle($event)" />
+			(action)="tab === 0 ? tppaInfo.toggle($event) : darvInfo.toggle($event)" />
 
 		<p-overlayPanel
 			#tppaInfo

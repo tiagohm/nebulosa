@@ -56,7 +56,6 @@ export class PreferenceService {
 	readonly guider: PreferenceData<GuiderPreference>
 	readonly framing: PreferenceData<FramingPreference>
 	readonly settings: PreferenceData<SettingsPreference>
-	readonly pathChooser: PreferenceData<Record<string, string | undefined>>
 
 	constructor() {
 		this.home = this.create<HomePreference>('home', () => structuredClone(DEFAULT_HOME_PREFERENCE), homePreferenceWithDefault)
@@ -67,7 +66,6 @@ export class PreferenceService {
 		this.guider = this.create<GuiderPreference>('guider', () => structuredClone(DEFAULT_GUIDER_PREFERENCE), guiderPreferenceWithDefault)
 		this.framing = this.create<FramingPreference>('framing', () => structuredClone(DEFAULT_FRAMING_PREFERENCE), framingPreferenceWithDefault)
 		this.settings = this.create<SettingsPreference>('settings', () => structuredClone(DEFAULT_SETTINGS_PREFERENCE), settingsPreferenceWithDefault)
-		this.pathChooser = this.create<Record<string, string | undefined>>('pathChooser', () => ({}) as Record<string, string | undefined>)
 	}
 
 	create<T>(key: string, defaultValue: T | (() => T), withDefault?: (value: T) => T) {

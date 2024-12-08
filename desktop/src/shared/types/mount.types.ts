@@ -1,3 +1,4 @@
+import type { DropdownItem } from '../components/dropdown.component'
 import type { Angle, EquatorialCoordinate } from './atlas.types'
 import type { Device } from './device.types'
 import type { GPS } from './gps.types'
@@ -7,7 +8,7 @@ export type PierSide = 'EAST' | 'WEST' | 'NEITHER'
 
 export type TargetCoordinateType = 'J2000' | 'JNOW'
 
-export type TrackMode = 'SIDEREAL' | ' LUNAR' | 'SOLAR' | 'KING' | 'CUSTOM'
+export type TrackMode = 'SIDEREAL' | 'LUNAR' | 'SOLAR' | 'KING' | 'CUSTOM'
 
 export type CelestialLocationType = 'ZENITH' | 'NORTH_POLE' | 'SOUTH_POLE' | 'GALACTIC_CENTER' | 'MERIDIAN_EQUATOR' | 'MERIDIAN_ECLIPTIC' | 'EQUATOR_ECLIPTIC'
 
@@ -19,10 +20,7 @@ export type OrdinalDirection = 'NW' | 'NE' | 'SW' | 'SE'
 
 export type MountSlewDirection = CardinalDirection | OrdinalDirection
 
-export interface SlewRate {
-	name: string
-	label: string
-}
+export type SlewRate = DropdownItem<string>
 
 export interface Parkable {
 	canPark: boolean

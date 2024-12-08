@@ -6,50 +6,36 @@
 				leftIcon="mdi mdi-target">
 				<div class="grid mt-3 px-4 flex align-items-center">
 					<div class="col-6 px-0">
-						<p-floatLabel class="w-full">
-							<input
-								pInputText
-								[disabled]="guider.connected"
-								class="border-0 p-inputtext-sm w-full"
-								placeholder="localhost"
-								[(ngModel)]="preference.host"
-								(ngModelChange)="savePreference()" />
-							<label>Host</label>
-						</p-floatLabel>
+						<neb-input-text
+							label="Host"
+							[disabled]="guider.connected"
+							placeholder="localhost"
+							[(value)]="preference.host"
+							(valueChange)="savePreference()" />
 					</div>
 					<div class="col-3 pr-0">
-						<p-floatLabel>
-							<p-inputNumber
-								[disabled]="guider.connected"
-								[showButtons]="true"
-								styleClass="border-0 p-inputtext-sm w-full"
-								placeholder="7624"
-								[(ngModel)]="preference.port"
-								(ngModelChange)="savePreference()"
-								[format]="false"
-								spinnableNumber />
-							<label>Port</label>
-						</p-floatLabel>
+						<neb-input-number
+							label="Port"
+							[disabled]="guider.connected"
+							placeholder="7624"
+							[(value)]="preference.port"
+							(valueChange)="savePreference()"
+							[format]="false" />
 					</div>
 					<div class="col-2 text-center pr-0">
-						<p-button
-							*ngIf="guider.connected"
-							(onClick)="guidingConnect()"
-							icon="mdi mdi-close"
-							size="small"
-							severity="danger"
-							[text]="true"
-							pTooltip="Disconnect"
-							tooltipPosition="bottom" />
-						<p-button
-							*ngIf="!guider.connected"
-							(onClick)="guidingConnect()"
-							icon="mdi mdi-connection"
-							size="small"
-							severity="info"
-							[text]="true"
-							pTooltip="Connect"
-							tooltipPosition="bottom" />
+						@if (guider.connected) {
+							<neb-button
+								(action)="guidingConnect()"
+								icon="mdi mdi-close"
+								severity="danger"
+								tooltip="Disconnect" />
+						} @else {
+							<neb-button
+								(action)="guidingConnect()"
+								icon="mdi mdi-connection"
+								severity="info"
+								tooltip="Connect" />
+						}
 					</div>
 					<div
 						class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1 text-center text-sm"
@@ -69,90 +55,54 @@
 								leftIcon="mdi mdi-chart-bell-curve">
 								<div class="grid mt-2">
 									<div class="col-3">
-										<p-floatLabel>
-											<input
-												pInputText
-												readonly
-												class="p-inputtext-sm border-0 w-full"
-												value="{{ chartInfo.rmsRA.toFixed(2) + ' (' + (chartInfo.rmsRA * chartInfo.pixelScale).toFixed(2) + '&quot; )' }}" />
-											<label>RMS RA</label>
-										</p-floatLabel>
+										<neb-input-text
+											label="RMS RA"
+											[readonly]="true"
+											value="{{ chartInfo.rmsRA.toFixed(2) + ' (' + (chartInfo.rmsRA * chartInfo.pixelScale).toFixed(2) + '&quot; )' }}" />
 									</div>
 									<div class="col-3">
-										<p-floatLabel>
-											<input
-												pInputText
-												readonly
-												class="p-inputtext-sm border-0 w-full"
-												value="{{ chartInfo.rmsDEC.toFixed(2) + ' (' + (chartInfo.rmsDEC * chartInfo.pixelScale).toFixed(2) + '&quot; )' }}" />
-											<label>RMS DEC</label>
-										</p-floatLabel>
+										<neb-input-text
+											label="RMS DEC"
+											[readonly]="true"
+											value="{{ chartInfo.rmsDEC.toFixed(2) + ' (' + (chartInfo.rmsDEC * chartInfo.pixelScale).toFixed(2) + '&quot; )' }}" />
 									</div>
 									<div class="col-3">
-										<p-floatLabel>
-											<input
-												pInputText
-												readonly
-												class="p-inputtext-sm border-0 w-full"
-												value="{{ chartInfo.rmsTotal.toFixed(2) + ' (' + (chartInfo.rmsTotal * chartInfo.pixelScale).toFixed(2) + '&quot; )' }}" />
-											<label>RMS Total</label>
-										</p-floatLabel>
+										<neb-input-text
+											label="RMS Total"
+											[readonly]="true"
+											value="{{ chartInfo.rmsTotal.toFixed(2) + ' (' + (chartInfo.rmsTotal * chartInfo.pixelScale).toFixed(2) + '&quot; )' }}" />
 									</div>
 									<div class="col-3">
-										<p-floatLabel>
-											<input
-												pInputText
-												readonly
-												class="p-inputtext-sm border-0 w-full"
-												[value]="guider.step?.starMass ?? 0" />
-											<label>Star mass</label>
-										</p-floatLabel>
+										<neb-input-text
+											label="Star mass"
+											[readonly]="true"
+											[value]="guider.step?.starMass ?? 0" />
 									</div>
 									<div class="col-2">
-										<p-floatLabel>
-											<input
-												pInputText
-												readonly
-												class="p-inputtext-sm border-0 w-full"
-												[value]="guider.step?.hfd ?? 0" />
-											<label>HFD</label>
-										</p-floatLabel>
+										<neb-input-text
+											label="HFD"
+											[readonly]="true"
+											[value]="guider.step?.hfd ?? 0" />
 									</div>
 									<div class="col-2">
-										<p-floatLabel>
-											<input
-												pInputText
-												readonly
-												class="p-inputtext-sm border-0 w-full"
-												[value]="guider.step?.snr ?? 0" />
-											<label>SNR</label>
-										</p-floatLabel>
+										<neb-input-text
+											label="SNR"
+											[readonly]="true"
+											[value]="guider.step?.snr ?? 0" />
 									</div>
 									<div class="col-4">
-										<p-floatLabel class="w-full">
-											<p-dropdown
-												[options]="'GUIDER_PLOT_MODE' | dropdownOptions | enumDropdown"
-												[(ngModel)]="preference.plotMode"
-												optionsLabel="label"
-												optionsValue="value"
-												(ngModelChange)="plotModeChanged()"
-												styleClass="p-inputtext-sm border-0"
-												[autoDisplayFirst]="false" />
-											<label>Plot Mode</label>
-										</p-floatLabel>
+										<neb-dropdown-enum
+											label="Plot Mode"
+											[options]="'GUIDER_PLOT_MODE' | dropdownOptions"
+											[(value)]="preference.plotMode"
+											(valueChange)="plotModeChanged()" />
 									</div>
 									<div class="col-4">
-										<p-floatLabel class="w-full">
-											<p-dropdown
-												[options]="'GUIDER_Y_AXIS_UNIT' | dropdownOptions | enumDropdown"
-												[(ngModel)]="preference.yAxisUnit"
-												optionsLabel="label"
-												optionsValue="value"
-												(ngModelChange)="yAxisUnitChanged()"
-												styleClass="p-inputtext-sm border-0"
-												[autoDisplayFirst]="false" />
-											<label>Unit</label>
-										</p-floatLabel>
+										<neb-dropdown-enum
+											label="Unit"
+											[options]="'GUIDER_Y_AXIS_UNIT' | dropdownOptions"
+											[(value)]="preference.yAxisUnit"
+											(valueChange)="yAxisUnitChanged()" />
 									</div>
 								</div>
 								<div class="grid relative">
@@ -182,52 +132,32 @@
 								leftIcon="mdi mdi-cog">
 								<div class="grid mt-3">
 									<div class="col-6">
-										<p-floatLabel class="w-full">
-											<p-inputNumber
-												[disabled]="guider.connected"
-												[showButtons]="true"
-												styleClass="border-0 p-inputtext-sm w-full"
-												locale="en"
-												[min]="1"
-												[max]="25"
-												[(ngModel)]="preference.settle.amount"
-												(ngModelChange)="savePreference()"
-												[step]="0.1"
-												[minFractionDigits]="1"
-												mode="decimal"
-												spinnableNumber />
-											<label>Settle tolerance (px)</label>
-										</p-floatLabel>
+										<neb-input-number
+											label="Settle tolerance (px)"
+											[disabled]="guider.connected"
+											[min]="1"
+											[max]="25"
+											[step]="0.1"
+											[(value)]="preference.settle.amount"
+											(valueChange)="savePreference()" />
 									</div>
 									<div class="col-6">
-										<p-floatLabel class="w-full">
-											<p-inputNumber
-												[disabled]="guider.connected"
-												[showButtons]="true"
-												styleClass="border-0 p-inputtext-sm w-full"
-												[min]="1"
-												[max]="60"
-												[(ngModel)]="preference.settle.time"
-												(ngModelChange)="savePreference()"
-												[step]="1"
-												spinnableNumber />
-											<label>Min settle time (s)</label>
-										</p-floatLabel>
+										<neb-input-number
+											label="Min settle time (s)"
+											[disabled]="guider.connected"
+											[min]="1"
+											[max]="60"
+											[(value)]="preference.settle.time"
+											(valueChange)="savePreference()" />
 									</div>
 									<div class="col-6">
-										<p-floatLabel class="w-full">
-											<p-inputNumber
-												[disabled]="guider.connected"
-												[showButtons]="true"
-												styleClass="border-0 p-inputtext-sm w-full"
-												[min]="1"
-												[max]="60"
-												[(ngModel)]="preference.settle.timeout"
-												(ngModelChange)="savePreference()"
-												[step]="1"
-												spinnableNumber />
-											<label>Settle timeout (s)</label>
-										</p-floatLabel>
+										<neb-input-number
+											label="Settle timeout (s)"
+											[disabled]="guider.connected"
+											[min]="1"
+											[max]="60"
+											[(value)]="preference.settle.timeout"
+											(valueChange)="savePreference()" />
 									</div>
 								</div>
 							</p-tabPanel>
@@ -235,24 +165,20 @@
 								class="mt-1 absolute"
 								style="top: -12px; right: 10px">
 								<div class="flex align-items-center justify-content-center gap-1">
-									<!-- <p-button [disabled]="!connected || guiding || looping" label="Start" (onClick)="guidingStart($event)"
+									<!-- <neb-button [disabled]="!connected || guiding || looping" label="Start" (onClick)="guidingStart($event)"
                                           icon="mdi mdi-play" severity="success" size="small" [text]="true" /> -->
-									<p-button
+									<neb-button
 										[disabled]="!guider.connected"
 										label="Clear"
-										(onClick)="guidingClearHistory()"
+										(action)="guidingClearHistory()"
 										icon="mdi mdi-broom"
-										severity="info"
-										size="small"
-										[text]="true" />
-									<p-button
+										severity="info" />
+									<neb-button
 										[disabled]="!guider.connected || !guiding"
 										label="Stop"
-										(onClick)="guidingStop()"
+										(action)="guidingStop()"
 										icon="mdi mdi-stop"
-										severity="danger"
-										size="small"
-										[text]="true" />
+										severity="danger" />
 								</div>
 							</div>
 						</p-tabView>
@@ -274,149 +200,101 @@
 					</div>
 					<div class="col-4"></div>
 					<div class="col-4 flex flex-column gap-2 align-items-center justify-content-center">
-						<p-floatLabel>
-							<p-inputNumber
-								[disabled]="!guideOutput || !guideOutput.connected || guideOutput.pulseGuiding"
-								[(ngModel)]="preference.pulseDuration.north"
-								(ngModelChange)="savePreference()"
-								[step]="1"
-								[min]="1"
-								[max]="1800000"
-								locale="en"
-								styleClass="p-inputtext-sm border-0"
-								[showButtons]="true"
-								spinnableNumber />
-							<label>North (ms)</label>
-						</p-floatLabel>
+						<neb-input-number
+							label="North (ms)"
+							[disabled]="!guideOutput || !guideOutput.connected || guideOutput.pulseGuiding"
+							[(value)]="preference.pulseDuration.north"
+							(valueChange)="savePreference()"
+							[min]="1"
+							[max]="1800000" />
 					</div>
 					<div class="col-4"></div>
 					<div class="col-4 flex flex-row gap-2 align-items-center justify-content-center">
-						<p-floatLabel>
-							<p-inputNumber
-								[disabled]="!guideOutput || !guideOutput.connected || guideOutput.pulseGuiding"
-								[(ngModel)]="preference.pulseDuration.west"
-								(ngModelChange)="savePreference()"
-								[step]="1"
-								[min]="1"
-								[max]="1800000"
-								locale="en"
-								styleClass="p-inputtext-sm border-0"
-								[showButtons]="true"
-								spinnableNumber />
-							<label>West (ms)</label>
-						</p-floatLabel>
+						<neb-input-number
+							label="West (ms)"
+							[disabled]="!guideOutput || !guideOutput.connected || guideOutput.pulseGuiding"
+							[(value)]="preference.pulseDuration.west"
+							(valueChange)="savePreference()"
+							[min]="1"
+							[max]="1800000" />
 					</div>
 					<div class="col-4">
 						<div class="grid">
 							<div class="col-4 flex align-items-center justify-content-center">
-								<p-button
+								<neb-button
 									[disabled]="!guideOutput?.connected || guideOutput?.pulseGuiding"
-									(onClick)="guidePulseStart('NORTH', 'WEST')"
-									icon="mdi mdi-lg mdi-arrow-top-left-thick"
-									[text]="true"
-									styleClass="w-4rem" />
+									(action)="guidePulseStart('NORTH', 'WEST')"
+									icon="mdi mdi-lg mdi-arrow-top-left-thick" />
 							</div>
 							<div class="col-4 flex align-items-center justify-content-center">
-								<p-button
+								<neb-button
 									[disabled]="!guideOutput?.connected || guideOutput?.pulseGuiding"
-									(onClick)="guidePulseStart('NORTH')"
-									icon="mdi mdi-lg mdi-arrow-up-thick"
-									[text]="true"
-									styleClass="w-4rem" />
+									(action)="guidePulseStart('NORTH')"
+									icon="mdi mdi-lg mdi-arrow-up-thick" />
 							</div>
 							<div class="col-4 flex align-items-center justify-content-center">
-								<p-button
+								<neb-button
 									[disabled]="!guideOutput?.connected || guideOutput?.pulseGuiding"
-									(onClick)="guidePulseStart('NORTH', 'EAST')"
-									icon="mdi mdi-lg mdi-arrow-top-right-thick"
-									[text]="true"
-									styleClass="w-4rem" />
+									(action)="guidePulseStart('NORTH', 'EAST')"
+									icon="mdi mdi-lg mdi-arrow-top-right-thick" />
 							</div>
 							<div class="col-4 flex align-items-center justify-content-center">
-								<p-button
+								<neb-button
 									[disabled]="!guideOutput?.connected || guideOutput?.pulseGuiding"
-									(onClick)="guidePulseStart('WEST')"
-									icon="mdi mdi-lg mdi-arrow-left-thick"
-									[text]="true"
-									styleClass="w-4rem" />
+									(action)="guidePulseStart('WEST')"
+									icon="mdi mdi-lg mdi-arrow-left-thick" />
 							</div>
 							<div class="col-4 flex align-items-center justify-content-center">
-								<p-button
+								<neb-button
 									[disabled]="!guideOutput?.connected || !guideOutput?.pulseGuiding"
-									(onClick)="guidePulseStop()"
+									(action)="guidePulseStop()"
 									icon="mdi mdi-lg mdi-close-circle"
-									[text]="true"
-									severity="danger"
-									styleClass="w-full" />
+									severity="danger" />
 							</div>
 							<div class="col-4 flex align-items-center justify-content-center">
-								<p-button
+								<neb-button
 									[disabled]="!guideOutput?.connected || guideOutput?.pulseGuiding"
-									(onClick)="guidePulseStart('EAST')"
-									icon="mdi mdi-lg mdi-arrow-right-thick"
-									[text]="true"
-									styleClass="w-4rem" />
+									(action)="guidePulseStart('EAST')"
+									icon="mdi mdi-lg mdi-arrow-right-thick" />
 							</div>
 							<div class="col-4 flex align-items-center justify-content-center">
-								<p-button
+								<neb-button
 									[disabled]="!guideOutput?.connected || guideOutput?.pulseGuiding"
-									(onClick)="guidePulseStart('SOUTH', 'WEST')"
-									icon="mdi mdi-lg mdi-arrow-bottom-left-thick"
-									[text]="true"
-									styleClass="w-4rem" />
+									(action)="guidePulseStart('SOUTH', 'WEST')"
+									icon="mdi mdi-lg mdi-arrow-bottom-left-thick" />
 							</div>
 							<div class="col-4 flex align-items-center justify-content-center">
-								<p-button
+								<neb-button
 									[disabled]="!guideOutput?.connected || guideOutput?.pulseGuiding"
-									(onClick)="guidePulseStart('SOUTH')"
-									icon="mdi mdi-lg mdi-arrow-down-thick"
-									[text]="true"
-									styleClass="w-4rem" />
+									(action)="guidePulseStart('SOUTH')"
+									icon="mdi mdi-lg mdi-arrow-down-thick" />
 							</div>
 							<div class="col-4 flex align-items-center justify-content-center">
-								<p-button
+								<neb-button
 									[disabled]="!guideOutput?.connected || guideOutput?.pulseGuiding"
-									(onClick)="guidePulseStart('SOUTH', 'EAST')"
-									icon="mdi mdi-lg mdi-arrow-bottom-right-thick"
-									[text]="true"
-									styleClass="w-4rem" />
+									(action)="guidePulseStart('SOUTH', 'EAST')"
+									icon="mdi mdi-lg mdi-arrow-bottom-right-thick" />
 							</div>
 						</div>
 					</div>
 					<div class="col-4 flex flex-row gap-2 align-items-center justify-content-center">
-						<p-floatLabel>
-							<p-inputNumber
-								[disabled]="!guideOutput || !guideOutput.connected || guideOutput.pulseGuiding"
-								(onClick)="guidePulseStart('EAST')"
-								[(ngModel)]="preference.pulseDuration.east"
-								(ngModelChange)="savePreference()"
-								[step]="1"
-								[min]="1"
-								[max]="1800000"
-								locale="en"
-								styleClass="p-inputtext-sm border-0"
-								[showButtons]="true"
-								spinnableNumber />
-							<label>East (ms)</label>
-						</p-floatLabel>
+						<neb-input-number
+							label="East (ms)"
+							[disabled]="!guideOutput || !guideOutput.connected || guideOutput.pulseGuiding"
+							[(value)]="preference.pulseDuration.east"
+							(valueChange)="savePreference()"
+							[min]="1"
+							[max]="1800000" />
 					</div>
 					<div class="col-4"></div>
 					<div class="col-4 flex flex-column gap-2 align-items-center justify-content-center">
-						<p-floatLabel>
-							<p-inputNumber
-								[disabled]="!guideOutput || !guideOutput.connected || guideOutput.pulseGuiding"
-								(onClick)="guidePulseStart('SOUTH')"
-								[(ngModel)]="preference.pulseDuration.south"
-								(ngModelChange)="savePreference()"
-								[step]="1"
-								[min]="1"
-								[max]="1800000"
-								locale="en"
-								styleClass="p-inputtext-sm border-0"
-								[showButtons]="true"
-								spinnableNumber />
-							<label>South (ms)</label>
-						</p-floatLabel>
+						<neb-input-number
+							label="South (ms)"
+							[disabled]="!guideOutput || !guideOutput.connected || guideOutput.pulseGuiding"
+							[(value)]="preference.pulseDuration.south"
+							(valueChange)="savePreference()"
+							[min]="1"
+							[max]="1800000" />
 					</div>
 					<div class="col-4"></div>
 				</div>

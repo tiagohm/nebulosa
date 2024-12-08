@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core'
+import { Component, input } from '@angular/core'
 import type { CalculatorFormula } from '../../../shared/types/calculator.types'
 
 @Component({
@@ -7,14 +7,14 @@ import type { CalculatorFormula } from '../../../shared/types/calculator.types'
 	styleUrls: ['formula.component.scss'],
 })
 export class FormulaComponent {
-	@Input({ required: true })
-	protected readonly formula!: CalculatorFormula
+	protected readonly formula = input.required<CalculatorFormula>()
 
 	calculateFormula() {
-		const result = this.formula.calculate(...this.formula.operands.map((e) => e.value))
+		const formula = this.formula()
+		const result = formula.calculate(...formula.operands.map((e) => e.value))
 
 		if (result !== undefined) {
-			this.formula.result.value = result
+			formula.result.value = result
 		}
 	}
 }

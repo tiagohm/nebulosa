@@ -2,7 +2,7 @@ import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, inject } 
 import { ActivatedRoute } from '@angular/router'
 import hotkeys from 'hotkeys-js'
 import { Subject, Subscription, interval, throttleTime } from 'rxjs'
-import { SlideMenuItem } from '../../shared/components/menu-item/menu-item.component'
+import { SlideMenuItem } from '../../shared/components/menu-item.component'
 import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
 import { AngularService } from '../../shared/services/angular.service'
 import { ApiService } from '../../shared/services/api.service'
@@ -11,7 +11,7 @@ import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { Tickable, Ticker } from '../../shared/services/ticker.service'
 import { BodyTabType, ComputedLocation, DEFAULT_COMPUTED_LOCATION } from '../../shared/types/atlas.types'
-import { DEFAULT_MOUNT, DEFAULT_MOUNT_PREFERENCE, DEFAULT_MOUNT_REMOTE_CONTROL_DIALOG, Mount, MountRemoteControlProtocol, MountSlewDirection, SlewRate, TrackMode } from '../../shared/types/mount.types'
+import { DEFAULT_MOUNT, DEFAULT_MOUNT_PREFERENCE, DEFAULT_MOUNT_REMOTE_CONTROL_DIALOG, Mount, MountRemoteControlProtocol, MountSlewDirection, TrackMode } from '../../shared/types/mount.types'
 import { AppComponent } from '../app.component'
 
 @Component({
@@ -40,7 +40,7 @@ export class MountComponent implements AfterContentInit, OnDestroy, Tickable {
 
 	protected tracking = false
 	protected trackMode: TrackMode = 'SIDEREAL'
-	protected slewRate?: SlewRate
+	protected slewRate?: string
 	protected slewingDirection?: MountSlewDirection
 
 	protected readonly ephemerisModel: SlideMenuItem[] = [
@@ -451,7 +451,7 @@ export class MountComponent implements AfterContentInit, OnDestroy, Tickable {
 	private update() {
 		if (this.mount.id) {
 			this.trackMode = this.mount.trackMode
-			this.slewRate = this.mount.slewRate
+			this.slewRate = this.mount.slewRate?.value ?? this.mount.slewRates[0]?.value
 			this.tracking = this.mount.tracking
 
 			this.computeCoordinatePublisher.next()

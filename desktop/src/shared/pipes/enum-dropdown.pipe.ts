@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform, inject } from '@angular/core'
-import { DropdownItem } from '../types/angular.types'
+import { DropdownItem } from '../components/dropdown.component'
 import { EnumPipe } from './enum.pipe'
 
 @Pipe({ name: 'enumDropdown' })

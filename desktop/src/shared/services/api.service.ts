@@ -14,7 +14,7 @@ import { GuideDirection, GuideOutput, Guider, GuiderHistoryStep, SettleInfo } fr
 import { ConnectionStatus, ConnectionType, GitHubRelease } from '../types/home.types'
 import { AnnotateImageRequest, CoordinateInterpolation, DetectedStar, FOVCamera, FOVTelescope, ImageAnalyzed, ImageAnnotation, ImageChannel, ImageInfo, ImageMousePosition, ImageSaveDialog, ImageSolved, ImageStatistics, ImageTransformation } from '../types/image.types'
 import { LightBox } from '../types/lightbox.types'
-import { CelestialLocationType, Mount, MountRemoteControl, MountRemoteControlProtocol, SlewRate, TrackMode } from '../types/mount.types'
+import { CelestialLocationType, Mount, MountRemoteControl, MountRemoteControlProtocol, TrackMode } from '../types/mount.types'
 import { PlateSolverRequest } from '../types/platesolver.types'
 import { Rotator } from '../types/rotator.types'
 import { SequencerPlan } from '../types/sequencer.types'
@@ -158,8 +158,8 @@ export class ApiService {
 		return this.http.put<never>(`mounts/${mount.id}/track-mode?mode=${mode}`)
 	}
 
-	mountSlewRate(mount: Mount, rate: SlewRate) {
-		return this.http.put<never>(`mounts/${mount.id}/slew-rate?rate=${rate.name}`)
+	mountSlewRate(mount: Mount, rate: string) {
+		return this.http.put<never>(`mounts/${mount.id}/slew-rate?rate=${rate}`)
 	}
 
 	mountMove(mount: Mount, direction: GuideDirection, enabled: boolean) {

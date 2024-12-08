@@ -21,29 +21,28 @@
 					<img
 						[src]="sun.image"
 						style="width: 223px" />
-					<a
-						class="text-sm absolute"
-						style="bottom: -8px"
-						target="_blank"
-						href="https://sdo.gsfc.nasa.gov/assets/img/latest/latest_1024_HMIIC.jpg">
-						<p-tag severity="success">SDO/HMI</p-tag>
-					</a>
-					<div
-						*ngIf="sun.seasons.length"
-						class="absolute w-full text-sm left-0 top-0 p-4 flex flex-row align-items-start justify-content-between">
-						<div class="flex flex-column gap-2"></div>
-						<div class="flex flex-column gap-2 mr-2">
-							@for (season of sun.seasons; track $index) {
-								<div class="flex flex-column gap-1">
-									<span class="font-bold flex align-items-center gap-1 text-sm">
-										<i class="mdi mdi-{{ seasonIcon(season.name) }}"></i>
-										{{ seasonName(season.name) | uppercase }}
-									</span>
-									<span class="pl-4">{{ season.dateTime | date: 'MM-dd HH:mm' }}</span>
-								</div>
-							}
+					@if (sun.seasons.length) {
+						<div class="absolute w-full text-sm left-0 top-0 p-4 flex flex-row align-items-start justify-content-between">
+							<div class="flex flex-column">
+								<a
+									target="_blank"
+									href="https://sdo.gsfc.nasa.gov/assets/img/latest/latest_1024_HMIIC.jpg">
+									SDO/HMI
+								</a>
+							</div>
+							<div class="flex flex-column gap-2 mr-2">
+								@for (season of sun.seasons; track $index) {
+									<div class="flex flex-column gap-1">
+										<span class="font-bold flex align-items-center gap-1 text-sm">
+											<i class="mdi mdi-{{ seasonIcon(season.name) }}"></i>
+											{{ seasonName(season.name) | uppercase }}
+										</span>
+										<span class="pl-4">{{ season.dateTime | date: 'MM-dd HH:mm' }}</span>
+									</div>
+								}
+							</div>
 						</div>
-					</div>
+					}
 				</div>
 			</p-tabPanel>
 			<p-tabPanel
@@ -65,56 +64,56 @@
 						[height]="200"
 						[illuminationRatio]="moon.position.illuminated / 100"
 						[waning]="moon.position.leading" />
-					<div
-						*ngIf="moon.phases"
-						class="absolute w-full text-sm left-0 top-0 p-4 flex flex-row align-items-start justify-content-between">
-						<div class="flex flex-column gap-2">
-							<div class="flex flex-column">
-								<span class="font-bold">Diameter</span>
-								<span>{{ moon.phases.current.diameter }} arcsec</span>
-								<span>{{ (moon.phases.current.diameter / 60).toFixed(2) }} arcmin</span>
-							</div>
-							<div class="flex flex-column">
-								<span class="font-bold">Age</span>
-								<span>{{ moon.phases.current.age }} d</span>
-							</div>
-							<div class="flex flex-column">
-								<span class="font-bold">Lunation</span>
-								<span>{{ moon.phases.current.lunation }}</span>
-							</div>
-							<div class="flex flex-column">
-								<span class="font-bold">Sub-Solar Lon / Lat</span>
-								<span>{{ moon.phases.current.subSolarLon }}° / {{ moon.phases.current.subSolarLat }}°</span>
-							</div>
-							<div class="flex flex-column">
-								<span class="font-bold">Sub-Earth Lon / Lat</span>
-								<span>{{ moon.phases.current.subEarthLon }}° / {{ moon.phases.current.subEarthLat }}°</span>
-							</div>
-							<div class="flex flex-column">
-								<span class="font-bold">Position Angle</span>
-								<span>{{ moon.phases.current.posAngle }}°</span>
-							</div>
-							<div class="mt-1 text-xs">
-								<a
-									target="_blank"
-									href="https://svs.gsfc.nasa.gov/5187/">
-									NASA/SVS
-								</a>
-							</div>
-						</div>
-						<div class="flex flex-column gap-2">
-							@for (phase of moon.phases.phases; track $index) {
-								<div class="flex flex-column gap-1">
-									<span class="font-bold flex align-items-center gap-1 text-sm">
-										@let phaseIcon = phase.name === 'NEW_MOON' ? 'new' : phase.name === 'FIRST_QUARTER' ? 'first-quarter' : phase.name === 'FULL_MOON' ? 'full' : 'last-quarter';
-										<i class="mdi mdi-moon-{{ phaseIcon }}"></i>
-										{{ phase.name | enum | uppercase }}
-									</span>
-									<span class="pl-4">{{ phase.dateTime | date: 'dd HH:mm' }}</span>
+					@if (moon.phases) {
+						<div class="absolute w-full text-sm left-0 top-0 p-4 flex flex-row align-items-start justify-content-between">
+							<div class="flex flex-column gap-2">
+								<div class="flex flex-column">
+									<span class="font-bold">Diameter</span>
+									<span>{{ moon.phases.current.diameter }} arcsec</span>
+									<span>{{ (moon.phases.current.diameter / 60).toFixed(2) }} arcmin</span>
 								</div>
-							}
+								<div class="flex flex-column">
+									<span class="font-bold">Age</span>
+									<span>{{ moon.phases.current.age }} d</span>
+								</div>
+								<div class="flex flex-column">
+									<span class="font-bold">Lunation</span>
+									<span>{{ moon.phases.current.lunation }}</span>
+								</div>
+								<div class="flex flex-column">
+									<span class="font-bold">Sub-Solar Lon / Lat</span>
+									<span>{{ moon.phases.current.subSolarLon }}° / {{ moon.phases.current.subSolarLat }}°</span>
+								</div>
+								<div class="flex flex-column">
+									<span class="font-bold">Sub-Earth Lon / Lat</span>
+									<span>{{ moon.phases.current.subEarthLon }}° / {{ moon.phases.current.subEarthLat }}°</span>
+								</div>
+								<div class="flex flex-column">
+									<span class="font-bold">Position Angle</span>
+									<span>{{ moon.phases.current.posAngle }}°</span>
+								</div>
+								<div class="mt-1 text-xs">
+									<a
+										target="_blank"
+										href="https://svs.gsfc.nasa.gov/5187/">
+										NASA/SVS
+									</a>
+								</div>
+							</div>
+							<div class="flex flex-column gap-2">
+								@for (phase of moon.phases.phases; track $index) {
+									<div class="flex flex-column gap-1">
+										<span class="font-bold flex align-items-center gap-1 text-sm">
+											@let phaseIcon = phase.name === 'NEW_MOON' ? 'new' : phase.name === 'FIRST_QUARTER' ? 'first-quarter' : phase.name === 'FULL_MOON' ? 'full' : 'last-quarter';
+											<i class="mdi mdi-moon-{{ phaseIcon }}"></i>
+											{{ phase.name | enum | uppercase }}
+										</span>
+										<span class="pl-4">{{ phase.dateTime | date: 'dd HH:mm' }}</span>
+									</div>
+								}
+							</div>
 						</div>
-					</div>
+					}
 				</div>
 			</p-tabPanel>
 			<p-tabPanel
@@ -169,22 +168,15 @@
 					<p-tabPanel header="Search">
 						<div class="relative flex mt-3 flex-column align-items-center justify-content-center">
 							<div class="flex w-full align-items-center px-4 gap-2">
-								<p-floatLabel class="w-full">
-									<input
-										pInputText
-										class="p-inputtext-sm border-0 w-full"
-										[(ngModel)]="minorPlanet.search.text"
-										pTooltip="Enter the IAU number, designation, name or SPK-ID for the object of interest."
-										tooltipPosition="bottom" />
-									<label>Search</label>
-								</p-floatLabel>
-								<p-button
+								<neb-input-text
+									label="Search"
+									[(value)]="minorPlanet.search.text"
+									tooltip="Enter the IAU number, designation, name or SPK-ID for the object of interest." />
+								<neb-button
 									[disabled]="minorPlanet.search.text.length < 3"
-									(onClick)="searchMinorPlanet()"
+									(action)="searchMinorPlanet()"
 									icon="mdi mdi-magnify"
-									severity="info"
-									size="small"
-									[text]="true" />
+									severity="info" />
 							</div>
 							<span
 								class="text-xs absolute text-gray-500"
@@ -223,39 +215,21 @@
 					<p-tabPanel header="Close Approaches">
 						<div class="relative flex mt-3 flex-column align-items-center justify-content-center">
 							<div class="flex w-full align-items-center px-4 gap-2">
-								<p-floatLabel>
-									<p-inputNumber
-										[min]="1"
-										[max]="30"
-										class="w-full"
-										[step]="1"
-										[showButtons]="true"
-										inputStyleClass="p-inputtext-sm border-0 w-full"
-										[(ngModel)]="minorPlanet.closeApproach.days"
-										spinnableNumber />
-									<label>Days</label>
-								</p-floatLabel>
-								<p-floatLabel>
-									<p-inputNumber
-										[min]="1"
-										[max]="100"
-										class="w-full"
-										[step]="0.1"
-										[minFractionDigits]="1"
-										[showButtons]="true"
-										inputStyleClass="p-inputtext-sm border-0 w-full"
-										locale="en"
-										mode="decimal"
-										[(ngModel)]="minorPlanet.closeApproach.lunarDistance"
-										spinnableNumber />
-									<label>Distance (LD)</label>
-								</p-floatLabel>
-								<p-button
-									(onClick)="closeApproachesOfMinorPlanets()"
+								<neb-input-number
+									label="Days"
+									[min]="1"
+									[max]="30"
+									[(value)]="minorPlanet.closeApproach.days" />
+								<neb-input-number
+									label="Distance (LD)"
+									[min]="1"
+									[max]="100"
+									[step]="0.1"
+									[(value)]="minorPlanet.closeApproach.lunarDistance" />
+								<neb-button
+									(action)="closeApproachesOfMinorPlanets()"
 									icon="mdi mdi-magnify"
-									severity="info"
-									size="small"
-									[text]="true" />
+									severity="info" />
 							</div>
 							<span
 								class="text-xs absolute text-gray-500"
@@ -321,29 +295,19 @@
 				</ng-template>
 				<div class="flex mt-2 align-items-center justify-content-center">
 					<div class="flex w-full align-items-center px-4 gap-2">
-						<p-floatLabel class="w-full">
-							<input
-								pInputText
-								class="p-inputtext-sm border-0 w-full"
-								[(ngModel)]="skyObject.search.filter.text" />
-							<label>Search</label>
-						</p-floatLabel>
+						<neb-input-text
+							label="Search"
+							[(value)]="skyObject.search.filter.text" />
 						<div class="flex flex-row gap-1">
-							<p-button
-								(onClick)="searchSkyObject()"
+							<neb-button
+								(action)="searchSkyObject()"
 								icon="mdi mdi-magnify"
-								size="small"
 								severity="info"
-								[text]="true"
-								pTooltip="Search"
-								tooltipPosition="bottom" />
-							<p-button
-								(onClick)="skyObject.search.showDialog = true"
+								tooltip="Search" />
+							<neb-button
+								(action)="skyObject.search.showDialog = true"
 								icon="mdi mdi-filter"
-								size="small"
-								[text]="true"
-								pTooltip="Filter"
-								tooltipPosition="bottom" />
+								tooltip="Filter" />
 						</div>
 					</div>
 				</div>
@@ -416,29 +380,19 @@
 				</ng-template>
 				<div class="flex mt-2 flex-column align-items-center justify-content-center">
 					<div class="flex w-full align-items-center px-4 gap-2">
-						<p-floatLabel class="w-full">
-							<input
-								pInputText
-								class="p-inputtext-sm border-0 w-full"
-								[(ngModel)]="satellite.search.filter.text" />
-							<label>Search</label>
-						</p-floatLabel>
+						<neb-input-text
+							label="Search"
+							[(value)]="satellite.search.filter.text" />
 						<div class="flex flex-row gap-1">
-							<p-button
-								(onClick)="searchSatellite()"
+							<neb-button
+								(action)="searchSatellite()"
 								icon="mdi mdi-magnify"
-								size="small"
 								severity="info"
-								[text]="true"
-								pTooltip="Search"
-								tooltipPosition="bottom" />
-							<p-button
-								(onClick)="satellite.search.showDialog = true"
+								tooltip="Search" />
+							<neb-button
+								(action)="satellite.search.showDialog = true"
 								icon="mdi mdi-filter"
-								size="small"
-								[text]="true"
-								pTooltip="Filter"
-								tooltipPosition="bottom" />
+								tooltip="Filter" />
 						</div>
 					</div>
 				</div>
@@ -481,10 +435,9 @@
 								<td class="w-8rem">{{ item.id }}</td>
 								<td>{{ item.name }}</td>
 								<td class="flex flex-row flex-wrap gap-1 max-w-16rem">
-									<p-tag
-										*ngFor="let item of item.groups"
-										severity="success"
-										[value]="item" />
+									@for (group of item.groups; track $index) {
+										<neb-success [label]="group" />
+									}
 								</td>
 							</tr>
 						</ng-template>
@@ -505,114 +458,70 @@
 				<div class="col-12 pb-0">
 					<div class="grid">
 						<div class="col-3">
-							<p-floatLabel>
-								<input
-									pInputText
-									readonly
-									class="p-inputtext-sm border-0 w-full"
-									[value]="position.rightAscensionJ2000" />
-								<label>RA (J2000)</label>
-							</p-floatLabel>
+							<neb-input-text
+								label="RA (J2000)"
+								[readonly]="true"
+								[value]="position.rightAscensionJ2000" />
 						</div>
 						<div class="col-3">
-							<p-floatLabel>
-								<input
-									pInputText
-									readonly
-									class="p-inputtext-sm border-0 w-full"
-									[value]="position.declinationJ2000" />
-								<label>DEC (J2000)</label>
-							</p-floatLabel>
+							<neb-input-text
+								label="DEC (J2000)"
+								[readonly]="true"
+								[value]="position.declinationJ2000" />
 						</div>
 						<div class="col-3">
-							<p-floatLabel>
-								<input
-									pInputText
-									readonly
-									class="p-inputtext-sm border-0 w-full"
-									[value]="position.rightAscension" />
-								<label>RA</label>
-							</p-floatLabel>
+							<neb-input-text
+								label="RA"
+								[readonly]="true"
+								[value]="position.rightAscension" />
 						</div>
 						<div class="col-3">
-							<p-floatLabel>
-								<input
-									pInputText
-									readonly
-									class="p-inputtext-sm border-0 w-full"
-									[value]="position.declination" />
-								<label>DEC</label>
-							</p-floatLabel>
+							<neb-input-text
+								label="DEC"
+								[readonly]="true"
+								[value]="position.declination" />
 						</div>
 						<div class="col-3">
-							<p-floatLabel>
-								<input
-									pInputText
-									readonly
-									class="p-inputtext-sm border-0 w-full"
-									[value]="position.azimuth" />
-								<label>Azimuth</label>
-							</p-floatLabel>
+							<neb-input-text
+								label="Azimuth"
+								[readonly]="true"
+								[value]="position.azimuth" />
 						</div>
 						<div class="col-3">
-							<p-floatLabel>
-								<input
-									pInputText
-									readonly
-									class="p-inputtext-sm border-0 w-full"
-									[value]="position.altitude" />
-								<label>Altitude</label>
-							</p-floatLabel>
+							<neb-input-text
+								label="Altitude"
+								[readonly]="true"
+								[value]="position.altitude" />
 						</div>
 						<div class="col-3">
-							<p-floatLabel>
-								<input
-									pInputText
-									readonly
-									class="p-inputtext-sm border-0 w-full"
-									[value]="position.magnitude < 30 ? position.magnitude.toFixed(2) : '-'" />
-								<label>Magnitude</label>
-							</p-floatLabel>
+							<neb-input-text
+								label="Magnitude"
+								[readonly]="true"
+								[value]="position.magnitude < 30 ? position.magnitude.toFixed(2) : '-'" />
 						</div>
 						<div class="col-3">
-							<p-floatLabel>
-								<input
-									pInputText
-									readonly
-									class="p-inputtext-sm border-0 w-full"
-									[value]="position.constellation" />
-								<label>Constellation</label>
-							</p-floatLabel>
+							<neb-input-text
+								label="Constellation"
+								[readonly]="true"
+								[value]="position.constellation" />
 						</div>
 						<div class="col-3">
-							<p-floatLabel>
-								<input
-									pInputText
-									readonly
-									class="p-inputtext-sm border-0 w-full"
-									[value]="position.distance.toFixed(3)" />
-								<label>Distance ({{ position.distanceUnit }})</label>
-							</p-floatLabel>
+							<neb-input-text
+								label="Distance ({{ position.distanceUnit }})"
+								[readonly]="true"
+								[value]="position.distance.toFixed(3)" />
 						</div>
 						<div class="col-3">
-							<p-floatLabel>
-								<input
-									pInputText
-									readonly
-									class="p-inputtext-sm border-0 w-full"
-									[value]="position.illuminated.toFixed(3)" />
-								<label>Illuminated (%)</label>
-							</p-floatLabel>
+							<neb-input-text
+								label="Illuminated (%)"
+								[readonly]="true"
+								[value]="position.illuminated.toFixed(3)" />
 						</div>
 						<div class="col-3">
-							<p-floatLabel>
-								<input
-									pInputText
-									readonly
-									class="p-inputtext-sm border-0 w-full"
-									[value]="position.elongation.toFixed(3)" />
-								<label>Elongation (°)</label>
-							</p-floatLabel>
+							<neb-input-text
+								label="Elongation (°)"
+								[readonly]="true"
+								[value]="position.elongation.toFixed(3)" />
 						</div>
 					</div>
 				</div>
@@ -626,37 +535,29 @@
 					</a>
 				</div>
 				<div class="col-12 pt-0 flex justify-content-center">
-					<p-button
+					<neb-button
 						[disabled]="!body.name"
-						[text]="true"
 						severity="info"
-						(onClick)="mountSync()"
+						(action)="mountSync()"
 						icon="mdi mdi-sync"
-						label="Sync"
-						size="small" />
-					<p-button
+						label="Sync" />
+					<neb-button
 						[disabled]="!body.name"
-						[text]="true"
 						severity="success"
-						(onClick)="mountGoTo()"
+						(action)="mountGoTo()"
 						icon="mdi mdi-telescope"
-						label="Go To"
-						size="small" />
-					<p-button
+						label="Go To" />
+					<neb-button
 						[disabled]="!body.name"
-						[text]="true"
 						severity="success"
-						(onClick)="mountSlew()"
+						(action)="mountSlew()"
 						icon="mdi mdi-telescope"
-						label="Slew"
-						size="small" />
-					<p-button
+						label="Slew" />
+					<neb-button
 						[disabled]="!body.name"
-						[text]="true"
-						(onClick)="frame()"
+						(action)="frame()"
 						icon="mdi mdi-image"
-						label="Frame"
-						size="small" />
+						label="Frame" />
 				</div>
 			</div>
 		</p-tabPanel>
@@ -675,30 +576,25 @@
 	<div
 		class="col-9 flex align-items-center justify-content-between absolute gap-1 overflow-hidden"
 		style="height: 32px; left: 95px; top: 2px; padding-right: 70px">
-		<p-button
+		<neb-button
 			[disabled]="!body.name"
-			[text]="true"
-			[rounded]="true"
 			icon="mdi mdi-md mdi-dots-vertical"
-			(click)="ephemerisMenu.show()" />
+			(action)="ephemerisMenu.show(ephemerisModel)" />
 		@if (body.name && canFavorite) {
-			<p-button
-				[text]="true"
-				[rounded]="true"
+			<neb-button
 				icon="{{ favorited ? 'mdi mdi-star' : 'mdi mdi-star-outline' }}"
-				pTooltip="{{ favorited ? 'Unfavorite' : 'Favorite' }}"
-				tooltipPosition="bottom"
-				(onClick)="favorite()" />
+				tooltip="{{ favorited ? 'Unfavorite' : 'Favorite' }}"
+				(action)="favorite()" />
 		}
 		<span
 			class="flex w-full align-items-center gap-1 justify-content-center"
 			style="min-width: -webkit-fill-available">
 			<span class="text-overflow-scroll font-bold">{{ body.name }}</span>
-			<p-tag
-				*ngFor="let tag of body.tags"
-				[severity]="tag.severity"
-				[value]="tag.label"
-				styleClass="white-space-nowrap" />
+			@for (tag of body.tags; track $index) {
+				<neb-tag
+					[severity]="tag.severity"
+					[label]="tag.label" />
+			}
 		</span>
 	</div>
 </div>
@@ -727,117 +623,63 @@
 	[style]="{ width: '80vw' }">
 	<div class="grid mt-2">
 		<div class="col-4">
-			<p-floatLabel>
-				<input
-					pInputText
-					[disabled]="skyObject.search.filter.radius <= 0"
-					class="p-inputtext-sm border-0 w-full"
-					[value]="skyObject.search.filter.rightAscension" />
-				<label>RA (h)</label>
-			</p-floatLabel>
+			<neb-input-text
+				label="RA (h)"
+				[disabled]="skyObject.search.filter.radius <= 0"
+				[(value)]="skyObject.search.filter.rightAscension" />
 		</div>
 		<div class="col-4">
-			<p-floatLabel>
-				<input
-					pInputText
-					[disabled]="skyObject.search.filter.radius <= 0"
-					class="p-inputtext-sm border-0 w-full"
-					[value]="skyObject.search.filter.declination" />
-				<label>DEC (°)</label>
-			</p-floatLabel>
+			<neb-input-text
+				label="DEC (°)"
+				[disabled]="skyObject.search.filter.radius <= 0"
+				[(value)]="skyObject.search.filter.declination" />
 		</div>
 		<div class="col-4">
-			<p-floatLabel>
-				<p-inputNumber
-					[min]="0"
-					[max]="90"
-					class="w-full"
-					[step]="0.1"
-					[minFractionDigits]="1"
-					[maxFractionDigits]="1"
-					[showButtons]="true"
-					inputStyleClass="p-inputtext-sm border-0 w-full"
-					locale="en"
-					mode="decimal"
-					[(ngModel)]="skyObject.search.filter.radius"
-					spinnableNumber />
-				<label>Radius (°)</label>
-			</p-floatLabel>
+			<neb-input-number
+				label="Radius (°)"
+				[min]="0"
+				[max]="90"
+				[step]="0.1"
+				[(value)]="skyObject.search.filter.radius" />
 		</div>
 		<div class="col-6">
-			<p-floatLabel class="w-full">
-				@let constellations = ['ALL'].concat('CONSTELLATION' | dropdownOptions);
-				<p-dropdown
-					[options]="constellations | enumDropdown"
-					[(ngModel)]="skyObject.search.filter.constellation"
-					[filter]="true"
-					appendTo="body"
-					optionLabel="label"
-					optionValue="value"
-					styleClass="p-inputtext-sm border-0"
-					[autoDisplayFirst]="false" />
-				<label>Constellation</label>
-			</p-floatLabel>
+			@let constellations = ['ALL'].concat('CONSTELLATION' | dropdownOptions);
+			<neb-dropdown-enum
+				label="Constellation"
+				[options]="constellations"
+				[(value)]="skyObject.search.filter.constellation"
+				[filter]="true" />
 		</div>
 		<div class="col-6">
-			<p-floatLabel class="w-full">
-				@let skyObjectTypes = ['ALL'].concat('SKY_OBJECT_TYPE' | dropdownOptions);
-				<p-dropdown
-					[options]="skyObjectTypes | enumDropdown"
-					[(ngModel)]="skyObject.search.filter.type"
-					appendTo="body"
-					[filter]="true"
-					optionLabel="label"
-					optionValue="value"
-					styleClass="p-inputtext-sm border-0"
-					[autoDisplayFirst]="false" />
-				<label>Type</label>
-			</p-floatLabel>
+			@let skyObjectTypes = ['ALL'].concat('SKY_OBJECT_TYPE' | dropdownOptions);
+			<neb-dropdown-enum
+				label="Type"
+				[options]="skyObjectTypes"
+				[(value)]="skyObject.search.filter.type"
+				[filter]="true" />
 		</div>
 		<div class="col-4">
-			<p-floatLabel>
-				<p-inputNumber
-					[min]="-30"
-					[max]="30"
-					class="w-full"
-					[step]="0.1"
-					[minFractionDigits]="1"
-					[maxFractionDigits]="1"
-					[showButtons]="true"
-					inputStyleClass="p-inputtext-sm border-0 w-full"
-					locale="en"
-					mode="decimal"
-					[(ngModel)]="skyObject.search.filter.magnitudeMin"
-					spinnableNumber />
-				<label>Mag. min</label>
-			</p-floatLabel>
+			<neb-input-number
+				label="Mag. min"
+				[min]="-30"
+				[max]="30"
+				[step]="0.1"
+				[(value)]="skyObject.search.filter.magnitudeMin" />
 		</div>
 		<div class="col-4">
-			<p-floatLabel>
-				<p-inputNumber
-					[min]="-30"
-					[max]="30"
-					class="w-full"
-					[step]="0.1"
-					[minFractionDigits]="1"
-					[maxFractionDigits]="1"
-					[showButtons]="true"
-					inputStyleClass="p-inputtext-sm border-0 w-full"
-					locale="en"
-					mode="decimal"
-					[(ngModel)]="skyObject.search.filter.magnitudeMax"
-					spinnableNumber />
-				<label>Mag. max</label>
-			</p-floatLabel>
+			<neb-input-number
+				label="Mag. max"
+				[min]="-30"
+				[max]="30"
+				[step]="0.1"
+				[(value)]="skyObject.search.filter.magnitudeMax" />
 		</div>
 	</div>
 	<ng-template pTemplate="footer">
-		<p-button
-			[text]="true"
+		<neb-button
 			icon="mdi mdi-filter"
 			label="Filter"
-			size="small"
-			(onClick)="searchSkyObject()" />
+			(action)="searchSkyObject()" />
 	</ng-template>
 </p-dialog>
 
@@ -852,29 +694,24 @@
 			@let groups = 'SATELLITE_GROUP_TYPE' | dropdownOptions;
 
 			@for (group of groups; track $index) {
-				<p-checkbox
-					[binary]="true"
-					[(ngModel)]="satellite.search.filter.groups[group]"
-					(ngModelChange)="savePreference()"
+				<neb-checkbox
+					[(value)]="satellite.search.filter.groups[group]"
+					(valueChange)="savePreference()"
 					[label]="group | enum"
-					class="white-space-nowrap" />
+					[noWrap]="true" />
 			}
 		</div>
 	</div>
 	<ng-template pTemplate="footer">
-		<p-button
-			[text]="true"
+		<neb-button
 			severity="danger"
 			icon="mdi mdi-restore"
 			label="Reset"
-			size="small"
-			(onClick)="resetSatelliteSearchGroups()" />
-		<p-button
-			[text]="true"
+			(action)="resetSatelliteSearchGroups()" />
+		<neb-button
 			icon="mdi mdi-filter"
 			label="Filter"
-			size="small"
-			(onClick)="searchSatellite()" />
+			(action)="searchSatellite()" />
 	</ng-template>
 </p-dialog>
 
@@ -886,10 +723,9 @@
 	[style]="{ width: '80vw' }">
 	<div class="grid">
 		<div class="col-12 flex-column gap-2">
-			<p-checkbox
-				[binary]="true"
-				[(ngModel)]="preference.settings.useTopocentricForMoonPhases"
-				(ngModelChange)="settingsChanged('useTopocentricForMoonPhases')"
+			<neb-checkbox
+				[(value)]="preference.settings.useTopocentricForMoonPhases"
+				(valueChange)="settingsChanged('useTopocentricForMoonPhases')"
 				label="Use topocentric coordinates for Moon phases" />
 		</div>
 	</div>
@@ -914,55 +750,35 @@
 					styleClass="w-full" />
 			</div>
 			<div class="col-5 flex-column gap-3 align-items-center justify-content-start gap-1">
-				<div class="flex flex-column justify-content-center align-items-center gap-1">
-					<span>Date Time</span>
-					<p-inputSwitch
-						[(ngModel)]="dateTimeAndLocation.manual"
-						(ngModelChange)="manualDateTimeChanged()" />
-				</div>
+				<neb-switch
+					label="Date Time"
+					[(value)]="dateTimeAndLocation.manual"
+					(valueChange)="manualDateTimeChanged()" />
 				<div class="flex flex-column align-items-center gap-3">
 					<div class="flex align-items-center justify-content-center gap-2">
-						<p-floatLabel class="w-full">
-							<p-inputNumber
-								[disabled]="!dateTimeAndLocation.manual"
-								[ngModel]="dateTimeAndLocation.dateTime.getHours()"
-								(ngModelChange)="timeChanged($event, undefined)"
-								[showButtons]="true"
-								[min]="-1"
-								[max]="24"
-								[format]="false"
-								[allowEmpty]="false"
-								styleClass="p-inputtext-sm border-0"
-								spinnableNumber />
-							<label>Hour</label>
-						</p-floatLabel>
-						<p-floatLabel class="w-full">
-							<p-inputNumber
-								[disabled]="!dateTimeAndLocation.manual"
-								[ngModel]="dateTimeAndLocation.dateTime.getMinutes()"
-								(ngModelChange)="timeChanged(undefined, $event)"
-								[showButtons]="true"
-								[min]="-1"
-								[max]="60"
-								[format]="false"
-								[allowEmpty]="false"
-								styleClass="p-inputtext-sm border-0"
-								spinnableNumber />
-							<label>Minute</label>
-						</p-floatLabel>
+						<neb-input-number
+							label="Hour"
+							[disabled]="!dateTimeAndLocation.manual"
+							[min]="-1"
+							[max]="24"
+							[value]="dateTimeAndLocation.dateTime.getHours()"
+							(valueChange)="timeChanged($event, undefined)"
+							[format]="false" />
+						<neb-input-number
+							label="Minute"
+							[disabled]="!dateTimeAndLocation.manual"
+							[min]="-1"
+							[max]="60"
+							[value]="dateTimeAndLocation.dateTime.getMinutes()"
+							(valueChange)="timeChanged(undefined, $event)"
+							[format]="false" />
 					</div>
-					<p-floatLabel class="w-full">
-						<p-dropdown
-							[options]="locations"
-							[(ngModel)]="dateTimeAndLocation.location"
-							(ngModelChange)="locationChanged()"
-							optionLabel="name"
-							dataKey="id"
-							styleClass="p-inputtext-sm border-0"
-							emptyMessage="No location found"
-							[autoDisplayFirst]="false" />
-						<label>Location</label>
-					</p-floatLabel>
+					<neb-dropdown
+						label="Location"
+						[options]="locations"
+						[(value)]="dateTimeAndLocation.location"
+						(valueChange)="locationChanged()"
+						emptyMessage="No location available" />
 				</div>
 			</div>
 		</div>
@@ -995,15 +811,11 @@
 							<span class="font-bold">{{ item.type | enum }}</span>
 							<span class="ml-1">{{ item.name }}</span>
 						</span>
-						<p-button
-							[text]="true"
-							[rounded]="true"
+						<neb-button
 							icon="mdi mdi-delete"
 							severity="danger"
-							size="small"
-							pTooltip="Remove"
-							tooltipPosition="bottom"
-							(onClick)="deleteFavorite(item); $event.stopImmediatePropagation()" />
+							tooltip="Remove"
+							(action)="deleteFavorite(item)" />
 					</div>
 				</ng-template>
 			</p-listbox>
@@ -1013,7 +825,6 @@
 
 <neb-dialog-menu
 	#ephemerisMenu
-	[model]="ephemerisModel"
 	[header]="body.name.split(' · ')[0]" />
 
 <neb-device-list-menu #deviceMenu />

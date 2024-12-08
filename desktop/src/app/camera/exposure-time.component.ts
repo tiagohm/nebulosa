@@ -1,5 +1,5 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewEncapsulation } from '@angular/core'
-import { MenuItem } from '../../shared/components/menu-item/menu-item.component'
+import { AfterViewInit, ChangeDetectionStrategy, Component, OnChanges, SimpleChanges, ViewEncapsulation, input, model, signal } from '@angular/core'
+import { MenuItem } from '../../shared/components/menu-item.component'
 import type { ExposureTimeUnit } from '../../shared/types/camera.types'
 
 @Component({
@@ -9,44 +9,15 @@ import type { ExposureTimeUnit } from '../../shared/types/camera.types'
 	changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ExposureTimeComponent implements AfterViewInit, OnChanges {
-	@Input({ required: true })
-	protected exposureTime: number = 0
-
-	@Output()
-	readonly exposureTimeChange = new EventEmitter<number>()
-
-	@Input()
-	protected unit: ExposureTimeUnit = 'MICROSECOND'
-
-	@Output()
-	readonly unitChange = new EventEmitter<ExposureTimeUnit>()
-
-	@Input()
-	protected readonly min: number = 0
-
-	@Input()
-	protected readonly max: number = 600000000
-
-	@Input()
-	protected readonly disabled: boolean = false
-
-	@Input()
-	protected readonly canExposureTime: boolean = true
-
-	@Input()
-	protected readonly canExposureTimeUnit: boolean = true
-
-	@Input()
-	protected readonly normalized: boolean = true
-
-	@Input()
-	protected readonly label?: string
-
-	protected readonly current = {
-		exposureTime: this.exposureTime,
-		min: this.min,
-		max: this.max,
-	}
+	readonly exposureTime = model.required<number>()
+	readonly unit = model<ExposureTimeUnit>('MICROSECOND')
+	readonly min = input<number>(0)
+	readonly max = input<number>(600000000)
+	readonly disabled = input<boolean>(false)
+	readonly canExposureTime = input<boolean>(true)
+	readonly canExposureTimeUnit = input<boolean>(true)
+	readonly normalized = input<boolean>(true)
+	readonly label = input<string>()
 
 	protected readonly model: MenuItem[] = [
 		{
@@ -75,7 +46,11 @@ export class ExposureTimeComponent implements AfterViewInit, OnChanges {
 		},
 	]
 
-	private exposureTimeInMicroseconds = 0
+	protected currentExposureTime = 0
+	protected currentMin = 0
+	protected currentMax = 0
+
+	private readonly exposureTimeInMicroseconds = signal(0)
 
 	ngOnChanges(changes: SimpleChanges) {
 		for (const key in changes) {
@@ -88,39 +63,39 @@ export class ExposureTimeComponent implements AfterViewInit, OnChanges {
 					this.exposureTimeUnitChanged(change.currentValue)
 					break
 				case 'exposureTime':
-					this.exposureTimeChanged(change.currentValue, 'MICROSECOND', this.normalized && this.exposureTimeInMicroseconds !== change.currentValue)
+					this.exposureTimeChanged(change.currentValue, 'MICROSECOND', this.normalized() && this.exposureTimeInMicroseconds !== change.currentValue)
 					break
 				case 'min':
 				case 'max':
 					this.exposureTimeMinMaxChanged()
 					break
 				case 'normalized':
-					this.normalize(this.exposureTime)
+					this.normalize(this.exposureTime())
 					break
 			}
 		}
 	}
 
 	ngAfterViewInit() {
-		this.updateExposureTime(this.current.exposureTime, this.unit, this.unit)
+		this.updateExposureTime(this.currentExposureTime, this.unit(), this.unit())
 	}
 
 	protected exposureTimeUnitChanged(value: ExposureTimeUnit) {
-		this.updateExposureTime(this.current.exposureTime, value, this.unit, false)
+		this.updateExposureTime(this.currentExposureTime, value, this.unit(), false)
 	}
 
-	protected exposureTimeChanged(value: number, from: ExposureTimeUnit = this.unit, normalize: boolean = false) {
-		this.updateExposureTime(value, this.unit, from, normalize)
+	protected exposureTimeChanged(value: number, from: ExposureTimeUnit = this.unit(), normalize: boolean = false) {
+		this.updateExposureTime(value, this.unit(), from, normalize)
 	}
 
 	protected exposureTimeMinMaxChanged() {
-		this.updateExposureTime(this.current.exposureTime, this.unit, this.unit, false)
+		this.updateExposureTime(this.currentExposureTime, this.unit(), this.unit(), false)
 	}
 
 	protected exposureTimeUnitWheeled(event: WheelEvent) {
 		if (event.deltaY) {
 			const units: ExposureTimeUnit[] = ['MINUTE', 'SECOND', 'MILLISECOND', 'MICROSECOND']
-			const index = units.indexOf(this.unit)
+			const index = units.indexOf(this.unit())
 
 			if (index >= 0) {
 				if (event.deltaY > 0) {
@@ -134,17 +109,17 @@ export class ExposureTimeComponent implements AfterViewInit, OnChanges {
 		}
 	}
 
-	private updateExposureTime(value: number, unit: ExposureTimeUnit, from: ExposureTimeUnit, normalize: boolean = this.normalized) {
+	private updateExposureTime(value: number, unit: ExposureTimeUnit, from: ExposureTimeUnit, normalize: boolean = this.normalized()) {
 		const a = ExposureTimeComponent.exposureUnitFactor(from)
 		const b = ExposureTimeComponent.exposureUnitFactor(unit)
 
 		if (!a || !b) return
 
-		this.current.min = Math.max(1, Math.trunc(((this.min || 1) * b) / 60000000))
-		this.current.max = Math.max(1, Math.trunc(((this.max || 600000000) * b) / 60000000))
-		this.current.exposureTime = Math.max(1, Math.trunc((value * b) / a))
+		this.currentMin = Math.max(1, Math.trunc(((this.min() || 1) * b) / 60000000))
+		this.currentMax = Math.max(1, Math.trunc(((this.max() || 600000000) * b) / 60000000))
+		this.currentExposureTime = Math.max(1, Math.trunc((value * b) / a))
 
-		const exposureTimeInMicroseconds = Math.trunc((this.current.exposureTime * 60000000) / b)
+		const exposureTimeInMicroseconds = Math.trunc((value * 60000000) / a)
 
 		if (normalize) {
 			if (this.normalize(exposureTimeInMicroseconds)) {
@@ -152,20 +127,18 @@ export class ExposureTimeComponent implements AfterViewInit, OnChanges {
 			}
 		}
 
-		if (this.exposureTime !== exposureTimeInMicroseconds) {
-			this.exposureTime = exposureTimeInMicroseconds
-			this.exposureTimeInMicroseconds = exposureTimeInMicroseconds
-			this.exposureTimeChange.emit(exposureTimeInMicroseconds)
+		if (this.exposureTime() !== exposureTimeInMicroseconds) {
+			this.exposureTime.set(exposureTimeInMicroseconds)
+			this.exposureTimeInMicroseconds.set(exposureTimeInMicroseconds)
 		}
 
-		if (this.unit !== unit) {
-			this.unit = unit
-			this.unitChange.emit(unit)
+		if (this.unit() !== unit) {
+			this.unit.set(unit)
 		}
 	}
 
 	private normalize(exposureTime: number) {
-		if (!this.normalized) {
+		if (!this.normalized()) {
 			return false
 		}
 

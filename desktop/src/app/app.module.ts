@@ -45,20 +45,30 @@ import { TieredMenuModule } from 'primeng/tieredmenu'
 import { ToastModule } from 'primeng/toast'
 import { TooltipModule } from 'primeng/tooltip'
 import { TreeModule } from 'primeng/tree'
-import { CameraExposureComponent } from '../shared/components/camera-exposure/camera-exposure.component'
-import { CameraInfoComponent } from '../shared/components/camera-info/camera-info.component'
-import { DeviceChooserComponent } from '../shared/components/device-chooser/device-chooser.component'
-import { DeviceListMenuComponent } from '../shared/components/device-list-menu/device-list-menu.component'
-import { DeviceNameComponent } from '../shared/components/device-name/device-name.component'
-import { DialogMenuComponent } from '../shared/components/dialog-menu/dialog-menu.component'
-import { HistogramComponent } from '../shared/components/histogram/histogram.component'
-import { LocationComponent } from '../shared/components/location/location.dialog'
-import { MapComponent } from '../shared/components/map/map.component'
-import { MenuBarComponent } from '../shared/components/menu-bar/menu-bar.component'
-import { MenuItemComponent } from '../shared/components/menu-item/menu-item.component'
-import { MoonComponent } from '../shared/components/moon/moon.component'
-import { PathChooserComponent } from '../shared/components/path-chooser/path-chooser.component'
-import { SlideMenuComponent } from '../shared/components/slide-menu/slide-menu.component'
+import { ButtonImageComponent } from '../shared/components/button-image.component'
+import { ButtonComponent } from '../shared/components/button.component'
+import { CameraExposureComponent } from '../shared/components/camera-exposure.component'
+import { CameraInfoComponent } from '../shared/components/camera-info.component'
+import { CheckboxComponent } from '../shared/components/checkbox.component'
+import { DeviceChooserComponent } from '../shared/components/device-chooser.component'
+import { DeviceListMenuComponent } from '../shared/components/device-list-menu.component'
+import { DeviceNameComponent } from '../shared/components/device-name.component'
+import { DialogMenuComponent } from '../shared/components/dialog-menu.component'
+import { DropdownComponent, DropdownEnumComponent, DropdownItemComponent } from '../shared/components/dropdown.component'
+import { HistogramComponent } from '../shared/components/histogram.component'
+import { IndicatorComponent } from '../shared/components/indicator.component'
+import { InputNumberComponent } from '../shared/components/input-number.component'
+import { InputTextComponent } from '../shared/components/input-text.component'
+import { LocationComponent } from '../shared/components/location.component'
+import { MapComponent } from '../shared/components/map.component'
+import { MenuBarComponent } from '../shared/components/menu-bar.component'
+import { MenuItemComponent } from '../shared/components/menu-item.component'
+import { MoonComponent } from '../shared/components/moon.component'
+import { PathChooserComponent } from '../shared/components/path-chooser.component'
+import { SelectButtonEnumComponent, SelectButtonItemComponent } from '../shared/components/select-button.component'
+import { SlideMenuComponent } from '../shared/components/slide-menu.component'
+import { SwitchComponent } from '../shared/components/switch.component'
+import { TagComponent } from '../shared/components/tag.component'
 import { ConfirmDialogComponent } from '../shared/dialogs/confirm/confirm.dialog'
 import { NoDropdownDirective } from '../shared/directives/no-dropdown.directive'
 import { SpinnableNumberDirective } from '../shared/directives/spinnable-number.directive'
@@ -109,21 +119,27 @@ import { SettingsComponent } from './settings/settings.component'
 		AppComponent,
 		AtlasComponent,
 		AutoFocusComponent,
+		ButtonComponent,
+		ButtonImageComponent,
 		CalculatorComponent,
 		CalibrationComponent,
 		CameraComponent,
-		CameraInfoComponent,
 		CameraExposureComponent,
+		CameraInfoComponent,
+		CheckboxComponent,
 		ConfirmDialogComponent,
 		CrossHairComponent,
 		DeviceChooserComponent,
 		DeviceListMenuComponent,
 		DeviceNameComponent,
 		DialogMenuComponent,
+		DropdownComponent,
+		DropdownItemComponent,
+		DropdownEnumComponent,
 		DropdownOptionsPipe,
 		DustCapComponent,
-		EnumPipe,
 		EnumDropdownPipe,
+		EnumPipe,
 		EnvPipe,
 		ExposureTimeComponent,
 		ExposureTimePipe,
@@ -136,9 +152,11 @@ import { SettingsComponent } from './settings/settings.component'
 		HistogramComponent,
 		HomeComponent,
 		ImageComponent,
-		SpinnableNumberDirective,
+		IndicatorComponent,
 		INDIComponent,
 		INDIPropertyComponent,
+		InputNumberComponent,
+		InputTextComponent,
 		LightBoxComponent,
 		LocationComponent,
 		MapComponent,
@@ -149,9 +167,14 @@ import { SettingsComponent } from './settings/settings.component'
 		NoDropdownDirective,
 		PathChooserComponent,
 		RotatorComponent,
+		SelectButtonEnumComponent,
+		SelectButtonItemComponent,
 		SequencerComponent,
 		SettingsComponent,
 		SlideMenuComponent,
+		SpinnableNumberDirective,
+		TagComponent,
+		SwitchComponent,
 		WinPipe,
 	],
 	imports: [

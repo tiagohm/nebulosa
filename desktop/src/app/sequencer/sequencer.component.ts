@@ -1,9 +1,10 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
-import { AfterContentInit, Component, HostListener, inject, NgZone, OnDestroy, QueryList, ViewChildren, ViewEncapsulation } from '@angular/core'
+import { AfterContentInit, Component, HostListener, inject, NgZone, OnDestroy, viewChildren, ViewEncapsulation } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
-import { CameraExposureComponent } from '../../shared/components/camera-exposure/camera-exposure.component'
-import { DialogMenuComponent } from '../../shared/components/dialog-menu/dialog-menu.component'
-import { MenuItem, SlideMenuItem } from '../../shared/components/menu-item/menu-item.component'
+import { CameraExposureComponent } from '../../shared/components/camera-exposure.component'
+import { DialogMenuComponent } from '../../shared/components/dialog-menu.component'
+import { DropdownItem } from '../../shared/components/dropdown.component'
+import { MenuItem, SlideMenuItem } from '../../shared/components/menu-item.component'
 import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
 import { AngularService } from '../../shared/services/angular.service'
 import { ApiService } from '../../shared/services/api.service'
@@ -11,7 +12,6 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { Tickable, Ticker } from '../../shared/services/ticker.service'
-import { DropdownItem } from '../../shared/types/angular.types'
 import { JsonFile } from '../../shared/types/app.types'
 import { Camera, cameraCaptureNamingFormatWithDefault, FrameType, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
 import { Focuser } from '../../shared/types/focuser.types'
@@ -57,7 +57,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 	protected path?: string
 
 	// NOTE: Remove the "plan.sequences.length <= 1" on layout if add more options
-	protected readonly sequenceModel: SlideMenuItem[] = [
+	private readonly sequenceModel: SlideMenuItem[] = [
 		{
 			icon: 'mdi mdi-content-copy',
 			label: 'Apply to all',
@@ -167,8 +167,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 		},
 	}
 
-	@ViewChildren('cameraExposure')
-	private readonly cameraExposures!: QueryList<CameraExposureComponent>
+	private readonly cameraExposures = viewChildren<CameraExposureComponent>('cameraExposure')
 
 	get canStart() {
 		return !!this.plan.camera?.connected && !!this.plan.sequences.find((e) => e.enabled)
@@ -274,7 +273,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 
 				if (captureEvent) {
 					const index = event.id - 1
-					this.cameraExposures.get(index)?.handleCameraCaptureEvent(captureEvent)
+					this.cameraExposures().at(index)?.handleCameraCaptureEvent(captureEvent)
 				}
 			})
 		})
@@ -539,7 +538,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 		this.savePreference()
 	}
 
-	protected showSequenceMenu(sequence: Sequence, dialogMenu: DialogMenuComponent) {
+	protected showSequenceMenu(sequence: Sequence, menu: DialogMenuComponent) {
 		this.property.sequence = sequence
 
 		const index = this.plan.sequences.indexOf(sequence)
@@ -555,7 +554,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 		this.sequenceModel[7].visible = this.sequenceModel[3].visible
 
 		if (this.sequenceModel.find((e) => e.visible)) {
-			dialogMenu.show()
+			menu.show(this.sequenceModel)
 		}
 	}
 
@@ -649,8 +648,8 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 
 	protected async start() {
 		if (this.plan.camera) {
-			for (let i = 0; i < this.cameraExposures.length; i++) {
-				this.cameraExposures.get(i)?.reset()
+			for (let i = 0; i < this.cameraExposures().length; i++) {
+				this.cameraExposures().at(i)?.reset()
 			}
 
 			// FOCUS OFFSET

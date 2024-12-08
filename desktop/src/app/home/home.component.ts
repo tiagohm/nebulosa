@@ -1,8 +1,8 @@
-import { AfterContentInit, Component, inject, NgZone, ViewChild, ViewEncapsulation } from '@angular/core'
+import { AfterContentInit, Component, inject, NgZone, viewChild, ViewEncapsulation } from '@angular/core'
 import packageJson from '../../../package.json' with { type: 'json' }
-import { DeviceChooserComponent } from '../../shared/components/device-chooser/device-chooser.component'
-import { DeviceConnectionCommandEvent, DeviceListMenuComponent } from '../../shared/components/device-list-menu/device-list-menu.component'
-import { MenuItem, SlideMenuItem } from '../../shared/components/menu-item/menu-item.component'
+import { DeviceChooserComponent } from '../../shared/components/device-chooser.component'
+import { DeviceConnectionCommandEvent, DeviceListMenuComponent } from '../../shared/components/device-list-menu.component'
+import { MenuItem, SlideMenuItem } from '../../shared/components/menu-item.component'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
@@ -26,7 +26,6 @@ function scrollPageOf(element: Element) {
 @Component({
 	selector: 'neb-home',
 	templateUrl: 'home.component.html',
-	styleUrls: ['home.component.scss'],
 	encapsulation: ViewEncapsulation.None,
 })
 export class HomeComponent implements AfterContentInit {
@@ -82,8 +81,7 @@ export class HomeComponent implements AfterContentInit {
 		}
 	}
 
-	@ViewChild('deviceMenu')
-	private readonly deviceMenu!: DeviceListMenuComponent
+	private readonly deviceMenu = viewChild.required<DeviceListMenuComponent>('deviceMenu')
 
 	get connected() {
 		return !!this.connection && this.connection.connected
@@ -515,7 +513,7 @@ export class HomeComponent implements AfterContentInit {
 
 		if (devices.length === 0) return
 
-		const device = await this.deviceMenu.show(devices, undefined, type)
+		const device = await this.deviceMenu().show(devices, undefined, type)
 
 		if (device && device !== 'NONE') {
 			await this.openDeviceWindow(device)
@@ -575,7 +573,7 @@ export class HomeComponent implements AfterContentInit {
 				await this.browserWindowService.openAlignment({ bringToFront: true })
 				break
 			case 'SEQUENCER': {
-				const device = await this.deviceMenu.show(this.cameras, undefined, 'CAMERA')
+				const device = await this.deviceMenu().show(this.cameras, undefined, 'CAMERA')
 
 				if (device && device !== 'NONE') {
 					await this.browserWindowService.openSequencer(device, { bringToFront: true })
@@ -669,7 +667,7 @@ export class HomeComponent implements AfterContentInit {
 		}
 
 		let page = 0
-		const scrollChidren = document.getElementsByClassName('scroll-child')
+		const scrollChidren = document.querySelectorAll('[scroll-page]')
 
 		for (let i = 0; i < scrollChidren.length; i++) {
 			const child = scrollChidren[i]
@@ -684,14 +682,8 @@ export class HomeComponent implements AfterContentInit {
 		event.stopImmediatePropagation()
 	}
 
-	protected scrollTo(event: Event, page: number) {
-		this.page = page
-		this.scrollToPage(page)
-		event.stopImmediatePropagation()
-	}
-
 	protected scrollToPage(page: number) {
-		const scrollChidren = document.getElementsByClassName('scroll-child')
+		const scrollChidren = document.querySelectorAll('[scroll-page]')
 
 		for (let i = 0; i < scrollChidren.length; i++) {
 			const child = scrollChidren[i]

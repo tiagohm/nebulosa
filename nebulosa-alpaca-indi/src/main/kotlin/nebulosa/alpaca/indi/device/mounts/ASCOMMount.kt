@@ -215,12 +215,12 @@ data class ASCOMMount(
     }
 
     override fun slewRate(rate: SlewRate) {
-        slewRate = slewRates.firstOrNull { it.name == rate.name } ?: return
+        slewRate = slewRates.firstOrNull { it.value == rate.value } ?: return
         sender.fireOnEventReceived(MountSlewRateChanged(this))
     }
 
     private fun moveAxis(axisType: AxisType, negative: Boolean, enabled: Boolean) {
-        val rate = slewRate?.name?.let { axisRates[it] }?.second ?: return LOG.d { warn("axisRate is null") }
+        val rate = slewRate?.value?.let { axisRates[it] }?.second ?: return LOG.d { warn("axisRate is null") }
 
         if (enabled) {
             service.moveAxis(device.number, axisType, if (negative) -(rate.toDouble()) else rate.toDouble()).doRequest()

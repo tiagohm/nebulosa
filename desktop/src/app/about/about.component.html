@@ -13,16 +13,13 @@
 	</div>
 	<div class="col-9 flex-column">
 		<p class="align-items-center flex font-bold gap-2 mb-0 mt-2 text-5xl">
-			Nebulosa
-			<p-tag
-				class="flex"
-				styleClass="text-lg"
-				[value]="version" />
-			<p-tag
-				class="flex"
-				styleClass="text-lg"
-				[value]="codename"
-				severity="success" />
+			<span>Nebulosa</span>
+			<neb-tag
+				size="large"
+				[label]="version" />
+			<neb-success
+				size="large"
+				[label]="codename" />
 		</p>
 		<p class="text-sm mt-0">
 			{{ description }}
@@ -57,13 +54,14 @@
 					<div
 						class="w-full flex flex-column overflow-y-auto py-2 gap-1"
 						style="height: 100px">
-						@for (dep of dependencies; track $index) {
-							<a
-								*ngIf="dep.link"
-								target="_blank"
-								[attr.href]="dep.link">
-								{{ dep.name }} ({{ dep.version }})
-							</a>
+						@for (dep of dependencies; track dep.name) {
+							@if (dep.link) {
+								<a
+									target="_blank"
+									[attr.href]="dep.link">
+									{{ dep.name }} ({{ dep.version }})
+								</a>
+							}
 						}
 					</div>
 				</p-tabPanel>
@@ -76,12 +74,12 @@
 			href="https://www.paypal.com/donate/?hosted_button_id=U8TGGJTKSZUCA">
 			<img
 				src="assets/images/donate-with-paypal-blue.svg"
-				style="height: 31px" />
+				style="height: 28px" />
 		</a>
 		<a
 			target="_blank"
 			href="https://github.com/sponsors/tiagohm">
-			<p-button
+			<neb-button
 				icon="mdi mdi-heart"
 				label="GitHub Sponsor" />
 		</a>

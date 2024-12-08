@@ -7,14 +7,11 @@
 				[devices]="cameras"
 				[(device)]="camera"
 				(deviceChange)="cameraChanged()" />
-			<p-button
-				[text]="true"
+			<neb-button
 				[disabled]="!camera?.id || running"
 				icon="mdi mdi-cog"
-				size="small"
-				(onClick)="showCameraDialog()"
-				pTooltip="Camera"
-				tooltipPosition="bottom" />
+				(action)="showCameraDialog()"
+				tooltip="Camera" />
 			<neb-device-chooser
 				title="FILTER WHEEL"
 				icon="mdi mdi-palette"
@@ -43,76 +40,40 @@
 				class="w-full" />
 		</div>
 		<div class="col-6">
-			<p-floatLabel>
-				<p-inputNumber
-					[disabled]="!camera?.connected || running"
-					[(ngModel)]="request.exposureMin"
-					mode="decimal"
-					[showButtons]="true"
-					[step]="1.0"
-					[min]="1"
-					[max]="60000"
-					locale="en"
-					styleClass="p-inputtext-sm border-0"
-					[allowEmpty]="false"
-					(ngModelChange)="savePreference()"
-					spinnableNumber />
-				<label>Min Exposure (ms)</label>
-			</p-floatLabel>
+			<neb-input-number
+				label="Min Exposure (ms)"
+				[disabled]="!camera?.connected || running"
+				[min]="1"
+				[max]="60000"
+				[(value)]="request.exposureMin"
+				(valueChange)="savePreference()" />
 		</div>
 		<div class="col-6">
-			<p-floatLabel>
-				<p-inputNumber
-					[disabled]="!camera?.connected || running"
-					[(ngModel)]="request.exposureMax"
-					mode="decimal"
-					[showButtons]="true"
-					[step]="1.0"
-					[min]="request.exposureMin"
-					[max]="60000"
-					locale="en"
-					styleClass="p-inputtext-sm border-0"
-					[allowEmpty]="false"
-					(ngModelChange)="savePreference()"
-					spinnableNumber />
-				<label>Max Exposure (ms)</label>
-			</p-floatLabel>
+			<neb-input-number
+				label="Max Exposure (ms)"
+				[disabled]="!camera?.connected || running"
+				[min]="request.exposureMin"
+				[max]="60000"
+				[(value)]="request.exposureMax"
+				(valueChange)="savePreference()" />
 		</div>
 		<div class="col-6">
-			<p-floatLabel>
-				<p-inputNumber
-					[disabled]="!camera?.connected || running"
-					[(ngModel)]="request.meanTarget"
-					mode="decimal"
-					[showButtons]="true"
-					[step]="1.0"
-					[min]="0"
-					[max]="65535"
-					locale="en"
-					styleClass="p-inputtext-sm border-0"
-					[allowEmpty]="false"
-					(ngModelChange)="savePreference()"
-					spinnableNumber />
-				<label>Mean Target ({{ meanTargetMin }} - {{ meanTargetMax }})</label>
-			</p-floatLabel>
+			<neb-input-number
+				label="Mean Target ({{ meanTargetMin }} - {{ meanTargetMax }})"
+				[disabled]="!camera?.connected || running"
+				[min]="0"
+				[max]="65535"
+				[(value)]="request.meanTarget"
+				(valueChange)="savePreference()" />
 		</div>
 		<div class="col-6">
-			<p-floatLabel>
-				<p-inputNumber
-					[disabled]="!camera?.connected || running"
-					[(ngModel)]="request.meanTolerance"
-					mode="decimal"
-					[showButtons]="true"
-					[step]="1.0"
-					[min]="0"
-					[max]="100"
-					locale="en"
-					styleClass="p-inputtext-sm border-0"
-					[allowEmpty]="false"
-					(ngModelChange)="savePreference()"
-					spinnableNumber />
-				<label>Mean Tolerance (%)</label>
-			</p-floatLabel>
+			<neb-input-number
+				label="Mean Tolerance (%)"
+				[disabled]="!camera?.connected || running"
+				[min]="0"
+				[max]="100"
+				[(value)]="request.meanTolerance"
+				(valueChange)="savePreference()" />
 		</div>
 		<div class="col-12">
 			<p-floatLabel class="w-full">
@@ -136,22 +97,18 @@
 	</div>
 	<div class="grid mt-1">
 		<div class="col-12 flex align-items-center justify-content-center gap-1">
-			<p-button
+			<neb-button
 				[disabled]="!camera?.connected || !request.capture.savePath || running"
 				label="Start"
-				(onClick)="start()"
+				(action)="start()"
 				icon="mdi mdi-play"
-				severity="success"
-				size="small"
-				[text]="true" />
-			<p-button
+				severity="success" />
+			<neb-button
 				[disabled]="!camera?.connected || !running"
 				label="Abort"
-				(onClick)="stop()"
+				(action)="stop()"
 				icon="mdi mdi-stop"
-				severity="danger"
-				size="small"
-				[text]="true" />
+				severity="danger" />
 		</div>
 	</div>
 </div>

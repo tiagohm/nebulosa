@@ -32,81 +32,86 @@
 		(mousemove)="imageMouseMoved($event)"
 		[class.cursor-crosshair]="isMouseCoordinateVisible" />
 
-	<neb-crosshair
-		*ngIf="preference.crossHair && zoom.panZoom"
-		[style]="'transform: rotate(' + rotation.transformation.angle + 'deg)'"
-		class="absolute left-0 top-0" />
+	@if (preference.crossHair && zoom.panZoom) {
+		<neb-crosshair
+			[style]="'transform: rotate(' + rotation.transformation.angle + 'deg)'"
+			class="absolute left-0 top-0" />
+	}
 
-	<svg
-		*ngIf="!transformation.mirrorHorizontal && !transformation.mirrorVertical && annotation.visible"
-		[style]="'transform: rotate(' + rotation.transformation.angle + 'deg)'"
-		class="absolute left-0 top-0 w-full h-full pointer-events-none select-none">
-		<g
-			*ngFor="let a of annotation.displayOnlyFiltered ? annotation.filtered : annotation.data"
-			(dblclick)="showAnnotationInfo(a)"
-			class="pointer-events-auto cursor-pointer">
-			<circle
-				[attr.cx]="a.x - 0.5"
-				[attr.cy]="a.y - 0.5"
-				r="4"
-				stroke="#FDD835"
-				stroke-width="1"
-				(contextmenu)="imageClicked($event, true)"
-				fill="transparent"></circle>
-			<text
-				[attr.x]="a.x"
-				[attr.y]="a.y"
-				fill="#00897B"
-				[style]="'font-size: 5px; transform: rotate(' + -rotation.transformation.angle + 'deg); transform-origin: ' + (a.x - 0.5) + 'px ' + (a.y - 0.5) + 'px 0px'"
-				class="pointer-events-none select-none">
-				{{ (a.star ?? a.dso ?? a.minorPlanet)?.name?.join(' · ') }}
-			</text>
-		</g>
-	</svg>
-
-	<svg
-		*ngIf="!transformation.mirrorHorizontal && !transformation.mirrorVertical && starDetector.visible"
-		[style]="'transform: rotate(' + rotation.transformation.angle + 'deg)'"
-		class="absolute left-0 top-0 w-full h-full pointer-events-none select-none">
-		<g
-			*ngFor="let s of starDetector.stars"
-			class="pointer-events-auto cursor-pointer">
-			<circle
-				[attr.cx]="s.x - 0.5"
-				[attr.cy]="s.y - 0.5"
-				r="4"
-				stroke="#FDD835"
-				stroke-width="1"
-				fill="transparent"
-				(click)="drawDetectedStar(s)"
-				(contextmenu)="imageClicked($event, true)"></circle>
-			<text
-				[attr.x]="s.x"
-				[attr.y]="s.y"
-				fill="#00897B"
-				[style]="'font-size: 5px; transform: rotate(-' + rotation.transformation.angle + 'deg); transform-origin: ' + (s.x - 0.5) + 'px ' + (s.y - 0.5) + 'px 0px'"
-				class="pointer-events-none select-none">
-				{{ s.hfd.toFixed(1) }}
-			</text>
-		</g>
-	</svg>
-
-	<svg
-		*ngIf="imageInfo"
-		[style]="'transform: rotate(' + rotation.transformation.angle + 'deg)'"
-		class="absolute left-0 top-0 w-full h-full pointer-events-none select-none fov overflow-visible">
-		@for (item of fov.fovs; track $index) {
-			@if (item.enabled && item.computed) {
-				<rect
-					[attr.width]="item.computed.svg.width"
-					[attr.height]="item.computed.svg.height"
-					[attr.x]="item.computed.svg.x"
-					[attr.y]="item.computed.svg.y"
-					[attr.stroke]="item.color"
-					[style]="'transform-box: fill-box; transform-origin: center; transform: translate(-50%, -50%) rotate(' + item.rotation + 'deg)'" />
+	@if (!transformation.mirrorHorizontal && !transformation.mirrorVertical && annotation.visible) {
+		<svg
+			[style]="'transform: rotate(' + rotation.transformation.angle + 'deg)'"
+			class="absolute left-0 top-0 w-full h-full pointer-events-none select-none">
+			@for (a of annotation.displayOnlyFiltered ? annotation.filtered : annotation.data; track a) {
+				<g
+					(dblclick)="showAnnotationInfo(a)"
+					class="pointer-events-auto cursor-pointer">
+					<circle
+						[attr.cx]="a.x - 0.5"
+						[attr.cy]="a.y - 0.5"
+						r="4"
+						stroke="#FDD835"
+						stroke-width="1"
+						(contextmenu)="imageClicked($event, true)"
+						fill="transparent"></circle>
+					<text
+						[attr.x]="a.x"
+						[attr.y]="a.y"
+						fill="#00897B"
+						[style]="'font-size: 5px; transform: rotate(' + -rotation.transformation.angle + 'deg); transform-origin: ' + (a.x - 0.5) + 'px ' + (a.y - 0.5) + 'px 0px'"
+						class="pointer-events-none select-none">
+						{{ (a.star ?? a.dso ?? a.minorPlanet)?.name?.join(' · ') }}
+					</text>
+				</g>
 			}
-		}
-	</svg>
+		</svg>
+	}
+
+	@if (!transformation.mirrorHorizontal && !transformation.mirrorVertical && starDetector.visible) {
+		<svg
+			[style]="'transform: rotate(' + rotation.transformation.angle + 'deg)'"
+			class="absolute left-0 top-0 w-full h-full pointer-events-none select-none">
+			@for (s of starDetector.stars; track s) {
+				<g class="pointer-events-auto cursor-pointer">
+					<circle
+						[attr.cx]="s.x - 0.5"
+						[attr.cy]="s.y - 0.5"
+						r="4"
+						stroke="#FDD835"
+						stroke-width="1"
+						fill="transparent"
+						(click)="drawDetectedStar(s)"
+						(contextmenu)="imageClicked($event, true)"></circle>
+					<text
+						[attr.x]="s.x"
+						[attr.y]="s.y"
+						fill="#00897B"
+						[style]="'font-size: 5px; transform: rotate(-' + rotation.transformation.angle + 'deg); transform-origin: ' + (s.x - 0.5) + 'px ' + (s.y - 0.5) + 'px 0px'"
+						class="pointer-events-none select-none">
+						{{ s.hfd.toFixed(1) }}
+					</text>
+				</g>
+			}
+		</svg>
+	}
+
+	@if (imageInfo) {
+		<svg
+			[style]="'transform: rotate(' + rotation.transformation.angle + 'deg)'"
+			class="absolute left-0 top-0 w-full h-full pointer-events-none select-none fov overflow-visible">
+			@for (item of fov.fovs; track $index) {
+				@if (item.enabled && item.computed) {
+					<rect
+						[attr.width]="item.computed.svg.width"
+						[attr.height]="item.computed.svg.height"
+						[attr.x]="item.computed.svg.x"
+						[attr.y]="item.computed.svg.y"
+						[attr.stroke]="item.color"
+						[style]="'transform-box: fill-box; transform-origin: center; transform: translate(-50%, -50%) rotate(' + item.rotation + 'deg)'" />
+				}
+			}
+		</svg>
+	}
 
 	<div
 		#roi
@@ -114,33 +119,31 @@
 		[style]="'transform: rotate(' + rotation.transformation.angle + 'deg)'"
 		class="roi absolute left-0 top-0"
 		(contextmenu)="imageClicked($event, true)"></div>
-	<ngx-moveable
-		#moveable
-		[target]="roi"
-		[origin]="true"
-		*ngIf="hasROI"
-		[draggable]="true"
-		[resizable]="true"
-		[rotatable]="false"
-		[edgeDraggable]="true"
-		[zoom]="1"
-		(drag)="roiDrag($event)"
-		(rotate)="roiRotate($event)"
-		(resize)="roiResize($event)" />
+	@if (hasROI) {
+		<ngx-moveable
+			#moveable
+			[target]="roi"
+			[origin]="true"
+			[draggable]="true"
+			[resizable]="true"
+			[rotatable]="false"
+			[edgeDraggable]="true"
+			[zoom]="1"
+			(drag)="roiDrag($event)"
+			(rotate)="roiRotate($event)"
+			(resize)="roiResize($event)" />
+	}
 </div>
 
-<div
-	*ngIf="hasROI"
-	class="roi-coordinates fixed flex flex-row align-items-center gap-2">
-	<span>X: {{ imageROI.area.x.toFixed(0) }} Y: {{ imageROI.area.y.toFixed(0) }} W: {{ imageROI.area.width.toFixed(0) }} H: {{ imageROI.area.height.toFixed(0) }}</span>
-	<p-button
-		[text]="true"
-		(onClick)="roiForCamera()"
-		icon="mdi mdi-camera-iris"
-		size="small"
-		pTooltip="Apply"
-		tooltipPosition="bottom" />
-</div>
+@if (hasROI) {
+	<div class="roi-coordinates fixed flex flex-row align-items-center gap-2">
+		<span>X: {{ imageROI.area.x.toFixed(0) }} Y: {{ imageROI.area.y.toFixed(0) }} W: {{ imageROI.area.width.toFixed(0) }} H: {{ imageROI.area.height.toFixed(0) }}</span>
+		<neb-button
+			(action)="roiForCamera()"
+			icon="mdi mdi-camera-iris"
+			tooltip="Apply" />
+	</div>
+}
 
 <p-contextMenu
 	#menu
@@ -163,22 +166,19 @@
 			<ng-template pTemplate="header">
 				<div class="flex gap-2 align-items-center">
 					<span>Stars & DSOs</span>
-					<p-checkbox
-						[(ngModel)]="annotation.request.starsAndDSOs"
-						(ngModelChange)="savePreference()"
-						(onChange)="$event.originalEvent?.stopImmediatePropagation()"
-						class="py-1"
-						[binary]="true" />
+					<neb-checkbox
+						[(value)]="annotation.request.starsAndDSOs"
+						(valueChange)="savePreference()"
+						class="py-1" />
 				</div>
 			</ng-template>
 			<div class="grid mt-2">
 				<div class="col-12">
-					<p-checkbox
+					<neb-checkbox
 						[disabled]="!annotation.request.starsAndDSOs"
-						[(ngModel)]="annotation.request.useSimbad"
-						(ngModelChange)="savePreference()"
+						[(value)]="annotation.request.useSimbad"
+						(valueChange)="savePreference()"
 						class="py-1"
-						[binary]="true"
 						label="Search on SIMBAD Database Service" />
 				</div>
 				<div class="col-12 mt-2">
@@ -196,40 +196,29 @@
 			<ng-template pTemplate="header">
 				<div class="flex gap-2 align-items-center">
 					<span>Minor Planets</span>
-					<p-checkbox
-						[(ngModel)]="annotation.request.minorPlanets"
-						(ngModelChange)="savePreference()"
-						(onChange)="$event.originalEvent?.stopImmediatePropagation()"
-						class="py-1"
-						[binary]="true" />
+					<neb-checkbox
+						[(value)]="annotation.request.minorPlanets"
+						(valueChange)="savePreference()"
+						class="py-1" />
 				</div>
 			</ng-template>
 			<div class="grid mt-2">
 				<div class="col-5">
-					<p-floatLabel class="w-full">
-						<p-inputNumber
-							[disabled]="!annotation.request.minorPlanets"
-							[min]="-10"
-							[max]="30"
-							[showButtons]="true"
-							styleClass="p-inputtext-sm border-0 w-full"
-							[step]="0.1"
-							[(ngModel)]="annotation.request.minorPlanetsMagLimit"
-							(ngModelChange)="savePreference()"
-							[minFractionDigits]="1"
-							locale="en"
-							mode="decimal"
-							spinnableNumber />
-						<label>Mag. Limit</label>
-					</p-floatLabel>
+					<neb-input-number
+						label="Mag. Limit"
+						[disabled]="!annotation.request.minorPlanets"
+						[min]="-10"
+						[max]="30"
+						[step]="0.1"
+						[(value)]="annotation.request.minorPlanetsMagLimit"
+						(valueChange)="savePreference()" />
 				</div>
 				<div class="col-7">
-					<p-checkbox
+					<neb-checkbox
 						[disabled]="!annotation.request.minorPlanets"
-						[(ngModel)]="annotation.request.includeMinorPlanetsWithoutMagnitude"
-						(ngModelChange)="savePreference()"
+						[(value)]="annotation.request.includeMinorPlanetsWithoutMagnitude"
+						(valueChange)="savePreference()"
 						class="py-1"
-						[binary]="true"
 						label="Include objects without magnitude" />
 				</div>
 				@if (annotation.request.minorPlanetsMagLimit >= 20 || annotation.request.includeMinorPlanetsWithoutMagnitude) {
@@ -260,57 +249,29 @@
 			</ng-template>
 			<div class="mt-3 flex flex-column align-items-center justify-content-center gap-2">
 				<div class="flex align-items-center justify-content-center gap-1">
-					<p-floatLabel class="w-full">
-						<input
-							pInputText
-							class="p-inputtext-sm border-0 w-full"
-							[(ngModel)]="annotation.search.text"
-							(ngModelChange)="searchAnnotations()"
-							tooltipPosition="bottom" />
-						<label>Search</label>
-					</p-floatLabel>
-					<p-floatLabel>
-						<p-inputNumber
-							[min]="-30"
-							[max]="30"
-							class="w-full"
-							[step]="0.1"
-							[minFractionDigits]="1"
-							[maxFractionDigits]="1"
-							[showButtons]="true"
-							inputStyleClass="p-inputtext-sm border-0 w-full"
-							locale="en"
-							[allowEmpty]="false"
-							mode="decimal"
-							[(ngModel)]="annotation.search.magnitudeMin"
-							(ngModelChange)="searchAnnotations()"
-							spinnableNumber />
-						<label>Mag. min</label>
-					</p-floatLabel>
-					<p-floatLabel>
-						<p-inputNumber
-							[min]="-30"
-							[max]="30"
-							class="w-full"
-							[step]="0.1"
-							[minFractionDigits]="1"
-							[maxFractionDigits]="1"
-							[showButtons]="true"
-							inputStyleClass="p-inputtext-sm border-0 w-full"
-							locale="en"
-							[allowEmpty]="false"
-							mode="decimal"
-							[(ngModel)]="annotation.search.magnitudeMax"
-							(ngModelChange)="searchAnnotations()"
-							spinnableNumber />
-						<label>Mag. max</label>
-					</p-floatLabel>
+					<neb-input-text
+						label="Search"
+						[(value)]="annotation.search.text"
+						(valueChange)="searchAnnotations()" />
+					<neb-input-number
+						label="Mag. min"
+						[min]="-30"
+						[max]="30"
+						[step]="0.1"
+						[(value)]="annotation.search.magnitudeMin"
+						(valueChange)="searchAnnotations()" />
+					<neb-input-number
+						label="Mag. max"
+						[min]="-30"
+						[max]="30"
+						[step]="0.1"
+						[(value)]="annotation.search.magnitudeMax"
+						(valueChange)="searchAnnotations()" />
 				</div>
 				<div class="flex align-items-center w-full justify-content-center">
-					<p-checkbox
-						[binary]="true"
+					<neb-checkbox
 						label="Display only filtered annotations"
-						[(ngModel)]="annotation.displayOnlyFiltered" />
+						[(value)]="annotation.displayOnlyFiltered" />
 				</div>
 				<p-scroller
 					[items]="annotation.filtered"
@@ -338,13 +299,11 @@
 		</p-tabPanel>
 	</p-tabView>
 	<ng-template pTemplate="footer">
-		<p-button
+		<neb-button
 			[disabled]="annotation.running || (!annotation.request.starsAndDSOs && !annotation.request.minorPlanets)"
 			icon="mdi mdi-check"
 			label="Annotate"
-			(onClick)="annotateImage()"
-			[text]="true"
-			size="small" />
+			(action)="annotateImage()" />
 	</ng-template>
 </p-dialog>
 
@@ -355,129 +314,93 @@
 	[modal]="false"
 	[style]="{ width: 'min-content', minWidth: '325px' }">
 	<div class="grid mt-2">
-		<ng-container *ngIf="astronomicalObject.info">
+		@if (astronomicalObject.info) {
 			<div class="col-12">
-				<p-floatLabel class="w-full">
-					<input
-						pInputText
-						readonly
-						[value]="astronomicalObject.info.name.join(' · ')"
-						class="border-0 p-inputtext-sm" />
-					<label>Name</label>
-				</p-floatLabel>
+				<neb-input-text
+					label="Name"
+					[readonly]="true"
+					[value]="astronomicalObject.info.name.join(' · ')" />
 			</div>
 			<div class="col-4">
-				<p-floatLabel class="w-full">
-					<input
-						pInputText
-						readonly
-						[value]="astronomicalObject.info.rightAscensionJ2000 | angle: true : 24"
-						class="border-0 p-inputtext-sm" />
-					<label>RA (J2000)</label>
-				</p-floatLabel>
+				<neb-input-text
+					label="RA (J2000)"
+					[readonly]="true"
+					[value]="astronomicalObject.info.rightAscensionJ2000 | angle: true : 24" />
 			</div>
 			<div class="col-4">
-				<p-floatLabel class="w-full">
-					<input
-						pInputText
-						readonly
-						[value]="astronomicalObject.info.declinationJ2000 | angle: true : 360"
-						class="border-0 p-inputtext-sm" />
-					<label>DEC (J2000)</label>
-				</p-floatLabel>
+				<neb-input-text
+					label="DEC (J2000)"
+					[readonly]="true"
+					[value]="astronomicalObject.info.declinationJ2000 | angle: true : 360" />
 			</div>
-			<div
-				class="col-4"
-				*ngIf="astronomicalObject.info.constellation">
-				<p-floatLabel class="w-full">
-					<input
-						pInputText
-						readonly
-						value="{{ astronomicalObject.info.constellation }} | {{ astronomicalObject.info.constellation | enum }}"
-						class="border-0 p-inputtext-sm" />
-					<label>Constellation</label>
-				</p-floatLabel>
+			@if (astronomicalObject.info.constellation) {
+				<div class="col-4">
+					<neb-input-text
+						label="Constellation"
+						[readonly]="true"
+						value="{{ astronomicalObject.info.constellation }} | {{ astronomicalObject.info.constellation | enum }}" />
+				</div>
+			}
+			@if (astronomicalObject.info.magnitude) {
+				<div class="col-3">
+					<neb-input-text
+						label="Magnitude"
+						[readonly]="true"
+						value="{{ astronomicalObject.info.magnitude < 30.0 ? astronomicalObject.info.magnitude.toFixed(2) : '-' }}" />
+				</div>
+			}
+			@if (astronomicalObject.info.type) {
+				<div class="col-6">
+					<neb-input-text
+						label="Type"
+						[readonly]="true"
+						value="{{ astronomicalObject.info.type | enum }}" />
+				</div>
+			}
+			@if (astronomicalObject.info.distance) {
+				<div class="col-3">
+					<neb-input-text
+						label="Dist. (ly)"
+						[readonly]="true"
+						value="{{ astronomicalObject.info.distance <= 0 ? '-' : astronomicalObject.info.distance.toFixed(3) }}" />
+				</div>
+			}
+		}
+		@if (astronomicalObject.info?.type) {
+			<div class="col-12 justify-content-center text-sm">
+				<a
+					target="_blank"
+					href="{{ 'https://simbad.cds.unistra.fr/simbad/sim-id?Ident=' + astronomicalObject.info!.name[0] }}">
+					Simbad
+				</a>
 			</div>
-			<div
-				class="col-3"
-				*ngIf="astronomicalObject.info.magnitude">
-				<p-floatLabel class="w-full">
-					<input
-						pInputText
-						readonly
-						value="{{ astronomicalObject.info.magnitude < 30.0 ? astronomicalObject.info.magnitude.toFixed(2) : '-' }}"
-						class="border-0 p-inputtext-sm" />
-					<label>Magnitude</label>
-				</p-floatLabel>
-			</div>
-			<div
-				class="col-6"
-				*ngIf="astronomicalObject.info.type">
-				<p-floatLabel class="w-full">
-					<input
-						pInputText
-						readonly
-						value="{{ astronomicalObject.info.type | enum }}"
-						class="border-0 p-inputtext-sm" />
-					<label>Type</label>
-				</p-floatLabel>
-			</div>
-			<div
-				class="col-3"
-				*ngIf="astronomicalObject.info.distance">
-				<p-floatLabel class="w-full">
-					<input
-						pInputText
-						readonly
-						value="{{ astronomicalObject.info.distance <= 0 ? '-' : astronomicalObject.info.distance.toFixed(3) }}"
-						class="border-0 p-inputtext-sm" />
-					<label>Dist. (ly)</label>
-				</p-floatLabel>
-			</div>
-		</ng-container>
-		<div
-			class="col-12 justify-content-center text-sm"
-			*ngIf="astronomicalObject.info?.type">
-			<a
-				target="_blank"
-				href="{{ 'https://simbad.cds.unistra.fr/simbad/sim-id?Ident=' + astronomicalObject.info!.name[0] }}">
-				Simbad
-			</a>
-		</div>
+		}
 	</div>
 	<ng-template pTemplate="footer">
 		<div class="col-12 flex justify-content-center">
-			<p-button
+			<neb-button
 				[disabled]="!astronomicalObject.info"
-				(onClick)="mountSync(astronomicalObject.info!)"
+				(action)="mountSync(astronomicalObject.info!)"
 				icon="mdi mdi-sync"
 				label="Sync"
-				[text]="true"
-				severity="info"
-				size="small" />
-			<p-button
+				severity="info" />
+			<neb-button
 				[disabled]="!astronomicalObject.info"
-				(onClick)="mountGoTo(astronomicalObject.info!)"
+				(action)="mountGoTo(astronomicalObject.info!)"
 				icon="mdi mdi-telescope"
 				label="Go To"
-				[text]="true"
-				severity="success"
-				size="small" />
-			<p-button
+				severity="success" />
+			<neb-button
 				[disabled]="!astronomicalObject.info"
-				(onClick)="mountSlew(astronomicalObject.info!)"
+				(action)="mountSlew(astronomicalObject.info!)"
 				icon="mdi mdi-telescope"
 				label="Slew"
-				[text]="true"
-				severity="success"
-				size="small" />
-			<p-button
+				severity="success" />
+			<neb-button
 				[disabled]="!astronomicalObject.info"
-				(onClick)="frame(astronomicalObject.info!)"
+				(action)="frame(astronomicalObject.info!)"
 				icon="mdi mdi-image"
-				label="Frame"
-				[text]="true"
-				size="small" />
+				label="Frame" />
 		</div>
 	</ng-template>
 </p-dialog>
@@ -491,213 +414,141 @@
 	class="pointer-events-none">
 	<div class="grid pt-2">
 		<div class="col-12 gap-2 align-items-center">
-			<p-floatLabel class="w-full">
-				<p-dropdown
-					[options]="'PLATE_SOLVER' | dropdownOptions | enumDropdown"
-					[(ngModel)]="solver.request.type"
-					optionsLabel="label"
-					optionsValue="value"
-					styleClass="p-inputtext-sm border-0"
-					[autoDisplayFirst]="false"
-					(ngModelChange)="savePreference()"
-					appendTo="body" />
-				<label>Solver</label>
-			</p-floatLabel>
-			<p-checkbox
-				[binary]="true"
+			<neb-dropdown-enum
+				label="Solver"
+				[options]="'PLATE_SOLVER' | dropdownOptions"
+				[(value)]="solver.request.type"
+				(valueChange)="savePreference()" />
+			<neb-checkbox
 				[disabled]="solver.request.type === 'SIRIL' || solver.request.type === 'PIXINSIGHT'"
 				label="Blind"
-				[(ngModel)]="solver.request.blind"
-				(ngModelChange)="savePreference()" />
+				[(value)]="solver.request.blind"
+				(valueChange)="savePreference()" />
 		</div>
 		<div class="col-8">
 			<div class="grid">
 				<div class="col-6">
-					<p-floatLabel>
-						<input
-							pInputText
-							[disabled]="solver.request.blind && solver.request.type !== 'SIRIL'"
-							class="p-inputtext-sm border-0 w-full"
-							[(ngModel)]="solver.request.centerRA"
-							(ngModelChange)="savePreference()" />
-						<label>Center RA (h)</label>
-					</p-floatLabel>
+					<neb-input-text
+						label="Center RA (h)"
+						[disabled]="solver.request.blind && solver.request.type !== 'SIRIL'"
+						[(value)]="solver.request.centerRA"
+						(valueChange)="savePreference()" />
 				</div>
 				<div class="col-6">
-					<p-floatLabel>
-						<input
-							pInputText
-							[disabled]="solver.request.blind && solver.request.type !== 'SIRIL'"
-							class="p-inputtext-sm border-0 w-full"
-							[(ngModel)]="solver.request.centerDEC"
-							(ngModelChange)="savePreference()" />
-						<label>Center DEC (°)</label>
-					</p-floatLabel>
+					<neb-input-text
+						label="Center DEC (°)"
+						[disabled]="solver.request.blind && solver.request.type !== 'SIRIL'"
+						[(value)]="solver.request.centerDEC"
+						(valueChange)="savePreference()" />
 				</div>
 			</div>
 		</div>
 		<div class="col-4 flex flex-row align-items-center">
-			<p-floatLabel>
-				<p-inputNumber
-					[disabled]="(solver.request.blind && solver.request.type !== 'SIRIL') || solver.request.type === 'PIXINSIGHT'"
-					[min]="1"
-					[max]="180"
-					styleClass="p-inputtext-sm border-0 w-full"
-					[showButtons]="true"
-					[(ngModel)]="solver.request.radius"
-					(ngModelChange)="savePreference()"
-					spinnableNumber />
-				<label>Radius (°)</label>
-			</p-floatLabel>
+			<neb-input-number
+				label="Radius (°)"
+				[disabled]="(solver.request.blind && solver.request.type !== 'SIRIL') || solver.request.type === 'PIXINSIGHT'"
+				[min]="1"
+				[max]="180"
+				[(value)]="solver.request.radius"
+				(valueChange)="savePreference()" />
 		</div>
 		<div class="col-6 flex flex-row align-items-center">
-			<p-floatLabel>
-				<p-inputNumber
-					[min]="0"
-					[max]="10000"
-					styleClass="p-inputtext-sm border-0 w-full"
-					[showButtons]="true"
-					[(ngModel)]="solver.request.focalLength"
-					[allowEmpty]="false"
-					locale="en"
-					(ngModelChange)="savePreference()"
-					spinnableNumber />
-				<label>Focal length (mm)</label>
-			</p-floatLabel>
+			<neb-input-number
+				label="Focal length (mm)"
+				[min]="0"
+				[max]="10000"
+				[(value)]="solver.request.focalLength"
+				(valueChange)="savePreference()" />
 		</div>
 		<div class="col-6 flex flex-row align-items-center">
-			<p-floatLabel>
-				<p-inputNumber
-					[min]="0"
-					[max]="100"
-					[step]="0.01"
-					[minFractionDigits]="1"
-					styleClass="p-inputtext-sm border-0 w-full"
-					[showButtons]="true"
-					[(ngModel)]="solver.request.pixelSize"
-					[allowEmpty]="false"
-					locale="en"
-					mode="decimal"
-					(ngModelChange)="savePreference()"
-					spinnableNumber />
-				<label>Pixel size (µm)</label>
-			</p-floatLabel>
+			<neb-input-number
+				label="Pixel size (µm)"
+				[min]="0"
+				[max]="100"
+				[step]="0.01"
+				[fractionDigits]="2"
+				[(value)]="solver.request.pixelSize"
+				(valueChange)="savePreference()" />
 		</div>
 	</div>
 	<ng-template pTemplate="footer">
 		<div class="grid pt-2">
 			<div class="col-4">
-				<p-floatLabel>
-					<input
-						pInputText
-						readonly
-						class="p-inputtext-sm border-0 w-full"
-						[value]="solver.solved.rightAscensionJ2000" />
-					<label>RA (J2000)</label>
-				</p-floatLabel>
+				<neb-input-text
+					label="RA (J2000)"
+					[readonly]="true"
+					[value]="solver.solved.rightAscensionJ2000" />
 			</div>
 			<div class="col-4">
-				<p-floatLabel>
-					<input
-						pInputText
-						readonly
-						class="p-inputtext-sm border-0 w-full"
-						[value]="solver.solved.declinationJ2000" />
-					<label>DEC (J2000)</label>
-				</p-floatLabel>
+				<neb-input-text
+					label="DEC (J2000)"
+					[readonly]="true"
+					[value]="solver.solved.declinationJ2000" />
 			</div>
 			<div class="col-4">
-				<p-floatLabel>
-					<input
-						pInputText
-						readonly
-						class="p-inputtext-sm border-0 w-full"
-						[value]="solver.solved.orientation.toFixed(4)" />
-					<label>Orientation (°)</label>
-				</p-floatLabel>
+				<neb-input-text
+					label="Orientation (°)"
+					[readonly]="true"
+					[value]="solver.solved.orientation.toFixed(4)" />
 			</div>
 			<div class="col-4">
-				<p-floatLabel>
-					<input
-						pInputText
-						readonly
-						class="p-inputtext-sm border-0 w-full"
-						[value]="solver.solved.scale.toFixed(4)" />
-					<label>Scale (arcsec/px)</label>
-				</p-floatLabel>
+				<neb-input-text
+					label="Scale (arcsec/px)"
+					[readonly]="true"
+					[value]="solver.solved.scale.toFixed(4)" />
 			</div>
 			<div class="col-4">
-				<p-floatLabel>
-					<input
-						pInputText
-						readonly
-						class="p-inputtext-sm border-0 w-full"
-						[value]="solver.solved.width.toFixed(2) + ' x ' + solver.solved.height.toFixed(2)" />
-					<label>Field size (arcmin)</label>
-				</p-floatLabel>
+				<neb-input-text
+					label="Field size (arcmin)"
+					[readonly]="true"
+					[value]="solver.solved.width.toFixed(2) + ' x ' + solver.solved.height.toFixed(2)" />
 			</div>
 			<div class="col-4">
-				<p-floatLabel>
-					<input
-						pInputText
-						readonly
-						class="p-inputtext-sm border-0 w-full"
-						[value]="solver.solved.radius.toFixed(4)" />
-					<label>Radius (°)</label>
-				</p-floatLabel>
+				<neb-input-text
+					label="Radius (°)"
+					[readonly]="true"
+					[value]="solver.solved.radius.toFixed(4)" />
 			</div>
 		</div>
 		<div class="grid mb-2 mt-2">
 			<div class="col-12 flex justify-content-center">
-				<p-button
+				<neb-button
 					[disabled]="solver.running || !solver.solved.solved"
-					(onClick)="mountSync(solver.solved)"
+					(action)="mountSync(solver.solved)"
 					icon="mdi mdi-sync"
 					label="Sync"
-					[text]="true"
-					severity="info"
-					size="small" />
-				<p-button
+					severity="info" />
+				<neb-button
 					[disabled]="solver.running || !solver.solved.solved"
-					(onClick)="mountGoTo(solver.solved)"
+					(action)="mountGoTo(solver.solved)"
 					icon="mdi mdi-telescope"
 					label="Go To"
-					[text]="true"
-					severity="success"
-					size="small" />
-				<p-button
+					severity="success" />
+				<neb-button
 					[disabled]="solver.running || !solver.solved.solved"
-					(onClick)="mountSlew(solver.solved)"
+					(action)="mountSlew(solver.solved)"
 					icon="mdi mdi-telescope"
 					label="Slew"
-					[text]="true"
-					severity="success"
-					size="small" />
-				<p-button
+					severity="success" />
+				<neb-button
 					[disabled]="solver.running || !solver.solved.solved"
-					(onClick)="frame(solver.solved)"
+					(action)="frame(solver.solved)"
 					icon="mdi mdi-image"
-					label="Frame"
-					[text]="true"
-					size="small" />
+					label="Frame" />
 			</div>
 		</div>
 
-		<p-button
+		<neb-button
 			[disabled]="!solver.running || !canPlateSolve"
 			icon="mdi mdi-stop"
 			label="Stop"
-			(onClick)="solverStop()"
-			[text]="true"
-			size="small"
+			(action)="solverStop()"
 			severity="danger" />
-		<p-button
+		<neb-button
 			[disabled]="solver.running || !canPlateSolve"
 			icon="mdi mdi-sigma"
 			label="Solve"
-			(onClick)="solverStart()"
-			[text]="true"
-			size="small" />
+			(action)="solverStart()" />
 	</ng-template>
 </p-dialog>
 
@@ -711,30 +562,17 @@
 	<div class="grid px-2 pt-2">
 		<div class="col-8 flex flex-column">
 			<div class="flex flex-row gap-2 align-items-center justify-content-between">
-				<p-floatLabel>
-					<p-inputNumber
-						[min]="0"
-						[max]="65536"
-						[showButtons]="true"
-						styleClass="p-inputtext-sm border-0 w-full"
-						[(ngModel)]="stretch.transformation.shadow"
-						locale="en"
-						spinnableNumber />
-					<label>Shadow</label>
-				</p-floatLabel>
-				<p-floatLabel>
-					<p-inputNumber
-						[min]="0"
-						[max]="65536"
-						[showButtons]="true"
-						styleClass="p-inputtext-sm border-0 w-full"
-						[(ngModel)]="stretch.transformation.highlight"
-						locale="en"
-						spinnableNumber />
-					<label>Highlight</label>
-				</p-floatLabel>
+				<neb-input-number
+					label="Shadow"
+					[min]="0"
+					[max]="65536"
+					[(value)]="stretch.transformation.shadow" />
+				<neb-input-number
+					[min]="0"
+					[max]="65536"
+					label="Highlight"
+					[(value)]="stretch.transformation.highlight" />
 			</div>
-
 			<p-slider
 				class="mt-3 px-2"
 				[min]="0"
@@ -745,19 +583,12 @@
 		</div>
 		<div class="col-4 flex flex-column">
 			<div class="text-center w-full">
-				<p-floatLabel>
-					<p-inputNumber
-						[min]="0"
-						[max]="65536"
-						[showButtons]="true"
-						styleClass="p-inputtext-sm border-0 w-full"
-						[(ngModel)]="stretch.transformation.midtone"
-						locale="en"
-						spinnableNumber />
-					<label>Midtone</label>
-				</p-floatLabel>
+				<neb-input-number
+					label="Midtone"
+					[min]="0"
+					[max]="65536"
+					[(value)]="stretch.transformation.midtone" />
 			</div>
-
 			<p-slider
 				class="mt-3 px-2"
 				[min]="0"
@@ -765,60 +596,41 @@
 				[(ngModel)]="stretch.transformation.midtone" />
 		</div>
 		<div class="col-12 mt-2 flex align-items-center gap-1">
-			<p-floatLabel>
-				<p-inputNumber
-					[min]="0"
-					[max]="1"
-					[disabled]="!stretch.transformation.auto"
-					[showButtons]="true"
-					[step]="0.01"
-					[minFractionDigits]="2"
-					[maxFractionDigits]="2"
-					styleClass="p-inputtext-sm border-0 w-full"
-					[(ngModel)]="stretch.transformation.meanBackground"
-					[allowEmpty]="false"
-					mode="decimal"
-					locale="en"
-					spinnableNumber />
-				<label>Auto Stretch Mean Background</label>
-			</p-floatLabel>
-			<p-button
-				[text]="true"
+			<neb-input-number
+				label="Auto Stretch Mean Background"
+				[min]="0"
+				[max]="1"
+				[disabled]="!stretch.transformation.auto"
+				[step]="0.01"
+				[fractionDigits]="2"
+				[(value)]="stretch.transformation.meanBackground" />
+			<neb-button
 				icon="mdi mdi-check"
 				severity="success"
-				(onClick)="applyAutoStretchMeanBackground()"
-				pTooltip="Apply"
-				tooltipPosition="bottom" />
-			<p-button
-				[text]="true"
+				(action)="applyAutoStretchMeanBackground()"
+				tooltip="Apply" />
+			<neb-button
 				icon="mdi mdi-restore"
 				severity="info"
-				(onClick)="restoreAutoStretchMeanBackground()"
-				pTooltip="Reset"
-				tooltipPosition="bottom" />
+				(action)="restoreAutoStretchMeanBackground()"
+				tooltip="Reset" />
 		</div>
 	</div>
 	<ng-template pTemplate="footer">
-		<p-button
+		<neb-button
 			icon="mdi mdi-auto-fix"
 			label="Auto"
-			(onClick)="autoStretch()"
-			[text]="true"
-			severity="info"
-			size="small" />
-		<p-button
+			(action)="autoStretch()"
+			severity="info" />
+		<neb-button
 			icon="mdi mdi-restore"
 			label="Reset"
-			(onClick)="resetStretch()"
-			[text]="true"
-			severity="danger"
-			size="small" />
-		<p-button
+			(action)="resetStretch()"
+			severity="danger" />
+		<neb-button
 			icon="mdi mdi-check"
 			label="Stretch"
-			(onClick)="stretchImage()"
-			[text]="true"
-			size="small" />
+			(action)="stretchImage()" />
 	</ng-template>
 </p-dialog>
 
@@ -831,57 +643,33 @@
 	class="pointer-events-none">
 	<div class="grid px-2">
 		<div class="col-12 flex align-items-center">
-			<p-selectButton
-				class="w-full"
-				styleClass="border-0"
-				[options]="['NONE', 'RED', 'GREEN', 'BLUE'] | enumDropdown"
-				optionLabel="label"
-				optionValue="value"
-				[ngModel]="scnr.transformation.channel ?? 'NONE'"
-				(ngModelChange)="scnr.transformation.channel = $event === 'NONE' ? undefined : $event"
-				[multiple]="false" />
+			<neb-select-button-enum
+				[options]="['NONE', 'RED', 'GREEN', 'BLUE']"
+				[value]="scnr.transformation.channel ?? 'NONE'"
+				(valueChange)="scnr.transformation.channel = $event === 'NONE' ? undefined : $event" />
 		</div>
 		<div class="col-7 flex align-items-center">
-			<p-floatLabel class="w-full">
-				<p-dropdown
-					[disabled]="!scnr.transformation.channel"
-					appendTo="body"
-					[(ngModel)]="scnr.transformation.method"
-					[options]="'SCNR_PROTECTION_METHOD' | dropdownOptions | enumDropdown"
-					optionLabel="label"
-					optionValue="value"
-					styleClass="p-inputtext-sm border-0"
-					[autoDisplayFirst]="false" />
-				<label>Protection Method</label>
-			</p-floatLabel>
+			<neb-dropdown-enum
+				label="Protection Method"
+				[disabled]="!scnr.transformation.channel"
+				[options]="'SCNR_PROTECTION_METHOD' | dropdownOptions"
+				[(value)]="scnr.transformation.method" />
 		</div>
 		<div class="col-5 flex align-items-center">
-			<p-floatLabel>
-				<p-inputNumber
-					[disabled]="!scnr.transformation.channel || !scnr.transformation.method.endsWith('MASK')"
-					[min]="0"
-					[max]="1"
-					[step]="0.1"
-					[showButtons]="true"
-					class="w-full"
-					styleClass="p-inputtext-sm border-0 w-full"
-					[minFractionDigits]="1"
-					[(ngModel)]="scnr.transformation.amount"
-					mode="decimal"
-					locale="en"
-					[allowEmpty]="false"
-					spinnableNumber />
-				<label>Amount</label>
-			</p-floatLabel>
+			<neb-input-number
+				label="Amount"
+				[disabled]="!scnr.transformation.channel || !scnr.transformation.method.endsWith('MASK')"
+				[min]="0"
+				[max]="1"
+				[step]="0.1"
+				[(value)]="scnr.transformation.amount" />
 		</div>
 	</div>
 	<ng-template pTemplate="footer">
-		<p-button
+		<neb-button
 			icon="mdi mdi-check"
 			label="Apply"
-			(onClick)="scnrImage()"
-			[text]="true"
-			size="small" />
+			(action)="scnrImage()" />
 	</ng-template>
 </p-dialog>
 
@@ -926,108 +714,66 @@
 	@if (statistics.statistics && imageInfo) {
 		<div class="grid p-2">
 			<div class="col-12 flex align-items-center">
-				<p-selectButton
-					styleClass="border-0"
+				<neb-select-button-enum
 					[disabled]="imageInfo.mono"
-					[options]="'IMAGE_CHANNEL' | dropdownOptions | enumDropdown"
-					optionLabel="label"
-					optionValue="value"
-					[(ngModel)]="statistics.channel"
-					(ngModelChange)="computeStatistics(true)"
-					[multiple]="false" />
+					[options]="'IMAGE_CHANNEL' | dropdownOptions"
+					[(value)]="statistics.channel"
+					(valueChange)="computeStatistics(true)" />
 			</div>
 			<div class="col-4">
-				<p-floatLabel>
-					<input
-						pInputText
-						readonly
-						class="p-inputtext-sm border-0 w-full"
-						[value]="statistics.statistics.count" />
-					<label>Count (px)</label>
-				</p-floatLabel>
+				<neb-input-text
+					label="Count (px)"
+					[readonly]="true"
+					[value]="statistics.statistics.count" />
 			</div>
 			<div class="col-4">
-				<p-floatLabel>
-					<input
-						pInputText
-						readonly
-						class="p-inputtext-sm border-0 w-full"
-						[value]="(statistics.statistics.mean * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
-					<label>Mean</label>
-				</p-floatLabel>
+				<neb-input-text
+					label="Mean"
+					[readonly]="true"
+					[value]="(statistics.statistics.mean * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
 			</div>
 			<div class="col-4">
-				<p-floatLabel>
-					<input
-						pInputText
-						readonly
-						class="p-inputtext-sm border-0 w-full"
-						[value]="(statistics.statistics.median * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
-					<label>Median</label>
-				</p-floatLabel>
+				<neb-input-text
+					label="Median"
+					[readonly]="true"
+					[value]="(statistics.statistics.median * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
 			</div>
 			<div class="col-4">
-				<p-floatLabel>
-					<input
-						pInputText
-						readonly
-						class="p-inputtext-sm border-0 w-full"
-						[value]="(statistics.statistics.variance * statistics.bitOption.rangeMax * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
-					<label>Variance</label>
-				</p-floatLabel>
+				<neb-input-text
+					label="Variance"
+					[readonly]="true"
+					[value]="(statistics.statistics.variance * statistics.bitOption.rangeMax * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
 			</div>
 			<div class="col-4">
-				<p-floatLabel>
-					<input
-						pInputText
-						readonly
-						class="p-inputtext-sm border-0 w-full"
-						[value]="(statistics.statistics.avgDev * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
-					<label>Avg Dev</label>
-				</p-floatLabel>
+				<neb-input-text
+					label="Avg Dev"
+					[readonly]="true"
+					[value]="(statistics.statistics.avgDev * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
 			</div>
 			<div class="col-4">
-				<p-floatLabel>
-					<input
-						pInputText
-						readonly
-						class="p-inputtext-sm border-0 w-full"
-						[value]="(statistics.statistics.stdDev * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
-					<label>Std Dev</label>
-				</p-floatLabel>
+				<neb-input-text
+					label="Std Dev"
+					[readonly]="true"
+					[value]="(statistics.statistics.stdDev * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
 			</div>
 			<div class="col-3">
-				<p-floatLabel>
-					<input
-						pInputText
-						readonly
-						class="p-inputtext-sm border-0 w-full"
-						[value]="(statistics.statistics.minimum * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
-					<label>Minimum</label>
-				</p-floatLabel>
+				<neb-input-text
+					label="Minimum"
+					[readonly]="true"
+					[value]="(statistics.statistics.minimum * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
 			</div>
 			<div class="col-3">
-				<p-floatLabel>
-					<input
-						pInputText
-						readonly
-						class="p-inputtext-sm border-0 w-full"
-						[value]="(statistics.statistics.maximum * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
-					<label>Maximum</label>
-				</p-floatLabel>
+				<neb-input-text
+					label="Maximum"
+					[readonly]="true"
+					[value]="(statistics.statistics.maximum * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
 			</div>
 			<div class="col-6">
-				<p-floatLabel class="w-full">
-					<p-dropdown
-						[options]="'IMAGE_STATISTICS_BIT_OPTION' | dropdownOptions"
-						[(ngModel)]="statistics.bitOption"
-						optionLabel="name"
-						[autoDisplayFirst]="true"
-						styleClass="p-inputtext-sm border-0"
-						appendTo="body"
-						(ngModelChange)="savePreference()" />
-					<label>Bits</label>
-				</p-floatLabel>
+				<neb-dropdown
+					label="Bits"
+					[options]="'IMAGE_STATISTICS_BIT_OPTION' | dropdownOptions"
+					[(value)]="statistics.bitOption"
+					(valueChange)="savePreference()" />
 			</div>
 			<div class="col-12">
 				<neb-histogram
@@ -1048,96 +794,55 @@
 	class="pointer-events-none">
 	<div class="grid mt-2">
 		<div class="col-7 flex align-items-center">
-			<p-floatLabel class="w-full">
-				<p-dropdown
-					appendTo="body"
-					[(ngModel)]="starDetector.request.type"
-					[options]="'STAR_DETECTOR' | dropdownOptions | enumDropdown"
-					optionsLabel="label"
-					optionsValue="value"
-					styleClass="p-inputtext-sm border-0"
-					[autoDisplayFirst]="false" />
-				<label>Detector</label>
-			</p-floatLabel>
+			<neb-dropdown-enum
+				label="Detector"
+				[options]="'STAR_DETECTOR' | dropdownOptions"
+				[(value)]="starDetector.request.type" />
 		</div>
-		<div
-			class="col-5 align-items-center"
-			*ngIf="starDetector.request.type !== 'SIRIL'">
-			<p-floatLabel>
-				<p-inputNumber
+		@if (starDetector.request.type !== 'SIRIL') {
+			<div class="col-5 align-items-center">
+				<neb-input-number
+					label="Min SNR"
 					[min]="0"
 					[max]="500"
-					[step]="1"
-					[showButtons]="true"
-					class="w-full"
-					styleClass="p-inputtext-sm border-0 w-full"
-					[(ngModel)]="starDetector.request.minSNR"
-					locale="en"
-					[allowEmpty]="false"
-					spinnableNumber />
-				<label>Min SNR</label>
-			</p-floatLabel>
-		</div>
-		<div
-			class="col-5 align-items-center"
-			*ngIf="starDetector.request.type === 'SIRIL'">
-			<p-floatLabel>
-				<p-inputNumber
+					[(value)]="starDetector.request.minSNR" />
+			</div>
+		}
+		@if (starDetector.request.type === 'SIRIL') {
+			<div class="col-5 align-items-center">
+				<neb-input-number
+					label="Max Stars"
 					[min]="0"
 					[max]="2000"
-					[step]="1"
-					[showButtons]="true"
-					class="w-full"
-					styleClass="p-inputtext-sm border-0 w-full"
-					[(ngModel)]="starDetector.request.maxStars"
-					locale="en"
-					[allowEmpty]="false"
-					spinnableNumber />
-				<label>Max Stars</label>
-			</p-floatLabel>
-		</div>
+					[(value)]="starDetector.request.maxStars" />
+			</div>
+		}
 		<div class="col-12 mt-1">
 			<span class="font-bold text-sm">COMPUTED</span>
 		</div>
 		<div class="col-2 align-items-center">
-			<p-floatLabel>
-				<input
-					pInputText
-					readonly
-					class="p-inputtext-sm border-0 w-full"
-					[value]="starDetector.stars.length" />
-				<label>Stars</label>
-			</p-floatLabel>
+			<neb-input-text
+				label="Stars"
+				[readonly]="true"
+				[value]="starDetector.stars.length" />
 		</div>
 		<div class="col-4 align-items-center">
-			<p-floatLabel>
-				<input
-					pInputText
-					readonly
-					class="p-inputtext-sm border-0 w-full"
-					value="{{ starDetector.computed.hfd.toFixed(2) }} | {{ starDetector.computed.stdDev.toFixed(4) }}" />
-				<label>HFD (Std Dev)</label>
-			</p-floatLabel>
+			<neb-input-text
+				label="HFD (Std Dev)"
+				[readonly]="true"
+				value="{{ starDetector.computed.hfd.toFixed(2) }} | {{ starDetector.computed.stdDev.toFixed(4) }}" />
 		</div>
 		<div class="col-2 align-items-center">
-			<p-floatLabel>
-				<input
-					pInputText
-					readonly
-					class="p-inputtext-sm border-0 w-full"
-					[value]="starDetector.computed.snr.toFixed(1)" />
-				<label>SNR</label>
-			</p-floatLabel>
+			<neb-input-text
+				label="SNR"
+				[readonly]="true"
+				[value]="starDetector.computed.snr.toFixed(1)" />
 		</div>
 		<div class="col-4 align-items-center">
-			<p-floatLabel>
-				<input
-					pInputText
-					readonly
-					class="p-inputtext-sm border-0 w-full"
-					value="{{ starDetector.computed.fluxMin.toFixed(0) }} | {{ starDetector.computed.fluxMax.toFixed(0) }}" />
-				<label>Flux (min | max)</label>
-			</p-floatLabel>
+			<neb-input-text
+				label="Flux (min | max)"
+				[readonly]="true"
+				value="{{ starDetector.computed.fluxMin.toFixed(0) }} | {{ starDetector.computed.fluxMax.toFixed(0) }}" />
 		</div>
 		<div class="col-12 mt-1">
 			<span class="font-bold text-sm">SELECTED</span>
@@ -1150,56 +855,38 @@
 		<div class="col-7">
 			<div class="grid">
 				<div class="col-6 align-items-center">
-					<p-floatLabel>
-						<input
-							pInputText
-							readonly
-							class="p-inputtext-sm border-0 w-full"
-							value="{{ starDetector.selected.x.toFixed(0) }} | {{ starDetector.selected.y.toFixed(0) }}" />
-						<label>Coordinates</label>
-					</p-floatLabel>
+					<neb-input-text
+						label="Coordinates"
+						[readonly]="true"
+						value="{{ starDetector.selected.x.toFixed(0) }} | {{ starDetector.selected.y.toFixed(0) }}" />
 				</div>
 				<div class="col-6 align-items-center">
-					<p-floatLabel>
-						<input
-							pInputText
-							readonly
-							class="p-inputtext-sm border-0 w-full"
-							[value]="starDetector.selected.flux.toFixed(0)" />
-						<label>Flux</label>
-					</p-floatLabel>
+					<neb-input-text
+						label="Flux"
+						[readonly]="true"
+						[value]="starDetector.selected.flux.toFixed(0)" />
 				</div>
 				<div class="col-6 align-items-center">
-					<p-floatLabel>
-						<input
-							pInputText
-							readonly
-							class="p-inputtext-sm border-0 w-full"
-							[value]="starDetector.selected.hfd.toFixed(2)" />
-						<label>HFD</label>
-					</p-floatLabel>
+					<neb-input-text
+						label="HFD"
+						[readonly]="true"
+						[value]="starDetector.selected.hfd.toFixed(2)" />
 				</div>
 				<div class="col-6 align-items-center">
-					<p-floatLabel>
-						<input
-							pInputText
-							readonly
-							class="p-inputtext-sm border-0 w-full"
-							[value]="starDetector.selected.snr.toFixed(1)" />
-						<label>SNR</label>
-					</p-floatLabel>
+					<neb-input-text
+						label="SNR"
+						[readonly]="true"
+						[value]="starDetector.selected.snr.toFixed(1)" />
 				</div>
 			</div>
 		</div>
 	</div>
 	<ng-template pTemplate="footer">
-		<p-button
+		<neb-button
 			[disabled]="starDetector.running"
 			icon="mdi mdi-check"
 			label="Detect"
-			(onClick)="detectStars()"
-			[text]="true"
-			size="small" />
+			(action)="detectStars()" />
 	</ng-template>
 </p-dialog>
 
@@ -1220,237 +907,142 @@
 				[style]="{ width: '23px', height: '23px' }" />
 		</div>
 		<div class="col-6 align-items-center justify-content-start gap-2">
-			<p-button
-				[text]="true"
+			<neb-button
 				icon="mdi mdi-telescope"
-				(onClick)="showFOVTelescopeDialog()"
-				pTooltip="Choose telescope"
-				tooltipPosition="bottom" />
-			<p-floatLabel>
-				<p-inputNumber
-					styleClass="p-inputtext-sm border-0"
-					[showButtons]="true"
-					[(ngModel)]="fov.selected.focalLength"
-					(ngModelChange)="saveFOV()"
-					spinnableNumber />
-				<label>Focal Length (mm)</label>
-			</p-floatLabel>
+				(action)="showFOVTelescopeDialog()"
+				tooltip="Choose telescope" />
+			<neb-input-number
+				label="Focal Length (mm)"
+				[(value)]="fov.selected.focalLength"
+				(valueChange)="saveFOV()" />
 		</div>
 		<div class="col-4">
-			<p-floatLabel>
-				<p-inputNumber
-					styleClass="p-inputtext-sm border-0"
-					[showButtons]="true"
-					[(ngModel)]="fov.selected.aperture"
-					(ngModelChange)="saveFOV()"
-					spinnableNumber />
-				<label>Aperture (mm)</label>
-			</p-floatLabel>
+			<neb-input-number
+				label="Aperture (mm)"
+				[(value)]="fov.selected.aperture"
+				(valueChange)="saveFOV()" />
 		</div>
 		<div class="col-4 justify-content-center align-items-center">Resolution (px)</div>
 		<div class="col-4 justify-content-center align-items-center gap-2">
-			<p-button
-				[text]="true"
+			<neb-button
 				icon="mdi mdi-camera-iris"
-				(onClick)="showFOVCameraDialog()"
-				pTooltip="Choose camera"
-				tooltipPosition="bottom" />
+				(action)="showFOVCameraDialog()"
+				tooltip="Choose camera" />
 		</div>
 		<div class="col-4 justify-content-center align-items-center">Pixel Size (µm)</div>
 		<div class="col-3">
-			<p-floatLabel>
-				<p-inputNumber
-					styleClass="p-inputtext-sm border-0"
-					[showButtons]="true"
-					[min]="1"
-					[max]="9999"
-					[(ngModel)]="fov.selected.cameraSize.width"
-					(ngModelChange)="saveFOV()"
-					spinnableNumber />
-				<label>Width</label>
-			</p-floatLabel>
+			<neb-input-number
+				label="Width"
+				[min]="1"
+				[max]="9999"
+				[(value)]="fov.selected.cameraSize.width"
+				(valueChange)="saveFOV()" />
 		</div>
 		<div class="col-3">
-			<p-floatLabel>
-				<p-inputNumber
-					styleClass="p-inputtext-sm border-0"
-					[showButtons]="true"
-					[min]="1"
-					[max]="9999"
-					[(ngModel)]="fov.selected.cameraSize.height"
-					(ngModelChange)="saveFOV()"
-					spinnableNumber />
-				<label>Height</label>
-			</p-floatLabel>
+			<neb-input-number
+				label="Height"
+				[min]="1"
+				[max]="9999"
+				[(value)]="fov.selected.cameraSize.height"
+				(valueChange)="saveFOV()" />
 		</div>
 		<div class="col-3">
-			<p-floatLabel>
-				<p-inputNumber
-					styleClass="p-inputtext-sm border-0"
-					[showButtons]="true"
-					[min]="0"
-					[max]="99.99"
-					[step]="0.01"
-					[minFractionDigits]="1"
-					[maxFractionDigits]="2"
-					[(ngModel)]="fov.selected.pixelSize.width"
-					mode="decimal"
-					(ngModelChange)="saveFOV()"
-					locale="en"
-					spinnableNumber />
-				<label>Width</label>
-			</p-floatLabel>
+			<neb-input-number
+				label="Width"
+				[min]="0"
+				[max]="99.99"
+				[step]="0.01"
+				[fractionDigits]="2"
+				[(value)]="fov.selected.pixelSize.width"
+				(valueChange)="saveFOV()" />
 		</div>
 		<div class="col-3">
-			<p-floatLabel>
-				<p-inputNumber
-					styleClass="p-inputtext-sm border-0"
-					[showButtons]="true"
-					[min]="0"
-					[max]="99.99"
-					[step]="0.01"
-					[minFractionDigits]="1"
-					[maxFractionDigits]="2"
-					[(ngModel)]="fov.selected.pixelSize.height"
-					mode="decimal"
-					(ngModelChange)="saveFOV()"
-					locale="en"
-					spinnableNumber />
-				<label>Height</label>
-			</p-floatLabel>
+			<neb-input-number
+				label="Height"
+				[min]="0"
+				[max]="99.99"
+				[step]="0.01"
+				[fractionDigits]="2"
+				[(value)]="fov.selected.pixelSize.height"
+				(valueChange)="saveFOV()" />
 		</div>
 		<div class="col-4">
-			<p-floatLabel>
-				<p-inputNumber
-					styleClass="p-inputtext-sm border-0"
-					[showButtons]="true"
-					[min]="0.01"
-					[max]="5"
-					[step]="0.01"
-					[minFractionDigits]="1"
-					[maxFractionDigits]="2"
-					[(ngModel)]="fov.selected.barlowReducer"
-					mode="decimal"
-					(ngModelChange)="saveFOV()"
-					locale="en"
-					spinnableNumber />
-				<label>Barlow/Reducer</label>
-			</p-floatLabel>
+			<neb-input-number
+				label="Barlow/Reducer"
+				[min]="0.01"
+				[max]="5"
+				[step]="0.01"
+				[fractionDigits]="2"
+				[(value)]="fov.selected.barlowReducer"
+				(valueChange)="saveFOV()" />
 		</div>
 		<div class="col-3">
-			<p-floatLabel>
-				<p-inputNumber
-					styleClass="p-inputtext-sm border-0"
-					[showButtons]="true"
-					[min]="1"
-					[max]="5"
-					[(ngModel)]="fov.selected.bin"
-					(ngModelChange)="saveFOV()"
-					spinnableNumber />
-				<label>Bin</label>
-			</p-floatLabel>
+			<neb-input-number
+				label="Bin"
+				[min]="1"
+				[max]="5"
+				[(value)]="fov.selected.bin"
+				(valueChange)="saveFOV()" />
 		</div>
 		<div class="col-4 flex-row gap-1">
-			<p-floatLabel>
-				<p-inputNumber
-					styleClass="p-inputtext-sm border-0"
-					[showButtons]="true"
-					[min]="0"
-					[max]="360"
-					[step]="1"
-					[minFractionDigits]="2"
-					[maxFractionDigits]="2"
-					[(ngModel)]="fov.selected.rotation"
-					(ngModelChange)="saveFOV(false)"
-					locale="en"
-					mode="decimal"
-					spinnableNumber />
-				<label>Rotation (°)</label>
-			</p-floatLabel>
+			<neb-input-number
+				label="Rotation (°)"
+				[min]="0"
+				[max]="360"
+				[fractionDigits]="2"
+				[(value)]="fov.selected.rotation"
+				(valueChange)="saveFOV(false)" />
 		</div>
 		<div class="col-1 flex align-items-center justify-content-center gap-2">
-			<p-button
+			<neb-button
 				[disabled]="!canAddFOV"
-				[text]="true"
 				icon="mdi mdi-plus"
 				severity="success"
-				size="small"
-				pTooltip="Add"
-				tooltipPosition="bottom"
-				(onClick)="addFOV()" />
+				tooltip="Add"
+				(action)="addFOV()" />
 		</div>
-		<div
-			class="col-12 p-0 flex-column overflow-auto mt-2 gap-1"
-			*ngIf="fov.fovs.length"
-			style="max-height: 112px">
-			@for (item of fov.fovs; track $index) {
-				<div
-					class="flex align-items-center gap-2 border-left-3 p-2 border-round cursor-pointer"
-					[class.bg-blue-900]="fov.selected === item"
-					[style.border-color]="item.color"
-					(click)="selectFOV(item)">
-					<div class="flex align-items-center justify-content-center">
-						<p-checkbox
-							[binary]="true"
-							[(ngModel)]="item.enabled"
-							(onChange)="$event.originalEvent?.stopImmediatePropagation()" />
+		@if (fov.fovs.length) {
+			<div
+				class="col-12 p-0 flex-column overflow-auto mt-2 gap-1"
+				style="max-height: 112px">
+				@for (item of fov.fovs; track $index) {
+					<div
+						class="flex align-items-center gap-2 border-left-3 p-2 border-round cursor-pointer"
+						[class.bg-blue-900]="fov.selected === item"
+						[style.border-color]="item.color"
+						(click)="selectFOV(item)">
+						<div class="flex align-items-center justify-content-center">
+							<neb-checkbox [(value)]="item.enabled" />
+						</div>
+						<div class="flex align-items-center flex-wrap gap-1">
+							<neb-info label="FL: {{ item.focalLength }} mm" />
+							<neb-info label="AP: {{ item.aperture }} mm" />
+							<neb-info label="RES: {{ item.cameraSize.width }}x{{ item.cameraSize.height }}" />
+							<neb-info label="PS: {{ item.pixelSize.width }}x{{ item.pixelSize.height }} µm" />
+							<neb-info label="MULT: {{ item.barlowReducer.toFixed(2) }}x" />
+							<neb-info label="BIN: {{ item.bin }}" />
+							<neb-info label="ANGLE: {{ item.rotation }}°" />
+							@if (item.computed) {
+								<neb-success label="F/{{ item.computed.focalRatio.toFixed(1) }}" />
+								<neb-success label="SCALE: {{ item.computed.cameraResolution.width.toFixed(2) }}&quot;x{{ item.computed.cameraResolution.height.toFixed(2) }}&quot;" />
+								<neb-success label="FOV: {{ item.computed.fieldSize.width.toFixed(2) }}°x{{ item.computed.fieldSize.height.toFixed(2) }}°" />
+							}
+						</div>
+						<div class="flex px-1 flex-column gap-0 align-items-center justify-content-between">
+							<neb-button
+								(action)="frameFOV(item)"
+								icon="mdi mdi-image"
+								tooltip="Frame" />
+							<neb-button
+								severity="danger"
+								icon="mdi mdi-delete"
+								tooltip="Remove"
+								(action)="deleteFOV(item)" />
+						</div>
 					</div>
-					<div class="flex align-items-center flex-wrap gap-1">
-						<p-tag
-							severity="info"
-							value="FL: {{ item.focalLength }} mm" />
-						<p-tag
-							severity="info"
-							value="AP: {{ item.aperture }} mm" />
-						<p-tag
-							severity="info"
-							value="RES: {{ item.cameraSize.width }}x{{ item.cameraSize.height }}" />
-						<p-tag
-							severity="info"
-							value="PS: {{ item.pixelSize.width }}x{{ item.pixelSize.height }} µm" />
-						<p-tag
-							severity="info"
-							value="MULT: {{ item.barlowReducer.toFixed(2) }}x" />
-						<p-tag
-							severity="info"
-							value="BIN: {{ item.bin }}" />
-						<p-tag
-							severity="info"
-							value="ANGLE: {{ item.rotation }}°" />
-						@if (item.computed) {
-							<p-tag
-								severity="success"
-								value="F/{{ item.computed.focalRatio.toFixed(1) }}" />
-							<p-tag
-								severity="success"
-								value="SCALE: {{ item.computed.cameraResolution.width.toFixed(2) }}&quot;x{{ item.computed.cameraResolution.height.toFixed(2) }}&quot;" />
-							<p-tag
-								severity="success"
-								value="FOV: {{ item.computed.fieldSize.width.toFixed(2) }}°x{{ item.computed.fieldSize.height.toFixed(2) }}°" />
-						}
-					</div>
-					<div class="flex px-1 flex-column gap-0 align-items-center justify-content-between">
-						<p-button
-							[text]="true"
-							[rounded]="true"
-							(onClick)="frameFOV(item); $event.stopImmediatePropagation()"
-							icon="mdi mdi-image"
-							size="small"
-							pTooltip="Frame"
-							tooltipPosition="bottom" />
-						<p-button
-							[text]="true"
-							[rounded]="true"
-							severity="danger"
-							icon="mdi mdi-delete"
-							size="small"
-							pTooltip="Remove"
-							tooltipPosition="bottom"
-							(onClick)="deleteFOV(item); $event.stopImmediatePropagation()" />
-					</div>
-				</div>
-			}
-		</div>
+				}
+			</div>
+		}
 	</div>
 </p-dialog>
 
@@ -1488,13 +1080,11 @@
 		</div>
 	</div>
 	<ng-template pTemplate="footer">
-		<p-button
+		<neb-button
 			[disabled]="!fov.camera"
 			icon="mdi mdi-check"
 			label="Choose"
-			(onClick)="chooseCamera()"
-			[text]="true"
-			size="small" />
+			(action)="chooseCamera()" />
 	</ng-template>
 </p-dialog>
 
@@ -1531,13 +1121,11 @@
 		</div>
 	</div>
 	<ng-template pTemplate="footer">
-		<p-button
+		<neb-button
 			[disabled]="!fov.telescope"
 			icon="mdi mdi-check"
 			label="Choose"
-			(onClick)="chooseTelescope()"
-			[text]="true"
-			size="small" />
+			(action)="chooseTelescope()" />
 	</ng-template>
 </p-dialog>
 
@@ -1559,115 +1147,73 @@
 				class="w-full" />
 		</div>
 		<div class="col-12 flex align-items-center justify-content-center">
-			<p-selectButton
-				class="w-full"
-				styleClass="border-0"
+			<neb-select-button-enum
 				[options]="'IMAGE_FORMAT' | dropdownOptions"
-				[(ngModel)]="saveAs.format"
-				[multiple]="false" />
+				[(value)]="saveAs.format" />
 		</div>
 		@if (imageInfo) {
 			<div class="col-2">
-				<p-button
+				<neb-button
 					[disabled]="!hasROI"
-					[text]="true"
 					icon="mdi mdi-artboard"
-					size="small"
-					pTooltip="ROI Size"
-					tooltipPosition="bottom"
-					(onClick)="useROIAreaForSaveAs()" />
+					tooltip="ROI Size"
+					(action)="useROIAreaForSaveAs()" />
 			</div>
 			<div class="col-5">
-				<p-floatLabel class="w-full">
-					<p-inputNumber
-						[min]="0"
-						[max]="imageInfo.width"
-						[showButtons]="true"
-						styleClass="p-inputtext-sm border-0 w-full"
-						[(ngModel)]="saveAs.subFrame.x"
-						locale="en"
-						spinnableNumber />
-					<label>X</label>
-				</p-floatLabel>
+				<neb-input-number
+					label="X"
+					[min]="0"
+					[max]="imageInfo.width"
+					[(value)]="saveAs.subFrame.x" />
 			</div>
 			<div class="col-5">
-				<p-floatLabel class="w-full">
-					<p-inputNumber
-						[min]="0"
-						[max]="imageInfo.height"
-						[showButtons]="true"
-						styleClass="p-inputtext-sm border-0 w-full"
-						[(ngModel)]="saveAs.subFrame.y"
-						locale="en"
-						spinnableNumber />
-					<label>Y</label>
-				</p-floatLabel>
+				<neb-input-number
+					label="Y"
+					[min]="0"
+					[max]="imageInfo.height"
+					[(value)]="saveAs.subFrame.y" />
 			</div>
 			<div class="col-2">
-				<p-button
-					[text]="true"
+				<neb-button
 					icon="mdi mdi-restore"
-					size="small"
-					pTooltip="Image Size"
-					tooltipPosition="bottom"
-					(onClick)="useImageAreaForSaveAs()" />
+					tooltip="Image Size"
+					(action)="useImageAreaForSaveAs()" />
 			</div>
 			<div class="col-5">
-				<p-floatLabel class="w-full">
-					<p-inputNumber
-						[min]="0"
-						[max]="imageInfo.width"
-						[showButtons]="true"
-						styleClass="p-inputtext-sm border-0 w-full"
-						[(ngModel)]="saveAs.subFrame.width"
-						locale="en"
-						spinnableNumber />
-					<label>Width</label>
-				</p-floatLabel>
+				<neb-input-number
+					label="Width"
+					[min]="0"
+					[max]="imageInfo.width"
+					[(value)]="saveAs.subFrame.width" />
 			</div>
 			<div class="col-5">
-				<p-floatLabel class="w-full">
-					<p-inputNumber
-						[min]="0"
-						[max]="imageInfo.height"
-						[showButtons]="true"
-						styleClass="p-inputtext-sm border-0 w-full"
-						[(ngModel)]="saveAs.subFrame.height"
-						locale="en"
-						spinnableNumber />
-					<label>Height</label>
-				</p-floatLabel>
+				<neb-input-number
+					label="Height"
+					[min]="0"
+					[max]="imageInfo.height"
+					[(value)]="saveAs.subFrame.height" />
 			</div>
 		}
 		<div class="col-7 align-items-center justify-content-center">
-			<p-floatLabel class="w-full">
-				<p-dropdown
-					[disabled]="saveAs.format !== 'FITS' && saveAs.format !== 'XISF'"
-					[options]="'IMAGE_BITPIX' | dropdownOptions | enumDropdown"
-					optionsLabel="label"
-					optionsValue="value"
-					[(ngModel)]="saveAs.bitpix"
-					styleClass="p-inputtext-sm border-0"
-					[autoDisplayFirst]="false"
-					appendTo="body" />
-				<label>Format</label>
-			</p-floatLabel>
+			<neb-dropdown-enum
+				label="Format"
+				[disabled]="saveAs.format !== 'FITS' && saveAs.format !== 'XISF'"
+				[options]="'IMAGE_BITPIX' | dropdownOptions"
+				[(value)]="saveAs.bitpix" />
 		</div>
 		<div class="col-5 flex-column align-items-center justify-content-center gap-1">
-			<span class="text-sm">Transformed</span>
-			<p-checkbox
-				[binary]="true"
-				[(ngModel)]="saveAs.shouldBeTransformed" />
+			<neb-checkbox
+				label="Transformed"
+				[vertical]="true"
+				[(value)]="saveAs.shouldBeTransformed" />
 		</div>
 	</div>
 	<ng-template pTemplate="footer">
-		<p-button
+		<neb-button
 			[disabled]="!saveAs.path"
 			icon="mdi mdi-content-save"
 			label="Save"
-			(onClick)="saveImageAs()"
-			[text]="true"
-			size="small" />
+			(action)="saveImageAs()" />
 	</ng-template>
 </p-dialog>
 
@@ -1679,15 +1225,13 @@
 	[style]="{ width: 'min-content', minWidth: '338px' }">
 	<div class="grid">
 		<div class="col-12 flex-column gap-2">
-			<p-checkbox
-				[binary]="true"
-				[(ngModel)]="settings.preference.transformation.useJPEG"
-				(ngModelChange)="savePreference()"
+			<neb-checkbox
+				[(value)]="settings.preference.transformation.useJPEG"
+				(valueChange)="savePreference()"
 				label="JPEG (reduces the loading time but less quality)" />
-			<p-checkbox
-				[binary]="true"
-				[(ngModel)]="settings.preference.pixelated"
-				(ngModelChange)="savePreference()"
+			<neb-checkbox
+				[(value)]="settings.preference.pixelated"
+				(valueChange)="savePreference()"
 				label="Pixelated (scaling algorithm)" />
 		</div>
 	</div>
@@ -1710,55 +1254,43 @@
 				[ngModel]="rotation.transformation.angle + 360"
 				(ngModelChange)="rotate($event - 360)"
 				spinnableNumber />
-			<p-floatLabel class="absolute max-w-8rem">
-				<p-inputNumber
-					[min]="-360"
-					[max]="360"
-					[showButtons]="true"
-					styleClass="p-inputtext-sm border-0 w-full"
-					[step]="1"
-					[(ngModel)]="rotation.transformation.angle"
-					(ngModelChange)="savePreference()"
-					[minFractionDigits]="2"
-					[maxFractionDigits]="2"
-					mode="decimal"
-					locale="en"
-					spinnableNumber />
-				<label>Angle (deg)</label>
-			</p-floatLabel>
+			<neb-input-number
+				label="Angle (°)"
+				[min]="-360"
+				[max]="360"
+				class="absolute max-w-8rem"
+				[(value)]="rotation.transformation.angle"
+				(valueChange)="savePreference()"
+				[fractionDigits]="2" />
 		</div>
 		<div class="col-12 flex-row align-items-center justify-content-center gap-1">
-			<p-button
+			<neb-button
 				label="0°"
-				[text]="true"
-				(onClick)="rotate(0)" />
-			<p-button
+				(action)="rotate(0)" />
+			<neb-button
 				label="90°"
-				[text]="true"
-				(onClick)="rotate(90)" />
-			<p-button
+				(action)="rotate(90)" />
+			<neb-button
 				label="180°"
-				[text]="true"
-				(onClick)="rotate(180)" />
-			<p-button
+				(action)="rotate(180)" />
+			<neb-button
 				label="270°"
-				[text]="true"
-				(onClick)="rotate(270)" />
+				(action)="rotate(270)" />
 		</div>
 	</div>
 </p-dialog>
 
-<div
-	class="fixed p-3 text-sm coordinates monospaced"
-	*ngIf="mouseCoordinate && isMouseCoordinateVisible">
-	<div class="grid m-0">
-		<div class="col-6 m-0 p-0">X: {{ mouseCoordinate.x }}</div>
-		<div class="col-6 m-0 p-0">Y: {{ mouseCoordinate.y }}</div>
-		<div class="col-6 m-0 p-0">α: {{ mouseCoordinate.alpha }}</div>
-		<div class="col-6 m-0 p-0">δ: {{ mouseCoordinate.delta }}</div>
-		<div class="col-6 m-0 p-0">l: {{ mouseCoordinate.l }}</div>
-		<div class="col-6 m-0 p-0">b: {{ mouseCoordinate.b }}</div>
+@if (mouseCoordinate && isMouseCoordinateVisible) {
+	<div class="fixed p-3 text-sm coordinates monospaced">
+		<div class="grid m-0">
+			<div class="col-6 m-0 p-0">X: {{ mouseCoordinate.x }}</div>
+			<div class="col-6 m-0 p-0">Y: {{ mouseCoordinate.y }}</div>
+			<div class="col-6 m-0 p-0">α: {{ mouseCoordinate.alpha }}</div>
+			<div class="col-6 m-0 p-0">δ: {{ mouseCoordinate.delta }}</div>
+			<div class="col-6 m-0 p-0">l: {{ mouseCoordinate.l }}</div>
+			<div class="col-6 m-0 p-0">b: {{ mouseCoordinate.b }}</div>
+		</div>
 	</div>
-</div>
+}
 
 <neb-device-list-menu #deviceMenu />

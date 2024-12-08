@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core'
-import { DeviceListMenuComponent } from '../components/device-list-menu/device-list-menu.component'
+import { DeviceListMenuComponent } from '../components/device-list-menu.component'
 import { Device } from '../types/device.types'
 import { AngularService } from './angular.service'
 
