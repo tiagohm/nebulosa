@@ -93,7 +93,7 @@ class IERSUpdateTask(
             LOG.error("failed to download finals2000A.all", e)
         }
 
-        return false
+        return exists()
     }
 
     companion object {
