@@ -50,33 +50,23 @@
 			(valueChange)="savePreference()" />
 	</div>
 	<div class="col-12">
-		<p-floatLabel class="w-full">
-			<p-dropdown
-				[options]="hipsSurveys"
-				[(ngModel)]="preference.hipsSurvey"
-				(ngModelChange)="savePreference()"
-				styleClass="border-0"
-				emptyMessage="No HiPS survey available"
-				[autoDisplayFirst]="false">
-				<ng-template
-					let-item
-					pTemplate="selectedItem">
-					<div class="flex flex-column">
-						<span class="text-xs">{{ item?.regime }} ({{ item?.skyFraction | percent: '1.1-1' }})</span>
-						<span>{{ item?.id }}</span>
-					</div>
-				</ng-template>
-				<ng-template
-					let-item
-					pTemplate="item">
-					<div class="flex flex-column">
-						<span class="text-xs">{{ item.regime }} ({{ item?.skyFraction | percent: '1.1-1' }})</span>
-						<span>{{ item.id }}</span>
-					</div>
-				</ng-template>
-			</p-dropdown>
-			<label>HiPS Survey</label>
-		</p-floatLabel>
+		<ng-template
+			#hipsSurveyDropdownItem
+			let-item>
+			<div class="flex flex-column">
+				<span class="text-xs">{{ item?.regime }} ({{ item?.skyFraction | percent: '1.1-1' }})</span>
+				<span>{{ item?.id }}</span>
+			</div>
+		</ng-template>
+		<neb-dropdown
+			label="HiPS Survey"
+			[options]="hipsSurveys"
+			[filter]="true"
+			[filterFields]="['id', 'category', 'frame', 'regime']"
+			[(value)]="preference.hipsSurvey"
+			(valueChange)="savePreference()"
+			emptyMessage="No HiPS survey available"
+			[itemTemplate]="hipsSurveyDropdownItem" />
 	</div>
 	<div class="col-12 justify-content-center mt-2">
 		<neb-button

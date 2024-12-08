@@ -33,53 +33,35 @@
 	</div>
 	<div class="grid mt-2">
 		<div class="col-9">
-			<p-floatLabel class="w-full">
-				<p-dropdown
-					[disabled]="!wheel.connected || moving"
-					[options]="filters"
-					[(ngModel)]="filter"
-					styleClass="border-0"
-					emptyMessage="No filter available"
-					[autoDisplayFirst]="false"
-					(ngModelChange)="filterChanged()"
-					appendTo="body">
-					<ng-template
-						let-item
-						pTemplate="selectedItem">
-						<div class="flex flex-column justify-content-center gap-1">
-							<span
-								class="flex align-items-center text-xs gap-1"
-								style="min-height: 15px">
-								@if (filter) {
-									<neb-tag label="#{{ filter.position }}" />
-									<neb-success label="OFFSET: {{ focusOffsetForFilter(filter) }}" />
-									@if (filter.dark) {
-										<i class="mdi mdi-camera-iris"></i>
-									}
-								}
-							</span>
-							<span>{{ filter?.name }}</span>
-						</div>
-					</ng-template>
-					<ng-template
-						let-item
-						pTemplate="item">
-						<div class="flex flex-column justify-content-center gap-1">
-							<span
-								class="flex align-items-center text-xs gap-1"
-								style="min-height: 15px">
-								<neb-tag label="#{{ item.position }}" />
-								<neb-success label="OFFSET: {{ focusOffsetForFilter(item) }}" />
-								@if (item.dark) {
-									<i class="mdi mdi-camera-iris text-gray-300"></i>
-								}
-							</span>
-							<span>{{ item.name }}</span>
-						</div>
-					</ng-template>
-				</p-dropdown>
-				<label>Filter</label>
-			</p-floatLabel>
+			<ng-template
+				#filterDropdownItem
+				let-item
+				let-selected="selected">
+				<div class="flex flex-column justify-content-center gap-1">
+					@let mItem = selected ? filter : item;
+
+					<span
+						class="flex align-items-center text-xs gap-1"
+						style="min-height: 15px">
+						@if (mItem) {
+							<neb-tag label="#{{ mItem.position }}" />
+							<neb-success label="OFFSET: {{ focusOffsetForFilter(mItem) }}" />
+							@if (mItem.dark) {
+								<i class="mdi mdi-camera-iris"></i>
+							}
+						}
+					</span>
+					<span>{{ mItem?.name }}</span>
+				</div>
+			</ng-template>
+			<neb-dropdown
+				label="Filter"
+				[disabled]="!wheel.connected || moving"
+				[options]="filters"
+				[(value)]="filter"
+				(valueChange)="filterChanged()"
+				emptyMessage="No filter available"
+				[itemTemplate]="filterDropdownItem" />
 		</div>
 		<div class="col-3 flex align-items-center justify-content-center">
 			<neb-button
