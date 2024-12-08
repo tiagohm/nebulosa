@@ -96,23 +96,33 @@ p-table {
 	width: 100%;
 }
 
-.mdi:before {
-	display: inline-flex;
-	justify-content: center;
+.mdi {
 	align-items: center;
-	aspect-ratio: 1;
-}
+	justify-content: center;
+	vertical-align: middle;
+	line-height: 0px;
 
-.mdi:before {
-	font-size: 1.25rem;
-}
+	&::before {
+		display: inline-flex;
+		justify-content: center;
+		align-items: center;
+		aspect-ratio: 1;
+		font-size: 1.25rem;
+		line-height: 0px;
+		vertical-align: middle;
+	}
 
-.mdi.mdi-sm:before {
-	font-size: 1.05rem;
-}
+	&.mdi-sm::before {
+		font-size: 1rem;
+	}
 
-.mdi.mdi-lg:before {
-	font-size: 2rem;
+	&.mdi-xs::before {
+		font-size: 0.9rem;
+	}
+
+	&.mdi-lg::before {
+		font-size: 2rem;
+	}
 }
 
 .p-selectbutton {
