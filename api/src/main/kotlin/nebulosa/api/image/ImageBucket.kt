@@ -2,6 +2,7 @@ package nebulosa.api.image
 
 import nebulosa.fits.fits
 import nebulosa.image.Image
+import nebulosa.image.Image.Companion.asImage
 import nebulosa.log.d
 import nebulosa.log.loggerFor
 import nebulosa.platesolver.PlateSolution
@@ -59,7 +60,7 @@ class ImageBucket(scheduledExecutorService: ScheduledExecutorService) {
             else -> throw IllegalArgumentException("invalid extension: $path")
         }
 
-        val image = representation.use { Image.open(it, debayer) }
+        val image = representation.asImage(debayer)
         return put(path, image, solution ?: openedImage?.solution, debayer)
     }
 

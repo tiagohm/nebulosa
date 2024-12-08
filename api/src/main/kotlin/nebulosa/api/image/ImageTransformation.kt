@@ -30,8 +30,8 @@ data class ImageTransformation(
     data class Stretch(
         @JvmField val auto: Boolean = false,
         @JvmField val shadow: Int = 0,
-        @JvmField val highlight: Int = 32768,
-        @JvmField val midtone: Int = 65536,
+        @JvmField val highlight: Int = 65536,
+        @JvmField val midtone: Int = 32768,
         @JvmField val meanBackground: Float = 0.5f,
     ) {
 
