@@ -137,11 +137,10 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
 		}
 	}
 
-	protected locationChanged(location?: Location) {
-		if (location) {
-			this.savePreference()
-			this.locationChangePublisher.next(location)
-		}
+	protected locationChanged(location: Location = this.preference.location) {
+		this.preference.location = location
+		this.savePreference()
+		this.locationChangePublisher.next(location)
 	}
 
 	protected resetCameraCaptureNamingFormat(type: FrameType) {
