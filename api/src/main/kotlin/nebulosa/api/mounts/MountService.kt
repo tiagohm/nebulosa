@@ -64,6 +64,10 @@ class MountService(
         sites[event.device] = Geoid.IERS2010.lonLat(event.device)
     }
 
+    private fun geographicPosition(mount: Mount): GeographicPosition {
+        return sites.computeIfAbsent(mount, Geoid.IERS2010::lonLat)
+    }
+
     fun connect(mount: Mount) {
         mount.connect()
     }
@@ -96,7 +100,7 @@ class MountService(
     }
 
     private fun verifyMountCanSlew(idempotencyKey: String, mount: Mount, ra: Angle, dec: Angle, j2000: Boolean): Boolean {
-        val location = sites[mount] ?: return true
+        val location = geographicPosition(mount)
         val mountPosition = if (j2000) ICRF.equatorial(ra, dec, center = location)
         else ICRF.equatorial(ra, dec, epoch = CurrentTime, center = location)
         return verifyMountWillPointToSun(idempotencyKey, location, mountPosition) &&
@@ -198,7 +202,7 @@ class MountService(
     }
 
     fun computeLST(mount: Mount): Angle {
-        return sites[mount]!!.lstAt(CurrentTime)
+        return geographicPosition(mount).lstAt(CurrentTime)
     }
 
     fun computeZenithLocation(mount: Mount): ComputedLocation {
@@ -244,7 +248,7 @@ class MountService(
     ): ComputedLocation {
         val computedLocation = ComputedLocation()
 
-        val center = sites[mount]!!
+        val center = geographicPosition(mount)
         val epoch = if (j2000) null else CurrentTime
 
         val icrf = ICRF.equatorial(rightAscension, declination, epoch = epoch, center = center)
