@@ -102,12 +102,11 @@
 	</div>
 	<div class="grid mt-1">
 		<div class="col-4 flex flex-column justify-content-center">
-			<p-selectButton
+			<neb-select-button-enum
 				[disabled]="!mount.connected || mount.slewing || mount.parking || mount.parked"
 				[options]="['J2000', 'JNOW']"
-				[(ngModel)]="preference.targetCoordinateType"
-				styleClass="border-0 w-full"
-				(ngModelChange)="computeTargetCoordinates()" />
+				[(value)]="preference.targetCoordinateType"
+				(valueChange)="computeTargetCoordinates()" />
 		</div>
 		<div class="col-4 flex flex-column justify-content-center align-items-start text-sm gap-1">
 			<div class="flex flex-row justify-content-between w-full">

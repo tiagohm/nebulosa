@@ -172,14 +172,11 @@
 	<div class="grid py-1 flex align-items-center">
 		<div class="col-6 flex-column">
 			<span class="text-xs text-gray-100">Exposure Mode</span>
-			<p-selectButton
+			<neb-select-button-enum
 				[disabled]="!canExposureMode || !camera.connected || running"
-				[options]="'EXPOSURE_MODE' | dropdownOptions | enumDropdown"
-				[(ngModel)]="preference.exposureMode"
-				optionLabel="label"
-				optionValue="value"
-				styleClass="p-button-sm border-0"
-				(ngModelChange)="savePreference()" />
+				[options]="'EXPOSURE_MODE' | dropdownOptions"
+				[(value)]="preference.exposureMode"
+				(valueChange)="savePreference()" />
 		</div>
 		<div class="col-3">
 			<neb-input-number

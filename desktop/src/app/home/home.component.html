@@ -258,10 +258,9 @@
 				[format]="false" />
 		</div>
 		<div class="col-8">
-			<p-selectButton
+			<neb-select-button-enum
 				[options]="'CONNECTION_TYPE' | dropdownOptions"
-				[(ngModel)]="connectionDialog.connection.type"
-				styleClass="border-0 w-full" />
+				[(value)]="connectionDialog.connection.type" />
 		</div>
 	</div>
 	<ng-template pTemplate="footer">

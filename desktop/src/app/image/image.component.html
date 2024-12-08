@@ -646,15 +646,10 @@
 	class="pointer-events-none">
 	<div class="grid px-2">
 		<div class="col-12 flex align-items-center">
-			<p-selectButton
-				class="w-full"
-				styleClass="border-0"
-				[options]="['NONE', 'RED', 'GREEN', 'BLUE'] | enumDropdown"
-				optionLabel="label"
-				optionValue="value"
-				[ngModel]="scnr.transformation.channel ?? 'NONE'"
-				(ngModelChange)="scnr.transformation.channel = $event === 'NONE' ? undefined : $event"
-				[multiple]="false" />
+			<neb-select-button-enum
+				[options]="['NONE', 'RED', 'GREEN', 'BLUE']"
+				[value]="scnr.transformation.channel ?? 'NONE'"
+				(valueChange)="scnr.transformation.channel = $event === 'NONE' ? undefined : $event" />
 		</div>
 		<div class="col-7 flex align-items-center">
 			<neb-dropdown-enum
@@ -722,15 +717,11 @@
 	@if (statistics.statistics && imageInfo) {
 		<div class="grid p-2">
 			<div class="col-12 flex align-items-center">
-				<p-selectButton
-					styleClass="border-0"
+				<neb-select-button-enum
 					[disabled]="imageInfo.mono"
-					[options]="'IMAGE_CHANNEL' | dropdownOptions | enumDropdown"
-					optionLabel="label"
-					optionValue="value"
-					[(ngModel)]="statistics.channel"
-					(ngModelChange)="computeStatistics(true)"
-					[multiple]="false" />
+					[options]="'IMAGE_CHANNEL' | dropdownOptions"
+					[(value)]="statistics.channel"
+					(valueChange)="computeStatistics(true)" />
 			</div>
 			<div class="col-4">
 				<neb-input-text
@@ -1162,12 +1153,9 @@
 				class="w-full" />
 		</div>
 		<div class="col-12 flex align-items-center justify-content-center">
-			<p-selectButton
-				class="w-full"
-				styleClass="border-0"
+			<neb-select-button-enum
 				[options]="'IMAGE_FORMAT' | dropdownOptions"
-				[(ngModel)]="saveAs.format"
-				[multiple]="false" />
+				[(value)]="saveAs.format" />
 		</div>
 		@if (imageInfo) {
 			<div class="col-2">

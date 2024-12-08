@@ -65,6 +65,7 @@ import { MenuBarComponent } from '../shared/components/menu-bar/menu-bar.compone
 import { MenuItemComponent } from '../shared/components/menu-item.component'
 import { MoonComponent } from '../shared/components/moon.component'
 import { PathChooserComponent } from '../shared/components/path-chooser.component'
+import { SelectButtonEnumComponent, SelectButtonItemComponent } from '../shared/components/select-button.component'
 import { SlideMenuComponent } from '../shared/components/slide-menu.component'
 import { SwitchComponent } from '../shared/components/switch.component'
 import { TagComponent } from '../shared/components/tag.component'
@@ -166,6 +167,8 @@ import { SettingsComponent } from './settings/settings.component'
 		NoDropdownDirective,
 		PathChooserComponent,
 		RotatorComponent,
+		SelectButtonEnumComponent,
+		SelectButtonItemComponent,
 		SequencerComponent,
 		SettingsComponent,
 		SlideMenuComponent,
