@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, ViewChild, inject } from '@angular/core'
+import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, inject, viewChild } from '@angular/core'
 import { ChartData, ChartOptions } from 'chart.js'
 import { Point } from 'electron'
 import { UIChart } from 'primeng/chart'
@@ -205,11 +205,8 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy, Tickable {
 		],
 	}
 
-	@ViewChild('cameraExposure')
-	private readonly cameraExposure!: CameraExposureComponent
-
-	@ViewChild('chart')
-	private readonly chart!: UIChart
+	private readonly cameraExposure = viewChild.required<CameraExposureComponent>('cameraExposure')
+	private readonly chart = viewChild.required<UIChart>('chart')
 
 	private get trendLineLeftDataset() {
 		return this.chartData.datasets[0]
@@ -314,7 +311,7 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy, Tickable {
 				this.starHFD = event.starHFD
 
 				if (event.capture) {
-					this.cameraExposure.handleCameraCaptureEvent(event.capture, true)
+					this.cameraExposure().handleCameraCaptureEvent(event.capture, true)
 				}
 
 				if (state === 'CURVE_FITTED') {
@@ -440,7 +437,7 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy, Tickable {
 		zoom.limits!['x']!.max = scales['x']!.max
 		zoom.limits!['y']!.max = scales['y']!.max
 
-		this.chart.refresh()
+		this.chart().refresh()
 	}
 
 	private clearChart() {
@@ -450,7 +447,7 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy, Tickable {
 			dataset.data = []
 		}
 
-		this.chart.refresh()
+		this.chart().refresh()
 	}
 
 	private loadPreference() {

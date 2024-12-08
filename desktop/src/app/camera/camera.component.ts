@@ -1,4 +1,4 @@
-import { AfterContentInit, Component, HostListener, inject, NgZone, OnDestroy, ViewChild } from '@angular/core'
+import { AfterContentInit, Component, HostListener, inject, NgZone, OnDestroy, viewChild } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
 import { CameraExposureComponent } from '../../shared/components/camera-exposure.component'
 import { MenuItemCommandEvent, SlideMenuItem } from '../../shared/components/menu-item.component'
@@ -123,11 +123,10 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 		format: this.request.namingFormat,
 	}
 
-	@ViewChild('cameraExposure')
-	private readonly cameraExposure?: CameraExposureComponent
+	private readonly cameraExposure = viewChild<CameraExposureComponent>('cameraExposure')
 
 	get status() {
-		return this.cameraExposure?.currentState ?? 'IDLE'
+		return this.cameraExposure()?.currentState ?? 'IDLE'
 	}
 
 	get pausingOrPaused() {
@@ -219,7 +218,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 		this.electronService.on('CAMERA.CAPTURE_ELAPSED', (event) => {
 			if (event.camera.id === this.camera.id) {
 				ngZone.run(() => {
-					this.running = this.cameraExposure?.handleCameraCaptureEvent(event) ?? false
+					this.running = this.cameraExposure()?.handleCameraCaptureEvent(event) ?? false
 				})
 			}
 		})

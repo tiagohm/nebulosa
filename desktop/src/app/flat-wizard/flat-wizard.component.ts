@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, ViewChild, inject } from '@angular/core'
+import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, inject, viewChild } from '@angular/core'
 import { CameraExposureComponent } from '../../shared/components/camera-exposure.component'
 import { AngularService } from '../../shared/services/angular.service'
 import { ApiService } from '../../shared/services/api.service'
@@ -34,11 +34,9 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy, Tickable {
 	protected request = this.preference.request
 
 	protected filters: Filter[] = []
-
 	protected running = false
 
-	@ViewChild('cameraExposure')
-	private readonly cameraExposure!: CameraExposureComponent
+	private readonly cameraExposure = viewChild.required<CameraExposureComponent>('cameraExposure')
 
 	get meanTargetMin() {
 		return Math.floor(this.request.meanTarget - (this.request.meanTolerance * this.request.meanTarget) / 100)
@@ -59,10 +57,10 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy, Tickable {
 			ngZone.run(() => {
 				if (event.state === 'EXPOSURING' && event.capture && event.camera.id === this.camera?.id) {
 					this.running = true
-					this.cameraExposure.handleCameraCaptureEvent(event.capture, true)
+					this.cameraExposure().handleCameraCaptureEvent(event.capture, true)
 				} else {
 					this.running = false
-					this.cameraExposure.reset()
+					this.cameraExposure().reset()
 
 					if (event.state === 'CAPTURED') {
 						this.angularService.message('Flat frame captured')

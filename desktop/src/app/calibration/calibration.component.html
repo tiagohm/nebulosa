@@ -10,10 +10,12 @@
 								<neb-button
 									label="Files"
 									icon="mdi mdi-file-plus"
+									severity="success"
 									(action)="openFilesToUpload(key)" />
 								<neb-button
 									label="Directory"
 									icon="mdi mdi-folder-plus"
+									severity="success"
 									(action)="openDirectoryToUpload(key)" />
 							</div>
 							<span class="text-sm text-gray-500">{{ this.frames.get(key)?.length ?? 0 }} frames</span>

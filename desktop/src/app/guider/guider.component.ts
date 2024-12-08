@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, OnInit, ViewChild, inject } from '@angular/core'
+import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, OnInit, inject, viewChild } from '@angular/core'
 import { Chart, ChartData, ChartOptions } from 'chart.js'
 import zoomPlugin from 'chartjs-plugin-zoom'
 import { UIChart } from 'primeng/chart'
@@ -26,9 +26,7 @@ export class GuiderComponent implements OnInit, AfterViewInit, OnDestroy, Tickab
 	protected readonly chartInfo = structuredClone(DEFAULT_GUIDER_CHART_INFO)
 
 	private readonly guideHistory: GuiderHistoryStep[] = []
-
-	@ViewChild('chart')
-	private readonly chart!: UIChart
+	private readonly chart = viewChild.required<UIChart>('chart')
 
 	get stopped() {
 		return this.guider.state === 'STOPPED'
@@ -351,7 +349,7 @@ export class GuiderComponent implements OnInit, AfterViewInit, OnDestroy, Tickab
 		this.chartData.datasets[2].data = this.guideHistory.map((e) => (e.guideStep?.raDuration ?? 0) / durationScale(e.guideStep?.raDirection))
 		this.chartData.datasets[3].data = this.guideHistory.map((e) => (e.guideStep?.decDuration ?? 0) / durationScale(e.guideStep?.decDirection))
 
-		this.chart.refresh()
+		this.chart().refresh()
 	}
 
 	protected async guideOutputChanged() {

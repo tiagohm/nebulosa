@@ -1,5 +1,5 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
-import { AfterContentInit, Component, HostListener, inject, NgZone, OnDestroy, QueryList, ViewChildren, ViewEncapsulation } from '@angular/core'
+import { AfterContentInit, Component, HostListener, inject, NgZone, OnDestroy, viewChildren, ViewEncapsulation } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
 import { CameraExposureComponent } from '../../shared/components/camera-exposure.component'
 import { DialogMenuComponent } from '../../shared/components/dialog-menu.component'
@@ -167,8 +167,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 		},
 	}
 
-	@ViewChildren('cameraExposure')
-	private readonly cameraExposures!: QueryList<CameraExposureComponent>
+	private readonly cameraExposures = viewChildren<CameraExposureComponent>('cameraExposure')
 
 	get canStart() {
 		return !!this.plan.camera?.connected && !!this.plan.sequences.find((e) => e.enabled)
@@ -274,7 +273,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 
 				if (captureEvent) {
 					const index = event.id - 1
-					this.cameraExposures.get(index)?.handleCameraCaptureEvent(captureEvent)
+					this.cameraExposures().at(index)?.handleCameraCaptureEvent(captureEvent)
 				}
 			})
 		})
@@ -649,8 +648,8 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 
 	protected async start() {
 		if (this.plan.camera) {
-			for (let i = 0; i < this.cameraExposures.length; i++) {
-				this.cameraExposures.get(i)?.reset()
+			for (let i = 0; i < this.cameraExposures().length; i++) {
+				this.cameraExposures().at(i)?.reset()
 			}
 
 			// FOCUS OFFSET

@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, ViewChild, inject } from '@angular/core'
+import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, inject, viewChild } from '@angular/core'
 import { CameraExposureComponent } from '../../shared/components/camera-exposure.component'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
@@ -43,8 +43,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy, Tickable {
 	protected darvRequest = this.preference.darvRequest
 	protected readonly darvResult = structuredClone(DEFAULT_DARV_RESULT)
 
-	@ViewChild('cameraExposure')
-	private readonly cameraExposure!: CameraExposureComponent
+	private readonly cameraExposure = viewChild.required<CameraExposureComponent>('cameraExposure')
 
 	get pausingOrPaused() {
 		return this.status === 'PAUSING' || this.status === 'PAUSED'
@@ -170,7 +169,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy, Tickable {
 						this.tppaResult.altitudeErrorDirection = event.altitudeErrorDirection
 						this.tppaResult.totalError = event.totalError
 					} else if (event.state === 'FINISHED') {
-						this.cameraExposure.reset()
+						this.cameraExposure().reset()
 					} else if (event.state === 'SOLVED' || event.state === 'SLEWED') {
 						this.tppaResult.failed = false
 						this.tppaResult.rightAscension = event.rightAscension
@@ -180,7 +179,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy, Tickable {
 					}
 
 					if (event.capture.state !== 'CAPTURE_FINISHED') {
-						this.cameraExposure.handleCameraCaptureEvent(event.capture, true)
+						this.cameraExposure().handleCameraCaptureEvent(event.capture, true)
 					}
 				})
 			}
@@ -190,7 +189,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy, Tickable {
 			if (event.camera.id === this.camera?.id) {
 				ngZone.run(() => {
 					this.status = event.state
-					this.running = this.cameraExposure.handleCameraCaptureEvent(event.capture)
+					this.running = this.cameraExposure().handleCameraCaptureEvent(event.capture)
 
 					if (event.state === 'FORWARD' || event.state === 'BACKWARD') {
 						this.darvResult.direction = event.direction
