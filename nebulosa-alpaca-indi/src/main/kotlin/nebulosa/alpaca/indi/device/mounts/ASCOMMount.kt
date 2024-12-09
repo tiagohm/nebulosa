@@ -11,6 +11,7 @@ import nebulosa.alpaca.indi.client.AlpacaClient
 import nebulosa.alpaca.indi.device.ASCOMDevice
 import nebulosa.constants.DEG2RAD
 import nebulosa.indi.device.Device
+import nebulosa.indi.device.gps.GPS
 import nebulosa.indi.device.guider.GuideOutputPulsingChanged
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.MountCanHomeChanged
@@ -44,7 +45,6 @@ import nebulosa.math.toHours
 import nebulosa.math.toMeters
 import nebulosa.nova.position.ICRF
 import nebulosa.time.CurrentTime
-import nebulosa.time.SystemClock
 import java.math.BigDecimal
 import java.time.Duration
 import java.time.OffsetDateTime
@@ -84,7 +84,8 @@ data class ASCOMMount(
     @Volatile final override var longitude = 0.0
     @Volatile final override var latitude = 0.0
     @Volatile final override var elevation = 0.0
-    @Volatile final override var dateTime = OffsetDateTime.now(SystemClock)!!
+    @Volatile final override var dateTime = GPS.ZERO_DATE_TIME
+    @Volatile final override var offsetInSeconds = 0
 
     override val snoopedDevices = emptyList<Device>()
 
@@ -300,7 +301,7 @@ data class ASCOMMount(
         longitude = 0.0
         latitude = 0.0
         elevation = 0.0
-        dateTime = OffsetDateTime.now(SystemClock)
+        dateTime = GPS.ZERO_DATE_TIME
 
         axisRates.clear()
     }
@@ -455,7 +456,8 @@ data class ASCOMMount(
 
     private fun processDateTime() {
         service.utcDate(device.number).doRequest {
-            dateTime = it.value
+            dateTime = it.value.toLocalDateTime()
+            offsetInSeconds = it.value.offset.totalSeconds * 60
             sender.fireOnEventReceived(MountTimeChanged(this))
         }
     }

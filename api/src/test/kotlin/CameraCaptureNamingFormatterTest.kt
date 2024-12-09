@@ -33,6 +33,7 @@ import org.junit.jupiter.api.Test
 import java.time.Clock
 import java.time.Duration
 import java.time.Instant
+import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.*
@@ -368,7 +369,8 @@ class CameraCaptureNamingFormatterTest {
         override val longitude = 0.0
         override val latitude = 0.0
         override val elevation = 0.0
-        override val dateTime: OffsetDateTime = OffsetDateTime.now(SystemClock)
+        override val dateTime: LocalDateTime = LocalDateTime.now(SystemClock)
+        override val offsetInSeconds = 0
         override val canPark = true
         override val parking = false
         override val parked = false

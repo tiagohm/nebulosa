@@ -180,6 +180,12 @@ export class ApiService {
 		return this.http.put<never>(`mounts/${mount.id}/point-here?${query}`)
 	}
 
+	mountTime(mount: Mount, dateTime: Date, offsetInMinutes: number) {
+		const [date, time] = extractDateTime(dateTime)
+		const query = this.http.query({ date, time, offsetInMinutes })
+		return this.http.put<never>(`mounts/${mount.id}/datetime?${query}`)
+	}
+
 	mountRemoteControlStart(mount: Mount, protocol: MountRemoteControlProtocol, host: string, port: number) {
 		const query = this.http.query({ protocol, host, port })
 		return this.http.put<never>(`mounts/${mount.id}/remote-control/start?${query}`)

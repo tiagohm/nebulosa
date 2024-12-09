@@ -4,14 +4,13 @@ import hotkeys from 'hotkeys-js'
 import { Subject, Subscription, interval, throttleTime } from 'rxjs'
 import { SlideMenuItem } from '../../shared/components/menu-item.component'
 import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
-import { AngularService } from '../../shared/services/angular.service'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { Tickable, Ticker } from '../../shared/services/ticker.service'
 import { BodyTabType, ComputedLocation, DEFAULT_COMPUTED_LOCATION } from '../../shared/types/atlas.types'
-import { DEFAULT_MOUNT, DEFAULT_MOUNT_PREFERENCE, DEFAULT_MOUNT_REMOTE_CONTROL_DIALOG, Mount, MountRemoteControlProtocol, MountSlewDirection, TrackMode } from '../../shared/types/mount.types'
+import { DEFAULT_MOUNT, DEFAULT_MOUNT_PREFERENCE, DEFAULT_MOUNT_REMOTE_CONTROL_DIALOG, DEFAULT_MOUNT_TIME_DIALOG, Mount, MountRemoteControlProtocol, MountSlewDirection, TrackMode } from '../../shared/types/mount.types'
 import { AppComponent } from '../app.component'
 
 @Component({
@@ -24,7 +23,6 @@ export class MountComponent implements AfterContentInit, OnDestroy, Tickable {
 	private readonly browserWindowService = inject(BrowserWindowService)
 	private readonly preferenceService = inject(PreferenceService)
 	private readonly route = inject(ActivatedRoute)
-	private readonly angularService = inject(AngularService)
 	private readonly ticker = inject(Ticker)
 
 	protected readonly mount = structuredClone(DEFAULT_MOUNT)
@@ -32,14 +30,13 @@ export class MountComponent implements AfterContentInit, OnDestroy, Tickable {
 	protected readonly preference = structuredClone(DEFAULT_MOUNT_PREFERENCE)
 	protected readonly currentComputedLocation = structuredClone(DEFAULT_COMPUTED_LOCATION)
 	protected readonly targetComputedLocation = structuredClone(DEFAULT_COMPUTED_LOCATION)
+	protected readonly time = structuredClone(DEFAULT_MOUNT_TIME_DIALOG)
 
 	private readonly computeCoordinatePublisher = new Subject<void>()
 	private readonly computeTargetCoordinatePublisher = new Subject<void>()
 	private readonly computeCoordinateSubscriptions: Subscription[] = []
 	private readonly moveToDirection = [false, false]
 
-	protected tracking = false
-	protected trackMode: TrackMode = 'SIDEREAL'
 	protected slewRate?: string
 	protected slewingDirection?: MountSlewDirection
 
@@ -340,6 +337,22 @@ export class MountComponent implements AfterContentInit, OnDestroy, Tickable {
 		this.remoteControl.showDialog = true
 	}
 
+	protected showTimeDialog() {
+		const now = new Date()
+		this.time.offsetInMinutes = this.mount.offsetInMinutes
+		this.time.dateTime = new Date(this.mount.dateTime + now.getTimezoneOffset() * 60000)
+		this.time.showDialog = true
+	}
+
+	protected timeNow() {
+		const now = new Date()
+		this.time.dateTime = new Date(now.getTime() + now.getTimezoneOffset() * 60000)
+	}
+
+	protected timeSync() {
+		return this.api.mountTime(this.mount, this.time.dateTime, this.time.offsetInMinutes)
+	}
+
 	protected async startRemoteControl() {
 		await this.api.mountRemoteControlStart(this.mount, this.remoteControl.protocol, this.remoteControl.host, this.remoteControl.port)
 		this.remoteControl.controls = await this.api.mountRemoteControlList(this.mount)
@@ -422,12 +435,12 @@ export class MountComponent implements AfterContentInit, OnDestroy, Tickable {
 		return this.api.mountAbort(this.mount)
 	}
 
-	protected trackingToggled() {
-		return this.api.mountTracking(this.mount, this.tracking)
+	protected trackingToggled(enabled: boolean) {
+		return this.api.mountTracking(this.mount, enabled)
 	}
 
-	protected trackModeChanged() {
-		return this.api.mountTrackMode(this.mount, this.trackMode)
+	protected trackModeChanged(trackMode: TrackMode) {
+		return this.api.mountTrackMode(this.mount, trackMode)
 	}
 
 	protected async slewRateChanged() {
@@ -450,9 +463,7 @@ export class MountComponent implements AfterContentInit, OnDestroy, Tickable {
 
 	private update() {
 		if (this.mount.id) {
-			this.trackMode = this.mount.trackMode
 			this.slewRate = this.mount.slewRate?.value ?? this.mount.slewRates[0]?.value
-			this.tracking = this.mount.tracking
 
 			this.computeCoordinatePublisher.next()
 		}

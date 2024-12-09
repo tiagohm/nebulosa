@@ -12,8 +12,6 @@ import nebulosa.indi.protocol.NumberVector
 import nebulosa.indi.protocol.TextVector
 import nebulosa.math.deg
 import nebulosa.math.m
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
 
 internal open class INDIGPS(
     final override val sender: INDIClient,
@@ -27,7 +25,8 @@ internal open class INDIGPS(
     @Volatile final override var longitude = 0.0
     @Volatile final override var latitude = 0.0
     @Volatile final override var elevation = 0.0
-    @Volatile final override var dateTime = OffsetDateTime.MIN!!
+    @Volatile final override var dateTime = GPS.ZERO_DATE_TIME
+    @Volatile final override var offsetInSeconds = 0
 
     override fun handleMessage(message: INDIProtocol) {
         when (message) {
@@ -45,10 +44,8 @@ internal open class INDIGPS(
             is TextVector<*> -> {
                 when (message.name) {
                     "TIME_UTC" -> {
-                        val utcTime = GPS.extractTime(message["UTC"]!!.value) ?: return
-                        val utcOffset = message["OFFSET"]!!.value.toDoubleOrNull() ?: 0.0
-
-                        dateTime = OffsetDateTime.of(utcTime, ZoneOffset.ofTotalSeconds((utcOffset * 60.0).toInt()))
+                        dateTime = GPS.parseTime(message["UTC"]?.value ?: return) ?: return
+                        offsetInSeconds = GPS.parseOffset(message["OFFSET"]?.value ?: return) * 60
 
                         sender.fireOnEventReceived(GPSTimeChanged(this))
                     }

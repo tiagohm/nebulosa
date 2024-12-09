@@ -24,11 +24,16 @@
 				(action)="showRemoteControlDialog()"
 				icon="mdi mdi-remote-tv"
 				tooltip="Remote Control" />
+			<neb-button
+				[disabled]="!mount.connected"
+				(action)="showTimeDialog()"
+				icon="mdi mdi-clock"
+				tooltip="Time" />
 		</div>
 		<div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1">
 			<i class="mdi mdi-information text-info"></i>
 			<span style="display: contents">
-				{{ mount.parking ? 'parking' : mount.parked ? 'parked' : mount.slewing ? 'slewing' : tracking ? 'tracking' : 'idle' }}
+				{{ mount.parking ? 'parking' : mount.parked ? 'parked' : mount.slewing ? 'slewing' : mount.tracking ? 'tracking' : 'idle' }}
 			</span>
 		</div>
 	</div>
@@ -248,8 +253,8 @@
 					<neb-switch
 						label="Tracking"
 						[disabled]="!mount.connected || mount.slewing || mount.parking || mount.parked"
-						[(value)]="tracking"
-						(valueChange)="trackingToggled()" />
+						[value]="mount.tracking"
+						(valueChange)="trackingToggled($event)" />
 				</div>
 				<div class="col-6 flex flex-row gap-2 justify-content-center align-items-center">
 					@if (mount.parked) {
@@ -279,8 +284,8 @@
 						label="Tracking mode"
 						[disabled]="!mount.connected || mount.slewing || mount.parking || mount.parked"
 						[options]="mount.trackModes"
-						[(value)]="trackMode"
-						(valueChange)="trackModeChanged()" />
+						[value]="mount.trackMode"
+						(valueChange)="$event && trackModeChanged($event)" />
 				</div>
 				<div class="col-6">
 					<neb-dropdown-item
@@ -379,7 +384,47 @@
 			</p-listbox>
 		</div>
 	</div>
-	<ng-template pTemplate="footer"></ng-template>
+</p-dialog>
+
+<p-dialog
+	header="Time (UTC)"
+	[modal]="true"
+	[draggable]="false"
+	[(visible)]="time.showDialog"
+	[style]="{ maxWidth: '90vw' }">
+	<div class="grid p-2">
+		<div class="col-8">
+			<p-calendar
+				[(ngModel)]="time.dateTime"
+				[showIcon]="true"
+				[showOnFocus]="false"
+				[showTime]="true"
+				[showSeconds]="true"
+				[showWeek]="true"
+				dateFormat="yy-mm-dd"
+				appendTo="body"
+				styleClass="w-full border-0">
+				<ng-template pTemplate="footer">
+					<neb-button
+						label="Now"
+						(action)="timeNow()" />
+				</ng-template>
+			</p-calendar>
+		</div>
+		<div class="col-4">
+			<neb-input-number
+				label="Offset (min)"
+				[min]="-720"
+				[max]="720"
+				[(value)]="time.offsetInMinutes" />
+		</div>
+	</div>
+	<ng-template pTemplate="footer">
+		<neb-button
+			icon="mdi mdi-sync"
+			label="Sync"
+			(action)="timeSync()" />
+	</ng-template>
 </p-dialog>
 
 <neb-dialog-menu

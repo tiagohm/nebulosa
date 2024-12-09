@@ -47,8 +47,8 @@ import nebulosa.math.toDegrees
 import nebulosa.math.toHours
 import nebulosa.math.toMeters
 import nebulosa.nova.position.ICRF
-import nebulosa.time.SystemClock
 import java.time.Duration
+import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
@@ -92,7 +92,8 @@ internal open class INDIMount(
     @Volatile final override var longitude = 0.0
     @Volatile final override var latitude = 0.0
     @Volatile final override var elevation = 0.0
-    @Volatile final override var dateTime = OffsetDateTime.now(SystemClock)!!
+    @Volatile final override var dateTime = LocalDateTime.ofEpochSecond(0, 0, ZoneOffset.UTC)!!
+    @Volatile final override var offsetInSeconds = 0
 
     override fun handleMessage(message: INDIProtocol) {
         when (message) {
@@ -209,10 +210,8 @@ internal open class INDIMount(
             is TextVector<*> -> {
                 when (message.name) {
                     "TIME_UTC" -> {
-                        val utcTime = GPS.extractTime(message["UTC"]!!.value) ?: return
-                        val utcOffset = message["OFFSET"]!!.value.toDoubleOrNull() ?: 0.0
-
-                        dateTime = OffsetDateTime.of(utcTime, ZoneOffset.ofTotalSeconds((utcOffset * 3600.0).toInt()))
+                        dateTime = GPS.parseTime(message["UTC"]?.value ?: return) ?: return
+                        offsetInSeconds = GPS.parseOffset(message["OFFSET"]?.value ?: return) * 60
 
                         sender.fireOnEventReceived(MountTimeChanged(this))
                     }

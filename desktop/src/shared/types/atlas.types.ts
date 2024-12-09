@@ -176,12 +176,9 @@ export interface DateTimeAndLocation {
 	location: Location
 }
 
-export interface Location {
+export interface Location extends GeographicCoordinate<number> {
 	id: number
 	name: string
-	latitude: number
-	longitude: number
-	elevation: number
 	offsetInMinutes: number
 }
 
@@ -219,6 +216,12 @@ export interface EquatorialCoordinateJ2000 {
 export interface HorizontalCoordinate {
 	azimuth: Angle
 	altitude: Angle
+}
+
+export interface GeographicCoordinate<T = Angle> {
+	longitude: T
+	latitude: T
+	elevation: number
 }
 
 export interface BodyPosition extends EquatorialCoordinate, EquatorialCoordinateJ2000, HorizontalCoordinate {
