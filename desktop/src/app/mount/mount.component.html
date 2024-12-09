@@ -26,6 +26,11 @@
 				tooltip="Remote Control" />
 			<neb-button
 				[disabled]="!mount.connected"
+				(action)="showSiteDialog()"
+				icon="mdi mdi-earth"
+				tooltip="Site" />
+			<neb-button
+				[disabled]="!mount.connected"
 				(action)="showTimeDialog()"
 				icon="mdi mdi-clock"
 				tooltip="Time" />
@@ -384,6 +389,29 @@
 			</p-listbox>
 		</div>
 	</div>
+</p-dialog>
+
+<p-dialog
+	header="Site"
+	[modal]="true"
+	[draggable]="false"
+	[(visible)]="site.showDialog"
+	[style]="{ maxWidth: '82vw' }">
+	<div class="grid p-2">
+		<div class="col-12">
+			@if (site.showDialog) {
+				<neb-location
+					[location]="site.location"
+					[showNameAndOffset]="false" />
+			}
+		</div>
+	</div>
+	<ng-template pTemplate="footer">
+		<neb-button
+			icon="mdi mdi-check"
+			label="Apply"
+			(action)="siteApply()" />
+	</ng-template>
 </p-dialog>
 
 <p-dialog

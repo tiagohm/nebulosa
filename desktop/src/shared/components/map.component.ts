@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, OnChanges, ViewEncapsulation, model, viewChild } from '@angular/core'
+import { AfterViewInit, Component, ElementRef, OnChanges, OnDestroy, ViewEncapsulation, model, viewChild } from '@angular/core'
 import * as L from 'leaflet'
 
 @Component({
@@ -17,11 +17,12 @@ import * as L from 'leaflet'
 	`,
 	encapsulation: ViewEncapsulation.None,
 })
-export class MapComponent implements AfterViewInit, OnChanges {
+export class MapComponent implements AfterViewInit, OnDestroy, OnChanges {
 	readonly latitude = model(0)
 	readonly longitude = model(0)
 
 	private readonly mapRef = viewChild.required<ElementRef<HTMLDivElement>>('map')
+	private resizeObserver?: ResizeObserver
 
 	private map?: L.Map
 	private marker?: L.Marker
@@ -36,7 +37,9 @@ export class MapComponent implements AfterViewInit, OnChanges {
 	})
 
 	ngAfterViewInit() {
-		this.map = L.map(this.mapRef().nativeElement, {
+		const hostElement = this.mapRef().nativeElement
+
+		this.map = L.map(hostElement, {
 			center: { lat: this.latitude(), lng: this.longitude() },
 			zoom: 5,
 			doubleClickZoom: false,
@@ -57,6 +60,17 @@ export class MapComponent implements AfterViewInit, OnChanges {
 		})
 
 		tiles.addTo(this.map)
+
+		this.resizeObserver = new ResizeObserver(() => {
+			this.refresh()
+		})
+
+		this.resizeObserver.observe(hostElement)
+	}
+
+	ngOnDestroy() {
+		this.resizeObserver?.disconnect()
+		this.resizeObserver = undefined
 	}
 
 	ngOnChanges() {

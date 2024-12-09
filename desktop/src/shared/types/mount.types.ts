@@ -1,5 +1,5 @@
 import type { DropdownItem } from '../components/dropdown.component'
-import type { Angle, EquatorialCoordinate, GeographicCoordinate } from './atlas.types'
+import { DEFAULT_LOCATION, type Angle, type EquatorialCoordinate, type Location } from './atlas.types'
 import type { Device } from './device.types'
 import type { GPS } from './gps.types'
 import type { GuideOutput } from './guider.types'
@@ -67,8 +67,9 @@ export interface MountRemoteControlDialog {
 	controls: MountRemoteControl[]
 }
 
-export interface MountCoordinateDialog extends GeographicCoordinate<number> {
+export interface MountSiteDialog {
 	showDialog: boolean
+	location: Location
 }
 
 export interface MountTimeDialog {
@@ -131,6 +132,11 @@ export const DEFAULT_MOUNT_TIME_DIALOG: MountTimeDialog = {
 	showDialog: false,
 	dateTime: new Date(),
 	offsetInMinutes: 0,
+}
+
+export const DEFAULT_MOUNT_SITE_DIALOG: MountSiteDialog = {
+	showDialog: false,
+	location: DEFAULT_LOCATION,
 }
 
 export const DEFAULT_MOUNT_PREFERENCE: MountPreference = {

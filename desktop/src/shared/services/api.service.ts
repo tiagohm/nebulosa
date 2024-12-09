@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core'
 import { DARVStart, TPPAStart } from '../types/alignment.types'
 import { extractDate, extractDateTime } from '../types/angular.types'
-import { Angle, BodyPosition, CloseApproach, ComputedLocation, DeepSkyObject, EarthSeasonDateTime, Location, MinorPlanet, MoonPhases, Satellite, SatelliteGroupType, SkyObjectSearchFilter, SkyObjectType, Twilight } from '../types/atlas.types'
+import { Angle, BodyPosition, CloseApproach, ComputedLocation, DeepSkyObject, EarthSeasonDateTime, GeographicCoordinate, Location, MinorPlanet, MoonPhases, Satellite, SatelliteGroupType, SkyObjectSearchFilter, SkyObjectType, Twilight } from '../types/atlas.types'
 import { AutoFocusRequest } from '../types/autofocus.type'
 import { CalibrationFrame } from '../types/calibration.types'
 import { Camera, CameraStartCapture } from '../types/camera.types'
@@ -184,6 +184,11 @@ export class ApiService {
 		const [date, time] = extractDateTime(dateTime)
 		const query = this.http.query({ date, time, offsetInMinutes })
 		return this.http.put<never>(`mounts/${mount.id}/datetime?${query}`)
+	}
+
+	mountCoordinates(mount: Mount, coordinate: GeographicCoordinate) {
+		const query = this.http.query({ ...coordinate })
+		return this.http.put<never>(`mounts/${mount.id}/coordinates?${query}`)
 	}
 
 	mountRemoteControlStart(mount: Mount, protocol: MountRemoteControlProtocol, host: string, port: number) {

@@ -10,7 +10,7 @@ import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { Tickable, Ticker } from '../../shared/services/ticker.service'
 import { BodyTabType, ComputedLocation, DEFAULT_COMPUTED_LOCATION } from '../../shared/types/atlas.types'
-import { DEFAULT_MOUNT, DEFAULT_MOUNT_PREFERENCE, DEFAULT_MOUNT_REMOTE_CONTROL_DIALOG, DEFAULT_MOUNT_TIME_DIALOG, Mount, MountRemoteControlProtocol, MountSlewDirection, TrackMode } from '../../shared/types/mount.types'
+import { DEFAULT_MOUNT, DEFAULT_MOUNT_PREFERENCE, DEFAULT_MOUNT_REMOTE_CONTROL_DIALOG, DEFAULT_MOUNT_SITE_DIALOG, DEFAULT_MOUNT_TIME_DIALOG, Mount, MountRemoteControlProtocol, MountSlewDirection, TrackMode } from '../../shared/types/mount.types'
 import { AppComponent } from '../app.component'
 
 @Component({
@@ -30,6 +30,7 @@ export class MountComponent implements AfterContentInit, OnDestroy, Tickable {
 	protected readonly preference = structuredClone(DEFAULT_MOUNT_PREFERENCE)
 	protected readonly currentComputedLocation = structuredClone(DEFAULT_COMPUTED_LOCATION)
 	protected readonly targetComputedLocation = structuredClone(DEFAULT_COMPUTED_LOCATION)
+	protected readonly site = structuredClone(DEFAULT_MOUNT_SITE_DIALOG)
 	protected readonly time = structuredClone(DEFAULT_MOUNT_TIME_DIALOG)
 
 	private readonly computeCoordinatePublisher = new Subject<void>()
@@ -337,6 +338,12 @@ export class MountComponent implements AfterContentInit, OnDestroy, Tickable {
 		this.remoteControl.showDialog = true
 	}
 
+	protected showSiteDialog() {
+		const { longitude, latitude, elevation } = this.mount
+		this.site.location = { ...this.site.location, longitude, latitude, elevation }
+		this.site.showDialog = true
+	}
+
 	protected showTimeDialog() {
 		const now = new Date()
 		this.time.offsetInMinutes = this.mount.offsetInMinutes
@@ -351,6 +358,10 @@ export class MountComponent implements AfterContentInit, OnDestroy, Tickable {
 
 	protected timeSync() {
 		return this.api.mountTime(this.mount, this.time.dateTime, this.time.offsetInMinutes)
+	}
+
+	protected siteApply() {
+		return this.api.mountCoordinates(this.mount, this.site.location)
 	}
 
 	protected async startRemoteControl() {
