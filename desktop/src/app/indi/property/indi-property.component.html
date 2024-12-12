@@ -58,7 +58,7 @@
 							@if (mProperty.perm !== 'RO') {
 								<div class="col-6">
 									<neb-input-text
-										label="item.label"
+										[label]="item.label"
 										[(value)]="item.valueToSend" />
 								</div>
 							}
