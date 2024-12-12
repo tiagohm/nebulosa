@@ -48,7 +48,7 @@
 		"@mdi/font": "7.4.47",
 		"chart.js": "4.4.7",
 		"chartjs-plugin-zoom": "2.2.0",
-		"hotkeys-js": "3.13.7",
+		"hotkeys-js": "3.13.8",
 		"leaflet": "1.9.4",
 		"ngx-moveable": "0.50.0",
 		"primeflex": "3.3.1",
