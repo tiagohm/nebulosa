@@ -30,11 +30,7 @@ interface Device : INDIProtocolHandler, AutoCloseable, Comparable<Device> {
 
     val snoopedDevices: List<Device>
 
-    val driverName: String
-        get() = ""
-
-    val driverVersion: String
-        get() = ""
+    val driver: DriverInfo
 
     fun connect()
 

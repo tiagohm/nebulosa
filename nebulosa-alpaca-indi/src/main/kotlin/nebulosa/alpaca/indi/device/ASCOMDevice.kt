@@ -36,6 +36,7 @@ abstract class ASCOMDevice : Device, Resettable {
     @Volatile final override var connected = false
         private set
 
+    override val driver = ASCOMDriverInfo("", "")
     override val properties = emptyMap<String, PropertyVector<*, *>>()
     override val messages = LinkedList<String>()
 

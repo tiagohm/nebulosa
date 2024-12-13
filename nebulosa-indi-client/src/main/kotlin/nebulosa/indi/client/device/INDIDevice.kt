@@ -38,7 +38,7 @@ internal abstract class INDIDevice : Device {
 
     abstract override val sender: INDIClient
 
-    abstract val driverInfo: DriverInfo
+    abstract override val driver: INDIDriverInfo
 
     final override val properties = linkedMapOf<String, PropertyVector<*, *>>()
     final override val messages = LinkedList<String>()
@@ -46,16 +46,10 @@ internal abstract class INDIDevice : Device {
     final override val snoopedDevices = ArrayList<Device>(4)
 
     override val name
-        get() = driverInfo.name
+        get() = driver.name
 
     @Volatile override var connected = false
         protected set
-
-    final override val driverName
-        get() = driverInfo.executable
-
-    final override val driverVersion
-        get() = driverInfo.version
 
     private fun addMessageAndFireEvent(text: String) {
         synchronized(messages) {

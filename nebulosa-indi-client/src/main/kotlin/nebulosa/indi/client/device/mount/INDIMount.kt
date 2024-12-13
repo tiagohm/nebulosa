@@ -1,7 +1,7 @@
 package nebulosa.indi.client.device.mount
 
 import nebulosa.indi.client.INDIClient
-import nebulosa.indi.client.device.DriverInfo
+import nebulosa.indi.client.device.INDIDriverInfo
 import nebulosa.indi.client.device.INDIDevice
 import nebulosa.indi.client.device.handler.INDIGuideOutputHandler
 import nebulosa.indi.device.firstOnSwitch
@@ -56,7 +56,7 @@ import java.time.ZoneOffset
 
 internal open class INDIMount(
     final override val sender: INDIClient,
-    final override val driverInfo: DriverInfo,
+    final override val driver: INDIDriverInfo,
 ) : INDIDevice(), Mount {
 
     @Volatile final override var slewing = false

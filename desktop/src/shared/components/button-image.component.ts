@@ -6,6 +6,7 @@ import { Component, input, output, ViewEncapsulation } from '@angular/core'
 		<p-button
 			[text]="true"
 			[disabled]="disabled()"
+			[rounded]="rounded()"
 			[pTooltip]="tooltip()"
 			[tooltipPosition]="tooltipPosition()"
 			[life]="2000"
@@ -29,6 +30,10 @@ import { Component, input, output, ViewEncapsulation } from '@angular/core'
 					filter: grayscale(1);
 				}
 			}
+
+			.p-button {
+				min-width: fit-content;
+			}
 		}
 	`,
 	encapsulation: ViewEncapsulation.None,
@@ -40,6 +45,7 @@ export class ButtonImageComponent {
 	readonly tooltip = input<string>()
 	readonly tooltipPosition = input<'right' | 'left' | 'top' | 'bottom'>('bottom')
 	readonly disabled = input<boolean | undefined>(false)
+	readonly rounded = input<boolean | undefined>(false)
 	readonly severity = input<'success' | 'info' | 'warning' | 'danger' | 'help' | 'primary' | 'secondary' | 'contrast'>()
 	readonly action = output<MouseEvent>()
 }

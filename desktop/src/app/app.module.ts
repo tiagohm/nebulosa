@@ -46,6 +46,7 @@ import { ToastModule } from 'primeng/toast'
 import { TooltipModule } from 'primeng/tooltip'
 import { TreeModule } from 'primeng/tree'
 import { ButtonImageComponent } from '../shared/components/button-image.component'
+import { ButtonIndiComponent } from '../shared/components/button-indi.component'
 import { ButtonComponent } from '../shared/components/button.component'
 import { CameraExposureComponent } from '../shared/components/camera-exposure.component'
 import { CameraInfoComponent } from '../shared/components/camera-info.component'
@@ -121,6 +122,7 @@ import { SettingsComponent } from './settings/settings.component'
 		AutoFocusComponent,
 		ButtonComponent,
 		ButtonImageComponent,
+		ButtonIndiComponent,
 		CalculatorComponent,
 		CalibrationComponent,
 		CameraComponent,

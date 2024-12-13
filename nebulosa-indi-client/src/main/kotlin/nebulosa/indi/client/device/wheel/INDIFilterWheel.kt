@@ -1,7 +1,7 @@
 package nebulosa.indi.client.device.wheel
 
 import nebulosa.indi.client.INDIClient
-import nebulosa.indi.client.device.DriverInfo
+import nebulosa.indi.client.device.INDIDriverInfo
 import nebulosa.indi.client.device.INDIDevice
 import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.filterwheel.FilterWheelCountChanged
@@ -20,7 +20,7 @@ import nebulosa.indi.protocol.Vector.Companion.isBusy
 
 internal open class INDIFilterWheel(
     final override val sender: INDIClient,
-    final override val driverInfo: DriverInfo,
+    final override val driver: INDIDriverInfo,
 ) : INDIDevice(), FilterWheel {
 
     @Volatile final override var count = 0

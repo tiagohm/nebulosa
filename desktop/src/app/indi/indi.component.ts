@@ -70,17 +70,17 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
 				})
 			}
 		})
+
+		electronService.on('DATA.CHANGED', (device: Device) => {
+			if (device.id) {
+				ngZone.run(() => {
+					void this.deviceChanged(device)
+				})
+			}
+		})
 	}
 
 	async ngAfterViewInit() {
-		this.route.queryParams.subscribe((e) => {
-			const device = JSON.parse(decodeURIComponent(e['data'] as string)) as Device
-
-			if (device.id) {
-				this.device = device
-			}
-		})
-
 		const cameras = await this.api.cameras()
 		const mounts = await this.api.mounts()
 		const wheels = await this.api.wheels()
@@ -103,9 +103,16 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
 		this.devices = devices.sort(deviceComparator)
 
 		if (this.devices.length) {
-			this.device = this.devices[0]
-			await this.deviceChanged(this.device)
+			void this.deviceChanged(this.devices[0])
 		}
+
+		this.route.queryParams.subscribe((e) => {
+			const device = JSON.parse(decodeURIComponent(e['data'] as string)) as Device
+
+			if (device.id) {
+				void this.deviceChanged(device)
+			}
+		})
 	}
 
 	@HostListener('window:unload')
@@ -116,17 +123,21 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
 	}
 
 	protected async deviceChanged(device?: Device) {
-		if (this.device) {
-			await this.api.indiUnlisten(this.device)
-		}
-
-		this.device = device
-
-		await this.updateProperties()
-
 		if (device) {
+			if (this.device) {
+				await this.api.indiUnlisten(this.device)
+			}
+
+			this.device = this.devices.find((e) => e.id === device.id || e.name === device.name)
+
+			await this.updateProperties()
+
 			await this.api.indiListen(device)
 			this.messages = await this.api.indiMessages(device)
+		} else {
+			this.device = undefined
+			this.properties = []
+			this.groups = []
 		}
 	}
 

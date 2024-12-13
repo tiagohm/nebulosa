@@ -5,11 +5,16 @@ import type { Device } from '../types/device.types'
 	selector: 'neb-device-name',
 	template: `
 		<div class="flex flex-column justify-content-center gap-0">
-			<span class="font-bold">{{ device().name }}</span>
-			<div class="flex flex-row align-items-center text-xs text-gray-400 gap-2">
-				<span>DRIVER: {{ device().driverName }}</span>
-				<span>VERSION: {{ device().driverVersion }}</span>
-			</div>
+			@let mDevice = device();
+
+			<span class="font-bold">{{ mDevice.name }}</span>
+
+			@if (mDevice.sender.type === 'INDI') {
+				<div class="flex flex-row align-items-center text-xs text-gray-400 gap-1">
+					<span>DRIVER: {{ mDevice.driver.name }}</span>
+					<span>V{{ mDevice.driver.version }}</span>
+				</div>
+			}
 		</div>
 	`,
 	encapsulation: ViewEncapsulation.None,

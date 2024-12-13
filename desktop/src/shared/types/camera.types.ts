@@ -1,7 +1,7 @@
 import type { MessageEvent } from './api.types'
 import type { Thermometer } from './auxiliary.types'
 import type { CompanionDevice, Device, PropertyState } from './device.types'
-import { isCompanionDevice } from './device.types'
+import { EMPTY_DEVICE_SENDER, EMPTY_DRIVER_INFO, isCompanionDevice } from './device.types'
 import type { Focuser } from './focuser.types'
 import type { GuideOutput } from './guider.types'
 import type { ImageFilterType } from './image.types'
@@ -199,9 +199,8 @@ export interface CameraNamingFormatDialog {
 
 export const DEFAULT_CAMERA: Camera = {
 	type: 'CAMERA',
-	sender: '',
-	driverName: '',
-	driverVersion: '',
+	sender: EMPTY_DEVICE_SENDER,
+	driver: EMPTY_DRIVER_INFO,
 	id: '',
 	exposuring: false,
 	hasCoolerControl: false,

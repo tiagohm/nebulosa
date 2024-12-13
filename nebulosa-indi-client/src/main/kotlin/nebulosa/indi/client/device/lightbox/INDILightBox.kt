@@ -1,7 +1,7 @@
 package nebulosa.indi.client.device.lightbox
 
 import nebulosa.indi.client.INDIClient
-import nebulosa.indi.client.device.DriverInfo
+import nebulosa.indi.client.device.INDIDriverInfo
 import nebulosa.indi.client.device.INDIDevice
 import nebulosa.indi.device.lightbox.LightBox
 import nebulosa.indi.device.lightbox.LightBoxEnabledChanged
@@ -14,7 +14,7 @@ import nebulosa.indi.protocol.SwitchVector
 
 internal open class INDILightBox(
     override val sender: INDIClient,
-    override val driverInfo: DriverInfo,
+    override val driver: INDIDriverInfo,
 ) : INDIDevice(), LightBox {
 
     @Volatile final override var enabled = false

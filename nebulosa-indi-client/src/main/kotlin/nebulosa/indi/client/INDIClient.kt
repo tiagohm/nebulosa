@@ -2,7 +2,7 @@ package nebulosa.indi.client
 
 import nebulosa.indi.client.connection.INDIProcessConnection
 import nebulosa.indi.client.connection.INDISocketConnection
-import nebulosa.indi.client.device.DriverInfo
+import nebulosa.indi.client.device.INDIDriverInfo
 import nebulosa.indi.client.device.INDIDeviceProtocolHandler
 import nebulosa.indi.client.device.auxiliary.INDIGPS
 import nebulosa.indi.client.device.auxiliary.INDIGuideOutput
@@ -53,40 +53,40 @@ data class INDIClient(val connection: INDIConnection) : INDIDeviceProtocolHandle
     override val input
         get() = connection.input
 
-    override fun newCamera(driverInfo: DriverInfo): Camera {
-        return CAMERAS[driverInfo.executable]?.create(this, driverInfo) ?: INDICamera(this, driverInfo)
+    override fun newCamera(driver: INDIDriverInfo): Camera {
+        return CAMERAS[driver.executable]?.create(this, driver) ?: INDICamera(this, driver)
     }
 
-    override fun newMount(driverInfo: DriverInfo): Mount {
-        return INDIMount(this, driverInfo)
+    override fun newMount(driver: INDIDriverInfo): Mount {
+        return INDIMount(this, driver)
     }
 
-    override fun newFocuser(driverInfo: DriverInfo): Focuser {
-        return INDIFocuser(this, driverInfo)
+    override fun newFocuser(driver: INDIDriverInfo): Focuser {
+        return INDIFocuser(this, driver)
     }
 
-    override fun newFilterWheel(driverInfo: DriverInfo): FilterWheel {
-        return INDIFilterWheel(this, driverInfo)
+    override fun newFilterWheel(driver: INDIDriverInfo): FilterWheel {
+        return INDIFilterWheel(this, driver)
     }
 
-    override fun newRotator(driverInfo: DriverInfo): Rotator {
-        return INDIRotator(this, driverInfo)
+    override fun newRotator(driver: INDIDriverInfo): Rotator {
+        return INDIRotator(this, driver)
     }
 
-    override fun newGPS(driverInfo: DriverInfo): GPS {
-        return INDIGPS(this, driverInfo)
+    override fun newGPS(driver: INDIDriverInfo): GPS {
+        return INDIGPS(this, driver)
     }
 
-    override fun newGuideOutput(driverInfo: DriverInfo): GuideOutput {
-        return INDIGuideOutput(this, driverInfo)
+    override fun newGuideOutput(driver: INDIDriverInfo): GuideOutput {
+        return INDIGuideOutput(this, driver)
     }
 
-    override fun newLightBox(driverInfo: DriverInfo): LightBox {
-        return INDILightBox(this, driverInfo)
+    override fun newLightBox(driver: INDIDriverInfo): LightBox {
+        return INDILightBox(this, driver)
     }
 
-    override fun newDustCap(driverInfo: DriverInfo): DustCap {
-        return INDIDustCap(this, driverInfo)
+    override fun newDustCap(driver: INDIDriverInfo): DustCap {
+        return INDIDustCap(this, driver)
     }
 
     override fun start() {
@@ -121,9 +121,9 @@ data class INDIClient(val connection: INDIConnection) : INDIDeviceProtocolHandle
             "indi_simulator_guide" to SimCamera::class.java,
         )
 
-        private fun <T : Device> Class<out T>.create(handler: INDIClient, driverInfo: DriverInfo): T {
-            return getConstructor(INDIClient::class.java, DriverInfo::class.java)
-                .newInstance(handler, driverInfo)
+        private fun <T : Device> Class<out T>.create(handler: INDIClient, driver: INDIDriverInfo): T {
+            return getConstructor(INDIClient::class.java, INDIDriverInfo::class.java)
+                .newInstance(handler, driver)
         }
     }
 }
