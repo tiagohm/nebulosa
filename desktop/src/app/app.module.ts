@@ -5,37 +5,37 @@ import { LOCALE_ID, NgModule } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { BrowserModule } from '@angular/platform-browser'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async'
 import { NgxMoveableModule } from 'ngx-moveable'
 import { AccordionModule } from 'primeng/accordion'
 import { ConfirmationService, MessageService } from 'primeng/api'
 import { BadgeModule } from 'primeng/badge'
 import { ButtonModule } from 'primeng/button'
-import { CalendarModule } from 'primeng/calendar'
 import { CardModule } from 'primeng/card'
 import { ChartModule } from 'primeng/chart'
 import { CheckboxModule } from 'primeng/checkbox'
 import { ColorPickerModule } from 'primeng/colorpicker'
+import { providePrimeNG } from 'primeng/config'
 import { ConfirmDialogModule } from 'primeng/confirmdialog'
 import { ContextMenuModule } from 'primeng/contextmenu'
+import { DatePickerModule } from 'primeng/datepicker'
 import { DialogModule } from 'primeng/dialog'
-import { DropdownModule } from 'primeng/dropdown'
-import { DialogService, DynamicDialogModule } from 'primeng/dynamicdialog'
+import { DialogService } from 'primeng/dynamicdialog'
 import { FloatLabelModule } from 'primeng/floatlabel'
 import { InplaceModule } from 'primeng/inplace'
 import { InputNumberModule } from 'primeng/inputnumber'
-import { InputSwitchModule } from 'primeng/inputswitch'
 import { InputTextModule } from 'primeng/inputtext'
 import { KnobModule } from 'primeng/knob'
 import { ListboxModule } from 'primeng/listbox'
 import { MenuModule } from 'primeng/menu'
 import { MessageModule } from 'primeng/message'
 import { MultiSelectModule } from 'primeng/multiselect'
-import { OverlayPanelModule } from 'primeng/overlaypanel'
+import { PopoverModule } from 'primeng/popover'
 import { ProgressBarModule } from 'primeng/progressbar'
 import { ScrollPanelModule } from 'primeng/scrollpanel'
+import { SelectModule } from 'primeng/select'
 import { SelectButtonModule } from 'primeng/selectbutton'
 import { SidebarModule } from 'primeng/sidebar'
-import { SlideMenuModule } from 'primeng/slidemenu'
 import { SliderModule } from 'primeng/slider'
 import { SplitButtonModule } from 'primeng/splitbutton'
 import { TableModule } from 'primeng/table'
@@ -43,6 +43,7 @@ import { TabViewModule } from 'primeng/tabview'
 import { TagModule } from 'primeng/tag'
 import { TieredMenuModule } from 'primeng/tieredmenu'
 import { ToastModule } from 'primeng/toast'
+import { ToggleSwitchModule } from 'primeng/toggleswitch'
 import { TooltipModule } from 'primeng/tooltip'
 import { TreeModule } from 'primeng/tree'
 import { ButtonImageComponent } from '../shared/components/button-image.component'
@@ -87,6 +88,7 @@ import { AboutComponent } from './about/about.component'
 import { AlignmentComponent } from './alignment/alignment.component'
 import { AppRoutingModule } from './app-routing.module'
 import { AppComponent } from './app.component'
+import { AppTheme } from './app.theme'
 import { AtlasComponent } from './atlas/atlas.component'
 import { AutoFocusComponent } from './autofocus/autofocus.component'
 import { CalculatorComponent } from './calculator/calculator.component'
@@ -134,8 +136,8 @@ import { SettingsComponent } from './settings/settings.component'
 		DeviceNameComponent,
 		DialogMenuComponent,
 		DropdownComponent,
-		DropdownItemComponent,
 		DropdownEnumComponent,
+		DropdownItemComponent,
 		DropdownOptionsPipe,
 		DustCapComponent,
 		EnumDropdownPipe,
@@ -173,8 +175,8 @@ import { SettingsComponent } from './settings/settings.component'
 		SettingsComponent,
 		SlideMenuComponent,
 		SpinnableNumberDirective,
-		TagComponent,
 		SwitchComponent,
+		TagComponent,
 		WinPipe,
 	],
 	imports: [
@@ -184,7 +186,6 @@ import { SettingsComponent } from './settings/settings.component'
 		BrowserAnimationsModule,
 		BrowserModule,
 		ButtonModule,
-		CalendarModule,
 		CardModule,
 		ChartModule,
 		CheckboxModule,
@@ -192,15 +193,13 @@ import { SettingsComponent } from './settings/settings.component'
 		CommonModule,
 		ConfirmDialogModule,
 		ContextMenuModule,
+		DatePickerModule,
 		DialogModule,
 		DragDropModule,
-		DropdownModule,
-		DynamicDialogModule,
 		FloatLabelModule,
 		FormsModule,
 		InplaceModule,
 		InputNumberModule,
-		InputSwitchModule,
 		InputTextModule,
 		KnobModule,
 		ListboxModule,
@@ -208,12 +207,12 @@ import { SettingsComponent } from './settings/settings.component'
 		MessageModule,
 		MultiSelectModule,
 		NgxMoveableModule,
-		OverlayPanelModule,
+		PopoverModule,
 		ProgressBarModule,
 		ScrollPanelModule,
 		SelectButtonModule,
+		SelectModule,
 		SidebarModule,
-		SlideMenuModule,
 		SliderModule,
 		SplitButtonModule,
 		TableModule,
@@ -221,6 +220,7 @@ import { SettingsComponent } from './settings/settings.component'
 		TagModule,
 		TieredMenuModule,
 		ToastModule,
+		ToggleSwitchModule,
 		TooltipModule,
 		TreeModule,
 	],
@@ -235,6 +235,19 @@ import { SettingsComponent } from './settings/settings.component'
 		ExposureTimePipe,
 		MessageService,
 		provideHttpClient(withInterceptorsFromDi()),
+		provideAnimationsAsync(),
+		providePrimeNG({
+			ripple: true,
+			inputStyle: 'filled',
+			theme: {
+				preset: AppTheme,
+				options: {
+					prefix: 'p',
+					darkModeSelector: '.dark-mode',
+					cssLayer: false,
+				},
+			},
+		}),
 		WinPipe,
 		{
 			provide: LOCALE_ID,

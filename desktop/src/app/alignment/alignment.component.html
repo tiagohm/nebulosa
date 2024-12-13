@@ -209,10 +209,10 @@
 			icon="mdi mdi-information"
 			class="absolute"
 			[style]="{ right: '8px', top: '5px' }"
-			(action)="tab === 0 ? tppaInfo.toggle($event) : darvInfo.toggle($event)" />
+			(action)="tab === 0 ? tppaInfoPopover.toggle($event) : darvInfoPopover.toggle($event)" />
 
-		<p-overlayPanel
-			#tppaInfo
+		<p-popover
+			#tppaInfoPopover
 			[focusOnShow]="false"
 			appendTo="body"
 			[style]="{ maxWidth: '91vw' }">
@@ -223,9 +223,9 @@
 					<span>3. Repeatedly adjust the Azimuth/Altitude until their values get close to 0.</span>
 				</div>
 			</div>
-		</p-overlayPanel>
-		<p-overlayPanel
-			#darvInfo
+		</p-popover>
+		<p-popover
+			#darvInfoPopover
 			[focusOnShow]="false"
 			appendTo="body"
 			[style]="{ maxWidth: '91vw' }">
@@ -240,6 +240,6 @@
 					<span>7. Increase the drift time and repeat the step 1 to refine the alignment.</span>
 				</div>
 			</div>
-		</p-overlayPanel>
+		</p-popover>
 	</div>
 </div>

@@ -1,4 +1,6 @@
 import { Component, input, output, ViewEncapsulation } from '@angular/core'
+import { TooltipPosition } from '../types/angular.types'
+import { ButtonSeverity } from './button.component'
 
 @Component({
 	selector: 'neb-button-image',
@@ -23,7 +25,7 @@ import { Component, input, output, ViewEncapsulation } from '@angular/core'
 	`,
 	styles: `
 		neb-button-image {
-			.p-disabled {
+			.p-button[disabled] {
 				img {
 					filter: grayscale(1);
 				}
@@ -37,8 +39,8 @@ export class ButtonImageComponent {
 	readonly image = input.required<string>()
 	readonly imageHeight = input('16px')
 	readonly tooltip = input<string>()
-	readonly tooltipPosition = input<'right' | 'left' | 'top' | 'bottom'>('bottom')
+	readonly tooltipPosition = input<TooltipPosition>('bottom')
 	readonly disabled = input<boolean | undefined>(false)
-	readonly severity = input<'success' | 'info' | 'warning' | 'danger' | 'help' | 'primary' | 'secondary' | 'contrast'>()
+	readonly severity = input<ButtonSeverity>()
 	readonly action = output<MouseEvent>()
 }

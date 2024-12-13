@@ -731,14 +731,14 @@
 	</div>
 </p-dialog>
 
-<p-overlayPanel
-	#dateTimeAndLocationPanel
+<p-popover
+	#dateTimeAndLocationPopover
 	[style]="{ width: 'calc(100% - 8px)', marginLeft: '4px' }"
 	appendTo="body">
 	<ng-template pTemplate="content">
 		<div class="grid">
 			<div class="col-7 flex-column gap-2">
-				<p-calendar
+				<p-date-picker
 					[disabled]="!dateTimeAndLocation.manual"
 					[ngModel]="dateTimeAndLocation.dateTime"
 					(ngModelChange)="dateChanged($event)"
@@ -783,10 +783,10 @@
 			</div>
 		</div>
 	</ng-template>
-</p-overlayPanel>
+</p-popover>
 
-<p-overlayPanel
-	#favoritesPanel
+<p-popover
+	#bookmarkPopover
 	[style]="{ width: 'calc(100% - 8px)', marginLeft: '4px' }"
 	appendTo="body">
 	<ng-template pTemplate="content">
@@ -794,7 +794,7 @@
 			<p-listbox
 				[options]="preference.favorites"
 				[ngModel]="favorited"
-				(ngModelChange)="selectFavorite($event); favoritesPanel.hide()"
+				(ngModelChange)="selectFavorite($event); bookmarkPopover.hide()"
 				class="w-full"
 				styleClass="border-0 w-full"
 				[metaKeySelection]="false"
@@ -821,7 +821,7 @@
 			</p-listbox>
 		</div>
 	</ng-template>
-</p-overlayPanel>
+</p-popover>
 
 <neb-dialog-menu
 	#ephemerisMenu

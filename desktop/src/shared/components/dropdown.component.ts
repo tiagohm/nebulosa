@@ -1,5 +1,5 @@
 import { Component, input, model, Signal, TemplateRef, viewChild, ViewEncapsulation, WritableSignal } from '@angular/core'
-import { Dropdown } from 'primeng/dropdown'
+import { Select } from 'primeng/select'
 
 export interface DropdownItem<T> {
 	label: string
@@ -13,10 +13,10 @@ abstract class DropdownBaseComponent<O, T> {
 	abstract readonly disabled: Signal<boolean | undefined>
 	abstract readonly filter: Signal<boolean>
 	abstract readonly emptyMessage: Signal<string>
-	protected abstract readonly dropdown: Signal<Dropdown>
+	protected abstract readonly select: Signal<Select>
 
 	hide() {
-		this.dropdown().hide()
+		this.select().hide()
 	}
 }
 
@@ -24,8 +24,8 @@ abstract class DropdownBaseComponent<O, T> {
 	selector: 'neb-dropdown',
 	template: `
 		<p-floatLabel class="w-full">
-			<p-dropdown
-				#dropdown
+			<p-select
+				#select
 				[options]="options()"
 				[(ngModel)]="value"
 				[disabled]="disabled() ?? false"
@@ -39,8 +39,8 @@ abstract class DropdownBaseComponent<O, T> {
 				appendTo="body"
 				[panelStyle]="{ maxWidth: '90vw' }">
 				<ng-template
-					let-item
-					pTemplate="selectedItem">
+					#selectedItem
+					let-item>
 					@if (itemTemplate()) {
 						<ng-container
 							[ngTemplateOutlet]="itemTemplate() ?? null"
@@ -52,8 +52,8 @@ abstract class DropdownBaseComponent<O, T> {
 					}
 				</ng-template>
 				<ng-template
-					let-item
-					pTemplate="item">
+					#item
+					let-item>
 					@if (itemTemplate()) {
 						<ng-container
 							[ngTemplateOutlet]="itemTemplate() ?? null"
@@ -64,7 +64,7 @@ abstract class DropdownBaseComponent<O, T> {
 						</div>
 					}
 				</ng-template>
-			</p-dropdown>
+			</p-select>
 			<label>{{ label() }}</label>
 		</p-floatLabel>
 	`,
@@ -86,7 +86,7 @@ export class DropdownComponent<T> extends DropdownBaseComponent<T, T> {
 	readonly filterFields = input<string[]>()
 	readonly emptyMessage = input('Not available')
 	readonly itemTemplate = input<TemplateRef<unknown>>()
-	protected readonly dropdown = viewChild.required<Dropdown>('dropdown')
+	protected readonly select = viewChild.required<Select>('select')
 
 	protected itemLabel(item: unknown) {
 		return (item as Record<string, unknown>)[this.optionLabel()] ?? `${item}`
@@ -97,8 +97,8 @@ export class DropdownComponent<T> extends DropdownBaseComponent<T, T> {
 	selector: 'neb-dropdown-item',
 	template: `
 		<p-floatLabel class="w-full">
-			<p-dropdown
-				#dropdown
+			<p-select
+				#select
 				[options]="options()"
 				[(ngModel)]="value"
 				[disabled]="disabled() ?? false"
@@ -128,15 +128,15 @@ export class DropdownItemComponent<T> extends DropdownBaseComponent<DropdownItem
 	readonly disabled = input<boolean | undefined>(false)
 	readonly filter = input<boolean>(false)
 	readonly emptyMessage = input('Not available')
-	readonly dropdown = viewChild.required<Dropdown>('dropdown')
+	readonly select = viewChild.required<Select>('select')
 }
 
 @Component({
 	selector: 'neb-dropdown-enum',
 	template: `
 		<p-floatLabel class="w-full">
-			<p-dropdown
-				#dropdown
+			<p-select
+				#select
 				[options]="options() | enumDropdown"
 				[(ngModel)]="value"
 				[disabled]="disabled() ?? false"
@@ -165,5 +165,5 @@ export class DropdownEnumComponent<T extends string> extends DropdownBaseCompone
 	readonly filter = input(false)
 	readonly disabled = input<boolean | undefined>(false)
 	readonly emptyMessage = input('Not available')
-	readonly dropdown = viewChild.required<Dropdown>('dropdown')
+	readonly select = viewChild.required<Select>('select')
 }

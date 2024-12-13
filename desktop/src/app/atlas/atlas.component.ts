@@ -4,7 +4,7 @@ import { Chart, ChartData, ChartOptions } from 'chart.js'
 import zoomPlugin from 'chartjs-plugin-zoom'
 import { UIChart } from 'primeng/chart'
 import { ListboxChangeEvent } from 'primeng/listbox'
-import { OverlayPanel } from 'primeng/overlaypanel'
+import { Popover } from 'primeng/popover'
 import { timer } from 'rxjs'
 import { DeviceListMenuComponent } from '../../shared/components/device-list-menu.component'
 import { SlideMenuItem } from '../../shared/components/menu-item.component'
@@ -347,8 +347,8 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 	]
 
 	private readonly deviceMenu = viewChild.required<DeviceListMenuComponent>('deviceMenu')
-	private readonly dateTimeAndLocationPanel = viewChild.required<OverlayPanel>('dateTimeAndLocationPanel')
-	private readonly favoritesPanel = viewChild.required<OverlayPanel>('favoritesPanel')
+	private readonly dateTimeAndLocationPopover = viewChild.required<Popover>('dateTimeAndLocationPopover')
+	private readonly bookmarkPopover = viewChild.required<Popover>('bookmarkPopover')
 	private readonly chart = viewChild.required<UIChart>('chart')
 
 	get body() {
@@ -402,7 +402,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 			icon: 'mdi mdi-bookmark',
 			tooltip: 'Favorites',
 			command: (e) => {
-				this.favoritesPanel().toggle(e.originalEvent)
+				this.bookmarkPopover().toggle(e.originalEvent)
 			},
 		})
 
@@ -410,7 +410,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 			icon: 'mdi mdi-calendar',
 			tooltip: 'Date Time and Location',
 			command: (e) => {
-				this.dateTimeAndLocationPanel().toggle(e.originalEvent)
+				this.dateTimeAndLocationPopover().toggle(e.originalEvent)
 			},
 		})
 
@@ -510,7 +510,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 			// if (minorPlanet.kind) tags.push({ label: minorPlanet.kind, severity: 'success' })
 			if (minorPlanet.orbitType) tags.push({ label: minorPlanet.orbitType, severity: 'success' })
 			if (minorPlanet.pha) tags.push({ label: 'PHA', severity: 'danger' })
-			if (minorPlanet.neo) tags.push({ label: 'NEO', severity: 'warning' })
+			if (minorPlanet.neo) tags.push({ label: 'NEO', severity: 'warn' })
 			this.minorPlanet.tags = tags
 
 			this.refreshTab(false, true)

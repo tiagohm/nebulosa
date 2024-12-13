@@ -422,7 +422,7 @@
 	[style]="{ maxWidth: '90vw' }">
 	<div class="grid p-2">
 		<div class="col-8">
-			<p-calendar
+			<p-date-picker
 				[(ngModel)]="time.dateTime"
 				[showIcon]="true"
 				[showOnFocus]="false"
@@ -437,7 +437,7 @@
 						label="Now"
 						(action)="timeNow()" />
 				</ng-template>
-			</p-calendar>
+			</p-date-picker>
 		</div>
 		<div class="col-4">
 			<neb-input-number

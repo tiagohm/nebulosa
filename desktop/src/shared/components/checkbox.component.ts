@@ -4,14 +4,16 @@ import { CheckboxChangeEvent } from 'primeng/checkbox'
 @Component({
 	selector: 'neb-checkbox',
 	template: `
-		<p-checkbox
-			[binary]="true"
-			[label]="label()"
-			[disabled]="disabled()"
-			[(ngModel)]="value"
-			[class.white-space-nowrap]="noWrap()"
-			[class.vertical]="vertical()"
-			(onChange)="action.emit($event); $event.originalEvent?.stopImmediatePropagation()" />
+		<div class="flex align-items-center justify-content-center gap-1 text-sm">
+			<p-checkbox
+				[binary]="true"
+				[disabled]="disabled()"
+				[(ngModel)]="value"
+				[class.white-space-nowrap]="noWrap()"
+				[class.vertical]="vertical()"
+				(onChange)="action.emit($event); $event.originalEvent?.stopImmediatePropagation()" />
+			<label>{{ label() }}</label>
+		</div>
 	`,
 	styles: `
 		neb-checkbox {

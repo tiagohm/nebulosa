@@ -1,4 +1,7 @@
 import { Component, input, output, ViewEncapsulation } from '@angular/core'
+import { Severity, TooltipPosition } from '../types/angular.types'
+
+export type ButtonSeverity = Severity | 'help' | 'primary' | 'secondary' | 'contrast'
 
 @Component({
 	selector: 'neb-button',
@@ -38,9 +41,9 @@ export class ButtonComponent {
 	readonly label = input<string>()
 	readonly icon = input<string>()
 	readonly tooltip = input<string>()
-	readonly tooltipPosition = input<'right' | 'left' | 'top' | 'bottom'>('bottom')
+	readonly tooltipPosition = input<TooltipPosition>('bottom')
 	readonly rounded = input(true)
 	readonly disabled = input<boolean | undefined>(false)
-	readonly severity = input<'success' | 'info' | 'warning' | 'danger' | 'help' | 'primary' | 'secondary' | 'contrast'>()
+	readonly severity = input<ButtonSeverity>()
 	readonly action = output<MouseEvent>()
 }

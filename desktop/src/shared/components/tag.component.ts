@@ -1,6 +1,7 @@
 import { Component, ElementRef, inject, input, output, ViewEncapsulation } from '@angular/core'
+import { Severity } from '../types/angular.types'
 
-export type TagSeverity = 'success' | 'secondary' | 'info' | 'warning' | 'danger' | 'contrast' | undefined
+export type TagSeverity = Severity |'secondary' | 'contrast' | undefined
 
 export type TagSize = 'large' | 'normal'
 
@@ -67,7 +68,7 @@ export class TagComponent {
 	private severityFromTagName(tagName: string): TagSeverity {
 		if (tagName.endsWith('-info')) return 'info'
 		else if (tagName.endsWith('-success')) return 'success'
-		else if (tagName.endsWith('-warn')) return 'warning'
+		else if (tagName.endsWith('-warn')) return 'warn'
 		else if (tagName.endsWith('-error')) return 'danger'
 		return undefined
 	}

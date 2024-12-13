@@ -1,6 +1,6 @@
 import { Component, ViewEncapsulation, input } from '@angular/core'
 import { CheckboxChangeEvent } from 'primeng/checkbox'
-import { InputSwitchChangeEvent } from 'primeng/inputswitch'
+import { ToggleSwitchChangeEvent } from 'primeng/toggleswitch'
 import { Severity, TooltipPosition } from '../types/angular.types'
 
 export interface MenuItemCommandEvent {
@@ -43,7 +43,7 @@ export interface MenuItem {
 
 	command?: (event: MenuItemCommandEvent) => void
 	check?: (event: CheckboxChangeEvent) => void
-	toggle?: (event: InputSwitchChangeEvent) => void
+	toggle?: (event: ToggleSwitchChangeEvent) => void
 
 	styleClass?: string
 	iconClass?: string

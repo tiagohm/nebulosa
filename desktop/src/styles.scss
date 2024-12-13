@@ -1,4 +1,5 @@
 @import '@mdi/font/scss/materialdesignicons.scss';
+@import '@fontsource/roboto';
 
 $successButtonBg: #81c784;
 $successButtonHoverBg: rgba($successButtonBg, 0.92);
@@ -21,8 +22,6 @@ $accentColor: #f06292;
 $primaryTextColor: #121212;
 $accentTextColor: #121212;
 
-@import 'primeng-sass-theme/themes/material/material-dark/compact/indigo/theme.scss';
-
 html,
 body {
 	height: 100%;
@@ -31,6 +30,7 @@ body {
 	border: 1px solid #212121;
 	scroll-behavior: smooth;
 	background-color: #1a1a1a;
+	font-family: 'Roboto';
 }
 
 body {
@@ -142,12 +142,6 @@ p-table {
 	}
 }
 
-p-dropdown,
-.p-dropdown {
-	width: 100%;
-	height: 100%;
-}
-
 .p-float-label label {
 	border-radius: 4px;
 	padding: 1.5px 6px !important;
@@ -196,13 +190,20 @@ p-dropdown,
 	border: 1px solid rgba(255, 255, 255, 0) !important;
 }
 
-p-calendar.border-0 .p-calendar-w-btn {
+p-datepicker.border-0 .p-datepicker-w-btn {
 	border: 0 !important;
 }
 
-.p-overlaypanel .p-overlaypanel-content {
-	padding-bottom: 10px;
-	padding-top: 10px;
+.p-popover {
+	&:before,
+	&:after {
+		display: none;
+	}
+
+	.p-popover-content {
+		padding-bottom: 10px;
+		padding-top: 10px;
+	}
 }
 
 .p-toast {
@@ -241,11 +242,6 @@ i.mdi {
 	border: 0;
 }
 
-.p-overlaypanel:before,
-.p-overlaypanel:after {
-	display: none;
-}
-
 .p-tabview {
 	.p-tabview-nav li .p-tabview-nav-link {
 		border-color: transparent !important;
@@ -274,11 +270,11 @@ i.mdi {
 }
 
 p-contextmenu *,
-p-dropdown *,
-p-dropdownitem *,
+p-select *,
+p-selectitem *,
 p-tieredmenu *,
 .p-multiselect-header *,
-.p-dropdown-header *,
+.p-select-header *,
 .no-draggable-region,
 .p-button.p-dialog-header-close {
 	-webkit-app-region: no-drag;
