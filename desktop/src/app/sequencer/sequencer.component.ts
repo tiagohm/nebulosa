@@ -299,7 +299,6 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 			this.loadPreference()
 			await this.loadPlanFromPath()
 			await this.cameraChanged()
-			console.log(data, this.plan.camera)
 		})
 	}
 
@@ -665,26 +664,32 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 
 			Object.assign(this.plan.liveStacking, this.preferenceService.settings.get().liveStacker[this.plan.liveStacking.type])
 
-			await this.browserWindowService.openCameraImage(this.plan.camera, 'SEQUENCER')
+			await this.openCameraImage()
 			await this.api.sequencerStart(this.plan.camera, this.plan)
 		}
 	}
 
 	protected async pause() {
-		if (this.plan.camera) {
+		if (this.plan.camera?.id) {
 			await this.api.sequencerPause(this.plan.camera)
 		}
 	}
 
 	protected async unpause() {
-		if (this.plan.camera) {
+		if (this.plan.camera?.id) {
 			await this.api.sequencerUnpause(this.plan.camera)
 		}
 	}
 
 	protected async stop() {
-		if (this.plan.camera) {
+		if (this.plan.camera?.id) {
 			await this.api.sequencerStop(this.plan.camera)
+		}
+	}
+
+	protected async openCameraImage() {
+		if (this.plan.camera?.id) {
+			await this.browserWindowService.openCameraImage(this.plan.camera, 'SEQUENCER')
 		}
 	}
 
