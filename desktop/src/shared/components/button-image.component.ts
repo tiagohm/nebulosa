@@ -11,6 +11,7 @@ import { Component, input, output, ViewEncapsulation } from '@angular/core'
 			[life]="2000"
 			[severity]="severity()"
 			(onClick)="action.emit($event); $event.stopImmediatePropagation()"
+			class="flex"
 			styleClass="w-full select-none cursor-pointer flex-column">
 			<img
 				[src]="image()"

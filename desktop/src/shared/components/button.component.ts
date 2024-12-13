@@ -15,6 +15,7 @@ import { Component, input, output, ViewEncapsulation } from '@angular/core'
 			[pTooltip]="tooltip()"
 			[tooltipPosition]="tooltipPosition()"
 			[life]="2000"
+			class="flex"
 			styleClass="white-space-nowrap select-none cursor-pointer">
 			<ng-content></ng-content>
 		</p-button>
