@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, TemplateRef, ViewEncapsulation, input, output } from '@angular/core'
+import { Component, ElementRef, TemplateRef, ViewEncapsulation, effect, input, output } from '@angular/core'
 import { MenuItemCommandEvent, SlideMenuItem } from './menu-item.component'
 
 @Component({
@@ -25,7 +25,7 @@ import { MenuItemCommandEvent, SlideMenuItem } from './menu-item.component'
 	`,
 	encapsulation: ViewEncapsulation.None,
 })
-export class SlideMenuComponent implements OnInit {
+export class SlideMenuComponent {
 	readonly model = input.required<SlideMenuItem[]>()
 	readonly appendTo = input<HTMLElement | ElementRef | TemplateRef<unknown> | 'body' | undefined | null>()
 	readonly forward = output<MenuItemCommandEvent>()
@@ -35,10 +35,12 @@ export class SlideMenuComponent implements OnInit {
 
 	private readonly navigation: SlideMenuItem[][] = []
 
-	ngOnInit() {
-		const model = this.model()
-		this.processMenu(model, 0)
-		this.currentMenu = model
+	constructor() {
+		effect(() => {
+			const model = this.model()
+			this.processMenu(model, 0)
+			this.currentMenu = model
+		})
 	}
 
 	back(event: MouseEvent) {

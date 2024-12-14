@@ -18,13 +18,11 @@ import { MenuItemCommandEvent, SlideMenuItem } from './menu-item.component'
 			@if (currentHeader) {
 				<span class="text-sm font-bold uppercase">{{ currentHeader }}</span>
 			}
-			@if (visible()) {
-				<neb-slide-menu
-					[model]="model"
-					appendTo="body"
-					(forward)="next($event)"
-					(backward)="back()" />
-			}
+			<neb-slide-menu
+				[model]="model"
+				appendTo="body"
+				(forward)="next($event)"
+				(backward)="back()" />
 		</p-dialog>
 	`,
 	styles: `
@@ -53,13 +51,11 @@ export class DialogMenuComponent {
 
 	show(model: SlideMenuItem[]) {
 		this.model = model
-		this.currentHeader = this.header()
 		this.visible.set(true)
 	}
 
 	hide() {
 		this.visible.set(false)
-		this.navigationHeader.length = 0
 	}
 
 	protected next(event: MenuItemCommandEvent) {
@@ -74,7 +70,7 @@ export class DialogMenuComponent {
 		}
 	}
 
-	back() {
+	protected back() {
 		if (this.navigationHeader.length) {
 			const header = this.navigationHeader.splice(this.navigationHeader.length - 1, 1)[0]
 
