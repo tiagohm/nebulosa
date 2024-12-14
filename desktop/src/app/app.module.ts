@@ -6,6 +6,7 @@ import { FormsModule } from '@angular/forms'
 import { BrowserModule } from '@angular/platform-browser'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
 import { NgxMoveableModule } from 'ngx-moveable'
+import { RepeatPipe } from 'ngxtension/repeat-pipe'
 import { AccordionModule } from 'primeng/accordion'
 import { ConfirmationService, MessageService } from 'primeng/api'
 import { BadgeModule } from 'primeng/badge'
@@ -212,6 +213,7 @@ import { SettingsComponent } from './settings/settings.component'
 		NgxMoveableModule,
 		OverlayPanelModule,
 		ProgressBarModule,
+		RepeatPipe,
 		ScrollPanelModule,
 		SelectButtonModule,
 		SidebarModule,
