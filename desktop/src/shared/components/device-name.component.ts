@@ -7,9 +7,9 @@ import type { Device } from '../types/device.types'
 		<div class="flex flex-column justify-content-center gap-0">
 			@let mDevice = device();
 
-			<span class="font-bold">{{ mDevice.name }}</span>
+			<span class="font-bold white-space-nowrap">{{ mDevice.name }}</span>
 
-			@if (mDevice.sender.type === 'INDI') {
+			@if (mDevice.driver.name) {
 				<div class="flex flex-row align-items-center text-xs text-gray-400 gap-1">
 					<span>DRIVER: {{ mDevice.driver.name }}</span>
 					<span>V{{ mDevice.driver.version }}</span>
@@ -17,6 +17,9 @@ import type { Device } from '../types/device.types'
 			}
 		</div>
 	`,
+	host: {
+		'[class.text-overflow-scroll]': 'true',
+	},
 	encapsulation: ViewEncapsulation.None,
 })
 export class DeviceNameComponent {

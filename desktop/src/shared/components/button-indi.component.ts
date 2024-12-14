@@ -5,13 +5,15 @@ import { Device } from '../types/device.types'
 @Component({
 	selector: 'neb-button-indi',
 	template: `
-		<neb-button-image
-			image="assets/icons/indi.png"
-			[rounded]="true"
-			imageHeight="12.4px"
-			[disabled]="disabled() || device().sender.type !== 'INDI'"
-			(action)="openINDI()"
-			tooltip="INDI" />
+		@if (device().sender.type === 'INDI') {
+			<neb-button-image
+				image="assets/icons/indi.png"
+				[rounded]="true"
+				imageHeight="12.4px"
+				[disabled]="disabled()"
+				(action)="openINDI()"
+				tooltip="INDI" />
+		}
 	`,
 	styles: `
 		neb-button-indi {

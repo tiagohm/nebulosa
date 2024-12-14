@@ -14,7 +14,7 @@ import { MenuItemCommandEvent, SlideMenuItem } from './menu-item.component'
 			[closable]="true"
 			[draggable]="false"
 			(onHide)="hide()"
-			[style]="{ width: 'auto' }">
+			[style]="{ width: 'auto', maxWidth: '90vw' }">
 			@if (currentHeader) {
 				<span class="text-sm font-bold uppercase">{{ currentHeader }}</span>
 			}
