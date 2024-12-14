@@ -18,6 +18,12 @@ interface AlpacaTelescopeService : AlpacaGuideOutputService {
     @PUT("api/v1/telescope/{id}/connected")
     override fun connect(@Path("id") id: Int, @Field("Connected") connected: Boolean): Call<NoneResponse>
 
+    @GET("api/v1/telescope/{id}/driverversion")
+    override fun driverVersion(@Path("id") id: Int): Call<StringResponse>
+
+    @GET("api/v1/telescope/{id}/driverinfo")
+    override fun driverInfo(@Path("id") id: Int): Call<StringResponse>
+
     @GET("api/v1/telescope/{id}/alignmentmode")
     fun alignmentMode(@Path("id") id: Int): Call<AlignmentModeResponse>
 

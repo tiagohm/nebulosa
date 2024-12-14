@@ -16,6 +16,12 @@ interface AlpacaFilterWheelService : AlpacaDeviceService {
     @PUT("api/v1/filterwheel/{id}/connected")
     override fun connect(@Path("id") id: Int, @Field("Connected") connected: Boolean): Call<NoneResponse>
 
+    @GET("api/v1/filterwheel/{id}/driverversion")
+    override fun driverVersion(@Path("id") id: Int): Call<StringResponse>
+
+    @GET("api/v1/filterwheel/{id}/driverinfo")
+    override fun driverInfo(@Path("id") id: Int): Call<StringResponse>
+
     @GET("api/v1/filterwheel/{id}/focusoffsets")
     fun focusOffsets(@Path("id") id: Int): Call<IntArrayResponse>
 
