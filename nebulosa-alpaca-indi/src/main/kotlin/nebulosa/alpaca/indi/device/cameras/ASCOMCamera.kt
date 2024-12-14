@@ -694,7 +694,7 @@ data class ASCOMCamera(
             header.add("OFFSET", offset, "Offset")
             if (canDebayer) header.add(cfaType)
 
-            val mount = snoopedDevices.firstOrNull { it is Mount } as? Mount
+            val mount = snoopedDevices.firstOrNull { it is Mount && it.connected } as? Mount
 
             mount?.also {
                 header.add(FitsKeyword.TELESCOP, it.name)
@@ -714,19 +714,19 @@ data class ASCOMCamera(
                 header.add(FitsKeyword.EQUINOX, 2000)
             }
 
-            val focuser = snoopedDevices.firstOrNull { it is Focuser } as? Focuser
+            val focuser = snoopedDevices.firstOrNull { it is Focuser && it.connected } as? Focuser
 
             focuser?.also {
                 header.add(FitsKeyword.FOCUSPOS, it.position)
             }
 
-            val wheel = snoopedDevices.firstOrNull { it is FilterWheel } as? FilterWheel
+            val wheel = snoopedDevices.firstOrNull { it is FilterWheel && it.connected } as? FilterWheel
 
             wheel?.also {
                 header.add(FitsKeyword.FILTER, it.names.getOrNull(it.position) ?: "Filter #${it.position}")
             }
 
-            val rotator = snoopedDevices.firstOrNull { it is Rotator } as? Rotator
+            val rotator = snoopedDevices.firstOrNull { it is Rotator && it.connected } as? Rotator
 
             rotator?.also {
                 header.add(FitsKeyword.ROTATANG, rotator.angle.toDegrees)
