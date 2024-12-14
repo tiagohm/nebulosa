@@ -1,5 +1,5 @@
-import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, inject } from '@angular/core'
-import { ActivatedRoute } from '@angular/router'
+import { Component, HostListener, NgZone, OnDestroy, effect, inject } from '@angular/core'
+import { injectQueryParams } from 'ngxtension/inject-query-params'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
@@ -11,12 +11,12 @@ import { AppComponent } from '../app.component'
 	selector: 'neb-framing',
 	templateUrl: 'framing.component.html',
 })
-export class FramingComponent implements AfterViewInit, OnDestroy {
-	private readonly route = inject(ActivatedRoute)
+export class FramingComponent implements OnDestroy {
 	private readonly api = inject(ApiService)
 	private readonly browserWindowService = inject(BrowserWindowService)
 	private readonly electronService = inject(ElectronService)
 	private readonly preferenceService = inject(PreferenceService)
+	private readonly data = injectQueryParams('data', { transform: decodeURIComponent })
 
 	protected readonly preference = structuredClone(DEFAULT_FRAMING_PREFERENCE)
 	protected readonly fov = structuredClone(DEFAULT_FRAMING_FOV_DIALOG)
@@ -34,21 +34,19 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
 		this.electronService.on('DATA.CHANGED', (event: FramingRequest) => {
 			return ngZone.run(() => this.frameFromData(event))
 		})
-	}
 
-	async ngAfterViewInit() {
-		this.loading = true
+		effect(async () => {
+			const data = this.data()
 
-		try {
-			this.hipsSurveys = await this.api.hipsSurveys()
-		} finally {
-			this.loadPreference()
-			this.loading = false
-		}
+			try {
+				this.hipsSurveys = await this.api.hipsSurveys()
+			} finally {
+				this.loadPreference()
+			}
 
-		this.route.queryParams.subscribe((e) => {
-			const data = JSON.parse(decodeURIComponent(e['data'] as string)) as FramingRequest
-			return this.frameFromData(data)
+			if (data) {
+				await this.frameFromData(JSON.parse(data))
+			}
 		})
 	}
 

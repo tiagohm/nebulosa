@@ -1,13 +1,12 @@
-import { AfterViewInit, Component, ElementRef, HostListener, NgZone, OnDestroy, inject, viewChild } from '@angular/core'
-import { ActivatedRoute } from '@angular/router'
+import { AfterViewInit, Component, ElementRef, HostListener, NgZone, OnDestroy, effect, inject, viewChild } from '@angular/core'
 import hotkeys from 'hotkeys-js'
 import { NgxLegacyMoveableComponent, OnDrag, OnResize, OnRotate } from 'ngx-moveable'
+import { injectQueryParams } from 'ngxtension/inject-query-params'
 import { ContextMenu } from 'primeng/contextmenu'
 import { DeviceListMenuComponent } from '../../shared/components/device-list-menu.component'
 import { HistogramComponent } from '../../shared/components/histogram.component'
 import { MenuItem } from '../../shared/components/menu-item.component'
 import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
-import { AngularService } from '../../shared/services/angular.service'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { DeviceService } from '../../shared/services/device.service'
@@ -63,13 +62,12 @@ import { AppComponent } from '../app.component'
 })
 export class ImageComponent implements AfterViewInit, OnDestroy {
 	private readonly app = inject(AppComponent)
-	private readonly route = inject(ActivatedRoute)
 	private readonly api = inject(ApiService)
 	private readonly electronService = inject(ElectronService)
 	private readonly browserWindowService = inject(BrowserWindowService)
 	private readonly preferenceService = inject(PreferenceService)
-	private readonly angularService = inject(AngularService)
 	private readonly deviceService = inject(DeviceService)
+	private readonly data = injectQueryParams('data', { transform: decodeURIComponent })
 
 	protected readonly preference = structuredClone(DEFAULT_IMAGE_PREFERENCE)
 	protected readonly solver = structuredClone(DEFAULT_IMAGE_SOLVER_DIALOG)
@@ -541,15 +539,18 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		this.loadPreference()
 
 		this.solver.key = uid()
+
+		effect(() => {
+			const data = this.data()
+
+			if (data) {
+				void this.loadImageFromOpenImage(JSON.parse(data))
+			}
+		})
 	}
 
 	async ngAfterViewInit() {
 		await this.loadCalibrationGroups()
-
-		this.route.queryParams.subscribe((e) => {
-			const data = JSON.parse(decodeURIComponent(e['data'] as string)) as OpenImage
-			return this.loadImageFromOpenImage(data)
-		})
 	}
 
 	@HostListener('window:unload')

@@ -1,5 +1,5 @@
-import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, inject } from '@angular/core'
-import { ActivatedRoute } from '@angular/router'
+import { Component, HostListener, NgZone, OnDestroy, effect, inject } from '@angular/core'
+import { injectQueryParams } from 'ngxtension/inject-query-params'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { Tickable, Ticker } from '../../shared/services/ticker.service'
@@ -10,11 +10,11 @@ import { AppComponent } from '../app.component'
 	selector: 'neb-dustcap',
 	templateUrl: 'dustcap.component.html',
 })
-export class DustCapComponent implements AfterViewInit, OnDestroy, Tickable {
+export class DustCapComponent implements OnDestroy, Tickable {
 	private readonly app = inject(AppComponent)
 	private readonly api = inject(ApiService)
-	private readonly route = inject(ActivatedRoute)
 	private readonly ticker = inject(Ticker)
+	private readonly data = injectQueryParams('data', { transform: decodeURIComponent })
 
 	protected readonly dustCap = structuredClone(DEFAULT_DUST_CAP)
 
@@ -39,13 +39,14 @@ export class DustCapComponent implements AfterViewInit, OnDestroy, Tickable {
 				})
 			}
 		})
-	}
 
-	ngAfterViewInit() {
-		this.route.queryParams.subscribe(async (e) => {
-			const data = JSON.parse(decodeURIComponent(e['data'] as string)) as DustCap
-			await this.dustCapChanged(data)
-			this.ticker.register(this, 30000)
+		effect(async () => {
+			const data = this.data()
+
+			if (data) {
+				await this.dustCapChanged(JSON.parse(data))
+				this.ticker.register(this, 30000)
+			}
 		})
 	}
 

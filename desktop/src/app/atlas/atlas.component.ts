@@ -1,7 +1,7 @@
-import { AfterContentInit, AfterViewInit, Component, HostListener, NgZone, OnDestroy, OnInit, ViewEncapsulation, inject, viewChild } from '@angular/core'
-import { ActivatedRoute } from '@angular/router'
+import { AfterContentInit, AfterViewInit, Component, HostListener, NgZone, OnDestroy, OnInit, ViewEncapsulation, effect, inject, viewChild } from '@angular/core'
 import { Chart, ChartData, ChartOptions } from 'chart.js'
 import zoomPlugin from 'chartjs-plugin-zoom'
+import { injectQueryParams } from 'ngxtension/inject-query-params'
 import { UIChart } from 'primeng/chart'
 import { ListboxChangeEvent } from 'primeng/listbox'
 import { OverlayPanel } from 'primeng/overlaypanel'
@@ -56,10 +56,10 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 	private readonly app = inject(AppComponent)
 	private readonly api = inject(ApiService)
 	private readonly browserWindowService = inject(BrowserWindowService)
-	private readonly route = inject(ActivatedRoute)
 	private readonly preferenceService = inject(PreferenceService)
 	private readonly angularService = inject(AngularService)
 	private readonly deviceService = inject(DeviceService)
+	private readonly data = injectQueryParams('data', { transform: decodeURIComponent })
 
 	protected readonly sun = structuredClone(DEFAULT_SUN)
 	protected readonly moon = structuredClone(DEFAULT_MOON)
@@ -435,6 +435,14 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 		electronService.on('DATA.CHANGED', (event) => {
 			this.loadTabFromData(event)
 		})
+
+		effect(() => {
+			const data = this.data()
+
+			if (data) {
+				this.loadTabFromData(JSON.parse(data))
+			}
+		})
 	}
 
 	ngOnInit() {
@@ -459,11 +467,6 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 				this.refreshTab()
 			}
 		})
-
-		this.route.queryParams.subscribe((e) => {
-			const data = JSON.parse(decodeURIComponent(e['data'] as string)) as SkyAtlasInput
-			this.loadTabFromData(data)
-		})
 	}
 
 	ngAfterViewInit() {
@@ -481,6 +484,10 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 
 			if (this.tab === BodyTabType.SKY_OBJECT) {
 				this.skyObject.search.filter = skyObjectSearchFilterWithDefault(data.filter, this.skyObject.search.filter)
+
+				if (this.skyObject.search.filter.rightAscension && this.skyObject.search.filter.declination && this.skyObject.search.filter.radius <= 0) {
+					this.skyObject.search.filter.radius = 4
+				}
 
 				this.tabChanged()
 				void this.searchSkyObject()

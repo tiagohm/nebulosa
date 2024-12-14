@@ -1,5 +1,5 @@
-import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, ViewEncapsulation, inject, viewChild } from '@angular/core'
-import { ActivatedRoute } from '@angular/router'
+import { Component, HostListener, NgZone, OnDestroy, ViewEncapsulation, effect, inject, viewChild } from '@angular/core'
+import { injectQueryParams } from 'ngxtension/inject-query-params'
 import { MenuItem } from 'primeng/api'
 import { Listbox } from 'primeng/listbox'
 import { ApiService } from '../../shared/services/api.service'
@@ -14,9 +14,9 @@ import { AppComponent } from '../app.component'
 	styleUrls: ['indi.component.scss'],
 	encapsulation: ViewEncapsulation.None,
 })
-export class INDIComponent implements AfterViewInit, OnDestroy {
-	private readonly route = inject(ActivatedRoute)
+export class INDIComponent implements OnDestroy {
 	private readonly api = inject(ApiService)
+	private readonly data = injectQueryParams('data', { transform: decodeURIComponent })
 
 	protected devices: Device[] = []
 	protected properties: INDIProperty[] = []
@@ -78,17 +78,24 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
 				})
 			}
 		})
+
+		effect(async () => {
+			const data = this.data()
+
+			await this.loadDevices()
+
+			if (data) {
+				const device = JSON.parse(data) as Device
+
+				if (device.id) {
+					await this.deviceChanged(device)
+				}
+			}
+		})
 	}
 
-	async ngAfterViewInit() {
-		const cameras = await this.api.cameras()
-		const mounts = await this.api.mounts()
-		const wheels = await this.api.wheels()
-		const focusers = await this.api.focusers()
-		const rotators = await this.api.rotators()
-		const guideOutputs = await this.api.guideOutputs()
-		const lightBoxes = await this.api.lightBoxes()
-		const dustCaps = await this.api.dustCaps()
+	private async loadDevices() {
+		const [cameras, mounts, wheels, focusers, rotators, guideOutputs, lightBoxes, dustCaps] = await Promise.all([this.api.cameras(), this.api.mounts(), this.api.wheels(), this.api.focusers(), this.api.rotators(), this.api.guideOutputs(), this.api.lightBoxes(), this.api.dustCaps()])
 		const devices: Device[] = []
 
 		devices.push(...cameras.filter((a) => !devices.find((b) => a.name === b.name)))
@@ -103,16 +110,8 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
 		this.devices = devices.sort(deviceComparator)
 
 		if (this.devices.length) {
-			void this.deviceChanged(this.devices[0])
+			await this.deviceChanged(this.devices[0])
 		}
-
-		this.route.queryParams.subscribe((e) => {
-			const device = JSON.parse(decodeURIComponent(e['data'] as string)) as Device
-
-			if (device.id) {
-				void this.deviceChanged(device)
-			}
-		})
 	}
 
 	@HostListener('window:unload')
