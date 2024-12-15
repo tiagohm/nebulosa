@@ -17,6 +17,7 @@ import { Camera } from '../../shared/types/camera.types'
 import {
 	AstronomicalObjectDialog,
 	DEFAULT_FOV,
+	DEFAULT_IMAGE_ADJUSTMENT_DIALOG,
 	DEFAULT_IMAGE_ANNOTATION_DIALOG,
 	DEFAULT_IMAGE_CALIBRATION,
 	DEFAULT_IMAGE_DATA,
@@ -82,6 +83,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	protected readonly liveStacking = structuredClone(DEFAULT_IMAGE_LIVE_STACKING)
 	protected readonly zoom = structuredClone(DEFAULT_IMAGE_ZOOM)
 	protected readonly rotation = structuredClone(DEFAULT_IMAGE_ROTATION_DIALOG)
+	protected readonly adjustment = structuredClone(DEFAULT_IMAGE_ADJUSTMENT_DIALOG)
 	protected readonly settings = structuredClone(DEFAULT_IMAGE_SETTINGS_DIALOG)
 	private readonly calibration = structuredClone(DEFAULT_IMAGE_CALIBRATION)
 	private readonly mouseMountCoordinate = structuredClone(DEFAULT_IMAGE_MOUSE_POSITION)
@@ -164,6 +166,15 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		},
 	}
 
+	private readonly adjustmentMenuItem: MenuItem = {
+		label: 'Adjustment',
+		icon: 'mdi mdi-palette',
+		selected: false,
+		command: () => {
+			this.adjustment.showDialog = true
+		},
+	}
+
 	private readonly horizontalMirrorMenuItem: MenuItem = {
 		label: 'Horizontal mirror',
 		icon: 'mdi mdi-flip-horizontal',
@@ -210,7 +221,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		label: 'Transformation',
 		icon: 'mdi mdi-image-edit',
 		selected: false,
-		items: [this.horizontalMirrorMenuItem, this.verticalMirrorMenuItem, this.invertMenuItem, this.rotateMenuItem],
+		items: [this.adjustmentMenuItem, this.horizontalMirrorMenuItem, this.verticalMirrorMenuItem, this.invertMenuItem, this.rotateMenuItem],
 	}
 
 	private readonly calibrationMenuItem: MenuItem = {
@@ -1113,6 +1124,17 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		return this.applyAutoStretchMeanBackground()
 	}
 
+	protected resetAdjustment() {
+		this.adjustment.request.contrast.value = 0
+		this.adjustment.request.brightness.value = 0
+		this.adjustment.request.saturation.value = 0
+		this.adjustment.request.exposure.value = 0
+		this.adjustment.request.gamma.value = 0
+		this.adjustment.request.fade.value = 0
+		this.savePreference()
+		return this.loadImage()
+	}
+
 	private invertImage() {
 		this.transformation.invert = !this.transformation.invert
 		this.invertMenuItem.selected = this.transformation.invert
@@ -1462,6 +1484,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		this.stretch.transformation = this.transformation.stretch
 		this.scnr.transformation = this.transformation.scnr
 		this.annotation.request = this.preference.annotation
+		this.adjustment.request = this.transformation.adjustment
 		this.fov.fovs = this.preference.fovs
 
 		this.autoStretchMenuItem.selected = this.transformation.stretch.auto

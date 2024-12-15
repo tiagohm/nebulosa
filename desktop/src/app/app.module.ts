@@ -103,6 +103,7 @@ import { FocuserComponent } from './focuser/focuser.component'
 import { FramingComponent } from './framing/framing.component'
 import { GuiderComponent } from './guider/guider.component'
 import { HomeComponent } from './home/home.component'
+import { ImageAdjustmentInputComponent } from './image/adjustment-input.component'
 import { CrossHairComponent } from './image/crosshair.component'
 import { ImageComponent } from './image/image.component'
 import { INDIComponent } from './indi/indi.component'
@@ -154,6 +155,7 @@ import { SettingsComponent } from './settings/settings.component'
 		GuiderComponent,
 		HistogramComponent,
 		HomeComponent,
+		ImageAdjustmentInputComponent,
 		ImageComponent,
 		IndicatorComponent,
 		INDIComponent,

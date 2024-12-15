@@ -26,12 +26,12 @@ class MedianAbsoluteDeviation(
             median = Median(channel).compute(source)
         }
 
-        val totalCount = source.forEach(channel) {
+        val count = source.forEach(channel) {
             val value = (abs(it - median) * 65535).toInt()
             histogram[min(value, 65535)]++
         }
 
-        val mad = Median.compute(histogram, totalCount / 2f)
+        val mad = Median.compute(histogram, count / 2f)
         return if (normalized) STANDARD_DEVIATION_SCALE * mad else mad
     }
 
