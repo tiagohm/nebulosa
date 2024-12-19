@@ -1,7 +1,7 @@
 package nebulosa.indi.client.device.dustcap
 
 import nebulosa.indi.client.INDIClient
-import nebulosa.indi.client.device.DriverInfo
+import nebulosa.indi.client.device.INDIDriverInfo
 import nebulosa.indi.client.device.INDIDevice
 import nebulosa.indi.device.dustcap.DustCap
 import nebulosa.indi.device.dustcap.DustCapCanParkChanged
@@ -15,7 +15,7 @@ import nebulosa.indi.protocol.Vector.Companion.isBusy
 
 internal open class INDIDustCap(
     override val sender: INDIClient,
-    override val driverInfo: DriverInfo,
+    override val driver: INDIDriverInfo,
 ) : INDIDevice(), DustCap {
 
     @Volatile final override var canPark = false

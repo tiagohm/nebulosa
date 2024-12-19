@@ -7,6 +7,7 @@ import { BrowserModule } from '@angular/platform-browser'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async'
 import { NgxMoveableModule } from 'ngx-moveable'
+import { RepeatPipe } from 'ngxtension/repeat-pipe'
 import { AccordionModule } from 'primeng/accordion'
 import { ConfirmationService, MessageService } from 'primeng/api'
 import { BadgeModule } from 'primeng/badge'
@@ -47,6 +48,7 @@ import { ToggleSwitchModule } from 'primeng/toggleswitch'
 import { TooltipModule } from 'primeng/tooltip'
 import { TreeModule } from 'primeng/tree'
 import { ButtonImageComponent } from '../shared/components/button-image.component'
+import { ButtonIndiComponent } from '../shared/components/button-indi.component'
 import { ButtonComponent } from '../shared/components/button.component'
 import { CameraExposureComponent } from '../shared/components/camera-exposure.component'
 import { CameraInfoComponent } from '../shared/components/camera-info.component'
@@ -56,6 +58,7 @@ import { DeviceListMenuComponent } from '../shared/components/device-list-menu.c
 import { DeviceNameComponent } from '../shared/components/device-name.component'
 import { DialogMenuComponent } from '../shared/components/dialog-menu.component'
 import { DropdownComponent, DropdownEnumComponent, DropdownItemComponent } from '../shared/components/dropdown.component'
+import { ExposureTimeComponent } from '../shared/components/exposure-time.component'
 import { HistogramComponent } from '../shared/components/histogram.component'
 import { IndicatorComponent } from '../shared/components/indicator.component'
 import { InputNumberComponent } from '../shared/components/input-number.component'
@@ -95,7 +98,6 @@ import { CalculatorComponent } from './calculator/calculator.component'
 import { FormulaComponent } from './calculator/formula/formula.component'
 import { CalibrationComponent } from './calibration/calibration.component'
 import { CameraComponent } from './camera/camera.component'
-import { ExposureTimeComponent } from './camera/exposure-time.component'
 import { DustCapComponent } from './dustcap/dustcap.component'
 import { FilterWheelComponent } from './filterwheel/filterwheel.component'
 import { FlatWizardComponent } from './flat-wizard/flat-wizard.component'
@@ -103,6 +105,7 @@ import { FocuserComponent } from './focuser/focuser.component'
 import { FramingComponent } from './framing/framing.component'
 import { GuiderComponent } from './guider/guider.component'
 import { HomeComponent } from './home/home.component'
+import { ImageAdjustmentInputComponent } from './image/adjustment-input.component'
 import { CrossHairComponent } from './image/crosshair.component'
 import { ImageComponent } from './image/image.component'
 import { INDIComponent } from './indi/indi.component'
@@ -123,6 +126,7 @@ import { SettingsComponent } from './settings/settings.component'
 		AutoFocusComponent,
 		ButtonComponent,
 		ButtonImageComponent,
+		ButtonIndiComponent,
 		CalculatorComponent,
 		CalibrationComponent,
 		CameraComponent,
@@ -153,6 +157,7 @@ import { SettingsComponent } from './settings/settings.component'
 		GuiderComponent,
 		HistogramComponent,
 		HomeComponent,
+		ImageAdjustmentInputComponent,
 		ImageComponent,
 		IndicatorComponent,
 		INDIComponent,
@@ -209,6 +214,7 @@ import { SettingsComponent } from './settings/settings.component'
 		NgxMoveableModule,
 		PopoverModule,
 		ProgressBarModule,
+		RepeatPipe,
 		ScrollPanelModule,
 		SelectButtonModule,
 		SelectModule,

@@ -16,6 +16,12 @@ interface AlpacaFocuserService : AlpacaDeviceService {
     @PUT("api/v1/focuser/{id}/connected")
     override fun connect(@Path("id") id: Int, @Field("Connected") connected: Boolean): Call<NoneResponse>
 
+    @GET("api/v1/focuser/{id}/driverversion")
+    override fun driverVersion(@Path("id") id: Int): Call<StringResponse>
+
+    @GET("api/v1/focuser/{id}/driverinfo")
+    override fun driverInfo(@Path("id") id: Int): Call<StringResponse>
+
     @GET("api/v1/focuser/{id}/absolute")
     fun canAbsolute(@Path("id") id: Int): Call<BoolResponse>
 

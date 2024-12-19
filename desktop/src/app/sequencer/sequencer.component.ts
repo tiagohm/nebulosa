@@ -1,6 +1,6 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
-import { AfterContentInit, Component, HostListener, inject, NgZone, OnDestroy, viewChildren, ViewEncapsulation } from '@angular/core'
-import { ActivatedRoute } from '@angular/router'
+import { Component, effect, HostListener, inject, NgZone, OnDestroy, viewChildren, ViewEncapsulation } from '@angular/core'
+import { injectQueryParams } from 'ngxtension/inject-query-params'
 import { CameraExposureComponent } from '../../shared/components/camera-exposure.component'
 import { DialogMenuComponent } from '../../shared/components/dialog-menu.component'
 import { DropdownItem } from '../../shared/components/dropdown.component'
@@ -32,7 +32,7 @@ import { RotatorComponent } from '../rotator/rotator.component'
 	styleUrls: ['sequencer.component.scss'],
 	encapsulation: ViewEncapsulation.None,
 })
-export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable {
+export class SequencerComponent implements OnDestroy, Tickable {
 	private readonly app = inject(AppComponent)
 	private readonly api = inject(ApiService)
 	private readonly browserWindowService = inject(BrowserWindowService)
@@ -40,7 +40,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 	private readonly preferenceService = inject(PreferenceService)
 	private readonly angularService = inject(AngularService)
 	private readonly ticker = inject(Ticker)
-	private readonly route = inject(ActivatedRoute)
+	private readonly data = injectQueryParams('data', { transform: decodeURIComponent })
 
 	protected cameras: Camera[] = []
 	protected mounts: Mount[] = []
@@ -277,30 +277,42 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 				}
 			})
 		})
-	}
 
-	async ngAfterContentInit() {
-		this.ticker.register(this, 30000)
+		effect(async () => {
+			const data = this.data()
 
-		this.cameras = (await this.api.cameras()).sort(deviceComparator)
-		this.mounts = (await this.api.mounts()).sort(deviceComparator)
-		this.wheels = (await this.api.wheels()).sort(deviceComparator)
-		this.focusers = (await this.api.focusers()).sort(deviceComparator)
-		this.rotators = (await this.api.rotators()).sort(deviceComparator)
+			await this.loadDevices()
+			await this.loadCalibrationGroups()
 
-		const calibrationGroups = (await this.api.calibrationGroups()).sort(textComparator)
-		this.calibrationGroups.push({ label: 'None', value: undefined })
-		calibrationGroups.forEach((e) => this.calibrationGroups.push({ label: e, value: e }))
+			if (data) {
+				const camera = JSON.parse(data) as Camera
+				this.plan.camera = this.cameras.find((e) => e.id === camera.id)
+			}
 
-		this.route.queryParams.subscribe(async (e) => {
-			const data = JSON.parse(decodeURIComponent(e['data'] as string)) as Camera
-			this.plan.camera = this.cameras.find((e) => e.id === data.id)
 			this.updateSubTitle()
 			this.loadPreference()
+
 			await this.loadPlanFromPath()
 			await this.cameraChanged()
-			console.log(data, this.plan.camera)
 		})
+	}
+
+	private async loadDevices() {
+		this.ticker.register(this, 30000)
+
+		const [cameras, mounts, wheels, focusers, rotators] = await Promise.all([this.api.cameras(), this.api.mounts(), this.api.wheels(), this.api.focusers(), this.api.rotators()])
+
+		this.cameras = cameras.sort(deviceComparator)
+		this.mounts = mounts.sort(deviceComparator)
+		this.wheels = wheels.sort(deviceComparator)
+		this.focusers = focusers.sort(deviceComparator)
+		this.rotators = rotators.sort(deviceComparator)
+	}
+
+	private async loadCalibrationGroups() {
+		const groups = (await this.api.calibrationGroups()).sort(textComparator)
+		this.calibrationGroups.push({ label: 'None', value: undefined })
+		groups.forEach((e) => this.calibrationGroups.push({ label: e, value: e }))
 	}
 
 	@HostListener('window:unload')
@@ -665,26 +677,32 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 
 			Object.assign(this.plan.liveStacking, this.preferenceService.settings.get().liveStacker[this.plan.liveStacking.type])
 
-			await this.browserWindowService.openCameraImage(this.plan.camera, 'SEQUENCER')
+			await this.openCameraImage()
 			await this.api.sequencerStart(this.plan.camera, this.plan)
 		}
 	}
 
 	protected async pause() {
-		if (this.plan.camera) {
+		if (this.plan.camera?.id) {
 			await this.api.sequencerPause(this.plan.camera)
 		}
 	}
 
 	protected async unpause() {
-		if (this.plan.camera) {
+		if (this.plan.camera?.id) {
 			await this.api.sequencerUnpause(this.plan.camera)
 		}
 	}
 
 	protected async stop() {
-		if (this.plan.camera) {
+		if (this.plan.camera?.id) {
 			await this.api.sequencerStop(this.plan.camera)
+		}
+	}
+
+	protected async openCameraImage() {
+		if (this.plan.camera?.id) {
+			await this.browserWindowService.openCameraImage(this.plan.camera, 'SEQUENCER')
 		}
 	}
 

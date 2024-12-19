@@ -1280,6 +1280,62 @@
 	</div>
 </p-dialog>
 
+<p-dialog
+	header="Adjustment"
+	[draggable]="true"
+	[(visible)]="adjustment.showDialog"
+	[modal]="false"
+	[style]="{ width: 'min-content', minWidth: '338px' }">
+	<div class="flex flex-column justify-content-center gap-2 mt-2">
+		<neb-checkbox
+			label="Enabled"
+			class="mb-2"
+			[(value)]="adjustment.request.enabled"
+			(valueChange)="savePreference()" />
+		<neb-image-adjustment-input
+			label="Contrast"
+			[disabled]="!adjustment.request.enabled"
+			[level]="adjustment.request.contrast"
+			(update)="savePreference()" />
+		<neb-image-adjustment-input
+			label="Brightness"
+			[disabled]="!adjustment.request.enabled"
+			[level]="adjustment.request.brightness"
+			(update)="savePreference()" />
+		<neb-image-adjustment-input
+			label="Exposure"
+			[disabled]="!adjustment.request.enabled"
+			[level]="adjustment.request.exposure"
+			(update)="savePreference()" />
+		<neb-image-adjustment-input
+			label="Gamma"
+			[disabled]="!adjustment.request.enabled"
+			[level]="adjustment.request.gamma"
+			(update)="savePreference()" />
+		<neb-image-adjustment-input
+			label="Saturation"
+			[disabled]="imageInfo?.mono || !adjustment.request.enabled"
+			[level]="adjustment.request.saturation"
+			(update)="savePreference()" />
+		<neb-image-adjustment-input
+			label="Fade"
+			[disabled]="!adjustment.request.enabled"
+			[level]="adjustment.request.fade"
+			(update)="savePreference()" />
+	</div>
+	<ng-template pTemplate="footer">
+		<neb-button
+			icon="mdi mdi-restore"
+			label="Reset"
+			(action)="resetAdjustment()"
+			severity="danger" />
+		<neb-button
+			icon="mdi mdi-check"
+			label="Apply"
+			(action)="loadImage()" />
+	</ng-template>
+</p-dialog>
+
 @if (mouseCoordinate && isMouseCoordinateVisible) {
 	<div class="fixed p-3 text-sm coordinates monospaced">
 		<div class="grid m-0">

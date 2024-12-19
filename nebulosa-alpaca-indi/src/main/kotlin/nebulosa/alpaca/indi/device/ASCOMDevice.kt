@@ -36,12 +36,17 @@ abstract class ASCOMDevice : Device, Resettable {
     @Volatile final override var connected = false
         private set
 
+    @Volatile final override var driver = ASCOMDriverInfo.EMPTY
+        private set
+
     override val properties = emptyMap<String, PropertyVector<*, *>>()
     override val messages = LinkedList<String>()
 
     private val refresher = AtomicReference<Refresher>()
 
     internal open fun initialize() {
+        processDriverInfo()
+
         refresh(0L)
 
         if (refresher.get() == null) {
@@ -140,6 +145,12 @@ abstract class ASCOMDevice : Device, Resettable {
                 onDisconnected()
             }
         }
+    }
+
+    private fun processDriverInfo() {
+        val name = service.driverInfo(device.number).doRequest()?.value?.trim()?.trimEnd('.') ?: ""
+        val version = service.driverVersion(device.number).doRequest()?.value?.trim()?.trimStart('v', 'V') ?: ""
+        driver = ASCOMDriverInfo(name, version)
     }
 
     private inner class Refresher : Thread("$name ASCOM Refresher") {

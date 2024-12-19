@@ -491,12 +491,21 @@
 				(action)="stop()"
 				icon="mdi mdi-stop"
 				severity="danger" />
+			<neb-button
+				[disabled]="!plan.camera?.connected"
+				(action)="openCameraImage()"
+				icon="mdi mdi-image"
+				class="ml-4"
+				tooltip="View image"
+				tooltipPosition="top" />
 		</div>
 		<neb-button
 			[disabled]="running || plan.sequences.length > 32"
 			icon="mdi mdi-plus"
 			severity="success"
-			(action)="add()" />
+			(action)="add()"
+			tooltip="New sequence"
+			tooltipPosition="top" />
 	</div>
 </div>
 

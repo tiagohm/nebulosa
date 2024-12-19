@@ -1,4 +1,4 @@
-import type { Device } from './device.types'
+import { EMPTY_DEVICE_SENDER, EMPTY_DRIVER_INFO, type Device } from './device.types'
 
 export interface LightBox extends Device {
 	enabled: boolean
@@ -8,16 +8,15 @@ export interface LightBox extends Device {
 }
 
 export const DEFAULT_LIGHT_BOX: LightBox = {
+	sender: EMPTY_DEVICE_SENDER,
+	driver: EMPTY_DRIVER_INFO,
 	enabled: false,
 	intensity: 0,
 	minIntensity: 0,
 	maxIntensity: 0,
 	type: 'LIGHT_BOX',
-	sender: '',
 	id: '',
 	name: '',
-	driverName: '',
-	driverVersion: '',
 	connected: false,
 }
 

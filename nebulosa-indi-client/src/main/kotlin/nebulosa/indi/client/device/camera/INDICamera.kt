@@ -4,7 +4,7 @@ import nebulosa.fits.FitsHeaderCard
 import nebulosa.image.algorithms.transformation.CfaPattern
 import nebulosa.image.format.HeaderCard
 import nebulosa.indi.client.INDIClient
-import nebulosa.indi.client.device.DriverInfo
+import nebulosa.indi.client.device.INDIDriverInfo
 import nebulosa.indi.client.device.INDIDevice
 import nebulosa.indi.client.device.handler.INDIGuideOutputHandler
 import nebulosa.indi.device.Device
@@ -61,7 +61,7 @@ import java.time.Duration
 
 internal open class INDICamera(
     final override val sender: INDIClient,
-    final override val driverInfo: DriverInfo,
+    final override val driver: INDIDriverInfo,
 ) : INDIDevice(), Camera {
 
     @Volatile final override var exposuring = false
@@ -479,7 +479,7 @@ internal open class INDICamera(
             " gainMax=$gainMax, offset=$offset, offsetMin=$offsetMin," +
             " offsetMax=$offsetMax, canPulseGuide=$canPulseGuide, pulseGuiding=$pulseGuiding)"
 
-    internal data class GuideHeadCamera(override val main: INDICamera) : GuideHead, INDICamera(main.sender, main.driverInfo) {
+    internal data class GuideHeadCamera(override val main: INDICamera) : GuideHead, INDICamera(main.sender, main.driver) {
 
         override val name = main.name + " $GUIDE_HEAD_SUFFIX"
 

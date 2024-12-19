@@ -1,5 +1,5 @@
-import { AfterViewInit, Component, HostListener, inject, NgZone, OnDestroy } from '@angular/core'
-import { ActivatedRoute } from '@angular/router'
+import { Component, effect, HostListener, inject, NgZone, OnDestroy } from '@angular/core'
+import { injectQueryParams } from 'ngxtension/inject-query-params'
 import { debounceTime, Subject, Subscription } from 'rxjs'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
@@ -11,11 +11,11 @@ import { AppComponent } from '../app.component'
 	selector: 'neb-lightbox',
 	templateUrl: 'lightbox.component.html',
 })
-export class LightBoxComponent implements AfterViewInit, OnDestroy, Tickable {
+export class LightBoxComponent implements OnDestroy, Tickable {
 	private readonly app = inject(AppComponent)
 	private readonly api = inject(ApiService)
-	private readonly route = inject(ActivatedRoute)
 	private readonly ticker = inject(Ticker)
+	private readonly data = injectQueryParams('data', { transform: decodeURIComponent })
 
 	protected readonly lightBox = structuredClone(DEFAULT_LIGHT_BOX)
 
@@ -47,13 +47,14 @@ export class LightBoxComponent implements AfterViewInit, OnDestroy, Tickable {
 		this.brightnessSubscription = this.brightnessPublisher.pipe(debounceTime(500)).subscribe((intensity) => {
 			void this.api.lightBoxBrightness(this.lightBox, intensity)
 		})
-	}
 
-	ngAfterViewInit() {
-		this.route.queryParams.subscribe(async (e) => {
-			const data = JSON.parse(decodeURIComponent(e['data'] as string)) as LightBox
-			await this.lightBoxChanged(data)
-			this.ticker.register(this, 30000)
+		effect(async () => {
+			const data = this.data()
+
+			if (data) {
+				await this.lightBoxChanged(JSON.parse(data))
+				this.ticker.register(this, 30000)
+			}
 		})
 	}
 

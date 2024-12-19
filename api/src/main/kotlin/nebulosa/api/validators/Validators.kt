@@ -45,6 +45,14 @@ inline fun Long.range(min: Long, max: Long, message: String? = null) = validate(
 inline fun Long.positive(message: String? = null) = validate(this > 0) { message ?: "must be greater than 0" }
 inline fun Long.positiveOrZero(message: String? = null) = validate(this >= 0) { message ?: "must be greater than or equal to 0" }
 
+// FLOAT
+
+inline fun Float.min(min: Float, message: String? = null) = validate(this >= min) { message ?: "must be greater than or equal to $min" }
+inline fun Float.max(max: Float, message: String? = null) = validate(this <= max) { message ?: "must be less than or equal to $max" }
+inline fun Float.range(min: Float, max: Float, message: String? = null) = validate(this in min..max) { message ?: "must be between $min and $max" }
+inline fun Float.positive(message: String? = null) = validate(this > 0) { message ?: "must be greater than 0" }
+inline fun Float.positiveOrZero(message: String? = null) = validate(this >= 0) { message ?: "must be greater than or equal to 0" }
+
 // DOUBLE
 
 inline fun Double.min(min: Double, message: String? = null) = validate(this >= min) { message ?: "must be greater than or equal to $min" }

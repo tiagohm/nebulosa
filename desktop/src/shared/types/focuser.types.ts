@@ -1,5 +1,5 @@
 import type { Thermometer } from './auxiliary.types'
-import type { Device } from './device.types'
+import { EMPTY_DEVICE_SENDER, EMPTY_DRIVER_INFO, type Device } from './device.types'
 
 export interface Focuser extends Device, Thermometer {
 	moving: boolean
@@ -21,9 +21,8 @@ export interface FocuserPreference {
 
 export const DEFAULT_FOCUSER: Focuser = {
 	type: 'FOCUSER',
-	sender: '',
-	driverName: '',
-	driverVersion: '',
+	sender: EMPTY_DEVICE_SENDER,
+	driver: EMPTY_DRIVER_INFO,
 	id: '',
 	moving: false,
 	position: 0,

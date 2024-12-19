@@ -4,7 +4,7 @@ import { Component, input, model, ViewEncapsulation } from '@angular/core'
 	selector: 'neb-indicator',
 	template: `
 		<div class="flex flex-column align-items-center justify-content-center">
-			@for (item of [].constructor(count()); track $index) {
+			@for (item of count() | repeat; track $index) {
 				<span
 					class="indicator"
 					[class.selected]="$index === position()"

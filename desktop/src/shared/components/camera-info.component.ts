@@ -17,7 +17,11 @@ import type { Wheel } from '../types/wheel.types'
 				</div>
 			}
 			@if (hasExposure() && mInfo.exposureTime) {
-				<div class="flex flex-column align-items-center">
+				<div
+					class="flex flex-column align-items-center"
+					pTooltip="{{ mInfo.exposureTime }} µs"
+					tooltipPosition="bottom"
+					[life]="2500">
 					<label class="text-orange-300 text-xs bg-black-alpha-40 p-2-4 mb-1px border-round-sm">Exposure</label>
 					<span class="min-w-4rem text-center text-sm">{{ mInfo.exposureAmount || '∞' }} / {{ mInfo.exposureTime | exposureTime }}</span>
 				</div>

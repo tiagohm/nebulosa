@@ -1,6 +1,6 @@
 <div class="container px-4 pt-2 pb-1">
 	<div class="grid py-1 flex align-items-center">
-		<div class="col-8 align-items-center gap-2">
+		<div class="col-8 align-items-center gap-1">
 			<neb-device-name [device]="camera" />
 			@if (camera.connected) {
 				<neb-button
@@ -17,6 +17,7 @@
 					severity="info"
 					tooltip="Connect" />
 			}
+			<neb-button-indi [device]="camera" />
 		</div>
 		<div class="col-4 flex justify-content-end align-items-center gap-2">
 			<neb-button

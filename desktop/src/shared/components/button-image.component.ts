@@ -8,11 +8,13 @@ import { ButtonSeverity } from './button.component'
 		<p-button
 			[text]="true"
 			[disabled]="disabled()"
+			[rounded]="rounded()"
 			[pTooltip]="tooltip()"
 			[tooltipPosition]="tooltipPosition()"
 			[life]="2000"
 			[severity]="severity()"
 			(onClick)="action.emit($event); $event.stopImmediatePropagation()"
+			class="flex"
 			styleClass="w-full select-none cursor-pointer flex-column">
 			<img
 				[src]="image()"
@@ -30,6 +32,10 @@ import { ButtonSeverity } from './button.component'
 					filter: grayscale(1);
 				}
 			}
+
+			.p-button {
+				min-width: fit-content;
+			}
 		}
 	`,
 	encapsulation: ViewEncapsulation.None,
@@ -41,6 +47,7 @@ export class ButtonImageComponent {
 	readonly tooltip = input<string>()
 	readonly tooltipPosition = input<TooltipPosition>('bottom')
 	readonly disabled = input<boolean | undefined>(false)
+	readonly rounded = input<boolean | undefined>(false)
 	readonly severity = input<ButtonSeverity>()
 	readonly action = output<MouseEvent>()
 }

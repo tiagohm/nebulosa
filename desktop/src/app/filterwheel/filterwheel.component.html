@@ -1,6 +1,6 @@
 <div class="container px-4 py-3">
 	<div class="grid flex align-items-center">
-		<div class="col-12 align-items-center gap-2">
+		<div class="col-12 align-items-center gap-1">
 			<neb-device-name [device]="wheel" />
 			@if (wheel.connected) {
 				<neb-button
@@ -17,6 +17,7 @@
 					severity="info"
 					tooltip="Connect" />
 			}
+			<neb-button-indi [device]="wheel" />
 		</div>
 		@if (canShowInfo) {
 			<div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1">

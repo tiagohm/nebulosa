@@ -1,7 +1,7 @@
 package nebulosa.indi.client.device.focuser
 
 import nebulosa.indi.client.INDIClient
-import nebulosa.indi.client.device.DriverInfo
+import nebulosa.indi.client.device.INDIDriverInfo
 import nebulosa.indi.client.device.INDIDevice
 import nebulosa.indi.device.firstOnSwitch
 import nebulosa.indi.device.focuser.Focuser
@@ -28,7 +28,7 @@ import nebulosa.indi.protocol.Vector.Companion.isBusy
 
 internal open class INDIFocuser(
     final override val sender: INDIClient,
-    final override val driverInfo: DriverInfo,
+    final override val driver: INDIDriverInfo,
 ) : INDIDevice(), Focuser {
 
     @Volatile final override var moving = false

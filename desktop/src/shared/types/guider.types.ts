@@ -1,4 +1,4 @@
-import type { Device } from './device.types'
+import { EMPTY_DEVICE_SENDER, EMPTY_DRIVER_INFO, type Device } from './device.types'
 
 export type GuideDirection =
 	| 'NORTH' // DEC+
@@ -104,9 +104,8 @@ export interface GuiderChartInfo {
 
 export const DEFAULT_GUIDE_OUTPUT: GuideOutput = {
 	type: 'CAMERA',
-	sender: '',
-	driverName: '',
-	driverVersion: '',
+	sender: EMPTY_DEVICE_SENDER,
+	driver: EMPTY_DRIVER_INFO,
 	id: '',
 	canPulseGuide: false,
 	pulseGuiding: false,

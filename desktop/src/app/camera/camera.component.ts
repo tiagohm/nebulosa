@@ -1,5 +1,5 @@
-import { AfterContentInit, Component, HostListener, inject, NgZone, OnDestroy, viewChild } from '@angular/core'
-import { ActivatedRoute } from '@angular/router'
+import { Component, effect, HostListener, inject, NgZone, OnDestroy, viewChild } from '@angular/core'
+import { injectQueryParams } from 'ngxtension/inject-query-params'
 import { CameraExposureComponent } from '../../shared/components/camera-exposure.component'
 import { MenuItemCommandEvent, SlideMenuItem } from '../../shared/components/menu-item.component'
 import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
@@ -34,14 +34,14 @@ import { AppComponent } from '../app.component'
 	selector: 'neb-camera',
 	templateUrl: 'camera.component.html',
 })
-export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
+export class CameraComponent implements OnDestroy, Tickable {
 	private readonly app = inject(AppComponent)
 	private readonly api = inject(ApiService)
 	private readonly browserWindowService = inject(BrowserWindowService)
 	private readonly electronService = inject(ElectronService)
 	private readonly preferenceService = inject(PreferenceService)
-	private readonly route = inject(ActivatedRoute)
 	private readonly ticker = inject(Ticker)
+	private readonly data = injectQueryParams('data', { transform: decodeURIComponent })
 
 	protected readonly camera = structuredClone(DEFAULT_CAMERA)
 	protected calibrationModel: SlideMenuItem[] = []
@@ -344,23 +344,23 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 		})
 
 		this.snoopDevicesMenuItem.visible = this.canSnoopDevices
-	}
 
-	ngAfterContentInit() {
-		this.route.queryParams.subscribe(async (e) => {
-			const data = JSON.parse(decodeURIComponent(e['data'] as string)) as unknown
+		effect(async () => {
+			const data = this.data()
 
-			if (this.app.modal) {
-				await this.loadCameraStartCaptureForDialogMode(data as CameraDialogInput)
-			} else {
-				await this.cameraChanged(data as Camera)
-			}
+			if (data) {
+				if (this.app.modal) {
+					await this.loadCameraStartCaptureForDialogMode(JSON.parse(data))
+				} else {
+					await this.cameraChanged(JSON.parse(data))
+				}
 
-			this.ticker.register(this, 30000)
+				this.ticker.register(this, 30000)
 
-			if (this.mode === 'CAPTURE') {
-				await this.loadEquipment()
-				await this.loadCalibrationGroups()
+				if (this.mode === 'CAPTURE') {
+					await this.loadEquipment()
+					await this.loadCalibrationGroups()
+				}
 			}
 		})
 	}

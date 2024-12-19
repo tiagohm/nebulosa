@@ -1,7 +1,7 @@
 package nebulosa.indi.client.device.auxiliary
 
 import nebulosa.indi.client.INDIClient
-import nebulosa.indi.client.device.DriverInfo
+import nebulosa.indi.client.device.INDIDriverInfo
 import nebulosa.indi.client.device.INDIDevice
 import nebulosa.indi.device.DeviceType
 import nebulosa.indi.device.gps.GPS
@@ -15,7 +15,7 @@ import nebulosa.math.m
 
 internal open class INDIGPS(
     final override val sender: INDIClient,
-    final override val driverInfo: DriverInfo,
+    final override val driver: INDIDriverInfo,
 ) : INDIDevice(), GPS {
 
     override val type

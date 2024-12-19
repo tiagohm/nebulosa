@@ -14,6 +14,7 @@ import nebulosa.api.validators.exists
 import nebulosa.api.validators.notEmpty
 import nebulosa.api.validators.notNull
 import nebulosa.api.validators.path
+import nebulosa.api.validators.valid
 import nebulosa.image.format.ImageChannel
 import java.nio.file.Path
 import java.util.*
@@ -84,7 +85,7 @@ class ImageController(
 
     private suspend fun statistics(ctx: RoutingContext) = with(ctx.call) {
         val path = queryParameters[PATH].notNull().path().exists()
-        val transformation = receive<ImageTransformation>()
+        val transformation = receive<ImageTransformation>().valid()
         val channel = queryParameters[CHANNEL]?.enumOf<ImageChannel>() ?: ImageChannel.GRAY
         val camera = queryParameters[CAMERA]?.ifBlank { null }?.let(connectionService::camera)
         respond(imageService.statistics(path, transformation, channel, camera))

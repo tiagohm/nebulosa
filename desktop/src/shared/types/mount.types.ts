@@ -1,6 +1,6 @@
 import type { DropdownItem } from '../components/dropdown.component'
 import { DEFAULT_LOCATION, type Angle, type EquatorialCoordinate, type Location } from './atlas.types'
-import type { Device } from './device.types'
+import { EMPTY_DEVICE_SENDER, EMPTY_DRIVER_INFO, type Device } from './device.types'
 import type { GPS } from './gps.types'
 import type { GuideOutput } from './guider.types'
 
@@ -87,9 +87,8 @@ export interface MountPreference {
 
 export const DEFAULT_MOUNT: Mount = {
 	type: 'MOUNT',
-	sender: '',
-	driverName: '',
-	driverVersion: '',
+	sender: EMPTY_DEVICE_SENDER,
+	driver: EMPTY_DRIVER_INFO,
 	id: '',
 	slewing: false,
 	tracking: false,

@@ -257,6 +257,25 @@ export interface ImageSaveDialog {
 	subFrame: Rectangle
 }
 
+export interface ImageAdjustment {
+	enabled: boolean
+	contrast: ImageAdjustmentLevel
+	brightness: ImageAdjustmentLevel
+	exposure: ImageAdjustmentLevel
+	gamma: ImageAdjustmentLevel
+	saturation: ImageAdjustmentLevel
+	fade: ImageAdjustmentLevel
+}
+
+export interface ImageAdjustmentLevel {
+	enabled: boolean
+	value: number
+}
+
+export interface ImageAdjustmentDialog {
+	showDialog: boolean
+	request: ImageAdjustment
+}
 export interface ImageTransformation {
 	force: boolean
 	calibrationGroup?: string
@@ -268,6 +287,7 @@ export interface ImageTransformation {
 	scnr: ImageSCNR
 	useJPEG: boolean
 	angle: number
+	adjustment: ImageAdjustment
 }
 
 export interface ImageRotationDialog {
@@ -402,6 +422,26 @@ export const DEFAULT_IMAGE_SCNR_DIALOG: ImageSCNRDialog = {
 	transformation: DEFAULT_IMAGE_SCNR,
 }
 
+export const DEFAULT_IMAGE_ADJUSTMENT_LEVEL: ImageAdjustmentLevel = {
+	enabled: false,
+	value: 0,
+}
+
+export const DEFAULT_IMAGE_ADJUSTMENT: ImageAdjustment = {
+	enabled: false,
+	contrast: DEFAULT_IMAGE_ADJUSTMENT_LEVEL,
+	brightness: DEFAULT_IMAGE_ADJUSTMENT_LEVEL,
+	exposure: DEFAULT_IMAGE_ADJUSTMENT_LEVEL,
+	gamma: DEFAULT_IMAGE_ADJUSTMENT_LEVEL,
+	saturation: DEFAULT_IMAGE_ADJUSTMENT_LEVEL,
+	fade: DEFAULT_IMAGE_ADJUSTMENT_LEVEL,
+}
+
+export const DEFAULT_IMAGE_ADJUSTMENT_DIALOG: ImageAdjustmentDialog = {
+	showDialog: false,
+	request: DEFAULT_IMAGE_ADJUSTMENT,
+}
+
 export const DEFAULT_IMAGE_TRANSFORMATION: ImageTransformation = {
 	force: false,
 	debayer: true,
@@ -412,6 +452,7 @@ export const DEFAULT_IMAGE_TRANSFORMATION: ImageTransformation = {
 	scnr: DEFAULT_IMAGE_SCNR,
 	useJPEG: true,
 	angle: 0,
+	adjustment: DEFAULT_IMAGE_ADJUSTMENT,
 }
 
 export const DEFAULT_IMAGE_SOLVER_DIALOG: ImageSolverDialog = {
@@ -625,6 +666,24 @@ export function annotateImageRequestWithDefault(request?: Partial<AnnotateImageR
 	return request as AnnotateImageRequest
 }
 
+export function imageAdjustmentLevelWithDefault(request?: Partial<ImageAdjustmentLevel>, source: ImageAdjustmentLevel = DEFAULT_IMAGE_ADJUSTMENT_LEVEL) {
+	if (!request) return structuredClone(source)
+	request.enabled ??= source.enabled
+	request.value ??= source.value
+	return request as ImageAdjustmentLevel
+}
+
+export function imageAdjustmentWithDefault(request?: Partial<ImageAdjustment>, source: ImageAdjustment = DEFAULT_IMAGE_ADJUSTMENT) {
+	if (!request) return structuredClone(source)
+	request.contrast = imageAdjustmentLevelWithDefault(request.contrast, source.contrast)
+	request.brightness = imageAdjustmentLevelWithDefault(request.brightness, source.brightness)
+	request.exposure = imageAdjustmentLevelWithDefault(request.exposure, source.exposure)
+	request.gamma = imageAdjustmentLevelWithDefault(request.gamma, source.gamma)
+	request.saturation = imageAdjustmentLevelWithDefault(request.saturation, source.saturation)
+	request.fade = imageAdjustmentLevelWithDefault(request.fade, source.fade)
+	return request as ImageAdjustment
+}
+
 export function imageTransformationWithDefault(transformation?: Partial<ImageTransformation>, source: ImageTransformation = DEFAULT_IMAGE_TRANSFORMATION) {
 	if (!transformation) return structuredClone(source)
 	transformation.force ??= source.force
@@ -637,6 +696,7 @@ export function imageTransformationWithDefault(transformation?: Partial<ImageTra
 	transformation.scnr ??= source.scnr
 	transformation.useJPEG ??= source.useJPEG
 	transformation.angle ??= source.angle
+	transformation.adjustment = imageAdjustmentWithDefault(transformation.adjustment, source.adjustment)
 	return transformation as ImageTransformation
 }
 

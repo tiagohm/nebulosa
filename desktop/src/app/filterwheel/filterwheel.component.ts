@@ -1,6 +1,6 @@
-import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, inject } from '@angular/core'
-import { ActivatedRoute } from '@angular/router'
+import { Component, HostListener, NgZone, OnDestroy, effect, inject } from '@angular/core'
 import hotkeys from 'hotkeys-js'
+import { injectQueryParams } from 'ngxtension/inject-query-params'
 import { Subject, Subscription, debounceTime } from 'rxjs'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
@@ -17,13 +17,13 @@ import { AppComponent } from '../app.component'
 	templateUrl: 'filterwheel.component.html',
 	styleUrls: ['filterwheel.component.scss'],
 })
-export class FilterWheelComponent implements AfterContentInit, OnDestroy, Tickable {
+export class FilterWheelComponent implements OnDestroy, Tickable {
 	private readonly app = inject(AppComponent)
 	private readonly api = inject(ApiService)
 	private readonly electronService = inject(ElectronService)
 	private readonly preferenceService = inject(PreferenceService)
-	private readonly route = inject(ActivatedRoute)
 	private readonly ticker = inject(Ticker)
+	private readonly data = injectQueryParams('data', { transform: decodeURIComponent })
 
 	protected readonly wheel = structuredClone(DEFAULT_WHEEL)
 	protected readonly request = structuredClone(DEFAULT_CAMERA_START_CAPTURE)
@@ -170,29 +170,29 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Tickab
 			event.preventDefault()
 			void this.moveToPosition(9)
 		})
-	}
 
-	async ngAfterContentInit() {
-		this.route.queryParams.subscribe(async (e) => {
-			const data = JSON.parse(decodeURIComponent(e['data'] as string)) as unknown
+		effect(async () => {
+			const data = this.data()
 
-			if (this.app.modal) {
-				await this.loadCameraStartCaptureForDialogMode(data as WheelDialogInput)
-			} else {
-				await this.wheelChanged(data as Wheel)
+			if (data) {
+				if (this.app.modal) {
+					await this.loadCameraStartCaptureForDialogMode(JSON.parse(data))
+				} else {
+					await this.wheelChanged(JSON.parse(data))
+				}
+
+				this.ticker.register(this, 30000)
+
+				if (this.mode === 'CAPTURE') {
+					this.focusers = await this.api.focusers()
+
+					if (this.focusers.length === 1 && !this.focuser) {
+						this.focuser = this.focusers[0]
+						await this.focuserChanged()
+					}
+				}
 			}
-
-			this.ticker.register(this, 30000)
 		})
-
-		if (this.mode === 'CAPTURE') {
-			this.focusers = await this.api.focusers()
-
-			if (this.focusers.length === 1 && !this.focuser) {
-				this.focuser = this.focusers[0]
-				await this.focuserChanged()
-			}
-		}
 	}
 
 	@HostListener('window:unload')

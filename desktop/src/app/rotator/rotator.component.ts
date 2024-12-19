@@ -1,5 +1,5 @@
-import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, inject } from '@angular/core'
-import { ActivatedRoute } from '@angular/router'
+import { Component, HostListener, NgZone, OnDestroy, effect, inject } from '@angular/core'
+import { injectQueryParams } from 'ngxtension/inject-query-params'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
@@ -13,12 +13,12 @@ import { AppComponent } from '../app.component'
 	selector: 'neb-rotator',
 	templateUrl: 'rotator.component.html',
 })
-export class RotatorComponent implements AfterViewInit, OnDestroy, Tickable {
+export class RotatorComponent implements OnDestroy, Tickable {
 	private readonly app = inject(AppComponent)
 	private readonly api = inject(ApiService)
 	private readonly preferenceService = inject(PreferenceService)
-	private readonly route = inject(ActivatedRoute)
 	private readonly ticker = inject(Ticker)
+	private readonly data = injectQueryParams('data', { transform: decodeURIComponent })
 
 	protected readonly rotator = structuredClone(DEFAULT_ROTATOR)
 	protected readonly request = structuredClone(DEFAULT_CAMERA_START_CAPTURE)
@@ -73,19 +73,19 @@ export class RotatorComponent implements AfterViewInit, OnDestroy, Tickable {
 				})
 			}
 		})
-	}
 
-	ngAfterViewInit() {
-		this.route.queryParams.subscribe(async (e) => {
-			const data = JSON.parse(decodeURIComponent(e['data'] as string)) as unknown
+		effect(async () => {
+			const data = this.data()
 
-			if (this.app.modal) {
-				await this.loadCameraStartCaptureForDialogMode(data as RotatorDialogInput)
-			} else {
-				await this.rotatorChanged(data as Rotator)
+			if (data) {
+				if (this.app.modal) {
+					await this.loadCameraStartCaptureForDialogMode(JSON.parse(data))
+				} else {
+					await this.rotatorChanged(JSON.parse(data))
+				}
+
+				this.ticker.register(this, 30000)
 			}
-
-			this.ticker.register(this, 30000)
 		})
 	}
 

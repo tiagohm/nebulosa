@@ -1,6 +1,6 @@
-import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, inject } from '@angular/core'
-import { ActivatedRoute } from '@angular/router'
+import { Component, HostListener, NgZone, OnDestroy, effect, inject } from '@angular/core'
 import hotkeys from 'hotkeys-js'
+import { injectQueryParams } from 'ngxtension/inject-query-params'
 import { Subject, Subscription, interval, throttleTime } from 'rxjs'
 import { SlideMenuItem } from '../../shared/components/menu-item.component'
 import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
@@ -17,13 +17,13 @@ import { AppComponent } from '../app.component'
 	selector: 'neb-mount',
 	templateUrl: 'mount.component.html',
 })
-export class MountComponent implements AfterContentInit, OnDestroy, Tickable {
+export class MountComponent implements OnDestroy, Tickable {
 	private readonly app = inject(AppComponent)
 	private readonly api = inject(ApiService)
 	private readonly browserWindowService = inject(BrowserWindowService)
 	private readonly preferenceService = inject(PreferenceService)
-	private readonly route = inject(ActivatedRoute)
 	private readonly ticker = inject(Ticker)
+	private readonly data = injectQueryParams('data', { transform: decodeURIComponent })
 
 	protected readonly mount = structuredClone(DEFAULT_MOUNT)
 	protected readonly remoteControl = structuredClone(DEFAULT_MOUNT_REMOTE_CONTROL_DIALOG)
@@ -286,13 +286,14 @@ export class MountComponent implements AfterContentInit, OnDestroy, Tickable {
 			event.preventDefault()
 			this.moveTo('SE', event.type === 'keydown')
 		})
-	}
 
-	ngAfterContentInit() {
-		this.route.queryParams.subscribe(async (e) => {
-			const data = JSON.parse(decodeURIComponent(e['data'] as string)) as Mount
-			await this.mountChanged(data)
-			this.ticker.register(this, 30000)
+		effect(async () => {
+			const data = this.data()
+
+			if (data) {
+				await this.mountChanged(JSON.parse(data))
+				this.ticker.register(this, 30000)
+			}
 		})
 	}
 

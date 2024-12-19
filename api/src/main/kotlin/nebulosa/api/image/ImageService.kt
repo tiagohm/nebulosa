@@ -32,6 +32,12 @@ import nebulosa.image.algorithms.transformation.ScreenTransformFunction
 import nebulosa.image.algorithms.transformation.SubFrame
 import nebulosa.image.algorithms.transformation.SubtractiveChromaticNoiseReduction
 import nebulosa.image.algorithms.transformation.VerticalFlip
+import nebulosa.image.algorithms.transformation.adjustment.Brightness
+import nebulosa.image.algorithms.transformation.adjustment.Contrast
+import nebulosa.image.algorithms.transformation.adjustment.Exposure
+import nebulosa.image.algorithms.transformation.adjustment.Fade
+import nebulosa.image.algorithms.transformation.adjustment.Gamma
+import nebulosa.image.algorithms.transformation.adjustment.Saturation
 import nebulosa.image.format.ImageChannel
 import nebulosa.image.format.ImageHdu
 import nebulosa.image.format.ImageModifier
@@ -147,10 +153,11 @@ class ImageService(
         val (autoStretch, shadow, highlight, midtone) = transformation.stretch
         val scnrEnabled = transformation.scnr.channel != null
         val manualStretch = shadow != 0 || highlight != 65536 || midtone != 32768
+        val adjustment = transformation.adjustment
 
         val shouldBeTransformed = enabled && (autoStretch || manualStretch
                 || transformation.mirrorHorizontal || transformation.mirrorVertical || transformation.invert
-                || scnrEnabled)
+                || scnrEnabled || adjustment.canTransform)
 
         var transformedImage = if (shouldBeTransformed) clone() else this
 
@@ -180,6 +187,33 @@ class ImageService(
             } else if (manualStretch) {
                 stretchParams = ScreenTransformFunction.Parameters(midtone, shadow, highlight)
                 transformedImage = ScreenTransformFunction(stretchParams).transform(transformedImage)
+            }
+        }
+
+        if (enabled && adjustment.enabled) {
+            // Apply exposure adjustment to increase overall brightness.
+            if (adjustment.exposure.enabled) {
+                transformedImage = Exposure(adjustment.exposure.value).transform(transformedImage)
+            }
+            // Establish the tonal range.
+            if (adjustment.contrast.enabled) {
+                transformedImage = Contrast(adjustment.contrast.value).transform(transformedImage)
+            }
+            // Fine-tune the overall intensity.
+            if (adjustment.brightness.enabled) {
+                transformedImage = Brightness(adjustment.brightness.value).transform(transformedImage)
+            }
+            // Refine with gamma correction to balance shadows and highlights.
+            if (adjustment.gamma.enabled) {
+                transformedImage = Gamma(adjustment.gamma.value).transform(transformedImage)
+            }
+            // Enhance or reduce color intensity.
+            if (adjustment.saturation.enabled) {
+                transformedImage = Saturation(adjustment.saturation.value).transform(transformedImage)
+            }
+            // Apply a finishing touch to soften the image.
+            if (adjustment.fade.enabled) {
+                transformedImage = Fade(adjustment.fade.value).transform(transformedImage)
             }
         }
 

@@ -1,4 +1,5 @@
 import type { DeviceMessageEvent } from './api.types'
+import type { ConnectionType } from './home.types'
 
 export type PropertyState = 'IDLE' | 'OK' | 'BUSY' | 'ALERT'
 
@@ -10,13 +11,22 @@ export type SwitchRule = 'ONE_OF_MANY' | 'AT_MOST_ONE' | 'ANY_OF_MANY'
 
 export type DeviceType = 'CAMERA' | 'MOUNT' | 'WHEEL' | 'FOCUSER' | 'ROTATOR' | 'GPS' | 'DOME' | 'SWITCH' | 'GUIDE_OUTPUT' | 'LIGHT_BOX' | 'DUST_CAP'
 
+export interface DeviceSender {
+	id: string
+	type: ConnectionType
+}
+
+export interface DriverInfo {
+	name: string
+	version: string
+}
+
 export interface Device {
 	readonly type: DeviceType
-	readonly sender: string
+	readonly sender: DeviceSender
 	readonly id: string
 	readonly name: string
-	readonly driverName: string
-	readonly driverVersion: string
+	readonly driver: DriverInfo
 	connected: boolean
 }
 
@@ -61,6 +71,16 @@ export interface INDISendPropertyItem {
 export interface INDIDeviceMessage {
 	device?: Device
 	message: string
+}
+
+export const EMPTY_DEVICE_SENDER: DeviceSender = {
+	id: '',
+	type: 'INDI',
+}
+
+export const EMPTY_DRIVER_INFO: DriverInfo = {
+	name: '',
+	version: '',
 }
 
 export function isCompanionDevice<T extends Device>(device?: T | CompanionDevice<T>): device is CompanionDevice<T> {
