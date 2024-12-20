@@ -19,7 +19,7 @@ dependencyResolutionManagement {
             library("jackson-kt", "com.fasterxml.jackson.module:jackson-module-kotlin:2.18.2")
             library("retrofit", "com.squareup.retrofit2:retrofit:2.11.0")
             library("retrofit-jackson", "com.squareup.retrofit2:converter-jackson:2.11.0")
-            library("logback", "ch.qos.logback:logback-classic:1.5.13")
+            library("logback", "ch.qos.logback:logback-classic:1.5.14")
             library("eventbus", "org.greenrobot:eventbus-java:3.3.1")
             library("netty-transport", "io.netty:netty-transport:4.1.116.Final")
             library("netty-codec", "io.netty:netty-codec:4.1.116.Final")
