@@ -1,7 +1,7 @@
 // Adapted from https://github.com/timmywil/panzoom
 
 import type { Point } from 'electron'
-import EventEmitter from 'events'
+import { EventEmitter } from 'events'
 
 export type PanZoomEvent = 'panzoomstart' | 'panzoomchange' | 'panzoompan' | 'panzoomzoom' | 'panzoomreset' | 'panzoomend'
 
@@ -263,7 +263,7 @@ export class PanZoom extends EventEmitter {
 		}
 	}
 
-	/// Centers the element at wrapper's coordinates [x] and [y].
+	// Centers the element at wrapper's coordinates [x] and [y].
 	centerAt(x: number, y: number) {
 		const { clientWidth: iw, clientHeight: ih } = this.element
 		const siw = iw / this.scale // scaled element width
@@ -274,7 +274,7 @@ export class PanZoom extends EventEmitter {
 		this.pan(ciw + (x - offsetLeft / 2) / this.scale, cih + (y - offsetTop / 2) / this.scale)
 	}
 
-	/// Places the element coordinates [x] and [y] on center of screen.
+	// Places the element coordinates [x] and [y] on center of screen.
 	focusAt(x: number, y: number) {
 		const { clientWidth: iw, clientHeight: ih } = this.element
 		const { clientWidth: cw, clientHeight: ch, offsetLeft, offsetTop } = this.wrapper
@@ -286,7 +286,7 @@ export class PanZoom extends EventEmitter {
 	}
 
 	reset(resetOptions?: Partial<PanZoomOptions>) {
-		const opts = { ...this.options, force: true, ...resetOptions }
+		const opts = { ...this.options, ...resetOptions, force: true }
 		this.scale = this.constrainScale(opts.startScale, opts).scale
 		const { x, y } = this.constrainXY(opts.startX, opts.startY, this.scale, opts)
 		this.x = x
