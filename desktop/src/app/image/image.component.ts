@@ -1177,12 +1177,13 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	private resetZoom(fitToScreen: boolean = false, center: boolean = true) {
 		if (this.zoom.panZoom) {
 			if (fitToScreen) {
-				const { width: iw, height: ih } = this.image().nativeElement
+				const image = this.image().nativeElement
+				const { width: iw, height: ih } = image
 				const angle = this.rotation.transformation.angle * (Math.PI / 180.0)
 				const nw = Math.abs(iw * Math.cos(angle)) + Math.abs(ih * Math.sin(angle))
 				const nh = Math.abs(iw * Math.sin(angle)) + Math.abs(ih * Math.cos(angle))
-				const { clientWidth: cw, clientHeight: ch } = this.image().nativeElement.parentElement!.parentElement!
-				const { offsetTop } = this.image().nativeElement.parentElement!.parentElement!
+				const { clientWidth: cw, clientHeight: ch } = image.parentElement!.parentElement!
+				const { offsetTop } = image.parentElement!.parentElement!
 				const factor = Math.min(cw / nw, (ch - offsetTop) / nh)
 				this.zoom.panZoom.zoom(factor)
 			} else {
@@ -1340,7 +1341,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 					}
 				}
 			})
-			panZoom.addListener('panzoomzoom', (e: PanZoomEventDetail) => {
+			panZoom.on('panzoomzoom', (e: PanZoomEventDetail) => {
 				this.zoom.scale = e.transformation.scale
 			})
 
