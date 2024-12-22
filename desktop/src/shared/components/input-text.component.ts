@@ -3,7 +3,9 @@ import { Component, input, model, ViewEncapsulation } from '@angular/core'
 @Component({
 	selector: 'neb-input-text',
 	template: `
-		<p-floatLabel class="w-full">
+		<p-floatLabel
+			class="w-full"
+			variant="on">
 			<input
 				pInputText
 				class="p-inputtext-sm w-full"

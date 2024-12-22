@@ -11,6 +11,6 @@ neb-indi {
 	.p-listbox-filter.p-inputtext {
 		border: 0px;
 		border-radius: 4px;
-		background: #1a1a1a;
+		background: var(--p-content-background);
 	}
 }

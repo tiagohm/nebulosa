@@ -3,7 +3,9 @@ import { Component, computed, input, model, ViewEncapsulation } from '@angular/c
 @Component({
 	selector: 'neb-input-number',
 	template: `
-		<p-floatLabel class="w-full">
+		<p-floatLabel
+			class="w-full"
+			variant="on">
 			<p-inputNumber
 				[disabled]="disabled()"
 				[min]="min()"

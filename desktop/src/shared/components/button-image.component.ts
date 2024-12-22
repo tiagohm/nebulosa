@@ -21,15 +21,21 @@ import { ButtonSeverity } from './button.component'
 				[style]="{ height: imageHeight() }" />
 
 			@if (label()) {
-				<div class="mt-1 text-sm">{{ label() }}</div>
+				<div class="mt-1 text-sm p-button-label">{{ label() }}</div>
 			}
 		</p-button>
 	`,
 	styles: `
 		neb-button-image {
 			.p-button[disabled] {
+				cursor: default !important;
+
 				img {
 					filter: grayscale(1);
+				}
+
+				.p-button-label {
+					color: var(--p-text-muted-color);
 				}
 			}
 

@@ -14,7 +14,7 @@ export type ButtonSeverity = Severity | 'help' | 'primary' | 'secondary' | 'cont
 			[icon]="icon()"
 			[disabled]="disabled()"
 			[severity]="severity()"
-			(onClick)="action.emit($event); $event.stopImmediatePropagation()"
+			(onClick)="$event.stopImmediatePropagation(); action.emit($event)"
 			[pTooltip]="tooltip()"
 			[tooltipPosition]="tooltipPosition()"
 			[life]="2000"
@@ -32,6 +32,15 @@ export type ButtonSeverity = Severity | 'help' | 'primary' | 'secondary' | 'cont
 
 				&:has(.mdi-lg) {
 					height: 3.25rem;
+				}
+
+				&[disabled] {
+					cursor: default !important;
+
+					.p-button-icon,
+					.p-button-label {
+						color: var(--p-text-muted-color);
+					}
 				}
 			}
 		}

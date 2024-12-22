@@ -4,7 +4,7 @@
 			class="w-full"
 			[scrollable]="true">
 			<p-tabPanel>
-				<ng-template pTemplate="header">
+				<ng-template #header>
 					<div
 						class="w-full flex align-items-center justify-content-center p-3"
 						pTooltip="Sequences"
@@ -104,7 +104,7 @@
 							cdkDrag
 							class="lg:col-6 col-12"
 							styleClass="w-full pt-2">
-							<ng-template pTemplate="header">
+							<ng-template #header>
 								<div class="grid">
 									<div
 										cdkDragHandle
@@ -191,7 +191,7 @@
 				</div>
 			</p-tabPanel>
 			<p-tabPanel>
-				<ng-template pTemplate="header">
+				<ng-template #header>
 					<div
 						class="w-full flex align-items-center justify-content-center p-3"
 						pTooltip="Capture"
@@ -281,7 +281,7 @@
 				</div>
 			</p-tabPanel>
 			<p-tabPanel>
-				<ng-template pTemplate="header">
+				<ng-template #header>
 					<div
 						class="flex gap-2 align-items-center justify-content-center p-3"
 						pTooltip="Dither"
@@ -319,7 +319,7 @@
 				</div>
 			</p-tabPanel>
 			<p-tabPanel>
-				<ng-template pTemplate="header">
+				<ng-template #header>
 					<div
 						class="flex flex-shrink-0 gap-2 align-items-center justify-content-center p-3"
 						pTooltip="Auto Focus"
@@ -401,7 +401,7 @@
 				</div>
 			</p-tabPanel>
 			<p-tabPanel>
-				<ng-template pTemplate="header">
+				<ng-template #header>
 					<div
 						class="flex gap-2 align-items-center justify-content-center p-3"
 						pTooltip="Live Stacking"
@@ -598,7 +598,7 @@
 			</div>
 		}
 	</div>
-	<ng-template pTemplate="footer">
+	<ng-template #footer>
 		<neb-button
 			icon="mdi mdi-check"
 			label="Apply"

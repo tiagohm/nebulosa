@@ -6,7 +6,7 @@
 			<p-tabPanel
 				header="Sun"
 				headerStyleClass="main">
-				<ng-template pTemplate="header">
+				<ng-template #header>
 					<div
 						class="p-3"
 						pTooltip="Sun"
@@ -48,7 +48,7 @@
 			<p-tabPanel
 				header="Moon"
 				headerStyleClass="main">
-				<ng-template pTemplate="header">
+				<ng-template #header>
 					<div
 						class="p-3"
 						pTooltip="Moon"
@@ -119,7 +119,7 @@
 			<p-tabPanel
 				header="Planets"
 				headerStyleClass="main">
-				<ng-template pTemplate="header">
+				<ng-template #header>
 					<div
 						class="p-3"
 						pTooltip="Planets"
@@ -136,7 +136,7 @@
 						selectionMode="single"
 						dataKey="code"
 						styleClass="p-datatable-sm p-datatable-striped">
-						<ng-template pTemplate="header">
+						<ng-template #header>
 							<tr>
 								<th>Name</th>
 								<th>Type</th>
@@ -156,7 +156,7 @@
 			<p-tabPanel
 				header="Minor Planets"
 				headerStyleClass="main">
-				<ng-template pTemplate="header">
+				<ng-template #header>
 					<div
 						class="p-3"
 						pTooltip="Minor planets"
@@ -193,7 +193,7 @@
 								[value]="minorPlanet.search.result?.parameters ?? []"
 								class="minorPlanet"
 								styleClass="p-datatable-sm p-datatable-striped">
-								<ng-template pTemplate="header">
+								<ng-template #header>
 									<tr>
 										<th>Name</th>
 										<th>Description</th>
@@ -250,7 +250,7 @@
 								[(selection)]="minorPlanet.closeApproach.selected"
 								(selectionChange)="closeApproachChanged()"
 								dataKey="designation">
-								<ng-template pTemplate="header">
+								<ng-template #header>
 									<tr>
 										<th>Name</th>
 										<th pSortableColumn="dateTime">
@@ -285,7 +285,7 @@
 			<p-tabPanel
 				header="Stars & DSOs"
 				headerStyleClass="main">
-				<ng-template pTemplate="header">
+				<ng-template #header>
 					<div
 						class="p-3"
 						pTooltip="Stars & DSOs"
@@ -326,7 +326,7 @@
 						[pageLinks]="3"
 						[showCurrentPageReport]="true"
 						currentPageReportTemplate="{first}-{last} / {totalRecords}">
-						<ng-template pTemplate="header">
+						<ng-template #header>
 							<tr>
 								<th
 									style="width: 40%"
@@ -370,7 +370,7 @@
 			<p-tabPanel
 				header="TLEs"
 				headerStyleClass="main">
-				<ng-template pTemplate="header">
+				<ng-template #header>
 					<div
 						class="p-3"
 						pTooltip="Satellites"
@@ -411,7 +411,7 @@
 						[pageLinks]="3"
 						[showCurrentPageReport]="true"
 						currentPageReportTemplate="{first}-{last} / {totalRecords}">
-						<ng-template pTemplate="header">
+						<ng-template #header>
 							<tr>
 								<th
 									style="width: 20%"
@@ -675,7 +675,7 @@
 				[(value)]="skyObject.search.filter.magnitudeMax" />
 		</div>
 	</div>
-	<ng-template pTemplate="footer">
+	<ng-template #footer>
 		<neb-button
 			icon="mdi mdi-filter"
 			label="Filter"
@@ -702,7 +702,7 @@
 			}
 		</div>
 	</div>
-	<ng-template pTemplate="footer">
+	<ng-template #footer>
 		<neb-button
 			severity="danger"
 			icon="mdi mdi-restore"
@@ -735,7 +735,7 @@
 	#dateTimeAndLocationPopover
 	[style]="{ width: 'calc(100% - 8px)', marginLeft: '4px' }"
 	appendTo="body">
-	<ng-template pTemplate="content">
+	<ng-template #content>
 		<div class="grid">
 			<div class="col-7 flex-column gap-2">
 				<p-date-picker
@@ -789,14 +789,14 @@
 	#bookmarkPopover
 	[style]="{ width: 'calc(100% - 8px)', marginLeft: '4px' }"
 	appendTo="body">
-	<ng-template pTemplate="content">
+	<ng-template #content>
 		<div class="grid">
 			<p-listbox
 				[options]="preference.favorites"
 				[ngModel]="favorited"
 				(ngModelChange)="selectFavorite($event); bookmarkPopover.hide()"
 				class="w-full"
-				styleClass="border-0 w-full"
+				styleClass="w-full"
 				[metaKeySelection]="false"
 				[filter]="true"
 				[filterFields]="['name']"
@@ -804,8 +804,8 @@
 				[listStyle]="{ maxHeight: '188px', height: '188px' }"
 				emptyMessage="No favorites">
 				<ng-template
-					let-item
-					pTemplate="item">
+					#item
+					let-item>
 					<div class="flex align-items-center justify-content-between gap-1 w-full">
 						<span class="text-sm">
 							<span class="font-bold">{{ item.type | enum }}</span>

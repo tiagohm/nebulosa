@@ -427,14 +427,13 @@ export class HomeComponent implements AfterContentInit {
 		this.connectionDialog.showDialog = true
 	}
 
-	protected editConnection(connection: ConnectionDetails, event: MouseEvent) {
+	protected editConnection(connection: ConnectionDetails) {
 		this.connectionDialog.edited = true
 		this.connectionDialog.connection = connection
 		this.connectionDialog.showDialog = true
-		event.stopImmediatePropagation()
 	}
 
-	protected deleteConnection(connection: ConnectionDetails, event: MouseEvent) {
+	protected deleteConnection(connection: ConnectionDetails) {
 		const index = this.preference.connections.findIndex((e) => e === connection)
 
 		if (index >= 0 && !connection.connected) {
@@ -450,8 +449,6 @@ export class HomeComponent implements AfterContentInit {
 
 			this.savePreference()
 		}
-
-		event.stopImmediatePropagation()
 	}
 
 	protected saveConnection() {

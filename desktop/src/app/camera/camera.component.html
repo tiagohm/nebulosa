@@ -408,7 +408,7 @@
 	[(visible)]="dither.showDialog"
 	[modal]="true"
 	[style]="{ width: '80vw', maxWidth: '320px' }">
-	<ng-template pTemplate="header">
+	<ng-template #header>
 		<div class="flex w-full align-items-center justify-content-start gap-2 ng-star-inserted">
 			<span class="p-dialog-title">Dither</span>
 			<div class="flex-1 align-items-center justify-content-center">
@@ -454,7 +454,7 @@
 	[(visible)]="liveStacking.showDialog"
 	[modal]="true"
 	[style]="{ width: '80vw', maxWidth: '320px' }">
-	<ng-template pTemplate="header">
+	<ng-template #header>
 		<div class="flex w-full align-items-center justify-content-start gap-2 ng-star-inserted">
 			<span class="p-dialog-title">Live Stacking</span>
 			<div class="flex-1 align-items-center justify-content-center">

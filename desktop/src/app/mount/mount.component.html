@@ -367,11 +367,10 @@
 				[options]="remoteControl.controls"
 				[style]="{ width: '100%' }"
 				[listStyle]="{ 'max-height': '100px' }"
-				styleClass="border-0"
 				emptyMessage="No remote control connected">
 				<ng-template
-					let-item
-					pTemplate="item">
+					#item
+					let-item>
 					<div class="flex flex-row w-full align-items-center justify-content-between">
 						<div class="flex flex-column justify-content-center">
 							<span class="font-bold white-space-nowrap">{{ item.protocol }}</span>
@@ -407,7 +406,7 @@
 			}
 		</div>
 	</div>
-	<ng-template pTemplate="footer">
+	<ng-template #footer>
 		<neb-button
 			icon="mdi mdi-check"
 			label="Apply"
@@ -432,8 +431,8 @@
 				[showWeek]="true"
 				dateFormat="yy-mm-dd"
 				appendTo="body"
-				styleClass="w-full border-0">
-				<ng-template pTemplate="footer">
+				styleClass="w-full">
+				<ng-template #footer>
 					<neb-button
 						label="Now"
 						(action)="timeNow()" />
@@ -448,7 +447,7 @@
 				[(value)]="time.offsetInMinutes" />
 		</div>
 	</div>
-	<ng-template pTemplate="footer">
+	<ng-template #footer>
 		<neb-button
 			icon="mdi mdi-sync"
 			label="Sync"

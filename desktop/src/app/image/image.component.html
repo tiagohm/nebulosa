@@ -149,7 +149,7 @@
 	#menu
 	[model]="contextMenuModel">
 	<ng-template
-		pTemplate="item"
+		#item
 		let-item>
 		<neb-menu-item [item]="item" />
 	</ng-template>
@@ -163,7 +163,7 @@
 	[style]="{ width: '385px' }">
 	<p-tabView>
 		<p-tabPanel header="Stars & DSOs">
-			<ng-template pTemplate="header">
+			<ng-template #header>
 				<div class="flex gap-2 align-items-center">
 					<span>Stars & DSOs</span>
 					<neb-checkbox
@@ -193,7 +193,7 @@
 			</div>
 		</p-tabPanel>
 		<p-tabPanel header="Minor Planets">
-			<ng-template pTemplate="header">
+			<ng-template #header>
 				<div class="flex gap-2 align-items-center">
 					<span>Minor Planets</span>
 					<neb-checkbox
@@ -239,7 +239,7 @@
 			</div>
 		</p-tabPanel>
 		<p-tabPanel [disabled]="!annotation.data.length">
-			<ng-template pTemplate="header">
+			<ng-template #header>
 				<div class="flex gap-2 align-items-center">
 					<span>Objects</span>
 					<p-badge
@@ -280,7 +280,7 @@
 					class="w-full mt-1"
 					[style]="{ width: '100%', height: '180px' }">
 					<ng-template
-						pTemplate="item"
+						#item
 						let-item>
 						<div
 							class="cursor-pointer hover:surface-hover border-round flex flex-column align-items-start justfiy-content-center p-2 gap-1"
@@ -298,7 +298,7 @@
 			</div>
 		</p-tabPanel>
 	</p-tabView>
-	<ng-template pTemplate="footer">
+	<ng-template #footer>
 		<neb-button
 			[disabled]="annotation.running || (!annotation.request.starsAndDSOs && !annotation.request.minorPlanets)"
 			icon="mdi mdi-check"
@@ -376,7 +376,7 @@
 			</div>
 		}
 	</div>
-	<ng-template pTemplate="footer">
+	<ng-template #footer>
 		<div class="col-12 flex justify-content-center">
 			<neb-button
 				[disabled]="!astronomicalObject.info"
@@ -471,7 +471,7 @@
 				(valueChange)="savePreference()" />
 		</div>
 	</div>
-	<ng-template pTemplate="footer">
+	<ng-template #footer>
 		<div class="grid pt-2">
 			<div class="col-4">
 				<neb-input-text
@@ -616,7 +616,7 @@
 				tooltip="Reset" />
 		</div>
 	</div>
-	<ng-template pTemplate="footer">
+	<ng-template #footer>
 		<neb-button
 			icon="mdi mdi-auto-fix"
 			label="Auto"
@@ -665,7 +665,7 @@
 				[(value)]="scnr.transformation.amount" />
 		</div>
 	</div>
-	<ng-template pTemplate="footer">
+	<ng-template #footer>
 		<neb-button
 			icon="mdi mdi-check"
 			label="Apply"
@@ -686,14 +686,14 @@
 			class="w-full"
 			dataKey="name"
 			styleClass="w-full pb-4 p-datatable-striped">
-			<ng-template pTemplate="header">
+			<ng-template #header>
 				<tr>
 					<th>Name</th>
 					<th>Value</th>
 				</tr>
 			</ng-template>
 			<ng-template
-				pTemplate="body"
+				#body
 				let-item>
 				<tr [pSelectableRow]="item">
 					<td>{{ item.name }}</td>
@@ -881,7 +881,7 @@
 			</div>
 		</div>
 	</div>
-	<ng-template pTemplate="footer">
+	<ng-template #footer>
 		<neb-button
 			[disabled]="starDetector.running"
 			icon="mdi mdi-check"
@@ -1065,11 +1065,10 @@
 				[virtualScrollItemSize]="42"
 				filterBy="name,sensor"
 				filterMatchMode="contains"
-				[filterFields]="['name', 'sensor']"
-				styleClass="border-0">
+				[filterFields]="['name', 'sensor']">
 				<ng-template
-					let-item
-					pTemplate="item">
+					#item
+					let-item>
 					<div class="flex flex-column justify-content-center">
 						<span class="font-bold white-space-nowrap">{{ item.name }}</span>
 						<span class="font-italic text-sm white-space-nowrap">{{ item.sensor }}</span>
@@ -1079,7 +1078,7 @@
 			</p-listbox>
 		</div>
 	</div>
-	<ng-template pTemplate="footer">
+	<ng-template #footer>
 		<neb-button
 			[disabled]="!fov.camera"
 			icon="mdi mdi-check"
@@ -1107,11 +1106,10 @@
 				[virtualScrollItemSize]="42"
 				filterBy="name"
 				filterMatchMode="contains"
-				[filterFields]="['name']"
-				styleClass="border-0">
+				[filterFields]="['name']">
 				<ng-template
-					let-item
-					pTemplate="item">
+					#item
+					let-item>
 					<div class="flex flex-column justify-content-center">
 						<span class="font-bold white-space-nowrap">{{ item.name }}</span>
 						<span class="text-sm">{{ item.aperture }}mm / {{ item.focalLength }}mm</span>
@@ -1120,7 +1118,7 @@
 			</p-listbox>
 		</div>
 	</div>
-	<ng-template pTemplate="footer">
+	<ng-template #footer>
 		<neb-button
 			[disabled]="!fov.telescope"
 			icon="mdi mdi-check"
@@ -1208,7 +1206,7 @@
 				[(value)]="saveAs.shouldBeTransformed" />
 		</div>
 	</div>
-	<ng-template pTemplate="footer">
+	<ng-template #footer>
 		<neb-button
 			[disabled]="!saveAs.path"
 			icon="mdi mdi-content-save"
@@ -1323,7 +1321,7 @@
 			[level]="adjustment.request.fade"
 			(update)="savePreference()" />
 	</div>
-	<ng-template pTemplate="footer">
+	<ng-template #footer>
 		<neb-button
 			icon="mdi mdi-restore"
 			label="Reset"

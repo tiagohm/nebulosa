@@ -18,7 +18,7 @@ abstract class SelectButtonBaseComponent<O, T> {
 			[(ngModel)]="value"
 			optionLabel="label"
 			optionValue="value"
-			styleClass="border-0 w-full" />
+			styleClass="w-full" />
 	`,
 	styles: `
 		neb-select-button-enum {
@@ -49,7 +49,8 @@ export class SelectButtonItemComponent<T> extends SelectButtonBaseComponent<Drop
 			[disabled]="disabled() ?? false"
 			optionLabel="label"
 			optionValue="value"
-			styleClass="border-0 w-full" />
+			class="w-full"
+			styleClass="w-full" />
 	`,
 	styles: `
 		neb-select-button-enum {

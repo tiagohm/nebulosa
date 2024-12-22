@@ -8,9 +8,9 @@ import { MenuItemCommandEvent, SlideMenuItem } from './menu-item.component'
 			<p-menu
 				[model]="currentMenu"
 				[appendTo]="appendTo()"
-				styleClass="border-0 w-full min-w-18rem">
+				styleClass="w-full min-w-18rem">
 				<ng-template
-					pTemplate="item"
+					#item
 					let-item>
 					<neb-menu-item [item]="item" />
 				</ng-template>

@@ -116,7 +116,7 @@
 				(valueChange)="savePreference()" />
 		</div>
 	</div>
-	<ng-template pTemplate="footer">
+	<ng-template #footer>
 		<div class="w-full flex justify-content-between align-items-center">
 			<span class="flex-1 text-center font-bold text-lg">{{ fov.computed.toFixed(3) }}°</span>
 			<neb-button

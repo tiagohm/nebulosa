@@ -17,26 +17,31 @@
 			@if (pinned) {
 				<neb-button
 					icon="mdi mdi-sm mdi-pin text-gray-200"
+					severity="contrast"
 					(action)="pin()"
 					tooltip="Unpin Window" />
 			} @else {
 				<neb-button
 					icon="mdi mdi-sm mdi-pin-off text-gray-200"
+					severity="contrast"
 					(action)="pin()"
 					tooltip="Pin Window" />
 			}
 			<neb-button
+				severity="contrast"
 				icon="mdi mdi-sm mdi-window-minimize text-gray-200"
 				(action)="minimize()" />
 			@if (maximizable) {
 				<neb-button
+					severity="contrast"
 					icon="mdi mdi-sm mdi-window-maximize text-gray-200"
 					(action)="maximize()" />
 			}
 		}
 		<neb-button
 			class="mr-1"
-			icon="mdi mdi-sm mdi-window-close text-danger"
+			severity="danger"
+			icon="mdi mdi-sm mdi-window-close"
 			(action)="close()" />
 	</section>
 }

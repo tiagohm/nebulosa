@@ -23,7 +23,9 @@ abstract class DropdownBaseComponent<O, T> {
 @Component({
 	selector: 'neb-dropdown',
 	template: `
-		<p-floatLabel class="w-full">
+		<p-floatLabel
+			class="w-full"
+			variant="on">
 			<p-select
 				#select
 				[options]="options()"
@@ -33,7 +35,7 @@ abstract class DropdownBaseComponent<O, T> {
 				[filterFields]="filterFields()"
 				[optionLabel]="optionLabel()"
 				[optionValue]="optionValue()"
-				styleClass="w-full p-inputtext-sm border-0"
+				styleClass="w-full"
 				[emptyMessage]="emptyMessage()"
 				[autoDisplayFirst]="false"
 				appendTo="body"
@@ -96,7 +98,9 @@ export class DropdownComponent<T> extends DropdownBaseComponent<T, T> {
 @Component({
 	selector: 'neb-dropdown-item',
 	template: `
-		<p-floatLabel class="w-full">
+		<p-floatLabel
+			class="w-full"
+			variant="on">
 			<p-select
 				#select
 				[options]="options()"
@@ -106,7 +110,7 @@ export class DropdownComponent<T> extends DropdownBaseComponent<T, T> {
 				[filterFields]="['label', 'value']"
 				optionLabel="label"
 				optionValue="value"
-				styleClass="w-full p-inputtext-sm border-0"
+				styleClass="w-full"
 				[emptyMessage]="emptyMessage()"
 				[autoDisplayFirst]="false"
 				appendTo="body"
@@ -134,7 +138,9 @@ export class DropdownItemComponent<T> extends DropdownBaseComponent<DropdownItem
 @Component({
 	selector: 'neb-dropdown-enum',
 	template: `
-		<p-floatLabel class="w-full">
+		<p-floatLabel
+			class="w-full"
+			variant="on">
 			<p-select
 				#select
 				[options]="options() | enumDropdown"
@@ -142,7 +148,7 @@ export class DropdownItemComponent<T> extends DropdownBaseComponent<DropdownItem
 				[disabled]="disabled() ?? false"
 				optionLabel="label"
 				optionValue="value"
-				styleClass="w-full p-inputtext-sm border-0"
+				styleClass="w-full"
 				[emptyMessage]="emptyMessage()"
 				[filter]="filter()"
 				[autoDisplayFirst]="false"

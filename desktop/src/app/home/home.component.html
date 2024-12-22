@@ -15,7 +15,7 @@
 						<span>{{ connection?.name }}</span>
 					</div>
 				} @else {
-					<div class="flex flex-row align-items-center justify-content-between gap-1 text-xs">
+					<div class="w-full flex flex-row align-items-center justify-content-between gap-1 text-xs">
 						<div class="flex flex-column gap-1">
 							<span class="font-bold text-lg">{{ item.name }}</span>
 							<span class="text-sm">{{ item.type }} | {{ item.host }}:{{ item.port }}</span>
@@ -24,17 +24,19 @@
 								<span>{{ (item.connectedAt | date: 'yyyy-MM-dd HH:mm:ss') ?? 'never' }}</span>
 							</div>
 						</div>
-						<div class="flex flex-column gap-3">
-							<i
-								class="mdi mdi-18px mdi-pencil"
-								pTooltip="Edit"
+						<div class="flex flex-column gap-1">
+							<neb-button
+								icon="mdi mdi-pencil"
+								severity="info"
+								tooltip="Edit"
 								tooltipPosition="bottom"
-								(click)="connectionDropdown.hide(); editConnection(item, $event)"></i>
-							<i
-								class="mdi mdi-18px mdi-close"
-								pTooltip="Remove"
+								(action)="editConnection(item)" />
+							<neb-button
+								icon="mdi mdi-close"
+								severity="danger"
+								tooltip="Remove"
 								tooltipPosition="bottom"
-								(click)="connectionDropdown.hide(); deleteConnection(item, $event)"></i>
+								(action)="deleteConnection(item)" />
 						</div>
 					</div>
 				}
@@ -263,7 +265,7 @@
 				[(value)]="connectionDialog.connection.type" />
 		</div>
 	</div>
-	<ng-template pTemplate="footer">
+	<ng-template #footer>
 		<neb-button
 			[disabled]="!connectionDialog.connection.name || !connectionDialog.connection.host || !connectionDialog.connection.port"
 			icon="mdi mdi-content-save"

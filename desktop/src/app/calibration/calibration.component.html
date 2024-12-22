@@ -36,15 +36,14 @@
 								[options]="value"
 								[(ngModel)]="selectedFrames"
 								(ngModelChange)="frameSelected()"
-								styleClass="border-0"
 								[multiple]="true"
 								[metaKeySelection]="false"
 								[style]="{ width: '100%', height: '296px' }"
 								[listStyle]="{ maxHeight: '296px', height: '296px' }"
 								emptyMessage="No frames">
 								<ng-template
-									let-item
-									pTemplate="item">
+									#item
+									let-item>
 									<div class="flex align-items-center justify-content-between gap-2 w-full">
 										<div class="flex flex-column justify-content-center gap-2 flex-1">
 											<div class="flex align-items-center justify-content-between gap-2 text-gray-400">
@@ -108,7 +107,7 @@
 				[(value)]="groupDialog.group" />
 		</div>
 	</div>
-	<ng-template pTemplate="footer">
+	<ng-template #footer>
 		<neb-button
 			[disabled]="!groupDialog.group.length"
 			icon="mdi mdi-check"
