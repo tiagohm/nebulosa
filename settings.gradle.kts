@@ -32,7 +32,7 @@ dependencyResolutionManagement {
             library("apache-numbers-complex", "org.apache.commons:commons-numbers-complex:1.2")
             library("oshi", "com.github.oshi:oshi-core:6.6.5")
             library("jna", "net.java.dev.jna:jna:5.16.0")
-            library("koin", "io.insert-koin:koin-core:4.0.0")
+            library("koin", "io.insert-koin:koin-core:4.0.1")
             library("airline", "com.github.rvesse:airline:3.0.0")
             library("h2", "com.h2database:h2:2.3.232")
             library("flyway", "org.flywaydb:flyway-core:11.1.0")
