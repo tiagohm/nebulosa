@@ -5,6 +5,7 @@ import { DependencyItem, FLAT_ICON_URL, IconItem } from '../../shared/types/abou
 import { AppComponent } from '../app.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-about',
 	templateUrl: 'about.component.html',
 })

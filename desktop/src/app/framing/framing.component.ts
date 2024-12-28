@@ -8,6 +8,7 @@ import { DEFAULT_FRAMING_FOV_DIALOG, DEFAULT_FRAMING_PREFERENCE, FramingRequest,
 import { AppComponent } from '../app.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-framing',
 	templateUrl: 'framing.component.html',
 })

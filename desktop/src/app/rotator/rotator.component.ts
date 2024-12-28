@@ -10,6 +10,7 @@ import { DEFAULT_ROTATOR, DEFAULT_ROTATOR_PREFERENCE, Rotator, RotatorDialogInpu
 import { AppComponent } from '../app.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-rotator',
 	templateUrl: 'rotator.component.html',
 })

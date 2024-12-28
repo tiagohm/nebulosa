@@ -4,6 +4,7 @@ import { Severity, TooltipPosition } from '../types/angular.types'
 export type ButtonSeverity = Severity | 'help' | 'primary' | 'secondary' | 'contrast'
 
 @Component({
+	standalone: false,
 	selector: 'neb-button',
 	template: `
 		<p-button

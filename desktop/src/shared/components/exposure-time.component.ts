@@ -3,6 +3,7 @@ import type { ExposureTimeUnit } from '../types/camera.types'
 import { MenuItem } from './menu-item.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-exposure-time',
 	template: `
 		<div class="relative flex justify-content-center align-items-center">

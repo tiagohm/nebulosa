@@ -14,6 +14,7 @@ export interface DeviceConnectionCommandEvent {
 }
 
 @Component({
+	standalone: false,
 	selector: 'neb-device-list-menu',
 	template: `
 		<neb-dialog-menu

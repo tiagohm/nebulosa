@@ -24,6 +24,7 @@ function scrollPageOf(element: Element) {
 }
 
 @Component({
+	standalone: false,
 	selector: 'neb-home',
 	templateUrl: 'home.component.html',
 	encapsulation: ViewEncapsulation.None,

@@ -7,6 +7,7 @@ export interface SplitButtonClickEvent {
 }
 
 @Component({
+	standalone: false,
 	selector: 'neb-menu-bar',
 	template: `
 		<div class="flex align-items-center justify-content-center gap-1">

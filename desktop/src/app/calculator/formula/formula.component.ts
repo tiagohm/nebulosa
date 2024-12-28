@@ -2,6 +2,7 @@ import { Component, input } from '@angular/core'
 import type { CalculatorFormula } from '../../../shared/types/calculator.types'
 
 @Component({
+	standalone: false,
 	selector: 'neb-formula',
 	templateUrl: 'formula.component.html',
 	styleUrls: ['formula.component.scss'],

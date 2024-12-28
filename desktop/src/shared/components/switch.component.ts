@@ -2,6 +2,7 @@ import { Component, input, model, output, ViewEncapsulation } from '@angular/cor
 import { ToggleSwitchChangeEvent } from 'primeng/toggleswitch'
 
 @Component({
+	standalone: false,
 	selector: 'neb-switch',
 	template: `
 		<div class="flex flex-column justify-content-center text-center gap-2">

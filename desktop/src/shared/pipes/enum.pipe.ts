@@ -47,7 +47,7 @@ export type EnumPipeKey =
 	| TrackMode
 	| 'ALL'
 
-@Pipe({ name: 'enum' })
+@Pipe({ standalone: false, name: 'enum' })
 export class EnumPipe implements PipeTransform {
 	private readonly enums: Record<EnumPipeKey, Undefinable<string>> = {
 		'DX/DY': 'dx/dy',

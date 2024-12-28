@@ -2,7 +2,7 @@ import { Pipe, PipeTransform } from '@angular/core'
 import { Angle } from '../types/atlas.types'
 import { AngleRange, formatAngle, radiansToDegrees } from '../utils/angle'
 
-@Pipe({ name: 'angle' })
+@Pipe({ standalone: false, name: 'angle' })
 export class AnglePipe implements PipeTransform {
 	transform(value: Angle, radians: boolean, range: AngleRange) {
 		if (typeof value === 'string') return value

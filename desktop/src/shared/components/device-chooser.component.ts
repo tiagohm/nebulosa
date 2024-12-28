@@ -5,6 +5,7 @@ import { DeviceConnectionCommandEvent, DeviceListMenuComponent } from './device-
 import { MenuItem } from './menu-item.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-device-chooser',
 	template: `
 		<neb-button

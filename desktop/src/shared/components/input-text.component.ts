@@ -1,6 +1,7 @@
 import { Component, input, model, ViewEncapsulation } from '@angular/core'
 
 @Component({
+	standalone: false,
 	selector: 'neb-input-text',
 	template: `
 		<p-floatLabel

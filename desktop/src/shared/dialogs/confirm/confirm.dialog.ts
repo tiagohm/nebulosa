@@ -4,6 +4,7 @@ import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog'
 import { AngularService } from '../../services/angular.service'
 
 @Component({
+	standalone: false,
 	templateUrl: 'confirm.dialog.html',
 })
 export class ConfirmDialogComponent {

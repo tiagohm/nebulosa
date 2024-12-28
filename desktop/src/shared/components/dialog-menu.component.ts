@@ -2,6 +2,7 @@ import { Component, ViewEncapsulation, effect, input, model } from '@angular/cor
 import { MenuItemCommandEvent, SlideMenuItem } from './menu-item.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-dialog-menu',
 	template: `
 		<p-dialog

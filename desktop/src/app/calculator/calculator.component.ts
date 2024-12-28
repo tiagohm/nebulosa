@@ -4,6 +4,7 @@ import { AppComponent } from '../app.component'
 import { FormulaComponent } from './formula/formula.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-calculator',
 	templateUrl: 'calculator.component.html',
 })

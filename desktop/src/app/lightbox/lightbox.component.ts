@@ -8,6 +8,7 @@ import { DEFAULT_LIGHT_BOX, LightBox } from '../../shared/types/lightbox.types'
 import { AppComponent } from '../app.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-lightbox',
 	templateUrl: 'lightbox.component.html',
 })

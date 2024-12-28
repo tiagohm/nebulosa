@@ -2,6 +2,7 @@ import { Component, ViewEncapsulation, effect, input, output } from '@angular/co
 import type { INDIProperty, INDIPropertyItem, INDISendProperty, INDISendPropertyItem } from '../../../shared/types/device.types'
 
 @Component({
+	standalone: false,
 	selector: 'neb-indi-property',
 	templateUrl: 'indi-property.component.html',
 	styleUrls: ['indi-property.component.scss'],

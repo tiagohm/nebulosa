@@ -57,6 +57,7 @@ import { uid } from '../../shared/utils/random'
 import { AppComponent } from '../app.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-image',
 	templateUrl: 'image.component.html',
 	styleUrls: ['image.component.scss'],

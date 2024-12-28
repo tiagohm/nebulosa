@@ -14,6 +14,7 @@ import { AppComponent } from '../app.component'
 import { CameraComponent } from '../camera/camera.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-flat-wizard',
 	templateUrl: 'flat-wizard.component.html',
 })

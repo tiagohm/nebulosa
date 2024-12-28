@@ -1,6 +1,7 @@
 import { Component, input, model, ViewEncapsulation } from '@angular/core'
 
 @Component({
+	standalone: false,
 	selector: 'neb-indicator',
 	template: `
 		<div class="flex flex-column align-items-center justify-content-center">

@@ -54,6 +54,7 @@ export interface SlideMenuItem extends MenuItem {
 }
 
 @Component({
+	standalone: false,
 	selector: 'neb-menu-item',
 	template: `
 		@let mItem = item();

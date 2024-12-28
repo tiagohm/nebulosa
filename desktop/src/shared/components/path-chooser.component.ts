@@ -2,6 +2,7 @@ import { Component, inject, input, model, ViewEncapsulation } from '@angular/cor
 import { ElectronService } from '../services/electron.service'
 
 @Component({
+	standalone: false,
 	selector: 'neb-path-chooser',
 	template: `
 		<div class="flex align-items-center gap-1">

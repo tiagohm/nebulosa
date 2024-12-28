@@ -1,5 +1,5 @@
-@import '@mdi/font/scss/materialdesignicons.scss';
-@import '@fontsource/roboto';
+@use '@mdi/font/scss/materialdesignicons.scss';
+@use '@fontsource/roboto';
 
 $successButtonBg: #81c784;
 $successButtonHoverBg: rgba($successButtonBg, 0.92);

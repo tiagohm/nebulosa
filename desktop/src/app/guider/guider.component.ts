@@ -10,6 +10,7 @@ import { DEFAULT_GUIDER_CHART_INFO, DEFAULT_GUIDER_PHD2, DEFAULT_GUIDER_PREFEREN
 import { AppComponent } from '../app.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-guider',
 	templateUrl: 'guider.component.html',
 })

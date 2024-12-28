@@ -9,6 +9,7 @@ import { DEFAULT_FOCUSER, DEFAULT_FOCUSER_PREFERENCE, Focuser } from '../../shar
 import { AppComponent } from '../app.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-focuser',
 	templateUrl: 'focuser.component.html',
 })

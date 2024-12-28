@@ -16,6 +16,7 @@ import { AppComponent } from '../app.component'
 import { CameraComponent } from '../camera/camera.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-autofocus',
 	templateUrl: 'autofocus.component.html',
 })

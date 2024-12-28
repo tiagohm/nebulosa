@@ -2,6 +2,7 @@ import { Component, ViewEncapsulation, input } from '@angular/core'
 import type { Device } from '../types/device.types'
 
 @Component({
+	standalone: false,
 	selector: 'neb-device-name',
 	template: `
 		<div class="flex flex-column justify-content-center gap-0">

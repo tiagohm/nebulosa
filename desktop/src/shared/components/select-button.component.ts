@@ -10,6 +10,7 @@ abstract class SelectButtonBaseComponent<O, T> {
 }
 
 @Component({
+	standalone: false,
 	selector: 'neb-select-button-item',
 	template: `
 		<p-selectButton
@@ -40,6 +41,7 @@ export class SelectButtonItemComponent<T> extends SelectButtonBaseComponent<Drop
 }
 
 @Component({
+	standalone: false,
 	selector: 'neb-select-button-enum',
 	template: `
 		<p-selectButton

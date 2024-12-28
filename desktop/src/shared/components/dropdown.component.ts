@@ -21,6 +21,7 @@ abstract class DropdownBaseComponent<O, T> {
 }
 
 @Component({
+	standalone: false,
 	selector: 'neb-dropdown',
 	template: `
 		<p-floatLabel
@@ -96,6 +97,7 @@ export class DropdownComponent<T> extends DropdownBaseComponent<T, T> {
 }
 
 @Component({
+	standalone: false,
 	selector: 'neb-dropdown-item',
 	template: `
 		<p-floatLabel
@@ -136,6 +138,7 @@ export class DropdownItemComponent<T> extends DropdownBaseComponent<DropdownItem
 }
 
 @Component({
+	standalone: false,
 	selector: 'neb-dropdown-enum',
 	template: `
 		<p-floatLabel

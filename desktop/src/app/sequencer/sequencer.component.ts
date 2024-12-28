@@ -27,6 +27,7 @@ import { FilterWheelComponent } from '../filterwheel/filterwheel.component'
 import { RotatorComponent } from '../rotator/rotator.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-sequencer',
 	templateUrl: 'sequencer.component.html',
 	styleUrls: ['sequencer.component.scss'],

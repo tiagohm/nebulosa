@@ -2,6 +2,7 @@ import { Component, input, model, ViewEncapsulation } from '@angular/core'
 import { CameraCaptureEvent, CameraCaptureState, DEFAULT_CAMERA_CAPTURE_INFO, DEFAULT_CAMERA_STEP_INFO } from '../types/camera.types'
 
 @Component({
+	standalone: false,
 	selector: 'neb-camera-exposure',
 	template: `
 		<div class="flex flex-column align-items-start justify-content-center gap-1">

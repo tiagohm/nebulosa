@@ -5,6 +5,7 @@ import type { Rotator } from '../types/rotator.types'
 import type { Wheel } from '../types/wheel.types'
 
 @Component({
+	standalone: false,
 	selector: 'neb-camera-info',
 	template: `
 		<div class="flex gap-2 align-items-center flex-wrap">

@@ -2,6 +2,7 @@ import { Component, ElementRef, ViewEncapsulation, effect, viewChild } from '@an
 import { ImageHistrogram } from '../types/image.types'
 
 @Component({
+	standalone: false,
 	selector: 'neb-histogram',
 	template: `
 		<canvas

@@ -13,6 +13,7 @@ import { DEFAULT_WHEEL, DEFAULT_WHEEL_PREFERENCE, Filter, Wheel, WheelDialogInpu
 import { AppComponent } from '../app.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-filterwheel',
 	templateUrl: 'filterwheel.component.html',
 	styleUrls: ['filterwheel.component.scss'],

@@ -1,11 +1,12 @@
 import { Component, ElementRef, inject, input, output, ViewEncapsulation } from '@angular/core'
 import { Severity } from '../types/angular.types'
 
-export type TagSeverity = Severity |'secondary' | 'contrast' | undefined
+export type TagSeverity = Severity | 'secondary' | 'contrast' | undefined
 
 export type TagSize = 'large' | 'normal'
 
 @Component({
+	standalone: false,
 	selector: 'neb-tag, neb-info, neb-success, neb-warn, neb-error',
 	template: `
 		<p-tag

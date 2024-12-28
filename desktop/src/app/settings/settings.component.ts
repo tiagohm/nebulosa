@@ -11,6 +11,7 @@ import { StarDetectorType } from '../../shared/types/stardetector.types'
 import { AppComponent } from '../app.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-settings',
 	templateUrl: 'settings.component.html',
 })

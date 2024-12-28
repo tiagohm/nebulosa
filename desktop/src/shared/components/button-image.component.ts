@@ -3,6 +3,7 @@ import { TooltipPosition } from '../types/angular.types'
 import { ButtonSeverity } from './button.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-button-image',
 	template: `
 		<p-button

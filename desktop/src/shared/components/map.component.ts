@@ -2,6 +2,7 @@ import { AfterViewInit, Component, ElementRef, OnChanges, OnDestroy, ViewEncapsu
 import * as L from 'leaflet'
 
 @Component({
+	standalone: false,
 	selector: 'neb-map',
 	template: `
 		<div

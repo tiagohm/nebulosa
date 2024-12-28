@@ -40,7 +40,7 @@ export interface DropdownOptions {
 	SEQUENCER_CAPTURE_MODE: SequencerCaptureMode[]
 }
 
-@Pipe({ name: 'dropdownOptions' })
+@Pipe({ standalone: false, name: 'dropdownOptions' })
 export class DropdownOptionsPipe implements PipeTransform {
 	transform<K extends keyof DropdownOptions>(type: K): DropdownOptions[K] {
 		switch (type) {

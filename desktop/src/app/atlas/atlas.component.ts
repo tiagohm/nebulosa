@@ -47,6 +47,7 @@ import { Mount } from '../../shared/types/mount.types'
 import { AppComponent } from '../app.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-atlas',
 	templateUrl: 'atlas.component.html',
 	styleUrls: ['atlas.component.scss'],

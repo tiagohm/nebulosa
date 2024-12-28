@@ -2,6 +2,7 @@ import { Component, input, output, ViewEncapsulation } from '@angular/core'
 import { ImageAdjustmentLevel } from '../../shared/types/image.types'
 
 @Component({
+	standalone: false,
 	selector: 'neb-image-adjustment-input',
 	template: `
 		<div class="w-full inline-flex justify-content-center align-items-center gap-1">

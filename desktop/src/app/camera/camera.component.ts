@@ -31,6 +31,7 @@ import { Wheel } from '../../shared/types/wheel.types'
 import { AppComponent } from '../app.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-camera',
 	templateUrl: 'camera.component.html',
 })

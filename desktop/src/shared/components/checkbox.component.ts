@@ -2,6 +2,7 @@ import { Component, input, model, output, ViewEncapsulation } from '@angular/cor
 import { CheckboxChangeEvent } from 'primeng/checkbox'
 
 @Component({
+	standalone: false,
 	selector: 'neb-checkbox',
 	template: `
 		<div class="flex align-items-center justify-content-center gap-1 text-sm">

@@ -2,6 +2,7 @@ import { Component, ElementRef, TemplateRef, ViewEncapsulation, effect, input, o
 import { MenuItemCommandEvent, SlideMenuItem } from './menu-item.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-slide-menu',
 	template: `
 		<div class="flex flex-column justify-content-center align-items-center gap-1">

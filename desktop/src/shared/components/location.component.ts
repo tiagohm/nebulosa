@@ -3,6 +3,7 @@ import type { Location } from '../types/atlas.types'
 import { MapComponent } from './map.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-location',
 	template: `
 		@let mLocation = location();

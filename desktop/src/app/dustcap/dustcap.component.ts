@@ -7,6 +7,7 @@ import { DEFAULT_DUST_CAP, DustCap } from '../../shared/types/dustcap.types'
 import { AppComponent } from '../app.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-dustcap',
 	templateUrl: 'dustcap.component.html',
 })

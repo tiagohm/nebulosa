@@ -1,6 +1,7 @@
 import { Component, ViewEncapsulation } from '@angular/core'
 
 @Component({
+	standalone: false,
 	selector: 'neb-crosshair',
 	template: `
 		<svg class="w-full h-full pointer-events-none">
