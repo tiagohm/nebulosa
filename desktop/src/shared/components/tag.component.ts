@@ -35,7 +35,7 @@ export type TagSize = 'large' | 'normal'
 				min-height: 12.1px;
 
 				&.large {
-					font-size: 1.2rem;
+					font-size: 1.1rem;
 					line-height: 15px;
 					padding: 3px 8px;
 				}

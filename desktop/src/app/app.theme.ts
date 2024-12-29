@@ -6,6 +6,7 @@ import type { FloatLabelDesignTokens } from '@primeng/themes/types/floatlabel'
 import type { ListboxDesignTokens } from '@primeng/themes/types/listbox'
 import type { MenuDesignTokens } from '@primeng/themes/types/menu'
 import type { SelectDesignTokens } from '@primeng/themes/types/select'
+import type { TabsDesignTokens } from '@primeng/themes/types/tabs'
 import type { ToggleButtonDesignTokens } from '@primeng/themes/types/togglebutton'
 
 export const AppTheme: AuraBaseDesignTokens = definePreset(Aura, {
@@ -25,6 +26,21 @@ export const AppTheme: AuraBaseDesignTokens = definePreset(Aura, {
 		},
 		colorScheme: {
 			dark: {
+				surface: {
+					0: '#ffffff',
+					50: '{zinc.50}',
+					100: '{zinc.100}',
+					200: '{zinc.200}',
+					300: '{zinc.300}',
+					400: '{zinc.400}',
+					500: '{zinc.500}',
+					600: '#353548',
+					700: '#28282b',
+					800: '#242429',
+					850: '#222227',
+					900: '#202023',
+					950: '#09090b',
+				},
 				primary: {
 					color: '{indigo.500}',
 					inverseColor: '{indigo.950}',
@@ -49,7 +65,7 @@ export const AppTheme: AuraBaseDesignTokens = definePreset(Aura, {
 					},
 				},
 				content: {
-					background: '#202020',
+					background: '{surface.900}',
 				},
 			},
 		},
@@ -61,14 +77,16 @@ export const AppTheme: AuraBaseDesignTokens = definePreset(Aura, {
 				borderColor: 'transparent',
 				hoverBorderColor: '{surface.800}',
 				focusBorderColor: '{surface.800}',
+				disabledBackground: '{surface.850}',
 			},
 			overlay: {
 				background: '{surface.800}',
 				borderColor: 'transparent',
 			},
 			option: {
-				focusBackground: '{surface.700}',
-				selectedBackground: '{surface.700}',
+				focusBackground: '{surface.600}',
+				selectedBackground: '{surface.600}',
+				selectedFocusBackground: '{surface.600}',
 			},
 		} as SelectDesignTokens,
 		floatlabel: {
@@ -102,9 +120,15 @@ export const AppTheme: AuraBaseDesignTokens = definePreset(Aura, {
 				background: '{surface.800}',
 			},
 			option: {
-				focusBackground: '{surface.700}',
-				selectedBackground: '{surface.700}',
+				focusBackground: '{surface.600}',
+				selectedBackground: '{surface.600}',
+				selectedFocusBackground: '{surface.600}',
 			},
 		} as ListboxDesignTokens,
+		tabs: {
+			tablist: {
+				borderColor: 'transparent',
+			},
+		} as TabsDesignTokens,
 	},
 } as AuraBaseDesignTokens)
