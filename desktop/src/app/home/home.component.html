@@ -1,6 +1,6 @@
-<div class="container px-4 pt-4">
-	<div class="grid flex justify-content-center align-items-center">
-		<div class="col-12 px-2 gap-1">
+<div class="px-4 pt-4 pb-1">
+	<div class="flex-column flex items-center justify-center">
+		<div class="flex flex-1 flex-row gap-1 px-2">
 			<neb-button
 				(action)="addConnection()"
 				icon="mdi mdi-plus"
@@ -11,20 +11,20 @@
 				let-item
 				let-selected="selected">
 				@if (selected) {
-					<div class="flex flex-row justify-content-between">
+					<div class="flex flex-row content-between">
 						<span>{{ connection?.name }}</span>
 					</div>
 				} @else {
-					<div class="w-full flex flex-row align-items-center justify-content-between gap-1 text-xs">
-						<div class="flex flex-column gap-1">
-							<span class="font-bold text-lg">{{ item.name }}</span>
+					<div class="flex w-full flex-row content-between items-center gap-1 text-xs">
+						<div class="flex flex-1 flex-col gap-1">
+							<span class="text-lg font-bold">{{ item.name }}</span>
 							<span class="text-sm">{{ item.type }} | {{ item.host }}:{{ item.port }}</span>
-							<div class="flex flex-row align-items-center gap-1 text-xs">
+							<div class="flex flex-row items-center gap-1 text-xs">
 								<i class="mdi mdi-sm mdi-clock"></i>
 								<span>{{ (item.connectedAt | date: 'yyyy-MM-dd HH:mm:ss') ?? 'never' }}</span>
 							</div>
 						</div>
-						<div class="flex flex-column gap-1">
+						<div class="flex flex-col gap-1">
 							<neb-button
 								icon="mdi mdi-pencil"
 								severity="info"
@@ -44,6 +44,7 @@
 			<neb-dropdown
 				#connectionDropdown
 				label="Connection"
+				style="flex-1"
 				[disabled]="connected"
 				[options]="preference.connections"
 				[(value)]="connection"
@@ -67,8 +68,8 @@
 		</div>
 		@if (newVersion) {
 			<div class="col-12 py-0">
-				<div class="m-0 p-message p-message-info w-full flex align-items-center justify-content-between px-2">
-					<div class="flex align-items-center">
+				<div class="p-message p-message-info m-0 flex w-full content-between items-center px-2">
+					<div class="flex items-center">
 						<span class="p-message-summary">New version:</span>
 						<span class="p-message-detail">{{ newVersion }}</span>
 					</div>
@@ -86,8 +87,8 @@
 		}
 	</div>
 	<div
-		class="no-scrollbar my-2 overflow-y-auto relative"
-		style="height: calc(62px * 5); display: grid; grid-template-columns: repeat(3, minmax(95px, 1fr))"
+		class="no-scrollbar relative my-2 grid overflow-y-auto"
+		style="height: calc(62px * 5); grid-template-columns: repeat(3, minmax(95px, 1fr))"
 		(scroll)="scrolled($event)">
 		<neb-button-image
 			[attr.scroll-page]="0"

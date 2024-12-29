@@ -14,6 +14,9 @@
 	"editor.codeActionsOnSave": {
 		"source.organizeImports": "explicit"
 	},
+	"files.associations": {
+		"*.css": "tailwindcss"
+	},
 	"[html]": {
 		"editor.defaultFormatter": "esbenp.prettier-vscode"
 	},
@@ -31,5 +34,6 @@
 	},
 	"[jsonc]": {
 		"editor.defaultFormatter": "esbenp.prettier-vscode"
-	}
+	},
+	"tailwindCSS.classAttributes": ["class", "className", "ngClass", "class:list", "styleClass", "icon"]
 }

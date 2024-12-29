@@ -5,7 +5,7 @@ import { ImageAdjustmentLevel } from '../../shared/types/image.types'
 	standalone: false,
 	selector: 'neb-image-adjustment-input',
 	template: `
-		<div class="w-full inline-flex justify-content-center align-items-center gap-1">
+		<div class="inline-flex w-full items-center justify-center gap-1">
 			@let mLevel = level();
 
 			<neb-checkbox
@@ -27,7 +27,7 @@ import { ImageAdjustmentLevel } from '../../shared/types/image.types'
 				[min]="min()"
 				[max]="max()"
 				[step]="0.1"
-				class="flex-1 mx-3"
+				class="mx-3 flex-1"
 				[(ngModel)]="mLevel.value"
 				(ngModelChange)="update.emit()" />
 			<neb-button

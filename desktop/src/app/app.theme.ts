@@ -60,6 +60,14 @@ export const AppTheme: AuraBaseDesignTokens = definePreset(Aura, {
 				hoverBorderColor: '{surface.800}',
 				focusBorderColor: '{surface.800}',
 			},
+			overlay: {
+				background: '{surface.800}',
+				borderColor: 'transparent',
+			},
+			option: {
+				focusBackground: '{surface.700}',
+				selectedBackground: '{surface.700}',
+			},
 		} as SelectDesignTokens,
 		floatlabel: {
 			on: {

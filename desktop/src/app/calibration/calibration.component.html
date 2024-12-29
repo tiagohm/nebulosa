@@ -4,9 +4,9 @@
 			@for (key of groups; track key) {
 				@let value = frames.get(key) ?? [];
 				<p-tabPanel [header]="key">
-					<div class="grid px-3 mt-1">
-						<div class="col-12 flex align-items-center justify-content-between">
-							<div class="flex align-items-center justify-content-start gap-2">
+					<div class="mt-1 grid px-3">
+						<div class="col-12 flex content-between items-center">
+							<div class="flex items-center justify-start gap-2">
 								<neb-button
 									label="Files"
 									icon="mdi mdi-file-plus"
@@ -19,7 +19,7 @@
 									(action)="openDirectoryToUpload(key)" />
 							</div>
 							<span class="text-sm text-gray-500">{{ this.frames.get(key)?.length ?? 0 }} frames</span>
-							<div class="flex align-items-center justify-content-end gap-2">
+							<div class="flex items-center justify-end gap-2">
 								<p-menu
 									#groupMenu
 									[model]="groupModel"
@@ -44,16 +44,16 @@
 								<ng-template
 									#item
 									let-item>
-									<div class="flex align-items-center justify-content-between gap-2 w-full">
-										<div class="flex flex-column justify-content-center gap-2 flex-1">
-											<div class="flex align-items-center justify-content-between gap-2 text-gray-400">
-												<div class="flex align-items-center justify-content-start gap-2 text-xs">
+									<div class="flex w-full content-between items-center gap-2">
+										<div class="flex flex-1 flex-col justify-center gap-2">
+											<div class="flex content-between items-center gap-2 text-gray-400">
+												<div class="flex items-center justify-start gap-2 text-xs">
 													<neb-checkbox
 														[(value)]="item.enabled"
 														(valueChange)="toggleFrame(item, $event)" />
-													<div class="flex flex-column justify-content-center">
+													<div class="flex flex-col justify-center">
 														<span class="text-base font-bold">{{ item.type }}</span>
-														<div class="flex flex-row flex-nowrap align-items-center justify-content-start gap-2 w-full text-xs text-gray-200">
+														<div class="flex w-full flex-row flex-nowrap items-center justify-start gap-2 text-xs text-gray-200">
 															<span class="text-orange-300">{{ item.exposureTime | exposureTime }}</span>
 															<span class="text-cyan-300">{{ item.width }}x{{ item.height }}</span>
 															<span class="text-yellow-300">{{ item.binX }}x{{ item.binY }}</span>
@@ -64,10 +64,10 @@
 																<span class="text-red-300">{{ item.temperature }}°C</span>
 															}
 														</div>
-														<span class="text-xs text-gray-200 text-nowrap">{{ item.path }}</span>
+														<span class="text-nowrap text-xs text-gray-200">{{ item.path }}</span>
 													</div>
 												</div>
-												<div class="flex align-items-center justify-content-end gap-1">
+												<div class="flex items-center justify-end gap-1">
 													<neb-button
 														icon="mdi mdi-image"
 														tooltip="View image"

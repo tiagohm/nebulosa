@@ -1,12 +1,12 @@
-<div class="container pt-1 pb-3">
-	<div class="grid py-1 flex align-items-center">
+<div class="container pb-3 pt-1">
+	<div class="flex grid items-center py-1">
 		<p-tabView
 			class="w-full"
 			[scrollable]="true">
 			<p-tabPanel>
 				<ng-template #header>
 					<div
-						class="w-full flex align-items-center justify-content-center p-3"
+						class="flex w-full items-center justify-center p-3"
 						pTooltip="Sequences"
 						tooltipPosition="bottom"
 						positionLeft="20">
@@ -14,7 +14,7 @@
 					</div>
 				</ng-template>
 				<div class="grid px-4 pt-3">
-					<div class="col-12 align-items-center justify-content-center flex-nowrap overflow-y-hidden gap-2">
+					<div class="col-12 flex-nowrap items-center justify-center gap-2 overflow-y-hidden">
 						<neb-device-chooser
 							title="MOUNT"
 							icon="mdi mdi-telescope"
@@ -46,18 +46,18 @@
 					</div>
 				</div>
 				<div
-					class="flex absolute right-0 align-items-center justify-content-end mr-4"
+					class="absolute right-0 mr-4 flex items-center justify-end"
 					style="top: 56px">
 					@if (event && running) {
 						<span class="mr-2 text-sm">{{ event.state | enum }}</span>
 						<span
-							class="bg-warning border-round-left-md text-gray-900 line-height-3 text-sm text-center"
+							class="bg-warning border-round-left-md line-height-3 text-center text-sm text-gray-900"
 							style="min-width: 48px">
 							<i class="mdi mdi-counter mdi-sm"></i>
 							{{ event.id }}
 						</span>
 						<span
-							class="bg-success text-gray-900 line-height-3 text-sm text-center"
+							class="bg-success line-height-3 text-center text-sm text-gray-900"
 							style="min-width: 62px"
 							pTooltip="Elapsed time"
 							tooltipPosition="bottom">
@@ -65,7 +65,7 @@
 							{{ event.elapsedTime | exposureTime }}
 						</span>
 						<span
-							class="bg-success text-gray-900 line-height-3 text-sm text-center"
+							class="bg-success line-height-3 text-center text-sm text-gray-900"
 							style="min-width: 62px"
 							pTooltip="Remaining time"
 							tooltipPosition="bottom">
@@ -73,20 +73,20 @@
 							{{ event.remainingTime | exposureTime }}
 						</span>
 						<span
-							class="bg-success border-round-right-md text-gray-900 line-height-3 text-sm text-center"
+							class="bg-success border-round-right-md line-height-3 text-center text-sm text-gray-900"
 							style="min-width: 52px">
 							<i class="mdi mdi-percent mdi-sm"></i>
 							{{ event.progress * 100 | number: '1.1-1' }}
 						</span>
 					} @else {
 						<span
-							class="bg-warning border-round-left-md text-gray-900 line-height-3 text-sm text-center"
+							class="bg-warning border-round-left-md line-height-3 text-center text-sm text-gray-900"
 							style="min-width: 48px">
 							<i class="mdi mdi-counter mdi-sm"></i>
 							{{ exposureTotal.frames }}
 						</span>
 						<span
-							class="bg-success border-round-right-md text-gray-900 line-height-3 text-sm text-center"
+							class="bg-success border-round-right-md line-height-3 text-center text-sm text-gray-900"
 							style="min-width: 62px">
 							<i class="mdi mdi-timer mdi-sm"></i>
 							{{ exposureTotal.time | exposureTime }}
@@ -97,7 +97,7 @@
 					cdkDropList
 					[cdkDropListDisabled]="running"
 					(cdkDropListDropped)="drop($event)"
-					class="grid px-4 mt-1 flex align-items-center gap-0 overflow-y-auto"
+					class="mt-1 flex grid items-center gap-0 overflow-y-auto px-4"
 					style="max-height: calc(100vh - 200px)">
 					@for (sequence of plan.sequences; track sequence; let i = $index) {
 						<p-card
@@ -108,10 +108,10 @@
 								<div class="grid">
 									<div
 										cdkDragHandle
-										class="cursor-move col-1 pb-1 align-items-center justify-content-center gap-2">
-										<span class="font-bold text-xl ml-3">#{{ i + 1 }}</span>
+										class="col-1 cursor-move items-center justify-center gap-2 pb-1">
+										<span class="ml-3 text-xl font-bold">#{{ i + 1 }}</span>
 									</div>
-									<div class="col pb-1 align-items-center gap-1">
+									<div class="col items-center gap-1 pb-1">
 										<neb-button
 											[disabled]="running || !plan.camera || !sequence.enabled"
 											icon="mdi mdi-camera-iris"
@@ -145,7 +145,7 @@
 											}
 										}
 									</div>
-									<div class="col pb-1 pr-4 align-items-center justify-content-end gap-2">
+									<div class="col items-center justify-end gap-2 pb-1 pr-4">
 										<neb-button
 											[disabled]="plan.sequences.length <= 1 || running"
 											icon="mdi mdi-md mdi-dots-vertical"
@@ -170,7 +170,7 @@
 								</div>
 							</ng-template>
 							<div class="grid">
-								<div class="col-12 pt-1 flex">
+								<div class="col-12 flex pt-1">
 									<neb-camera-info
 										[info]="sequence"
 										[wheel]="plan.wheel"
@@ -182,7 +182,7 @@
 										(angleRemoved)="angleRemoved(sequence)"
 										[disabled]="running" />
 								</div>
-								<div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1 text-center text-sm">
+								<div class="col-12 my-1 flex items-center gap-1 pt-0 text-center text-sm text-gray-400">
 									<neb-camera-exposure #cameraExposure />
 								</div>
 							</div>
@@ -193,13 +193,13 @@
 			<p-tabPanel>
 				<ng-template #header>
 					<div
-						class="w-full flex align-items-center justify-content-center p-3"
+						class="flex w-full items-center justify-center p-3"
 						pTooltip="Capture"
 						tooltipPosition="bottom">
 						<i class="mdi mdi-camera-iris"></i>
 					</div>
 				</ng-template>
-				<div class="align-content-start justify-content-center align-items-center flex flex-row flex-wrap gap-3 justify-content-start pt-3 px-4">
+				<div class="align-justify-start flex flex-row flex-wrap items-center justify-start justify-center gap-3 px-4 pt-3">
 					<neb-input-number
 						label="Initial Delay (s)"
 						class="max-w-10rem"
@@ -215,7 +215,7 @@
 						[options]="'SEQUENCER_CAPTURE_MODE' | dropdownOptions"
 						[(value)]="plan.captureMode"
 						(valueChange)="savePreference()" />
-					<div class="flex flex-row align-items-center gap-2">
+					<div class="flex flex-row items-center gap-2">
 						<neb-button
 							[disabled]="running"
 							icon="mdi {{ plan.autoSubFolderMode === 'OFF' ? 'mdi-folder-off text-gray-500' : plan.autoSubFolderMode === 'NOON' ? 'mdi-weather-sunny text-yellow-600' : 'mdi-weather-night text-info' }}"
@@ -283,7 +283,7 @@
 			<p-tabPanel>
 				<ng-template #header>
 					<div
-						class="flex gap-2 align-items-center justify-content-center p-3"
+						class="flex items-center justify-center gap-2 p-3"
 						pTooltip="Dither"
 						tooltipPosition="bottom">
 						<i class="mdi mdi-pulse"></i>
@@ -293,7 +293,7 @@
 							(valueChange)="savePreference()" />
 					</div>
 				</ng-template>
-				<div class="align-content-start justify-content-center align-items-center flex flex-row flex-wrap gap-3 justify-content-start pt-3 px-4">
+				<div class="align-justify-start flex flex-row flex-wrap items-center justify-start justify-center gap-3 px-4 pt-3">
 					<neb-checkbox
 						[disabled]="running || !plan.dither.enabled"
 						label="RA only"
@@ -321,7 +321,7 @@
 			<p-tabPanel>
 				<ng-template #header>
 					<div
-						class="flex flex-shrink-0 gap-2 align-items-center justify-content-center p-3"
+						class="flex flex-shrink-0 items-center justify-center gap-2 p-3"
 						pTooltip="Auto Focus"
 						tooltipPosition="bottom">
 						<i class="mdi mdi-image-filter-center-focus"></i>
@@ -331,7 +331,7 @@
 							(valueChange)="savePreference()" />
 					</div>
 				</ng-template>
-				<div class="align-content-start justify-content-center align-items-center flex flex-row flex-wrap gap-3 justify-content-start pt-3 px-4">
+				<div class="align-justify-start flex flex-row flex-wrap items-center justify-start justify-center gap-3 px-4 pt-3">
 					<neb-checkbox
 						[disabled]="running || !plan.autoFocus.enabled"
 						label="On start"
@@ -342,7 +342,7 @@
 						label="On filter change"
 						[(value)]="plan.autoFocus.onFilterChange"
 						(valueChange)="savePreference()" />
-					<div class="flex align-items-center gap-1">
+					<div class="flex items-center gap-1">
 						<neb-checkbox
 							[disabled]="running || !plan.autoFocus.enabled"
 							[(value)]="plan.autoFocus.afterElapsedTimeEnabled"
@@ -356,7 +356,7 @@
 							[(value)]="plan.autoFocus.afterElapsedTime"
 							(valueChange)="savePreference()" />
 					</div>
-					<div class="flex align-items-center gap-1">
+					<div class="flex items-center gap-1">
 						<neb-checkbox
 							[disabled]="running || !plan.autoFocus.enabled"
 							[(value)]="plan.autoFocus.afterExposuresEnabled"
@@ -370,7 +370,7 @@
 							[(value)]="plan.autoFocus.afterExposures"
 							(valueChange)="savePreference()" />
 					</div>
-					<div class="flex align-items-center gap-1">
+					<div class="flex items-center gap-1">
 						<neb-checkbox
 							[disabled]="running || !plan.autoFocus.enabled"
 							[(value)]="plan.autoFocus.afterHFDIncreaseEnabled"
@@ -384,7 +384,7 @@
 							[(value)]="plan.autoFocus.afterHFDIncrease"
 							(valueChange)="savePreference()" />
 					</div>
-					<div class="flex align-items-center gap-1">
+					<div class="flex items-center gap-1">
 						<neb-checkbox
 							[disabled]="running || !plan.autoFocus.enabled"
 							[(value)]="plan.autoFocus.afterTemperatureChangeEnabled"
@@ -403,7 +403,7 @@
 			<p-tabPanel>
 				<ng-template #header>
 					<div
-						class="flex gap-2 align-items-center justify-content-center p-3"
+						class="flex items-center justify-center gap-2 p-3"
 						pTooltip="Live Stacking"
 						tooltipPosition="bottom">
 						<i class="mdi mdi-image-multiple"></i>
@@ -413,7 +413,7 @@
 							(valueChange)="savePreference()" />
 					</div>
 				</ng-template>
-				<div class="align-content-start justify-content-center align-items-center flex flex-row flex-wrap gap-3 justify-content-start pt-3 px-4">
+				<div class="align-justify-start flex flex-row flex-wrap items-center justify-start justify-center gap-3 px-4 pt-3">
 					<neb-dropdown-enum
 						label="Live Stacker"
 						class="max-w-12rem"
@@ -421,7 +421,7 @@
 						[options]="['PIXINSIGHT']"
 						[(value)]="plan.liveStacking.type"
 						(valueChange)="savePreference()" />
-					<div class="col-2 flex align-items-center justify-content-center text-center">
+					<div class="col-2 flex items-center justify-center text-center">
 						<neb-switch
 							label="32-bit (slower)"
 							[disabled]="!plan.liveStacking.enabled || running"
@@ -462,8 +462,8 @@
 		</p-tabView>
 	</div>
 
-	<div class="fixed flex w-full justify-content-between align-items-center left-0 bottom-0 px-6 pb-3">
-		<div class="flex align-items-center justify-content-center flex-1 gap-1">
+	<div class="fixed bottom-0 left-0 flex w-full content-between items-center px-6 pb-3">
+		<div class="flex flex-1 items-center justify-center gap-1">
 			@if (pausingOrPaused) {
 				<neb-button
 					[disabled]="event?.state === 'PAUSING'"
@@ -515,7 +515,7 @@
 	[(visible)]="property.showDialog"
 	[style]="{ maxWidth: '400px' }">
 	<div class="grid p-2">
-		<div class="col-12 gap-2 justify-content-end">
+		<div class="col-12 justify-end gap-2">
 			<neb-button
 				icon="mdi mdi-checkbox-marked"
 				label="Select All"

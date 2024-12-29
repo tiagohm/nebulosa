@@ -15,25 +15,25 @@
 					</div>
 				</ng-template>
 				<div
-					class="relative grid flex flex-column align-items-center justify-content-center"
+					class="relative flex grid flex-col items-center justify-center"
 					[class.invisible]="!sun.image"
 					style="height: 225px">
 					<img
 						[src]="sun.image"
 						style="width: 223px" />
 					@if (sun.seasons.length) {
-						<div class="absolute w-full text-sm left-0 top-0 p-4 flex flex-row align-items-start justify-content-between">
-							<div class="flex flex-column">
+						<div class="align-items-start absolute left-0 top-0 flex w-full flex-row content-between p-4 text-sm">
+							<div class="flex flex-col">
 								<a
 									target="_blank"
 									href="https://sdo.gsfc.nasa.gov/assets/img/latest/latest_1024_HMIIC.jpg">
 									SDO/HMI
 								</a>
 							</div>
-							<div class="flex flex-column gap-2 mr-2">
+							<div class="mr-2 flex flex-col gap-2">
 								@for (season of sun.seasons; track $index) {
-									<div class="flex flex-column gap-1">
-										<span class="font-bold flex align-items-center gap-1 text-sm">
+									<div class="flex flex-col gap-1">
+										<span class="flex items-center gap-1 text-sm font-bold">
 											<i class="mdi mdi-{{ seasonIcon(season.name) }}"></i>
 											{{ seasonName(season.name) | uppercase }}
 										</span>
@@ -57,7 +57,7 @@
 					</div>
 				</ng-template>
 				<div
-					class="grid flex align-items-center justify-content-center relative"
+					class="relative flex grid items-center justify-center"
 					style="height: 225px">
 					<neb-moon
 						[width]="200"
@@ -65,30 +65,30 @@
 						[illuminationRatio]="moon.position.illuminated / 100"
 						[waning]="moon.position.leading" />
 					@if (moon.phases) {
-						<div class="absolute w-full text-sm left-0 top-0 p-4 flex flex-row align-items-start justify-content-between">
-							<div class="flex flex-column gap-2">
-								<div class="flex flex-column">
+						<div class="align-items-start absolute left-0 top-0 flex w-full flex-row content-between p-4 text-sm">
+							<div class="flex flex-col gap-2">
+								<div class="flex flex-col">
 									<span class="font-bold">Diameter</span>
 									<span>{{ moon.phases.current.diameter }} arcsec</span>
 									<span>{{ (moon.phases.current.diameter / 60).toFixed(2) }} arcmin</span>
 								</div>
-								<div class="flex flex-column">
+								<div class="flex flex-col">
 									<span class="font-bold">Age</span>
 									<span>{{ moon.phases.current.age }} d</span>
 								</div>
-								<div class="flex flex-column">
+								<div class="flex flex-col">
 									<span class="font-bold">Lunation</span>
 									<span>{{ moon.phases.current.lunation }}</span>
 								</div>
-								<div class="flex flex-column">
+								<div class="flex flex-col">
 									<span class="font-bold">Sub-Solar Lon / Lat</span>
 									<span>{{ moon.phases.current.subSolarLon }}° / {{ moon.phases.current.subSolarLat }}°</span>
 								</div>
-								<div class="flex flex-column">
+								<div class="flex flex-col">
 									<span class="font-bold">Sub-Earth Lon / Lat</span>
 									<span>{{ moon.phases.current.subEarthLon }}° / {{ moon.phases.current.subEarthLat }}°</span>
 								</div>
-								<div class="flex flex-column">
+								<div class="flex flex-col">
 									<span class="font-bold">Position Angle</span>
 									<span>{{ moon.phases.current.posAngle }}°</span>
 								</div>
@@ -100,10 +100,10 @@
 									</a>
 								</div>
 							</div>
-							<div class="flex flex-column gap-2">
+							<div class="flex flex-col gap-2">
 								@for (phase of moon.phases.phases; track $index) {
-									<div class="flex flex-column gap-1">
-										<span class="font-bold flex align-items-center gap-1 text-sm">
+									<div class="flex flex-col gap-1">
+										<span class="flex items-center gap-1 text-sm font-bold">
 											@let phaseIcon = phase.name === 'NEW_MOON' ? 'new' : phase.name === 'FIRST_QUARTER' ? 'first-quarter' : phase.name === 'FULL_MOON' ? 'full' : 'last-quarter';
 											<i class="mdi mdi-moon-{{ phaseIcon }}"></i>
 											{{ phase.name | enum | uppercase }}
@@ -127,7 +127,7 @@
 						<img src="assets/icons/jupiter.png" />
 					</div>
 				</ng-template>
-				<div class="flex align-items-center justify-content-center px-1">
+				<div class="flex items-center justify-center px-1">
 					<p-table
 						[value]="planet.planets"
 						class="planet"
@@ -166,8 +166,8 @@
 				</ng-template>
 				<p-tabView [(activeIndex)]="minorPlanet.tab">
 					<p-tabPanel header="Search">
-						<div class="relative flex mt-3 flex-column align-items-center justify-content-center">
-							<div class="flex w-full align-items-center px-4 gap-2">
+						<div class="relative mt-3 flex flex-col items-center justify-center">
+							<div class="flex w-full items-center gap-2 px-4">
 								<neb-input-text
 									label="Search"
 									[(value)]="minorPlanet.search.text"
@@ -179,7 +179,7 @@
 									severity="info" />
 							</div>
 							<span
-								class="text-xs absolute text-gray-500"
+								class="absolute text-xs text-gray-500"
 								style="top: -30px; right: 64px">
 								<a
 									target="_blank"
@@ -188,7 +188,7 @@
 								</a>
 							</span>
 						</div>
-						<div class="flex flex-column align-items-center justify-content-center mt-2 px-1">
+						<div class="mt-2 flex flex-col items-center justify-center px-1">
 							<p-table
 								[value]="minorPlanet.search.result?.parameters ?? []"
 								class="minorPlanet"
@@ -213,8 +213,8 @@
 						</div>
 					</p-tabPanel>
 					<p-tabPanel header="Close Approaches">
-						<div class="relative flex mt-3 flex-column align-items-center justify-content-center">
-							<div class="flex w-full align-items-center px-4 gap-2">
+						<div class="relative mt-3 flex flex-col items-center justify-center">
+							<div class="flex w-full items-center gap-2 px-4">
 								<neb-input-number
 									label="Days"
 									[min]="1"
@@ -232,7 +232,7 @@
 									severity="info" />
 							</div>
 							<span
-								class="text-xs absolute text-gray-500"
+								class="absolute text-xs text-gray-500"
 								style="top: -30px; right: 46px">
 								<a
 									target="_blank"
@@ -241,7 +241,7 @@
 								</a>
 							</span>
 						</div>
-						<div class="flex flex-column align-items-center justify-content-center mt-2 px-1">
+						<div class="mt-2 flex flex-col items-center justify-center px-1">
 							<p-table
 								[value]="minorPlanet.closeApproach.result"
 								class="minorPlanet"
@@ -293,8 +293,8 @@
 						<img src="assets/icons/blackhole.png" />
 					</div>
 				</ng-template>
-				<div class="flex mt-2 align-items-center justify-content-center">
-					<div class="flex w-full align-items-center px-4 gap-2">
+				<div class="mt-2 flex items-center justify-center">
+					<div class="flex w-full items-center gap-2 px-4">
 						<neb-input-text
 							label="Search"
 							[(value)]="skyObject.search.filter.text" />
@@ -311,7 +311,7 @@
 						</div>
 					</div>
 				</div>
-				<div class="flex align-items-center justify-content-center mt-2 px-1">
+				<div class="mt-2 flex items-center justify-center px-1">
 					<p-table
 						[value]="skyObject.search.result"
 						class="skyObject"
@@ -360,8 +360,8 @@
 							<tr [pSelectableRow]="item">
 								<td class="text-sm">{{ item.name.join(' · ') }}</td>
 								<td class="text-sm">{{ item.type | enum }}</td>
-								<td class="text-sm text-center">{{ item.magnitude < 30 ? item.magnitude.toFixed(1) : '-' }}</td>
-								<td class="text-sm text-center">{{ item.constellation }}</td>
+								<td class="text-center text-sm">{{ item.magnitude < 30 ? item.magnitude.toFixed(1) : '-' }}</td>
+								<td class="text-center text-sm">{{ item.constellation }}</td>
 							</tr>
 						</ng-template>
 					</p-table>
@@ -378,8 +378,8 @@
 						<img src="assets/icons/satellite.png" />
 					</div>
 				</ng-template>
-				<div class="flex mt-2 flex-column align-items-center justify-content-center">
-					<div class="flex w-full align-items-center px-4 gap-2">
+				<div class="mt-2 flex flex-col items-center justify-center">
+					<div class="flex w-full items-center gap-2 px-4">
 						<neb-input-text
 							label="Search"
 							[(value)]="satellite.search.filter.text" />
@@ -396,7 +396,7 @@
 						</div>
 					</div>
 				</div>
-				<div class="flex align-items-center justify-content-center mt-2 px-1">
+				<div class="mt-2 flex items-center justify-center px-1">
 					<p-table
 						[value]="satellite.search.result"
 						class="satellite"
@@ -434,7 +434,7 @@
 							<tr [pSelectableRow]="item">
 								<td class="w-8rem">{{ item.id }}</td>
 								<td>{{ item.name }}</td>
-								<td class="flex flex-row flex-wrap gap-1 max-w-16rem">
+								<td class="max-w-16rem flex flex-row flex-wrap gap-1">
 									@for (group of item.groups; track $index) {
 										<neb-success [label]="group" />
 									}
@@ -448,13 +448,13 @@
 	</div>
 </div>
 <div
-	class="grid px-2 fixed bottom-0"
+	class="fixed bottom-0 grid px-2"
 	style="height: 212px">
 	<p-tabView
 		[style]="{ height: '258px', width: '100vw' }"
 		styleClass="info">
 		<p-tabPanel leftIcon="mdi mdi-information">
-			<div class="relative grid pt-3 px-3 flex-row justify-content-center">
+			<div class="relative grid flex-row justify-center px-3 pt-3">
 				<div class="col-12 pb-0">
 					<div class="grid">
 						<div class="col-3">
@@ -527,14 +527,14 @@
 				</div>
 				<div
 					[class.invisible]="tab === 4"
-					class="col-12 justify-content-center pt-0 text-xs">
+					class="col-12 justify-center pt-0 text-xs">
 					<a
 						target="_blank"
 						href="https://ssd.jpl.nasa.gov/horizons/">
 						JPL Horizons
 					</a>
 				</div>
-				<div class="col-12 pt-0 flex justify-content-center">
+				<div class="col-12 flex justify-center pt-0">
 					<neb-button
 						[disabled]="!body.name"
 						severity="info"
@@ -574,7 +574,7 @@
 		</p-tabPanel>
 	</p-tabView>
 	<div
-		class="col-9 flex align-items-center justify-content-between absolute gap-1 overflow-hidden"
+		class="col-9 absolute flex content-between items-center gap-1 overflow-hidden"
 		style="height: 32px; left: 95px; top: 2px; padding-right: 70px">
 		<neb-button
 			[disabled]="!body.name"
@@ -587,7 +587,7 @@
 				(action)="favorite()" />
 		}
 		<span
-			class="flex w-full align-items-center gap-1 justify-content-center"
+			class="flex w-full items-center justify-center gap-1"
 			style="min-width: -webkit-fill-available">
 			<span class="text-overflow-scroll font-bold">{{ body.name }}</span>
 			@for (tag of body.tags; track $index) {
@@ -621,7 +621,7 @@
 	[(visible)]="skyObject.search.showDialog"
 	[modal]="true"
 	[style]="{ width: '80vw' }">
-	<div class="grid mt-2">
+	<div class="mt-2 grid">
 		<div class="col-4">
 			<neb-input-text
 				label="RA (h)"
@@ -689,8 +689,8 @@
 	[(visible)]="satellite.search.showDialog"
 	[modal]="true"
 	[style]="{ width: '80vw' }">
-	<div class="grid mt-2">
-		<div class="col-12 flex flex-column gap-1 align-items-start flex-wrap">
+	<div class="mt-2 grid">
+		<div class="col-12 align-items-start flex flex-col flex-wrap gap-1">
 			@let groups = 'SATELLITE_GROUP_TYPE' | dropdownOptions;
 
 			@for (group of groups; track $index) {
@@ -722,7 +722,7 @@
 	[modal]="false"
 	[style]="{ width: '80vw' }">
 	<div class="grid">
-		<div class="col-12 flex-column gap-2">
+		<div class="col-12 flex-col gap-2">
 			<neb-checkbox
 				[(value)]="preference.settings.useTopocentricForMoonPhases"
 				(valueChange)="settingsChanged('useTopocentricForMoonPhases')"
@@ -737,7 +737,7 @@
 	appendTo="body">
 	<ng-template #content>
 		<div class="grid">
-			<div class="col-7 flex-column gap-2">
+			<div class="col-7 flex-col gap-2">
 				<p-date-picker
 					[disabled]="!dateTimeAndLocation.manual"
 					[ngModel]="dateTimeAndLocation.dateTime"
@@ -749,13 +749,13 @@
 					dateFormat="yy-mm-dd"
 					styleClass="w-full" />
 			</div>
-			<div class="col-5 flex-column gap-3 align-items-center justify-content-start gap-1">
+			<div class="col-5 flex-col items-center justify-start gap-1 gap-3">
 				<neb-switch
 					label="Date Time"
 					[(value)]="dateTimeAndLocation.manual"
 					(valueChange)="manualDateTimeChanged()" />
-				<div class="flex flex-column align-items-center gap-3">
-					<div class="flex align-items-center justify-content-center gap-2">
+				<div class="flex flex-col items-center gap-3">
+					<div class="flex items-center justify-center gap-2">
 						<neb-input-number
 							label="Hour"
 							[disabled]="!dateTimeAndLocation.manual"
@@ -806,7 +806,7 @@
 				<ng-template
 					#item
 					let-item>
-					<div class="flex align-items-center justify-content-between gap-1 w-full">
+					<div class="flex w-full content-between items-center gap-1">
 						<span class="text-sm">
 							<span class="font-bold">{{ item.type | enum }}</span>
 							<span class="ml-1">{{ item.name }}</span>

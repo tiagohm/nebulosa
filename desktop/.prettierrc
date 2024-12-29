@@ -10,6 +10,8 @@
 	"trailingComma": "all",
 	"semi": false,
 	"endOfLine": "lf",
+	"plugins": ["prettier-plugin-tailwindcss"],
+	"tailwindAttributes": ["styleClass", "icon"],
 	"overrides": [
 		{
 			"files": "*.html",

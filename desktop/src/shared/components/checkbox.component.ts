@@ -5,7 +5,7 @@ import { CheckboxChangeEvent } from 'primeng/checkbox'
 	standalone: false,
 	selector: 'neb-checkbox',
 	template: `
-		<div class="flex align-items-center justify-content-center gap-1 text-sm">
+		<div class="flex items-center justify-center gap-1 text-sm">
 			<p-checkbox
 				[binary]="true"
 				[disabled]="disabled()"

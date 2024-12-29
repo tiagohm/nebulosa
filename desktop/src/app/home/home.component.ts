@@ -27,6 +27,15 @@ function scrollPageOf(element: Element) {
 	standalone: false,
 	selector: 'neb-home',
 	templateUrl: 'home.component.html',
+	styles: `
+		neb-home {
+			neb-button-image {
+				.p-button {
+					max-height: 62px;
+				}
+			}
+		}
+	`,
 	encapsulation: ViewEncapsulation.None,
 })
 export class HomeComponent implements AfterContentInit {

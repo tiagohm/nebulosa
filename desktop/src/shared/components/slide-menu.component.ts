@@ -5,11 +5,11 @@ import { MenuItemCommandEvent, SlideMenuItem } from './menu-item.component'
 	standalone: false,
 	selector: 'neb-slide-menu',
 	template: `
-		<div class="flex flex-column justify-content-center align-items-center gap-1">
+		<div class="flex flex-col items-center justify-center gap-1">
 			<p-menu
 				[model]="currentMenu"
 				[appendTo]="appendTo()"
-				styleClass="w-full min-w-18rem">
+				styleClass="min-w-18rem w-full">
 				<ng-template
 					#item
 					let-item>

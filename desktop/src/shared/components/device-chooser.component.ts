@@ -13,9 +13,9 @@ import { MenuItem } from './menu-item.component'
 			[rounded]="false"
 			severity="success"
 			[disabled]="disabled()">
-			<div class="flex align-items-center gap-1">
+			<div class="flex items-center gap-1">
 				<i [class]="icon()"></i>
-				<div class="flex flex-column text-left gap-1px">
+				<div class="flex flex-col text-left gap-1px">
 					<span class="font-bold text-sm">{{ title() }}</span>
 					@let mDevice = device();
 

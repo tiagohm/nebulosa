@@ -20,7 +20,7 @@ export type ButtonSeverity = Severity | 'help' | 'primary' | 'secondary' | 'cont
 			[tooltipPosition]="tooltipPosition()"
 			[life]="2000"
 			class="inline-flex"
-			styleClass="white-space-nowrap select-none cursor-pointer">
+			styleClass="white-space-nowrap cursor-pointer select-none">
 			<ng-content></ng-content>
 		</p-button>
 	`,

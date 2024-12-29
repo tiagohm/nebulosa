@@ -10,13 +10,13 @@ export interface SplitButtonClickEvent {
 	standalone: false,
 	selector: 'neb-menu-bar',
 	template: `
-		<div class="flex align-items-center justify-content-center gap-1">
+		<div class="flex items-center justify-center gap-1">
 			@for (item of model(); track item; let i = $index) {
 				<span class="relative">
 					@if (item.visible !== false) {
 						@if (item.toggleable) {
 							@if (item.visible) {
-								<div class="flex align-items-center justify-content-center">
+								<div class="flex items-center justify-center">
 									<neb-switch
 										[label]="item.label"
 										[disabled]="item.disabled ?? false"
@@ -27,7 +27,7 @@ export interface SplitButtonClickEvent {
 							}
 						} @else if (item.checkable) {
 							@if (item.visible) {
-								<div class="flex align-items-center justify-content-center">
+								<div class="flex items-center justify-center">
 									<neb-checkbox
 										[label]="item.label"
 										[disabled]="item.disabled ?? false"
@@ -55,7 +55,7 @@ export interface SplitButtonClickEvent {
 								<p-badge
 									[severity]="item.badgeSeverity ?? 'danger'"
 									[value]="item.badge"
-									styleClass="absolute flex justify-content-center align-items-center top-0"
+									styleClass="absolute top-0 flex items-center justify-center"
 									[style]="{ width: '14px', minWidth: '14px', height: '14px', minHeight: '14px', right: '-2px' }" />
 							}
 							<neb-button

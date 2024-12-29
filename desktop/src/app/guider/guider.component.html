@@ -4,7 +4,7 @@
 			<p-tabPanel
 				header="PHD2"
 				leftIcon="mdi mdi-target">
-				<div class="grid mt-3 px-4 flex align-items-center">
+				<div class="mt-3 flex grid items-center px-4">
 					<div class="col-6 px-0">
 						<neb-input-text
 							label="Host"
@@ -22,7 +22,7 @@
 							(valueChange)="savePreference()"
 							[format]="false" />
 					</div>
-					<div class="col-2 text-center pr-0">
+					<div class="col-2 pr-0 text-center">
 						@if (guider.connected) {
 							<neb-button
 								(action)="guidingConnect()"
@@ -38,22 +38,22 @@
 						}
 					</div>
 					<div
-						class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1 text-center text-sm"
+						class="col-12 my-1 flex items-center gap-1 pt-0 text-center text-sm text-gray-400"
 						style="min-height: 25px">
 						<i class="mdi mdi-information text-info"></i>
 						<span
 							style="min-width: 44px"
-							class="text-left mr-2">
+							class="mr-2 text-left">
 							{{ guider.state | enum | lowercase }}
 						</span>
 						<span class="text-left">{{ guider.message }}</span>
 					</div>
-					<div class="col-12 align-items-center">
+					<div class="col-12 items-center">
 						<p-tabView class="relative">
 							<p-tabPanel
 								header="Chart"
 								leftIcon="mdi mdi-chart-bell-curve">
-								<div class="grid mt-2">
+								<div class="mt-2 grid">
 									<div class="col-3">
 										<neb-input-text
 											label="RMS RA"
@@ -105,7 +105,7 @@
 											(valueChange)="yAxisUnitChanged()" />
 									</div>
 								</div>
-								<div class="grid relative">
+								<div class="relative grid">
 									<div class="col-12">
 										<p-chart
 											#chart
@@ -116,12 +116,12 @@
 											[options]="chartOptions" />
 									</div>
 									<span
-										class="absolute right-0 text-info"
+										class="text-info absolute right-0"
 										style="top: 16px">
 										North
 									</span>
 									<span
-										class="absolute right-0 text-danger"
+										class="text-danger absolute right-0"
 										style="bottom: 26px">
 										East
 									</span>
@@ -130,7 +130,7 @@
 							<p-tabPanel
 								header="Settings"
 								leftIcon="mdi mdi-cog">
-								<div class="grid mt-3">
+								<div class="mt-3 grid">
 									<div class="col-6">
 										<neb-input-number
 											label="Settle tolerance (px)"
@@ -162,9 +162,9 @@
 								</div>
 							</p-tabPanel>
 							<div
-								class="mt-1 absolute"
+								class="absolute mt-1"
 								style="top: -12px; right: 10px">
-								<div class="flex align-items-center justify-content-center gap-1">
+								<div class="flex items-center justify-center gap-1">
 									<!-- <neb-button [disabled]="!connected || guiding || looping" label="Start" (onClick)="guidingStart($event)"
                                           icon="mdi mdi-play" severity="success" size="small" [text]="true" /> -->
 									<neb-button
@@ -188,8 +188,8 @@
 			<p-tabPanel
 				header="Guide pulse"
 				leftIcon="mdi mdi-pulse">
-				<div class="grid mt-1 px-4">
-					<div class="col-12 mb-2 flex flex-row align-items-center justify-content-center gap-2">
+				<div class="mt-1 grid px-4">
+					<div class="col-12 mb-2 flex flex-row items-center justify-center gap-2">
 						<neb-device-chooser
 							title="GUIDE OUTPUT"
 							icon="mdi mdi-target"
@@ -199,7 +199,7 @@
 							[disabled]="guideOutput?.pulseGuiding" />
 					</div>
 					<div class="col-4"></div>
-					<div class="col-4 flex flex-column gap-2 align-items-center justify-content-center">
+					<div class="col-4 flex flex-col items-center justify-center gap-2">
 						<neb-input-number
 							label="North (ms)"
 							[disabled]="!guideOutput || !guideOutput.connected || guideOutput.pulseGuiding"
@@ -209,7 +209,7 @@
 							[max]="1800000" />
 					</div>
 					<div class="col-4"></div>
-					<div class="col-4 flex flex-row gap-2 align-items-center justify-content-center">
+					<div class="col-4 flex flex-row items-center justify-center gap-2">
 						<neb-input-number
 							label="West (ms)"
 							[disabled]="!guideOutput || !guideOutput.connected || guideOutput.pulseGuiding"
@@ -220,56 +220,56 @@
 					</div>
 					<div class="col-4">
 						<div class="grid">
-							<div class="col-4 flex align-items-center justify-content-center">
+							<div class="col-4 flex items-center justify-center">
 								<neb-button
 									[disabled]="!guideOutput?.connected || guideOutput?.pulseGuiding"
 									(action)="guidePulseStart('NORTH', 'WEST')"
 									icon="mdi mdi-lg mdi-arrow-top-left-thick" />
 							</div>
-							<div class="col-4 flex align-items-center justify-content-center">
+							<div class="col-4 flex items-center justify-center">
 								<neb-button
 									[disabled]="!guideOutput?.connected || guideOutput?.pulseGuiding"
 									(action)="guidePulseStart('NORTH')"
 									icon="mdi mdi-lg mdi-arrow-up-thick" />
 							</div>
-							<div class="col-4 flex align-items-center justify-content-center">
+							<div class="col-4 flex items-center justify-center">
 								<neb-button
 									[disabled]="!guideOutput?.connected || guideOutput?.pulseGuiding"
 									(action)="guidePulseStart('NORTH', 'EAST')"
 									icon="mdi mdi-lg mdi-arrow-top-right-thick" />
 							</div>
-							<div class="col-4 flex align-items-center justify-content-center">
+							<div class="col-4 flex items-center justify-center">
 								<neb-button
 									[disabled]="!guideOutput?.connected || guideOutput?.pulseGuiding"
 									(action)="guidePulseStart('WEST')"
 									icon="mdi mdi-lg mdi-arrow-left-thick" />
 							</div>
-							<div class="col-4 flex align-items-center justify-content-center">
+							<div class="col-4 flex items-center justify-center">
 								<neb-button
 									[disabled]="!guideOutput?.connected || !guideOutput?.pulseGuiding"
 									(action)="guidePulseStop()"
 									icon="mdi mdi-lg mdi-close-circle"
 									severity="danger" />
 							</div>
-							<div class="col-4 flex align-items-center justify-content-center">
+							<div class="col-4 flex items-center justify-center">
 								<neb-button
 									[disabled]="!guideOutput?.connected || guideOutput?.pulseGuiding"
 									(action)="guidePulseStart('EAST')"
 									icon="mdi mdi-lg mdi-arrow-right-thick" />
 							</div>
-							<div class="col-4 flex align-items-center justify-content-center">
+							<div class="col-4 flex items-center justify-center">
 								<neb-button
 									[disabled]="!guideOutput?.connected || guideOutput?.pulseGuiding"
 									(action)="guidePulseStart('SOUTH', 'WEST')"
 									icon="mdi mdi-lg mdi-arrow-bottom-left-thick" />
 							</div>
-							<div class="col-4 flex align-items-center justify-content-center">
+							<div class="col-4 flex items-center justify-center">
 								<neb-button
 									[disabled]="!guideOutput?.connected || guideOutput?.pulseGuiding"
 									(action)="guidePulseStart('SOUTH')"
 									icon="mdi mdi-lg mdi-arrow-down-thick" />
 							</div>
-							<div class="col-4 flex align-items-center justify-content-center">
+							<div class="col-4 flex items-center justify-center">
 								<neb-button
 									[disabled]="!guideOutput?.connected || guideOutput?.pulseGuiding"
 									(action)="guidePulseStart('SOUTH', 'EAST')"
@@ -277,7 +277,7 @@
 							</div>
 						</div>
 					</div>
-					<div class="col-4 flex flex-row gap-2 align-items-center justify-content-center">
+					<div class="col-4 flex flex-row items-center justify-center gap-2">
 						<neb-input-number
 							label="East (ms)"
 							[disabled]="!guideOutput || !guideOutput.connected || guideOutput.pulseGuiding"
@@ -287,7 +287,7 @@
 							[max]="1800000" />
 					</div>
 					<div class="col-4"></div>
-					<div class="col-4 flex flex-column gap-2 align-items-center justify-content-center">
+					<div class="col-4 flex flex-col items-center justify-center gap-2">
 						<neb-input-number
 							label="South (ms)"
 							[disabled]="!guideOutput || !guideOutput.connected || guideOutput.pulseGuiding"

@@ -39,6 +39,8 @@ abstract class DropdownBaseComponent<O, T> {
 				styleClass="w-full"
 				[emptyMessage]="emptyMessage()"
 				[autoDisplayFirst]="false"
+				[fluid]="true"
+				size="small"
 				appendTo="body"
 				[panelStyle]="{ maxWidth: '90vw' }">
 				<ng-template
@@ -49,7 +51,7 @@ abstract class DropdownBaseComponent<O, T> {
 							[ngTemplateOutlet]="itemTemplate() ?? null"
 							[ngTemplateOutletContext]="{ $implicit: item, selected: true }"></ng-container>
 					} @else {
-						<div class="flex flex-row justify-content-between">
+						<div class="flex flex-row content-between">
 							<span>{{ itemLabel(item) }}</span>
 						</div>
 					}
@@ -62,7 +64,7 @@ abstract class DropdownBaseComponent<O, T> {
 							[ngTemplateOutlet]="itemTemplate() ?? null"
 							[ngTemplateOutletContext]="{ $implicit: item, selected: false }"></ng-container>
 					} @else {
-						<div class="flex flex-row justify-content-between">
+						<div class="flex flex-row content-between">
 							<span>{{ itemLabel(item) }}</span>
 						</div>
 					}

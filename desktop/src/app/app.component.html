@@ -1,18 +1,18 @@
 @if (showTopBar) {
 	<section
 		id="titlebar"
-		class="flex flex-row align-items-center justify-content-end gap-2 sticky pr-1"
+		class="sticky flex flex-row justify-end items-center gap-2 pr-1"
 		[style]="{ height: '42px', zIndex: '1000', backgroundColor: '#212121' }">
-		<span class="align-items-center draggable-region flex flex-column flex-1 font-bold justify-content-center min-h-full text-center">
+		<span class="draggable-region flex h-full flex-1 flex-col flex-wrap justify-center items-center font-bold">
 			<div>{{ title }}</div>
-			<div class="text-xs text-gray-200 font-normal">{{ subTitle }}</div>
+			<div class="text-xs font-normal text-gray-200">{{ subTitle }}</div>
 		</span>
 		@if (topMenu.length) {
 			<neb-menu-bar [model]="topMenu" />
 		}
 		@if (!modal) {
 			@if (topMenu.length) {
-				<span class="separator flex justify-content-center"></span>
+				<span class="flex justify-center"></span>
 			}
 			@if (pinned) {
 				<neb-button

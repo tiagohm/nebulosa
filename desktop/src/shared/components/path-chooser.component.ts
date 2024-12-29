@@ -5,7 +5,7 @@ import { ElectronService } from '../services/electron.service'
 	standalone: false,
 	selector: 'neb-path-chooser',
 	template: `
-		<div class="flex align-items-center gap-1">
+		<div class="flex items-center gap-1">
 			<neb-input-text
 				[label]="label() ?? 'Path'"
 				[disabled]="disabled()"

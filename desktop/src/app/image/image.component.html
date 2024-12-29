@@ -1,5 +1,5 @@
 <span
-	class="bg-black-alpha-20 border-round-sm fixed px-3 py-2 select-none z-1 flex flex-row align-items-center gap-1"
+	class="bg-black-alpha-20 border-round-sm z-1 fixed flex select-none flex-row items-center gap-1 px-3 py-2"
 	style="top: 48px; left: 6px">
 	<span
 		pTooltip="Zoom"
@@ -41,7 +41,7 @@
 	@if (!transformation.mirrorHorizontal && !transformation.mirrorVertical && annotation.visible) {
 		<svg
 			[style]="'transform: rotate(' + rotation.transformation.angle + 'deg)'"
-			class="absolute left-0 top-0 w-full h-full pointer-events-none select-none">
+			class="pointer-events-none absolute left-0 top-0 h-full w-full select-none">
 			@for (a of annotation.displayOnlyFiltered ? annotation.filtered : annotation.data; track a) {
 				<g
 					(dblclick)="showAnnotationInfo(a)"
@@ -70,7 +70,7 @@
 	@if (!transformation.mirrorHorizontal && !transformation.mirrorVertical && starDetector.visible) {
 		<svg
 			[style]="'transform: rotate(' + rotation.transformation.angle + 'deg)'"
-			class="absolute left-0 top-0 w-full h-full pointer-events-none select-none">
+			class="pointer-events-none absolute left-0 top-0 h-full w-full select-none">
 			@for (s of starDetector.stars; track s) {
 				<g class="pointer-events-auto cursor-pointer">
 					<circle
@@ -98,7 +98,7 @@
 	@if (imageInfo) {
 		<svg
 			[style]="'transform: rotate(' + rotation.transformation.angle + 'deg)'"
-			class="absolute left-0 top-0 w-full h-full pointer-events-none select-none fov overflow-visible">
+			class="fov pointer-events-none absolute left-0 top-0 h-full w-full select-none overflow-visible">
 			@for (item of fov.fovs; track $index) {
 				@if (item.enabled && item.computed) {
 					<rect
@@ -136,7 +136,7 @@
 </div>
 
 @if (hasROI) {
-	<div class="roi-coordinates fixed flex flex-row align-items-center gap-2">
+	<div class="roi-coordinates fixed flex flex-row items-center gap-2">
 		<span>X: {{ imageROI.area.x.toFixed(0) }} Y: {{ imageROI.area.y.toFixed(0) }} W: {{ imageROI.area.width.toFixed(0) }} H: {{ imageROI.area.height.toFixed(0) }}</span>
 		<neb-button
 			(action)="roiForCamera()"
@@ -164,7 +164,7 @@
 	<p-tabView>
 		<p-tabPanel header="Stars & DSOs">
 			<ng-template #header>
-				<div class="flex gap-2 align-items-center">
+				<div class="flex items-center gap-2">
 					<span>Stars & DSOs</span>
 					<neb-checkbox
 						[(value)]="annotation.request.starsAndDSOs"
@@ -172,7 +172,7 @@
 						class="py-1" />
 				</div>
 			</ng-template>
-			<div class="grid mt-2">
+			<div class="mt-2 grid">
 				<div class="col-12">
 					<neb-checkbox
 						[disabled]="!annotation.request.starsAndDSOs"
@@ -182,7 +182,7 @@
 						label="Search on SIMBAD Database Service" />
 				</div>
 				<div class="col-12 mt-2">
-					<p class="w-full m-0 p-3 text-gray-400 text-xs text-center">
+					<p class="m-0 w-full p-3 text-center text-xs text-gray-400">
 						<a
 							target="_blank"
 							href="https://simbad.cds.unistra.fr/simbad/">
@@ -194,7 +194,7 @@
 		</p-tabPanel>
 		<p-tabPanel header="Minor Planets">
 			<ng-template #header>
-				<div class="flex gap-2 align-items-center">
+				<div class="flex items-center gap-2">
 					<span>Minor Planets</span>
 					<neb-checkbox
 						[(value)]="annotation.request.minorPlanets"
@@ -202,7 +202,7 @@
 						class="py-1" />
 				</div>
 			</ng-template>
-			<div class="grid mt-2">
+			<div class="mt-2 grid">
 				<div class="col-5">
 					<neb-input-number
 						label="Mag. Limit"
@@ -222,13 +222,13 @@
 						label="Include objects without magnitude" />
 				</div>
 				@if (annotation.request.minorPlanetsMagLimit >= 20 || annotation.request.includeMinorPlanetsWithoutMagnitude) {
-					<div class="col-12 pt-0 text-sm text-gray-300 justify-content-center">
+					<div class="col-12 justify-center pt-0 text-sm text-gray-300">
 						<i class="mdi mdi-alert mdi-sm text-warning mr-1"></i>
 						Can take a long time
 					</div>
 				}
 				<div class="col-12 mt-2">
-					<p class="w-full m-0 p-3 text-gray-400 text-xs text-center">
+					<p class="m-0 w-full p-3 text-center text-xs text-gray-400">
 						<a
 							target="_blank"
 							href="https://ssd-api.jpl.nasa.gov/doc/sb_ident.html">
@@ -240,15 +240,15 @@
 		</p-tabPanel>
 		<p-tabPanel [disabled]="!annotation.data.length">
 			<ng-template #header>
-				<div class="flex gap-2 align-items-center">
+				<div class="flex items-center gap-2">
 					<span>Objects</span>
 					<p-badge
 						severity="success"
 						[value]="annotation.filtered.length" />
 				</div>
 			</ng-template>
-			<div class="mt-3 flex flex-column align-items-center justify-content-center gap-2">
-				<div class="flex align-items-center justify-content-center gap-1">
+			<div class="mt-3 flex flex-col items-center justify-center gap-2">
+				<div class="flex items-center justify-center gap-1">
 					<neb-input-text
 						label="Search"
 						[(value)]="annotation.search.text"
@@ -268,7 +268,7 @@
 						[(value)]="annotation.search.magnitudeMax"
 						(valueChange)="searchAnnotations()" />
 				</div>
-				<div class="flex align-items-center w-full justify-content-center">
+				<div class="flex w-full items-center justify-center">
 					<neb-checkbox
 						label="Display only filtered annotations"
 						[(value)]="annotation.displayOnlyFiltered" />
@@ -277,21 +277,21 @@
 					[items]="annotation.filtered"
 					[itemSize]="36"
 					scrollHeight="180px"
-					class="w-full mt-1"
+					class="mt-1 w-full"
 					[style]="{ width: '100%', height: '180px' }">
 					<ng-template
 						#item
 						let-item>
 						<div
-							class="cursor-pointer hover:surface-hover border-round flex flex-column align-items-start justfiy-content-center p-2 gap-1"
+							class="hover:surface-hover border-round align-items-start justfiy-justify-center flex cursor-pointer flex-col gap-1 p-2"
 							[class.surface-card]="annotation.selected === item"
 							style="height: 36px"
 							(click)="annotationSelected(item)">
-							<div class="w-full flex flex-row align-items-center justify-content-between">
+							<div class="flex w-full flex-row content-between items-center">
 								<span class="text-sm font-bold">{{ item.star?.type ?? item.dso?.type }}</span>
-								<span class="text-xs font-bold monospaced">{{ item.x.toFixed(0).padStart(5, '&nbsp;') }} | {{ item.y.toFixed(0).padStart(5, '&nbsp;') }}</span>
+								<span class="monospaced text-xs font-bold">{{ item.x.toFixed(0).padStart(5, '&nbsp;') }} | {{ item.y.toFixed(0).padStart(5, '&nbsp;') }}</span>
 							</div>
-							<span class="text-xs overflow-hidden">{{ (item.star ?? item.dso ?? item.minorPlanet)?.name?.join(' · ') }}</span>
+							<span class="overflow-hidden text-xs">{{ (item.star ?? item.dso ?? item.minorPlanet)?.name?.join(' · ') }}</span>
 						</div>
 					</ng-template>
 				</p-scroller>
@@ -313,7 +313,7 @@
 	[(visible)]="astronomicalObject.showDialog"
 	[modal]="false"
 	[style]="{ width: 'min-content', minWidth: '325px' }">
-	<div class="grid mt-2">
+	<div class="mt-2 grid">
 		@if (astronomicalObject.info) {
 			<div class="col-12">
 				<neb-input-text
@@ -367,7 +367,7 @@
 			}
 		}
 		@if (astronomicalObject.info?.type) {
-			<div class="col-12 justify-content-center text-sm">
+			<div class="col-12 justify-center text-sm">
 				<a
 					target="_blank"
 					href="{{ 'https://simbad.cds.unistra.fr/simbad/sim-id?Ident=' + astronomicalObject.info!.name[0] }}">
@@ -377,7 +377,7 @@
 		}
 	</div>
 	<ng-template #footer>
-		<div class="col-12 flex justify-content-center">
+		<div class="col-12 flex justify-center">
 			<neb-button
 				[disabled]="!astronomicalObject.info"
 				(action)="mountSync(astronomicalObject.info!)"
@@ -413,7 +413,7 @@
 	[style]="{ width: 'min-content', minWidth: '340px' }"
 	class="pointer-events-none">
 	<div class="grid pt-2">
-		<div class="col-12 gap-2 align-items-center">
+		<div class="col-12 items-center gap-2">
 			<neb-dropdown-enum
 				label="Solver"
 				[options]="'PLATE_SOLVER' | dropdownOptions"
@@ -443,7 +443,7 @@
 				</div>
 			</div>
 		</div>
-		<div class="col-4 flex flex-row align-items-center">
+		<div class="col-4 flex flex-row items-center">
 			<neb-input-number
 				label="Radius (°)"
 				[disabled]="(solver.request.blind && solver.request.type !== 'SIRIL') || solver.request.type === 'PIXINSIGHT'"
@@ -452,7 +452,7 @@
 				[(value)]="solver.request.radius"
 				(valueChange)="savePreference()" />
 		</div>
-		<div class="col-6 flex flex-row align-items-center">
+		<div class="col-6 flex flex-row items-center">
 			<neb-input-number
 				label="Focal length (mm)"
 				[min]="0"
@@ -460,7 +460,7 @@
 				[(value)]="solver.request.focalLength"
 				(valueChange)="savePreference()" />
 		</div>
-		<div class="col-6 flex flex-row align-items-center">
+		<div class="col-6 flex flex-row items-center">
 			<neb-input-number
 				label="Pixel size (µm)"
 				[min]="0"
@@ -510,8 +510,8 @@
 					[value]="solver.solved.radius.toFixed(4)" />
 			</div>
 		</div>
-		<div class="grid mb-2 mt-2">
-			<div class="col-12 flex justify-content-center">
+		<div class="mb-2 mt-2 grid">
+			<div class="col-12 flex justify-center">
 				<neb-button
 					[disabled]="solver.running || !solver.solved.solved"
 					(action)="mountSync(solver.solved)"
@@ -560,8 +560,8 @@
 	[style]="{ width: 'min-content', minWidth: '320px' }"
 	class="pointer-events-none">
 	<div class="grid px-2 pt-2">
-		<div class="col-8 flex flex-column">
-			<div class="flex flex-row gap-2 align-items-center justify-content-between">
+		<div class="col-8 flex flex-col">
+			<div class="flex flex-row content-between items-center gap-2">
 				<neb-input-number
 					label="Shadow"
 					[min]="0"
@@ -581,8 +581,8 @@
 				(ngModelChange)="stretch.transformation.shadow = $event[0]; stretch.transformation.highlight = $event[1]"
 				[range]="true" />
 		</div>
-		<div class="col-4 flex flex-column">
-			<div class="text-center w-full">
+		<div class="col-4 flex flex-col">
+			<div class="w-full text-center">
 				<neb-input-number
 					label="Midtone"
 					[min]="0"
@@ -595,7 +595,7 @@
 				[max]="65536"
 				[(ngModel)]="stretch.transformation.midtone" />
 		</div>
-		<div class="col-12 mt-2 flex align-items-center gap-1">
+		<div class="col-12 mt-2 flex items-center gap-1">
 			<neb-input-number
 				label="Auto Stretch Mean Background"
 				[min]="0"
@@ -642,20 +642,20 @@
 	[style]="{ width: '270px' }"
 	class="pointer-events-none">
 	<div class="grid px-2">
-		<div class="col-12 flex align-items-center">
+		<div class="col-12 flex items-center">
 			<neb-select-button-enum
 				[options]="['NONE', 'RED', 'GREEN', 'BLUE']"
 				[value]="scnr.transformation.channel ?? 'NONE'"
 				(valueChange)="scnr.transformation.channel = $event === 'NONE' ? undefined : $event" />
 		</div>
-		<div class="col-7 flex align-items-center">
+		<div class="col-7 flex items-center">
 			<neb-dropdown-enum
 				label="Protection Method"
 				[disabled]="!scnr.transformation.channel"
 				[options]="'SCNR_PROTECTION_METHOD' | dropdownOptions"
 				[(value)]="scnr.transformation.method" />
 		</div>
-		<div class="col-5 flex align-items-center">
+		<div class="col-5 flex items-center">
 			<neb-input-number
 				label="Amount"
 				[disabled]="!scnr.transformation.channel || !scnr.transformation.method.endsWith('MASK')"
@@ -685,7 +685,7 @@
 			[value]="headers.headers"
 			class="w-full"
 			dataKey="name"
-			styleClass="w-full pb-4 p-datatable-striped">
+			styleClass="p-datatable-striped w-full pb-4">
 			<ng-template #header>
 				<tr>
 					<th>Name</th>
@@ -713,7 +713,7 @@
 	class="pointer-events-none">
 	@if (statistics.statistics && imageInfo) {
 		<div class="grid p-2">
-			<div class="col-12 flex align-items-center">
+			<div class="col-12 flex items-center">
 				<neb-select-button-enum
 					[disabled]="imageInfo.mono"
 					[options]="'IMAGE_CHANNEL' | dropdownOptions"
@@ -792,15 +792,15 @@
 	[modal]="false"
 	[style]="{ width: '360px' }"
 	class="pointer-events-none">
-	<div class="grid mt-2">
-		<div class="col-7 flex align-items-center">
+	<div class="mt-2 grid">
+		<div class="col-7 flex items-center">
 			<neb-dropdown-enum
 				label="Detector"
 				[options]="'STAR_DETECTOR' | dropdownOptions"
 				[(value)]="starDetector.request.type" />
 		</div>
 		@if (starDetector.request.type !== 'SIRIL') {
-			<div class="col-5 align-items-center">
+			<div class="col-5 items-center">
 				<neb-input-number
 					label="Min SNR"
 					[min]="0"
@@ -809,7 +809,7 @@
 			</div>
 		}
 		@if (starDetector.request.type === 'SIRIL') {
-			<div class="col-5 align-items-center">
+			<div class="col-5 items-center">
 				<neb-input-number
 					label="Max Stars"
 					[min]="0"
@@ -818,34 +818,34 @@
 			</div>
 		}
 		<div class="col-12 mt-1">
-			<span class="font-bold text-sm">COMPUTED</span>
+			<span class="text-sm font-bold">COMPUTED</span>
 		</div>
-		<div class="col-2 align-items-center">
+		<div class="col-2 items-center">
 			<neb-input-text
 				label="Stars"
 				[readonly]="true"
 				[value]="starDetector.stars.length" />
 		</div>
-		<div class="col-4 align-items-center">
+		<div class="col-4 items-center">
 			<neb-input-text
 				label="HFD (Std Dev)"
 				[readonly]="true"
 				value="{{ starDetector.computed.hfd.toFixed(2) }} | {{ starDetector.computed.stdDev.toFixed(4) }}" />
 		</div>
-		<div class="col-2 align-items-center">
+		<div class="col-2 items-center">
 			<neb-input-text
 				label="SNR"
 				[readonly]="true"
 				[value]="starDetector.computed.snr.toFixed(1)" />
 		</div>
-		<div class="col-4 align-items-center">
+		<div class="col-4 items-center">
 			<neb-input-text
 				label="Flux (min | max)"
 				[readonly]="true"
 				value="{{ starDetector.computed.fluxMin.toFixed(0) }} | {{ starDetector.computed.fluxMax.toFixed(0) }}" />
 		</div>
 		<div class="col-12 mt-1">
-			<span class="font-bold text-sm">SELECTED</span>
+			<span class="text-sm font-bold">SELECTED</span>
 		</div>
 		<div class="col-5">
 			<canvas
@@ -854,25 +854,25 @@
 		</div>
 		<div class="col-7">
 			<div class="grid">
-				<div class="col-6 align-items-center">
+				<div class="col-6 items-center">
 					<neb-input-text
 						label="Coordinates"
 						[readonly]="true"
 						value="{{ starDetector.selected.x.toFixed(0) }} | {{ starDetector.selected.y.toFixed(0) }}" />
 				</div>
-				<div class="col-6 align-items-center">
+				<div class="col-6 items-center">
 					<neb-input-text
 						label="Flux"
 						[readonly]="true"
 						[value]="starDetector.selected.flux.toFixed(0)" />
 				</div>
-				<div class="col-6 align-items-center">
+				<div class="col-6 items-center">
 					<neb-input-text
 						label="HFD"
 						[readonly]="true"
 						[value]="starDetector.selected.hfd.toFixed(2)" />
 				</div>
-				<div class="col-6 align-items-center">
+				<div class="col-6 items-center">
 					<neb-input-text
 						label="SNR"
 						[readonly]="true"
@@ -898,7 +898,7 @@
 	[style]="{ width: '390px' }"
 	class="pointer-events-none">
 	<div class="grid p-2">
-		<div class="col-2 align-items-center justify-content-center gap-2">
+		<div class="col-2 items-center justify-center gap-2">
 			<p-colorPicker
 				[(ngModel)]="fov.selected.color"
 				(ngModelChange)="saveFOV(false)"
@@ -906,7 +906,7 @@
 				[autofocus]="false"
 				[style]="{ width: '23px', height: '23px' }" />
 		</div>
-		<div class="col-6 align-items-center justify-content-start gap-2">
+		<div class="col-6 items-center justify-start gap-2">
 			<neb-button
 				icon="mdi mdi-telescope"
 				(action)="showFOVTelescopeDialog()"
@@ -922,14 +922,14 @@
 				[(value)]="fov.selected.aperture"
 				(valueChange)="saveFOV()" />
 		</div>
-		<div class="col-4 justify-content-center align-items-center">Resolution (px)</div>
-		<div class="col-4 justify-content-center align-items-center gap-2">
+		<div class="col-4 items-center justify-center">Resolution (px)</div>
+		<div class="col-4 items-center justify-center gap-2">
 			<neb-button
 				icon="mdi mdi-camera-iris"
 				(action)="showFOVCameraDialog()"
 				tooltip="Choose camera" />
 		</div>
-		<div class="col-4 justify-content-center align-items-center">Pixel Size (µm)</div>
+		<div class="col-4 items-center justify-center">Pixel Size (µm)</div>
 		<div class="col-3">
 			<neb-input-number
 				label="Width"
@@ -993,7 +993,7 @@
 				[(value)]="fov.selected.rotation"
 				(valueChange)="saveFOV(false)" />
 		</div>
-		<div class="col-1 flex align-items-center justify-content-center gap-2">
+		<div class="col-1 flex items-center justify-center gap-2">
 			<neb-button
 				[disabled]="!canAddFOV"
 				icon="mdi mdi-plus"
@@ -1003,18 +1003,18 @@
 		</div>
 		@if (fov.fovs.length) {
 			<div
-				class="col-12 p-0 flex-column overflow-auto mt-2 gap-1"
+				class="col-12 mt-2 flex-col gap-1 overflow-auto p-0"
 				style="max-height: 112px">
 				@for (item of fov.fovs; track $index) {
 					<div
-						class="flex align-items-center gap-2 border-left-3 p-2 border-round cursor-pointer"
+						class="border-left-3 border-round flex cursor-pointer items-center gap-2 p-2"
 						[class.bg-blue-900]="fov.selected === item"
 						[style.border-color]="item.color"
 						(click)="selectFOV(item)">
-						<div class="flex align-items-center justify-content-center">
+						<div class="flex items-center justify-center">
 							<neb-checkbox [(value)]="item.enabled" />
 						</div>
-						<div class="flex align-items-center flex-wrap gap-1">
+						<div class="flex flex-wrap items-center gap-1">
 							<neb-info label="FL: {{ item.focalLength }} mm" />
 							<neb-info label="AP: {{ item.aperture }} mm" />
 							<neb-info label="RES: {{ item.cameraSize.width }}x{{ item.cameraSize.height }}" />
@@ -1028,7 +1028,7 @@
 								<neb-success label="FOV: {{ item.computed.fieldSize.width.toFixed(2) }}°x{{ item.computed.fieldSize.height.toFixed(2) }}°" />
 							}
 						</div>
-						<div class="flex px-1 flex-column gap-0 align-items-center justify-content-between">
+						<div class="flex flex-col content-between items-center gap-0 px-1">
 							<neb-button
 								(action)="frameFOV(item)"
 								icon="mdi mdi-image"
@@ -1069,9 +1069,9 @@
 				<ng-template
 					#item
 					let-item>
-					<div class="flex flex-column justify-content-center">
-						<span class="font-bold white-space-nowrap">{{ item.name }}</span>
-						<span class="font-italic text-sm white-space-nowrap">{{ item.sensor }}</span>
+					<div class="flex flex-col justify-center">
+						<span class="white-space-nowrap font-bold">{{ item.name }}</span>
+						<span class="font-italic white-space-nowrap text-sm">{{ item.sensor }}</span>
 						<span class="text-sm">{{ item.width }}x{{ item.height }} / {{ item.pixelSize }}µm</span>
 					</div>
 				</ng-template>
@@ -1110,8 +1110,8 @@
 				<ng-template
 					#item
 					let-item>
-					<div class="flex flex-column justify-content-center">
-						<span class="font-bold white-space-nowrap">{{ item.name }}</span>
+					<div class="flex flex-col justify-center">
+						<span class="white-space-nowrap font-bold">{{ item.name }}</span>
 						<span class="text-sm">{{ item.aperture }}mm / {{ item.focalLength }}mm</span>
 					</div>
 				</ng-template>
@@ -1134,7 +1134,7 @@
 	[modal]="false"
 	[style]="{ width: '260px' }"
 	class="pointer-events-none">
-	<div class="grid mt-2">
+	<div class="mt-2 grid">
 		<div class="col-12">
 			<neb-path-chooser
 				key="imageSaveAs"
@@ -1144,7 +1144,7 @@
 				(pathChange)="pathChangedForSaveAs()"
 				class="w-full" />
 		</div>
-		<div class="col-12 flex align-items-center justify-content-center">
+		<div class="col-12 flex items-center justify-center">
 			<neb-select-button-enum
 				[options]="'IMAGE_FORMAT' | dropdownOptions"
 				[(value)]="saveAs.format" />
@@ -1192,14 +1192,14 @@
 					[(value)]="saveAs.subFrame.height" />
 			</div>
 		}
-		<div class="col-7 align-items-center justify-content-center">
+		<div class="col-7 items-center justify-center">
 			<neb-dropdown-enum
 				label="Format"
 				[disabled]="saveAs.format !== 'FITS' && saveAs.format !== 'XISF'"
 				[options]="'IMAGE_BITPIX' | dropdownOptions"
 				[(value)]="saveAs.bitpix" />
 		</div>
-		<div class="col-5 flex-column align-items-center justify-content-center gap-1">
+		<div class="col-5 flex-col items-center justify-center gap-1">
 			<neb-checkbox
 				label="Transformed"
 				[vertical]="true"
@@ -1222,7 +1222,7 @@
 	[modal]="false"
 	[style]="{ width: 'min-content', minWidth: '338px' }">
 	<div class="grid">
-		<div class="col-12 flex-column gap-2">
+		<div class="col-12 flex-col gap-2">
 			<neb-checkbox
 				[(value)]="settings.preference.transformation.useJPEG"
 				(valueChange)="savePreference()"
@@ -1242,7 +1242,7 @@
 	[modal]="false"
 	[style]="{ width: 'min-content', minWidth: '230px' }">
 	<div class="grid">
-		<div class="col-12 flex-row align-items-center justify-content-center relative gap-2">
+		<div class="col-12 relative flex-row items-center justify-center gap-2">
 			<p-knob
 				[min]="0"
 				[max]="720"
@@ -1256,12 +1256,12 @@
 				label="Angle (°)"
 				[min]="-360"
 				[max]="360"
-				class="absolute max-w-8rem"
+				class="max-w-8rem absolute"
 				[(value)]="rotation.transformation.angle"
 				(valueChange)="savePreference()"
 				[fractionDigits]="2" />
 		</div>
-		<div class="col-12 flex-row align-items-center justify-content-center gap-1">
+		<div class="col-12 flex-row items-center justify-center gap-1">
 			<neb-button
 				label="0°"
 				(action)="rotate(0)" />
@@ -1284,7 +1284,7 @@
 	[(visible)]="adjustment.showDialog"
 	[modal]="false"
 	[style]="{ width: 'min-content', minWidth: '338px' }">
-	<div class="flex flex-column justify-content-center gap-2 mt-2">
+	<div class="mt-2 flex flex-col justify-center gap-2">
 		<neb-checkbox
 			label="Enabled"
 			class="mb-2"
@@ -1335,8 +1335,8 @@
 </p-dialog>
 
 @if (mouseCoordinate && isMouseCoordinateVisible) {
-	<div class="fixed p-3 text-sm coordinates monospaced">
-		<div class="grid m-0">
+	<div class="coordinates monospaced fixed p-3 text-sm">
+		<div class="m-0 grid">
 			<div class="col-6 m-0 p-0">X: {{ mouseCoordinate.x }}</div>
 			<div class="col-6 m-0 p-0">Y: {{ mouseCoordinate.y }}</div>
 			<div class="col-6 m-0 p-0">α: {{ mouseCoordinate.alpha }}</div>

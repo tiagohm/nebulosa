@@ -1,6 +1,6 @@
 <div class="container px-4 py-3">
-	<div class="grid flex align-items-center">
-		<div class="col-12 align-items-center gap-1">
+	<div class="flex grid items-center">
+		<div class="col-12 items-center gap-1">
 			<neb-device-name [device]="focuser" />
 			@if (focuser.connected) {
 				<neb-button
@@ -19,27 +19,27 @@
 			}
 			<neb-button-indi [device]="focuser" />
 		</div>
-		<div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center justify-content-between my-1 gap-1">
-			<div class="flex align-items-center gap-1">
+		<div class="col-12 my-1 flex content-between items-center gap-1 pt-0 text-sm text-gray-400">
+			<div class="flex items-center gap-1">
 				<i class="mdi mdi-information text-info"></i>
 				<span style="display: contents">{{ focuser.moving ? 'moving' : 'idle' }}</span>
 			</div>
 			@if (focuser.hasThermometer) {
-				<div class="flex align-items-center gap-1">
+				<div class="flex items-center gap-1">
 					<i class="mdi mdi-thermometer text-danger"></i>
 					<span style="display: contents">{{ focuser.temperature | number: '1.2-2' }}°C</span>
 				</div>
 			}
 		</div>
 	</div>
-	<div class="grid mt-1">
+	<div class="mt-1 grid">
 		<div class="col-8">
 			<neb-input-number
 				label="Position (max: {{ focuser.maxPosition | number }})"
 				[readonly]="true"
 				[value]="focuser.position" />
 		</div>
-		<div class="col-3 text-center justify-content-between gap-2">
+		<div class="col-3 content-between gap-2 text-center">
 			<neb-button
 				[disabled]="!focuser.connected || !focuser.canAbort || !focuser.moving"
 				icon="mdi mdi-stop"
@@ -53,7 +53,7 @@
 				severity="info"
 				tooltip="Sync" />
 		</div>
-		<div class="col-12 flex align-items-center gap-1">
+		<div class="col-12 flex items-center gap-1">
 			<neb-button
 				[disabled]="!focuser.connected || !focuser.canRelativeMove || focuser.moving || !preference.stepsRelative"
 				(action)="moveIn()"
@@ -72,7 +72,7 @@
 				icon="mdi mdi-arrow-right-bold"
 				tooltip="Move Out" />
 		</div>
-		<div class="col-12 flex justify-content-end align-items-center gap-1">
+		<div class="col-12 flex items-center justify-end gap-1">
 			<neb-input-number
 				label="Absolute"
 				[disabled]="!focuser.connected || !focuser.canAbsoluteMove"

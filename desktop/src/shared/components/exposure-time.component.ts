@@ -6,7 +6,7 @@ import { MenuItem } from './menu-item.component'
 	standalone: false,
 	selector: 'neb-exposure-time',
 	template: `
-		<div class="relative flex justify-content-center align-items-center">
+		<div class="relative flex items-center justify-center">
 			<neb-input-number
 				[label]="label() || 'Exposure Time'"
 				[disabled]="!canExposureTime() || disabled()"

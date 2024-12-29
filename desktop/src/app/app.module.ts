@@ -250,7 +250,10 @@ import { SettingsComponent } from './settings/settings.component'
 				options: {
 					prefix: 'p',
 					darkModeSelector: '.dark-mode',
-					cssLayer: false,
+					cssLayer: {
+						name: 'primeng',
+						order: 'tailwind-base, primeng, tailwind-utilities',
+					},
 				},
 			},
 		}),

@@ -16,7 +16,7 @@ import { ButtonSeverity } from './button.component'
 			[severity]="severity()"
 			(onClick)="action.emit($event); $event.stopImmediatePropagation()"
 			class="flex"
-			styleClass="w-full select-none cursor-pointer flex-column">
+			styleClass="w-full select-none cursor-pointer flex-col">
 			<img
 				[src]="image()"
 				[style]="{ height: imageHeight() }" />

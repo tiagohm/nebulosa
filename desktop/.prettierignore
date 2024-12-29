@@ -3,6 +3,5 @@
 **/release
 **/*.svg
 **/.angular
-**/.vscode
 
 package-lock.json

@@ -5,7 +5,7 @@ import { ToggleSwitchChangeEvent } from 'primeng/toggleswitch'
 	standalone: false,
 	selector: 'neb-switch',
 	template: `
-		<div class="flex flex-column justify-content-center text-center gap-2">
+		<div class="flex flex-col justify-center gap-2 text-center">
 			<span class="text-xs text-gray-100">{{ label() }}</span>
 			<p-toggle-switch
 				[disabled]="disabled()"

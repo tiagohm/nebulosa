@@ -1,5 +1,5 @@
 <div class="grid p-3">
-	<div class="col-3 align-items-center flex-column gap-2">
+	<div class="col-3 flex-col items-center gap-2">
 		<img
 			src="assets/icons/nebulosa.png"
 			style="height: 72px" />
@@ -11,8 +11,8 @@
 				src="https://img.shields.io/github/stars/tiagohm/nebulosa?style=flat&label=GitHub&color=%231a1e23" />
 		</a>
 	</div>
-	<div class="col-9 flex-column">
-		<p class="align-items-center flex font-bold gap-2 mb-0 mt-2 text-5xl">
+	<div class="col-9 flex-col">
+		<p class="mb-0 mt-2 flex items-center gap-2 text-5xl font-bold">
 			<span>Nebulosa</span>
 			<neb-tag
 				size="large"
@@ -21,10 +21,10 @@
 				size="large"
 				[label]="codename" />
 		</p>
-		<p class="text-sm mt-0">
+		<p class="mt-0 text-sm">
 			{{ description }}
 		</p>
-		<p class="text-sm text-gray-400 mt-0">
+		<p class="mt-0 text-sm text-gray-400">
 			© 2022-2024 Tiago Melo
 			<img
 				src="assets/icons/brazil.png"
@@ -39,7 +39,7 @@
 				</p-tabPanel>
 				<p-tabPanel header="Icons">
 					<div
-						class="w-full flex flex-column overflow-y-auto py-2 gap-1"
+						class="flex w-full flex-col gap-1 overflow-y-auto py-2"
 						style="height: 100px">
 						@for (icon of icons; track $index) {
 							<a
@@ -52,7 +52,7 @@
 				</p-tabPanel>
 				<p-tabPanel header="Dependencies">
 					<div
-						class="w-full flex flex-column overflow-y-auto py-2 gap-1"
+						class="flex w-full flex-col gap-1 overflow-y-auto py-2"
 						style="height: 100px">
 						@for (dep of dependencies; track dep.name) {
 							@if (dep.link) {
@@ -68,7 +68,7 @@
 			</p-tabView>
 		</div>
 	</div>
-	<div class="col-12 flex align-items-center justify-content-center gap-2 flex-wrap">
+	<div class="col-12 flex flex-wrap items-center justify-center gap-2">
 		<a
 			target="_blank"
 			href="https://www.paypal.com/donate/?hosted_button_id=U8TGGJTKSZUCA">
