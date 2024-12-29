@@ -61,8 +61,8 @@ export interface SlideMenuItem extends MenuItem {
 
 		<a
 			[class.p-menuitem-selected]="mItem.selected"
-			class="p-menuitem-link flex content-between items-center gap-2">
-			<div class="flex content-between items-center gap-2">
+			class="p-menuitem-link flex items-center justify-between gap-2">
+			<div class="flex items-center justify-between gap-2">
 				<i [class]="mItem.icon"></i>
 				<span>{{ mItem.label }}</span>
 			</div>

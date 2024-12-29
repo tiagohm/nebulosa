@@ -1,4 +1,4 @@
-<div class="container px-4 py-3">
+<div class="px-4 py-3">
 	<div class="flex grid items-center">
 		<div class="col-12 items-center gap-1">
 			<neb-device-name [device]="rotator" />
@@ -19,7 +19,7 @@
 			}
 			<neb-button-indi [device]="rotator" />
 		</div>
-		<div class="col-12 my-1 flex content-between items-center gap-1 pt-0 text-sm text-gray-400">
+		<div class="col-12 my-1 flex items-center justify-between gap-1 pt-0 text-sm text-gray-400">
 			<div class="flex items-center gap-1">
 				<i class="mdi mdi-information text-info"></i>
 				<span style="display: contents">{{ rotator.moving ? 'moving' : 'idle' }}</span>
@@ -33,7 +33,7 @@
 				[readonly]="true"
 				[(value)]="rotator.angle" />
 		</div>
-		<div class="col-6 content-between items-center gap-2 text-center">
+		<div class="col-6 items-center justify-between gap-2 text-center">
 			<neb-button
 				[disabled]="!rotator.connected || !rotator.moving || !canAbort"
 				icon="mdi mdi-stop"

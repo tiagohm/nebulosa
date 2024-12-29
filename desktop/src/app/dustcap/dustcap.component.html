@@ -1,4 +1,4 @@
-<div class="container px-4 py-3">
+<div class="px-4 py-3">
 	<div class="flex grid items-center">
 		<div class="col-12 items-center gap-1">
 			<neb-device-name [device]="dustCap" />
@@ -19,7 +19,7 @@
 			}
 			<neb-button-indi [device]="dustCap" />
 		</div>
-		<div class="col-12 my-1 flex content-between items-center gap-1 pt-0 text-sm text-gray-400">
+		<div class="col-12 my-1 flex items-center justify-between gap-1 pt-0 text-sm text-gray-400">
 			<div class="flex items-center gap-1">
 				<i class="mdi mdi-information text-info"></i>
 				<span style="display: contents">{{ dustCap.parking ? 'moving' : dustCap.parked ? 'closed' : 'open' }}</span>

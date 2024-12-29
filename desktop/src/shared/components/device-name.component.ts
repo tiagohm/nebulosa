@@ -11,7 +11,7 @@ import type { Device } from '../types/device.types'
 			<span class="white-space-nowrap font-bold">{{ mDevice.name }}</span>
 
 			@if (mDevice.driver.name) {
-				<div class="flex flex-row items-center gap-1 text-xs text-gray-400">
+				<div class="flex items-center gap-1 text-xs text-gray-400">
 					<span>DRIVER: {{ mDevice.driver.name }}</span>
 					<span>V{{ mDevice.driver.version }}</span>
 				</div>

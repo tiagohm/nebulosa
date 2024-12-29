@@ -1,4 +1,4 @@
-<div class="container px-4 py-3">
+<div class="px-4 py-3">
 	<div class="flex grid items-center">
 		<div class="col-12 items-center gap-1">
 			<neb-device-name [device]="focuser" />
@@ -19,7 +19,7 @@
 			}
 			<neb-button-indi [device]="focuser" />
 		</div>
-		<div class="col-12 my-1 flex content-between items-center gap-1 pt-0 text-sm text-gray-400">
+		<div class="col-12 my-1 flex items-center justify-between gap-1 pt-0 text-sm text-gray-400">
 			<div class="flex items-center gap-1">
 				<i class="mdi mdi-information text-info"></i>
 				<span style="display: contents">{{ focuser.moving ? 'moving' : 'idle' }}</span>
@@ -39,7 +39,7 @@
 				[readonly]="true"
 				[value]="focuser.position" />
 		</div>
-		<div class="col-3 content-between gap-2 text-center">
+		<div class="col-3 justify-between gap-2 text-center">
 			<neb-button
 				[disabled]="!focuser.connected || !focuser.canAbort || !focuser.moving"
 				icon="mdi mdi-stop"

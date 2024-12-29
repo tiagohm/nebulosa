@@ -22,7 +22,7 @@
 						[src]="sun.image"
 						style="width: 223px" />
 					@if (sun.seasons.length) {
-						<div class="align-items-start absolute left-0 top-0 flex w-full flex-row content-between p-4 text-sm">
+						<div class="align-items-start absolute left-0 top-0 flex w-full justify-between p-4 text-sm">
 							<div class="flex flex-col">
 								<a
 									target="_blank"
@@ -65,7 +65,7 @@
 						[illuminationRatio]="moon.position.illuminated / 100"
 						[waning]="moon.position.leading" />
 					@if (moon.phases) {
-						<div class="align-items-start absolute left-0 top-0 flex w-full flex-row content-between p-4 text-sm">
+						<div class="align-items-start absolute left-0 top-0 flex w-full justify-between p-4 text-sm">
 							<div class="flex flex-col gap-2">
 								<div class="flex flex-col">
 									<span class="font-bold">Diameter</span>
@@ -298,7 +298,7 @@
 						<neb-input-text
 							label="Search"
 							[(value)]="skyObject.search.filter.text" />
-						<div class="flex flex-row gap-1">
+						<div class="flex gap-1">
 							<neb-button
 								(action)="searchSkyObject()"
 								icon="mdi mdi-magnify"
@@ -383,7 +383,7 @@
 						<neb-input-text
 							label="Search"
 							[(value)]="satellite.search.filter.text" />
-						<div class="flex flex-row gap-1">
+						<div class="flex gap-1">
 							<neb-button
 								(action)="searchSatellite()"
 								icon="mdi mdi-magnify"
@@ -434,7 +434,7 @@
 							<tr [pSelectableRow]="item">
 								<td class="w-8rem">{{ item.id }}</td>
 								<td>{{ item.name }}</td>
-								<td class="max-w-16rem flex flex-row flex-wrap gap-1">
+								<td class="max-w-16rem flex flex-wrap gap-1">
 									@for (group of item.groups; track $index) {
 										<neb-success [label]="group" />
 									}
@@ -454,7 +454,7 @@
 		[style]="{ height: '258px', width: '100vw' }"
 		styleClass="info">
 		<p-tabPanel leftIcon="mdi mdi-information">
-			<div class="relative grid flex-row justify-center px-3 pt-3">
+			<div class="relative grid justify-center px-3 pt-3">
 				<div class="col-12 pb-0">
 					<div class="grid">
 						<div class="col-3">
@@ -574,7 +574,7 @@
 		</p-tabPanel>
 	</p-tabView>
 	<div
-		class="col-9 absolute flex content-between items-center gap-1 overflow-hidden"
+		class="col-9 absolute flex items-center justify-between gap-1 overflow-hidden"
 		style="height: 32px; left: 95px; top: 2px; padding-right: 70px">
 		<neb-button
 			[disabled]="!body.name"
@@ -806,7 +806,7 @@
 				<ng-template
 					#item
 					let-item>
-					<div class="flex w-full content-between items-center gap-1">
+					<div class="flex w-full items-center justify-between gap-1">
 						<span class="text-sm">
 							<span class="font-bold">{{ item.type | enum }}</span>
 							<span class="ml-1">{{ item.name }}</span>

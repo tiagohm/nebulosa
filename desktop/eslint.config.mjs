@@ -49,6 +49,7 @@ export default tseslint.config(
 					allowTernary: true,
 				},
 			],
+			'@angular-eslint/prefer-standalone': 'off',
 			'@angular-eslint/directive-selector': 'off',
 			'@angular-eslint/component-selector': [
 				'error',

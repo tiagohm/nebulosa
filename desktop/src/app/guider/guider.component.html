@@ -189,7 +189,7 @@
 				header="Guide pulse"
 				leftIcon="mdi mdi-pulse">
 				<div class="mt-1 grid px-4">
-					<div class="col-12 mb-2 flex flex-row items-center justify-center gap-2">
+					<div class="col-12 mb-2 flex items-center justify-center gap-2">
 						<neb-device-chooser
 							title="GUIDE OUTPUT"
 							icon="mdi mdi-target"
@@ -209,7 +209,7 @@
 							[max]="1800000" />
 					</div>
 					<div class="col-4"></div>
-					<div class="col-4 flex flex-row items-center justify-center gap-2">
+					<div class="col-4 flex items-center justify-center gap-2">
 						<neb-input-number
 							label="West (ms)"
 							[disabled]="!guideOutput || !guideOutput.connected || guideOutput.pulseGuiding"
@@ -277,7 +277,7 @@
 							</div>
 						</div>
 					</div>
-					<div class="col-4 flex flex-row items-center justify-center gap-2">
+					<div class="col-4 flex items-center justify-center gap-2">
 						<neb-input-number
 							label="East (ms)"
 							[disabled]="!guideOutput || !guideOutput.connected || guideOutput.pulseGuiding"

@@ -1,6 +1,6 @@
-<div class="px-4 pt-4 pb-1">
-	<div class="flex-column flex items-center justify-center">
-		<div class="flex flex-1 flex-row gap-1 px-2">
+<div class="px-4 pb-1 pt-4">
+	<div class="flex items-center justify-center">
+		<div class="flex flex-1 gap-1 px-2">
 			<neb-button
 				(action)="addConnection()"
 				icon="mdi mdi-plus"
@@ -11,15 +11,16 @@
 				let-item
 				let-selected="selected">
 				@if (selected) {
-					<div class="flex flex-row content-between">
+					<div class="flex justify-between">
 						<span>{{ connection?.name }}</span>
+						<span class="rounded-md border-blue-500 bg-blue-600 px-2 text-blue-50">{{ connection?.type }}</span>
 					</div>
 				} @else {
-					<div class="flex w-full flex-row content-between items-center gap-1 text-xs">
+					<div class="flex w-full items-center justify-between gap-1 text-xs">
 						<div class="flex flex-1 flex-col gap-1">
 							<span class="text-lg font-bold">{{ item.name }}</span>
 							<span class="text-sm">{{ item.type }} | {{ item.host }}:{{ item.port }}</span>
-							<div class="flex flex-row items-center gap-1 text-xs">
+							<div class="flex items-center gap-1 text-xs">
 								<i class="mdi mdi-sm mdi-clock"></i>
 								<span>{{ (item.connectedAt | date: 'yyyy-MM-dd HH:mm:ss') ?? 'never' }}</span>
 							</div>
@@ -44,7 +45,6 @@
 			<neb-dropdown
 				#connectionDropdown
 				label="Connection"
-				style="flex-1"
 				[disabled]="connected"
 				[options]="preference.connections"
 				[(value)]="connection"
@@ -66,25 +66,6 @@
 					tooltip="Disconnect" />
 			}
 		</div>
-		@if (newVersion) {
-			<div class="col-12 py-0">
-				<div class="p-message p-message-info m-0 flex w-full content-between items-center px-2">
-					<div class="flex items-center">
-						<span class="p-message-summary">New version:</span>
-						<span class="p-message-detail">{{ newVersion }}</span>
-					</div>
-					<a
-						target="_blank"
-						href="https://github.com/tiagohm/nebulosa/releases/latest">
-						<neb-button
-							icon="mdi mdi-download"
-							label="Download"
-							severity="info"
-							class="py-1 text-blue-900" />
-					</a>
-				</div>
-			</div>
-		}
 	</div>
 	<div
 		class="no-scrollbar relative my-2 grid overflow-y-auto"
@@ -238,32 +219,29 @@
 	[draggable]="false"
 	[(visible)]="connectionDialog.showDialog"
 	[style]="{ width: '90vw' }">
-	<div class="grid p-2">
-		<div class="col-12">
-			<neb-input-text
-				label="Name"
-				[maxLength]="32"
-				[(value)]="connectionDialog.connection.name" />
-		</div>
-		<div class="col-12">
-			<neb-input-text
-				label="Host"
-				[(value)]="connectionDialog.connection.host" />
-		</div>
-		<div class="col-4">
-			<neb-input-number
-				label="Port"
-				style="min-width: 80px"
-				placeholder="7624"
-				[min]="80"
-				[max]="65535"
-				[(value)]="connectionDialog.connection.port"
-				[format]="false" />
-		</div>
-		<div class="col-8">
-			<neb-select-button-enum
-				[options]="'CONNECTION_TYPE' | dropdownOptions"
-				[(value)]="connectionDialog.connection.type" />
+	<div class="flex flex-col gap-3 p-2">
+		<neb-input-text
+			label="Name"
+			[maxLength]="32"
+			[(value)]="connectionDialog.connection.name" />
+		<neb-input-text
+			label="Host"
+			[(value)]="connectionDialog.connection.host" />
+		<div class="flex items-center gap-1">
+			<div class="w-1/3">
+				<neb-input-number
+					label="Port"
+					placeholder="7624"
+					[min]="80"
+					[max]="65535"
+					[(value)]="connectionDialog.connection.port"
+					[format]="false" />
+			</div>
+			<div class="w-2/3">
+				<neb-select-button-enum
+					[options]="'CONNECTION_TYPE' | dropdownOptions"
+					[(value)]="connectionDialog.connection.type" />
+			</div>
 		</div>
 	</div>
 	<ng-template #footer>

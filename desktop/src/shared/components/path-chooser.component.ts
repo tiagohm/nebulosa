@@ -11,7 +11,8 @@ import { ElectronService } from '../services/electron.service'
 				[disabled]="disabled()"
 				[readonly]="readonly()"
 				[placeholder]="placeholder() ?? ''"
-				[(value)]="path" />
+				[(value)]="path"
+				class="w-full" />
 			<neb-button
 				[disabled]="disabled() || readonly()"
 				icon="mdi mdi-folder-open"

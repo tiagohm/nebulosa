@@ -1,5 +1,5 @@
-<div class="container px-4 py-3">
-	<div class="grid flex items-center">
+<div class="px-4 py-3">
+	<div class="flex grid items-center">
 		<div class="col-8 items-center gap-1">
 			<neb-device-name [device]="mount" />
 			@if (mount.connected) {
@@ -19,7 +19,7 @@
 			}
 			<neb-button-indi [device]="mount" />
 		</div>
-		<div class="col-4 flex justify-end items-center gap-2">
+		<div class="col-4 flex items-center justify-end gap-2">
 			<neb-button
 				[disabled]="!mount.connected"
 				(action)="showRemoteControlDialog()"
@@ -36,7 +36,7 @@
 				icon="mdi mdi-clock"
 				tooltip="Time" />
 		</div>
-		<div class="col-12 pt-0 text-sm text-gray-400 flex items-center my-1 gap-1">
+		<div class="col-12 my-1 flex items-center gap-1 pt-0 text-sm text-gray-400">
 			<i class="mdi mdi-information text-info"></i>
 			<span style="display: contents">
 				{{ mount.parking ? 'parking' : mount.parked ? 'parked' : mount.slewing ? 'slewing' : mount.tracking ? 'tracking' : 'idle' }}
@@ -111,7 +111,7 @@
 				(action)="ephemerisMenu.show(ephemerisModel)" />
 		</div>
 	</div>
-	<div class="grid mt-1">
+	<div class="mt-1 grid">
 		<div class="col-4 flex flex-col justify-center">
 			<neb-select-button-enum
 				[disabled]="!mount.connected || mount.slewing || mount.parking || mount.parked"
@@ -119,26 +119,26 @@
 				[(value)]="preference.targetCoordinateType"
 				(valueChange)="computeTargetCoordinates()" />
 		</div>
-		<div class="col-4 flex flex-col justify-center align-items-start text-sm gap-1">
-			<div class="flex flex-row content-between w-full">
+		<div class="col-4 align-items-start flex flex-col justify-center gap-1 text-sm">
+			<div class="flex w-full justify-between">
 				<span class="font-bold">AZ</span>
 				<span>{{ targetComputedLocation.azimuth }}</span>
 			</div>
-			<div class="flex flex-row content-between w-full">
+			<div class="flex w-full justify-between">
 				<span class="font-bold">ALT</span>
 				<span>{{ targetComputedLocation.altitude }}</span>
 			</div>
 		</div>
-		<div class="col-4 flex flex-col justify-center align-items-start text-sm gap-1">
-			<div class="flex flex-row content-between w-full">
+		<div class="col-4 align-items-start flex flex-col justify-center gap-1 text-sm">
+			<div class="flex w-full justify-between">
 				<span class="font-bold">CONST</span>
 				<span>{{ targetComputedLocation.constellation }}</span>
 			</div>
-			<div class="flex flex-row content-between w-full">
+			<div class="flex w-full justify-between">
 				<span class="font-bold">MERIDIAN AT</span>
 				<span>{{ targetComputedLocation.meridianAt }}</span>
 			</div>
-			<div class="flex flex-row content-between w-full">
+			<div class="flex w-full justify-between">
 				<span class="font-bold">PIER</span>
 				<span>{{ targetComputedLocation.pierSide }}</span>
 			</div>
@@ -168,7 +168,7 @@
 				(onDropdownClick)="targetMenu.show(targetCoordinateModel)" />
 		</div>
 	</div>
-	<div class="grid mt-1">
+	<div class="mt-1 grid">
 		<div class="col-4">
 			<div class="grid">
 				<div class="col-4">
@@ -255,14 +255,14 @@
 		</div>
 		<div class="col-8">
 			<div class="grid">
-				<div class="col-6 flex flex-col justify-center items-center text-center">
+				<div class="col-6 flex flex-col items-center justify-center text-center">
 					<neb-switch
 						label="Tracking"
 						[disabled]="!mount.connected || mount.slewing || mount.parking || mount.parked"
 						[value]="mount.tracking"
 						(valueChange)="trackingToggled($event)" />
 				</div>
-				<div class="col-6 flex flex-row gap-2 justify-center items-center">
+				<div class="col-6 flex items-center justify-center gap-2">
 					@if (mount.parked) {
 						<neb-button
 							[disabled]="!mount.connected || !mount.canPark || mount.slewing || mount.parking"
@@ -334,7 +334,7 @@
 				[(value)]="remoteControl.port"
 				placeholder="10001" />
 		</div>
-		<div class="col-12 pt-0 justify-center flex items-center text-sm">
+		<div class="col-12 flex items-center justify-center pt-0 text-sm">
 			@if (remoteControl.protocol === 'LX200') {
 				<span>
 					Use together with the
@@ -355,7 +355,7 @@
 				</span>
 			}
 		</div>
-		<div class="col-12 flex justify-center items-center">
+		<div class="col-12 flex items-center justify-center">
 			<neb-button
 				[disabled]="!remoteControl.host || !remoteControl.port"
 				label="Connect"
@@ -371,9 +371,9 @@
 				<ng-template
 					#item
 					let-item>
-					<div class="flex flex-row w-full items-center content-between">
+					<div class="flex w-full items-center justify-between">
 						<div class="flex flex-col justify-center">
-							<span class="font-bold white-space-nowrap">{{ item.protocol }}</span>
+							<span class="white-space-nowrap font-bold">{{ item.protocol }}</span>
 							<span class="text-sm">{{ item.host }}:{{ item.port }}</span>
 						</div>
 						<div class="flex items-center justify-center">

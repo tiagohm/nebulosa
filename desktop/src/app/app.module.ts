@@ -21,6 +21,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog'
 import { ContextMenuModule } from 'primeng/contextmenu'
 import { DatePickerModule } from 'primeng/datepicker'
 import { DialogModule } from 'primeng/dialog'
+import { DrawerModule } from 'primeng/drawer'
 import { DialogService } from 'primeng/dynamicdialog'
 import { FloatLabelModule } from 'primeng/floatlabel'
 import { InplaceModule } from 'primeng/inplace'
@@ -36,13 +37,11 @@ import { ProgressBarModule } from 'primeng/progressbar'
 import { ScrollPanelModule } from 'primeng/scrollpanel'
 import { SelectModule } from 'primeng/select'
 import { SelectButtonModule } from 'primeng/selectbutton'
-import { SidebarModule } from 'primeng/sidebar'
 import { SliderModule } from 'primeng/slider'
 import { SplitButtonModule } from 'primeng/splitbutton'
 import { TableModule } from 'primeng/table'
 import { TabViewModule } from 'primeng/tabview'
 import { TagModule } from 'primeng/tag'
-import { TieredMenuModule } from 'primeng/tieredmenu'
 import { ToastModule } from 'primeng/toast'
 import { ToggleSwitchModule } from 'primeng/toggleswitch'
 import { TooltipModule } from 'primeng/tooltip'
@@ -201,6 +200,7 @@ import { SettingsComponent } from './settings/settings.component'
 		DatePickerModule,
 		DialogModule,
 		DragDropModule,
+		DrawerModule,
 		FloatLabelModule,
 		FormsModule,
 		InplaceModule,
@@ -218,13 +218,11 @@ import { SettingsComponent } from './settings/settings.component'
 		ScrollPanelModule,
 		SelectButtonModule,
 		SelectModule,
-		SidebarModule,
 		SliderModule,
 		SplitButtonModule,
 		TableModule,
 		TabViewModule,
 		TagModule,
-		TieredMenuModule,
 		ToastModule,
 		ToggleSwitchModule,
 		TooltipModule,

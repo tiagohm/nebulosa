@@ -5,7 +5,7 @@
 				@let value = frames.get(key) ?? [];
 				<p-tabPanel [header]="key">
 					<div class="mt-1 grid px-3">
-						<div class="col-12 flex content-between items-center">
+						<div class="col-12 flex items-center justify-between">
 							<div class="flex items-center justify-start gap-2">
 								<neb-button
 									label="Files"
@@ -44,16 +44,16 @@
 								<ng-template
 									#item
 									let-item>
-									<div class="flex w-full content-between items-center gap-2">
+									<div class="flex w-full items-center justify-between gap-2">
 										<div class="flex flex-1 flex-col justify-center gap-2">
-											<div class="flex content-between items-center gap-2 text-gray-400">
+											<div class="flex items-center justify-between gap-2 text-gray-400">
 												<div class="flex items-center justify-start gap-2 text-xs">
 													<neb-checkbox
 														[(value)]="item.enabled"
 														(valueChange)="toggleFrame(item, $event)" />
 													<div class="flex flex-col justify-center">
 														<span class="text-base font-bold">{{ item.type }}</span>
-														<div class="flex w-full flex-row flex-nowrap items-center justify-start gap-2 text-xs text-gray-200">
+														<div class="flex w-full flex-nowrap items-center justify-start gap-2 text-xs text-gray-200">
 															<span class="text-orange-300">{{ item.exposureTime | exposureTime }}</span>
 															<span class="text-cyan-300">{{ item.width }}x{{ item.height }}</span>
 															<span class="text-yellow-300">{{ item.binX }}x{{ item.binY }}</span>

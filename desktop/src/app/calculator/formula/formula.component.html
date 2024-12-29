@@ -1,40 +1,42 @@
 @let mFormula = formula();
 
-<p class="mb-2 text-center">{{ mFormula.description }}</p>
-<div class="flex items-center justify-center">
+<p class="mb-2 text-center leading-tight text-gray-400">{{ mFormula.description }}</p>
+<div class="mt-4 flex items-center justify-center">
 	<neb-tag
 		[label]="mFormula.expression"
 		size="large" />
 </div>
-<div class="mt-4 flex flex-col items-center justify-center gap-1">
+<div class="mt-6 flex flex-col items-center justify-center gap-3">
 	@for (item of mFormula.operands; track item.label) {
-		<div class="grid">
-			<div class="col-2 items-center justify-end">
+		<div class="flex w-full items-center justify-center gap-2">
+			<div class="flex w-1/6 items-center justify-end">
 				<span class="text-bold text-xl">{{ item.prefix }}</span>
 			</div>
-			<div class="col-8 flex justify-center">
+			<div class="w-4/6">
 				<neb-input-number
 					[label]="item.label"
 					[value]="item.value ?? 0"
-					(valueChange)="item.value = $event; calculateFormula()"
+					(valueChange)="item.value = $event; calculate()"
 					[fractionDigits]="item.maxFractionDigits ?? 4"
 					[min]="item.min ?? 0" />
 			</div>
-			<div class="col-2 items-center justify-start">
+			<div class="flex w-1/6 items-center justify-start">
 				<span class="text-bold text-xl">{{ item.suffix }}</span>
 			</div>
 		</div>
 	}
 </div>
 <p class="text-bold mb-1 mt-0 text-center text-5xl">=</p>
-<div class="flex flex-row items-center justify-center gap-2">
-	<span class="text-bold text-2xl">{{ mFormula.result.prefix }}</span>
-	<neb-input-number
-		[label]="mFormula.result.label"
-		[readonly]="true"
-		[value]="mFormula.result.value ?? 0"
-		[fractionDigits]="mFormula.result.maxFractionDigits ?? 4" />
-	<span class="text-bold text-xl">{{ mFormula.result.suffix }}</span>
+<div class="flex items-center justify-center gap-2">
+	<span class="text-bold w-1/6 text-2xl">{{ mFormula.result.prefix }}</span>
+	<div class="w-4/6">
+		<neb-input-number
+			[label]="mFormula.result.label"
+			[readonly]="true"
+			[value]="mFormula.result.value ?? 0"
+			[fractionDigits]="mFormula.result.maxFractionDigits ?? 4" />
+	</div>
+	<span class="text-bold w-1/6 text-xl">{{ mFormula.result.suffix }}</span>
 </div>
 @if (mFormula.tip) {
 	<div class="mt-3 flex justify-center text-sm">

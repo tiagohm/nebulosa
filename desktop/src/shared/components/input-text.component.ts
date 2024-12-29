@@ -22,11 +22,12 @@ import { Component, input, model, ViewEncapsulation } from '@angular/core'
 	`,
 	styles: `
 		neb-input-text {
-			width: 100%;
+			max-width: 100%;
 			display: flex;
 			align-items: center;
 
 			.p-inputtext {
+				max-width: 100%;
 				border: 1px solid rgba(255, 255, 255, 0) !important;
 			}
 		}

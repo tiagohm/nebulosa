@@ -3,6 +3,7 @@ import { definePreset } from '@primeng/themes'
 import Aura from '@primeng/themes/aura'
 import type { AuraBaseDesignTokens } from '@primeng/themes/aura/base'
 import type { FloatLabelDesignTokens } from '@primeng/themes/types/floatlabel'
+import type { MenuDesignTokens } from '@primeng/themes/types/menu'
 import type { SelectDesignTokens } from '@primeng/themes/types/select'
 import type { ToggleButtonDesignTokens } from '@primeng/themes/types/togglebutton'
 
@@ -85,6 +86,14 @@ export const AppTheme: AuraBaseDesignTokens = definePreset(Aura, {
 				checkedBackground: '{surface.800}',
 				checkedBorderColor: '{surface.800}',
 			},
+			content: {
+				checkedBackground: '{surface.800}',
+			},
 		} as ToggleButtonDesignTokens,
+		menu: {
+			root: {
+				borderColor: 'transparent',
+			},
+		} as MenuDesignTokens,
 	},
 } as AuraBaseDesignTokens)

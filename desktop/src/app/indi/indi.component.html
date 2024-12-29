@@ -1,5 +1,5 @@
-<div class="container px-4 py-3">
-	<div class="grid flex items-center">
+<div class="px-4 py-3">
+	<div class="flex grid items-center">
 		<div class="col-12 sm:col-4">
 			<neb-dropdown
 				label="Device"
@@ -8,7 +8,7 @@
 				(valueChange)="deviceChanged($event)"
 				emptyMessage="No device available" />
 		</div>
-		<div class="col-12 sm:col-8 flex flex-row items-center gap-1">
+		<div class="col-12 sm:col-8 flex items-center gap-1">
 			<p-splitButton
 				[label]="group"
 				icon="mdi mdi-sitemap"
@@ -23,7 +23,7 @@
 				severity="success" />
 		</div>
 	</div>
-	<div class="grid properties mt-2">
+	<div class="properties mt-2 grid">
 		<div class="col-12 flex-col">
 			@for (property of properties; track property.name) {
 				<div>
@@ -35,7 +35,7 @@
 				</div>
 			}
 			@if (showLog) {
-				<div class="col-12 flex flex-col text-gray-200 h-full">
+				<div class="col-12 flex h-full flex-col text-gray-200">
 					<p-listbox
 						#messageBox
 						[options]="messages"

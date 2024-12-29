@@ -27,19 +27,23 @@ body {
 	font-family: 'Roboto';
 }
 
-p-contextmenu *,
-p-select *,
-p-selectitem *,
-p-tieredmenu *,
+.p-contextmenu *,
+.p-select *,
 .p-multiselect-header *,
 .p-select-header *,
+.p-drawer-header *,
+.p-menu *,
 .no-draggable-region,
 .p-button.p-dialog-header-close {
 	-webkit-app-region: no-drag;
 }
 
-a:any-link {
-	color: var(--p-primary-color);
+a {
+	display: inline-flex;
+
+	&:any-link {
+		color: var(--p-primary-color);
+	}
 }
 
 .invisible {

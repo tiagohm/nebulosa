@@ -10,7 +10,7 @@ import { CameraCaptureEvent, CameraCaptureState, DEFAULT_CAMERA_CAPTURE_INFO, DE
 				<i class="mdi mdi-sm mdi-information text-info"></i>
 				{{ info() || state || 'IDLE' | enum | lowercase }}
 			</span>
-			<span class="gap-1px flex flex-row">
+			<span class="gap-1px flex">
 				<span class="bg-warning state min-w-7rem flex items-center justify-center gap-1 text-gray-900">
 					<i class="mdi mdi-sm mdi-counter"></i>
 					{{ capture.count }}

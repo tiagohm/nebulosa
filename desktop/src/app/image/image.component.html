@@ -1,5 +1,5 @@
 <span
-	class="bg-black-alpha-20 border-round-sm z-1 fixed flex select-none flex-row items-center gap-1 px-3 py-2"
+	class="bg-black-alpha-20 border-round-sm z-1 fixed flex select-none items-center gap-1 px-3 py-2"
 	style="top: 48px; left: 6px">
 	<span
 		pTooltip="Zoom"
@@ -136,7 +136,7 @@
 </div>
 
 @if (hasROI) {
-	<div class="roi-coordinates fixed flex flex-row items-center gap-2">
+	<div class="roi-coordinates fixed flex items-center gap-2">
 		<span>X: {{ imageROI.area.x.toFixed(0) }} Y: {{ imageROI.area.y.toFixed(0) }} W: {{ imageROI.area.width.toFixed(0) }} H: {{ imageROI.area.height.toFixed(0) }}</span>
 		<neb-button
 			(action)="roiForCamera()"
@@ -287,7 +287,7 @@
 							[class.surface-card]="annotation.selected === item"
 							style="height: 36px"
 							(click)="annotationSelected(item)">
-							<div class="flex w-full flex-row content-between items-center">
+							<div class="flex w-full items-center justify-between">
 								<span class="text-sm font-bold">{{ item.star?.type ?? item.dso?.type }}</span>
 								<span class="monospaced text-xs font-bold">{{ item.x.toFixed(0).padStart(5, '&nbsp;') }} | {{ item.y.toFixed(0).padStart(5, '&nbsp;') }}</span>
 							</div>
@@ -443,7 +443,7 @@
 				</div>
 			</div>
 		</div>
-		<div class="col-4 flex flex-row items-center">
+		<div class="col-4 flex items-center">
 			<neb-input-number
 				label="Radius (°)"
 				[disabled]="(solver.request.blind && solver.request.type !== 'SIRIL') || solver.request.type === 'PIXINSIGHT'"
@@ -452,7 +452,7 @@
 				[(value)]="solver.request.radius"
 				(valueChange)="savePreference()" />
 		</div>
-		<div class="col-6 flex flex-row items-center">
+		<div class="col-6 flex items-center">
 			<neb-input-number
 				label="Focal length (mm)"
 				[min]="0"
@@ -460,7 +460,7 @@
 				[(value)]="solver.request.focalLength"
 				(valueChange)="savePreference()" />
 		</div>
-		<div class="col-6 flex flex-row items-center">
+		<div class="col-6 flex items-center">
 			<neb-input-number
 				label="Pixel size (µm)"
 				[min]="0"
@@ -561,7 +561,7 @@
 	class="pointer-events-none">
 	<div class="grid px-2 pt-2">
 		<div class="col-8 flex flex-col">
-			<div class="flex flex-row content-between items-center gap-2">
+			<div class="flex items-center justify-between gap-2">
 				<neb-input-number
 					label="Shadow"
 					[min]="0"
@@ -984,7 +984,7 @@
 				[(value)]="fov.selected.bin"
 				(valueChange)="saveFOV()" />
 		</div>
-		<div class="col-4 flex-row gap-1">
+		<div class="col-4 gap-1">
 			<neb-input-number
 				label="Rotation (°)"
 				[min]="0"
@@ -1028,7 +1028,7 @@
 								<neb-success label="FOV: {{ item.computed.fieldSize.width.toFixed(2) }}°x{{ item.computed.fieldSize.height.toFixed(2) }}°" />
 							}
 						</div>
-						<div class="flex flex-col content-between items-center gap-0 px-1">
+						<div class="flex flex-col items-center justify-between gap-0 px-1">
 							<neb-button
 								(action)="frameFOV(item)"
 								icon="mdi mdi-image"
@@ -1242,7 +1242,7 @@
 	[modal]="false"
 	[style]="{ width: 'min-content', minWidth: '230px' }">
 	<div class="grid">
-		<div class="col-12 relative flex-row items-center justify-center gap-2">
+		<div class="col-12 relative items-center justify-center gap-2">
 			<p-knob
 				[min]="0"
 				[max]="720"
@@ -1261,7 +1261,7 @@
 				(valueChange)="savePreference()"
 				[fractionDigits]="2" />
 		</div>
-		<div class="col-12 flex-row items-center justify-center gap-1">
+		<div class="col-12 items-center justify-center gap-1">
 			<neb-button
 				label="0°"
 				(action)="rotate(0)" />

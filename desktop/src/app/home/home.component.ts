@@ -17,6 +17,7 @@ import { isLightBox, LightBox } from '../../shared/types/lightbox.types'
 import { isMount, Mount } from '../../shared/types/mount.types'
 import { isRotator, Rotator } from '../../shared/types/rotator.types'
 import { isWheel, Wheel } from '../../shared/types/wheel.types'
+import { openLink } from '../../shared/utils/common'
 import { AppComponent } from '../app.component'
 
 function scrollPageOf(element: Element) {
@@ -39,6 +40,7 @@ function scrollPageOf(element: Element) {
 	encapsulation: ViewEncapsulation.None,
 })
 export class HomeComponent implements AfterContentInit {
+	private readonly app = inject(AppComponent)
 	private readonly electronService = inject(ElectronService)
 	private readonly browserWindowService = inject(BrowserWindowService)
 	private readonly api = inject(ApiService)
@@ -174,10 +176,9 @@ export class HomeComponent implements AfterContentInit {
 	}
 
 	constructor() {
-		const app = inject(AppComponent)
 		const ngZone = inject(NgZone)
 
-		app.title = 'Nebulosa'
+		this.app.title = 'Nebulosa'
 
 		this.electronService.on('CAMERA.ATTACHED', (event) => {
 			ngZone.run(() => {
@@ -347,7 +348,13 @@ export class HomeComponent implements AfterContentInit {
 				const release = await this.api.latestRelease()
 
 				if (release.tag_name && packageJson.version !== release.tag_name) {
-					this.newVersion = release.name
+					this.app.topMenu.push({
+						label: `New version: ${release.name}`,
+						icon: 'mdi mdi-download',
+						command: () => {
+							openLink('https://github.com/tiagohm/nebulosa/releases/latest')
+						}
+					})
 				}
 			} catch {
 				console.error('failed to check for new version')

@@ -18,6 +18,34 @@ abstract class DropdownBaseComponent<O, T> {
 	hide() {
 		this.select().hide()
 	}
+
+	protected valueFromOption(option: O): T {
+		return option as unknown as T
+	}
+
+	protected wheeled(event: WheelEvent) {
+		if (this.disabled()) {
+			return
+		}
+
+		const value = this.value()
+		const options = this.options()
+		const delta = event.deltaY || event.deltaX
+
+		if (delta && value && options.length > 1) {
+			const index = options.findIndex((e) => this.valueFromOption(e) === value)
+
+			if (index >= 0) {
+				if (delta > 0) {
+					const next = (index + 1) % options.length
+					this.value.set(this.valueFromOption(options[next]))
+				} else {
+					const next = (index + options.length - 1) % options.length
+					this.value.set(this.valueFromOption(options[next]))
+				}
+			}
+		}
+	}
 }
 
 @Component({
@@ -42,7 +70,8 @@ abstract class DropdownBaseComponent<O, T> {
 				[fluid]="true"
 				size="small"
 				appendTo="body"
-				[panelStyle]="{ maxWidth: '90vw' }">
+				[panelStyle]="{ maxWidth: '90vw' }"
+				(wheel)="wheeled($event)">
 				<ng-template
 					#selectedItem
 					let-item>
@@ -51,7 +80,7 @@ abstract class DropdownBaseComponent<O, T> {
 							[ngTemplateOutlet]="itemTemplate() ?? null"
 							[ngTemplateOutletContext]="{ $implicit: item, selected: true }"></ng-container>
 					} @else {
-						<div class="flex flex-row content-between">
+						<div class="flex justify-between">
 							<span>{{ itemLabel(item) }}</span>
 						</div>
 					}
@@ -64,7 +93,7 @@ abstract class DropdownBaseComponent<O, T> {
 							[ngTemplateOutlet]="itemTemplate() ?? null"
 							[ngTemplateOutletContext]="{ $implicit: item, selected: false }"></ng-container>
 					} @else {
-						<div class="flex flex-row content-between">
+						<div class="flex justify-between">
 							<span>{{ itemLabel(item) }}</span>
 						</div>
 					}
@@ -118,7 +147,8 @@ export class DropdownComponent<T> extends DropdownBaseComponent<T, T> {
 				[emptyMessage]="emptyMessage()"
 				[autoDisplayFirst]="false"
 				appendTo="body"
-				[panelStyle]="{ maxWidth: '90vw' }" />
+				[panelStyle]="{ maxWidth: '90vw' }"
+				(wheel)="wheeled($event)" />
 			<label>{{ label() }}</label>
 		</p-floatLabel>
 	`,
@@ -137,6 +167,10 @@ export class DropdownItemComponent<T> extends DropdownBaseComponent<DropdownItem
 	readonly filter = input<boolean>(false)
 	readonly emptyMessage = input('Not available')
 	readonly select = viewChild.required<Select>('select')
+
+	protected valueFromOption(option: DropdownItem<T>): T {
+		return option.value
+	}
 }
 
 @Component({
@@ -158,7 +192,8 @@ export class DropdownItemComponent<T> extends DropdownBaseComponent<DropdownItem
 				[filter]="filter()"
 				[autoDisplayFirst]="false"
 				appendTo="body"
-				[panelStyle]="{ maxWidth: '90vw' }" />
+				[panelStyle]="{ maxWidth: '90vw' }"
+				(wheel)="wheeled($event)" />
 			<label>{{ label() }}</label>
 		</p-floatLabel>
 	`,

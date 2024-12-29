@@ -33,11 +33,16 @@ import { Component, computed, input, model, ViewEncapsulation } from '@angular/c
 			display: flex;
 			align-items: center;
 
+			p-inputnumber {
+				max-width: 100%;
+			}
+
 			.p-button-icon-only.p-inputnumber-button {
 				width: 2rem;
 			}
 
 			.p-inputtext {
+				max-width: 100%;
 				border: 1px solid rgba(255, 255, 255, 0) !important;
 			}
 		}

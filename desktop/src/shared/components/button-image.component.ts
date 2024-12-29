@@ -16,13 +16,13 @@ import { ButtonSeverity } from './button.component'
 			[severity]="severity()"
 			(onClick)="action.emit($event); $event.stopImmediatePropagation()"
 			class="flex"
-			styleClass="w-full select-none cursor-pointer flex-col">
+			styleClass="w-full cursor-pointer select-none flex-col gap-[4px]">
 			<img
 				[src]="image()"
 				[style]="{ height: imageHeight() }" />
 
 			@if (label()) {
-				<div class="mt-1 text-sm p-button-label">{{ label() }}</div>
+				<div class="p-button-label text-sm">{{ label() }}</div>
 			}
 		</p-button>
 	`,
