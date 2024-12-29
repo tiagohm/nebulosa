@@ -51,19 +51,19 @@ export interface SplitButtonClickEvent {
 								(onClick)="splitButtonClick.emit({ item, event: $event })"
 								appendTo="body" />
 						} @else {
-							@if (item.badge) {
-								<p-badge
-									[severity]="item.badgeSeverity ?? 'danger'"
-									[value]="item.badge"
-									styleClass="absolute top-0 flex items-center justify-center"
-									[style]="{ width: '14px', minWidth: '14px', height: '14px', minHeight: '14px', right: '-2px' }" />
-							}
-							<neb-button
-								[icon]="item.icon"
-								[disabled]="item.disabled"
-								[tooltip]="item.tooltip ?? item.label"
-								[severity]="item.severity"
-								(action)="item.command?.({ originalEvent: $event, item: item, index: i })" />
+							<p-overlaybadge
+								[value]="item.badge"
+								[severity]="item.badgeSeverity ?? 'danger'"
+								[badgeDisabled]="!item.badge"
+								badgeSize="small"
+								[style]="{ top: '4px' }">
+								<neb-button
+									[icon]="item.icon"
+									[disabled]="item.disabled"
+									[tooltip]="item.tooltip ?? item.label"
+									[severity]="item.severity"
+									(action)="item.command?.({ originalEvent: $event, item: item, index: i })" />
+							</p-overlaybadge>
 						}
 					}
 				</span>

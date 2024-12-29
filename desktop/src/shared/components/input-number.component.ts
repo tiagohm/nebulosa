@@ -34,6 +34,7 @@ import { Component, computed, input, model, ViewEncapsulation } from '@angular/c
 			align-items: center;
 
 			p-inputnumber {
+				width: 100%;
 				max-width: 100%;
 			}
 

@@ -32,6 +32,7 @@ import { ListboxModule } from 'primeng/listbox'
 import { MenuModule } from 'primeng/menu'
 import { MessageModule } from 'primeng/message'
 import { MultiSelectModule } from 'primeng/multiselect'
+import { OverlayBadgeModule } from 'primeng/overlaybadge'
 import { PopoverModule } from 'primeng/popover'
 import { ProgressBarModule } from 'primeng/progressbar'
 import { ScrollPanelModule } from 'primeng/scrollpanel'
@@ -40,7 +41,7 @@ import { SelectButtonModule } from 'primeng/selectbutton'
 import { SliderModule } from 'primeng/slider'
 import { SplitButtonModule } from 'primeng/splitbutton'
 import { TableModule } from 'primeng/table'
-import { TabViewModule } from 'primeng/tabview'
+import { TabsModule } from 'primeng/tabs'
 import { TagModule } from 'primeng/tag'
 import { ToastModule } from 'primeng/toast'
 import { ToggleSwitchModule } from 'primeng/toggleswitch'
@@ -212,6 +213,7 @@ import { SettingsComponent } from './settings/settings.component'
 		MessageModule,
 		MultiSelectModule,
 		NgxMoveableModule,
+		OverlayBadgeModule,
 		PopoverModule,
 		ProgressBarModule,
 		RepeatPipe,
@@ -221,7 +223,7 @@ import { SettingsComponent } from './settings/settings.component'
 		SliderModule,
 		SplitButtonModule,
 		TableModule,
-		TabViewModule,
+		TabsModule,
 		TagModule,
 		ToastModule,
 		ToggleSwitchModule,

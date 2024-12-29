@@ -34,39 +34,46 @@
 				All rights reserved
 			</p>
 			<div style="height: 164px">
-				<p-tabView>
-					<p-tabPanel header="Disclaimer">
-						<p class="mt-2">This software is WIP, comes with absolutely no warranty and the copyright holder is not liable or responsible for anything.</p>
-					</p-tabPanel>
-					<p-tabPanel header="Icons">
-						<div
-							class="flex w-full flex-col gap-1 overflow-y-auto py-2"
-							style="height: 100px">
-							@for (icon of icons; track $index) {
-								<a
-									target="_blank"
-									[attr.href]="icon.link">
-									{{ icon.name }} icon by {{ icon.author }}
-								</a>
-							}
-						</div>
-					</p-tabPanel>
-					<p-tabPanel header="Dependencies">
-						<div
-							class="flex w-full flex-col gap-1 overflow-y-auto py-2"
-							style="height: 100px">
-							@for (dep of dependencies; track dep.name) {
-								@if (dep.link) {
+				<p-tabs value="0">
+					<p-tablist>
+						<p-tab value="0">Disclaimer</p-tab>
+						<p-tab value="1">Icons</p-tab>
+						<p-tab value="2">Dependencies</p-tab>
+					</p-tablist>
+					<p-tabpanels>
+						<p-tabpanel value="0">
+							<p class="mt-2">This software is WIP, comes with absolutely no warranty and the copyright holder is not liable or responsible for anything.</p>
+						</p-tabpanel>
+						<p-tabpanel value="1">
+							<div
+								class="flex w-full flex-col gap-1 overflow-y-auto py-2"
+								style="height: 100px">
+								@for (icon of icons; track $index) {
 									<a
 										target="_blank"
-										[attr.href]="dep.link">
-										{{ dep.name }} ({{ dep.version }})
+										[attr.href]="icon.link">
+										{{ icon.name }} icon by {{ icon.author }}
 									</a>
 								}
-							}
-						</div>
-					</p-tabPanel>
-				</p-tabView>
+							</div>
+						</p-tabpanel>
+						<p-tabpanel value="2">
+							<div
+								class="flex w-full flex-col gap-1 overflow-y-auto py-2"
+								style="height: 100px">
+								@for (dep of dependencies; track dep.name) {
+									@if (dep.link) {
+										<a
+											target="_blank"
+											[attr.href]="dep.link">
+											{{ dep.name }} ({{ dep.version }})
+										</a>
+									}
+								}
+							</div>
+						</p-tabpanel>
+					</p-tabpanels>
+				</p-tabs>
 			</div>
 		</div>
 	</div>

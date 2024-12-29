@@ -1,11 +1,17 @@
-<div class="grid pb-3">
-	<div class="col-12">
-		<p-tabView [(activeIndex)]="tab">
+<div class="pb-3">
+	<p-tabs [value]="tab">
+		<p-tablist>
+			@for (key of groups; track $index) {
+				<p-tab [value]="$index">{{ key }}</p-tab>
+			}
+		</p-tablist>
+		<p-tabpanels>
 			@for (key of groups; track key) {
 				@let value = frames.get(key) ?? [];
-				<p-tabPanel [header]="key">
-					<div class="mt-1 grid px-3">
-						<div class="col-12 flex items-center justify-between">
+
+				<p-tabpanel [value]="$index">
+					<div class="flex flex-col">
+						<div class="flex w-full items-center justify-between">
 							<div class="flex items-center justify-start gap-2">
 								<neb-button
 									label="Files"
@@ -30,7 +36,7 @@
 									(action)="groupMenu.toggle($event)" />
 							</div>
 						</div>
-						<div class="col-12">
+						<div class="mt-2 w-full">
 							<p-listbox
 								#frameListBox
 								[options]="value"
@@ -89,10 +95,10 @@
 							</p-listbox>
 						</div>
 					</div>
-				</p-tabPanel>
+				</p-tabpanel>
 			}
-		</p-tabView>
-	</div>
+		</p-tabpanels>
+	</p-tabs>
 </div>
 
 <p-dialog
@@ -100,12 +106,10 @@
 	[modal]="true"
 	[(visible)]="groupDialog.showDialog"
 	[style]="{ width: '80vw', maxWidth: '240px' }">
-	<div class="grid p-2">
-		<div class="col-12">
-			<neb-input-text
-				label="Name"
-				[(value)]="groupDialog.group" />
-		</div>
+	<div class="p-2">
+		<neb-input-text
+			label="Name"
+			[(value)]="groupDialog.group" />
 	</div>
 	<ng-template #footer>
 		<neb-button

@@ -27,6 +27,7 @@ import { Component, input, model, ViewEncapsulation } from '@angular/core'
 			align-items: center;
 
 			.p-inputtext {
+				width: 100%;
 				max-width: 100%;
 				border: 1px solid rgba(255, 255, 255, 0) !important;
 			}

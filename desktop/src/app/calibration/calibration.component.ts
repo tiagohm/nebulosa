@@ -125,9 +125,8 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
 			},
 		},
 		{
-			icon: 'mdi mdi-delete',
+			icon: 'mdi mdi-delete text-red-500',
 			label: 'Delete All',
-			iconClass: 'text-danger',
 			command: async () => {
 				if (this.activeGroup && this.activeFrames.length) {
 					await this.deleteFrameGroup(this.activeGroup)

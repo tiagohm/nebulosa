@@ -11,7 +11,7 @@ import { MapComponent } from './map.component'
 		<div class="flex flex-col items-center justify-center gap-3">
 			<div class="grid grid-cols-3 gap-3 pt-2">
 				@if (showNameAndOffset()) {
-					<div class="col-span-3 flex items-center gap-3">
+					<div class="col-span-full flex items-center gap-3">
 						<div class="w-[60%]">
 							<neb-input-text
 								label="Name"
