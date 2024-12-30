@@ -19,7 +19,7 @@ import { ImageAdjustmentLevel } from '../../shared/types/image.types'
 				[max]="max()"
 				[step]="0.01"
 				[fractionDigits]="2"
-				class="max-w-10rem"
+				class="max-w-40"
 				[(value)]="mLevel.value"
 				(valueChange)="update.emit()" />
 			<p-slider

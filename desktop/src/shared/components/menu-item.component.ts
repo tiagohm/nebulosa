@@ -60,8 +60,9 @@ export interface SlideMenuItem extends MenuItem {
 		@let mItem = item();
 
 		<a
-			[class.p-menuitem-selected]="mItem.selected"
-			class="p-menuitem-link flex items-center justify-between gap-2">
+			pRipple
+			[class.bg-green-900]="mItem.selected"
+			class="p-contextmenu-item-link flex w-full items-center justify-between gap-2">
 			<div class="flex items-center justify-between gap-2">
 				<i [class]="mItem.icon"></i>
 				<span>{{ mItem.label }}</span>

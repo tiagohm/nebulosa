@@ -5,7 +5,7 @@ import { CameraCaptureEvent, CameraCaptureState, DEFAULT_CAMERA_CAPTURE_INFO, DE
 	standalone: false,
 	selector: 'neb-camera-exposure',
 	template: `
-		<div class="align-items-start flex flex-col justify-center gap-1">
+		<div class="flex flex-col items-start justify-center gap-1">
 			<span class="flex items-center gap-1 text-left">
 				<i class="mdi mdi-sm mdi-information text-info"></i>
 				{{ info() || state || 'IDLE' | enum | lowercase }}

@@ -1,5 +1,5 @@
 <span
-	class="bg-black-alpha-20 border-round-sm z-1 fixed flex select-none items-center gap-1 px-3 py-2"
+	class="fixed z-10 flex select-none items-center gap-1 rounded-md bg-black bg-opacity-20 px-3 py-2"
 	style="top: 48px; left: 6px">
 	<span
 		pTooltip="Zoom"
@@ -160,145 +160,154 @@
 	[draggable]="true"
 	[(visible)]="annotation.showDialog"
 	[modal]="false"
-	[style]="{ width: '385px' }">
-	<p-tabView>
-		<p-tabPanel header="Stars & DSOs">
-			<ng-template #header>
+	[style]="{ width: '400px' }">
+	<p-tabs
+		#annotationTabs
+		value="0">
+		<p-tablist>
+			<p-tab value="0">
 				<div class="flex items-center gap-2">
 					<span>Stars & DSOs</span>
 					<neb-checkbox
 						[(value)]="annotation.request.starsAndDSOs"
-						(valueChange)="savePreference()"
-						class="py-1" />
+						(valueChange)="savePreference()" />
 				</div>
-			</ng-template>
-			<div class="mt-2 grid">
-				<div class="col-12">
-					<neb-checkbox
-						[disabled]="!annotation.request.starsAndDSOs"
-						[(value)]="annotation.request.useSimbad"
-						(valueChange)="savePreference()"
-						class="py-1"
-						label="Search on SIMBAD Database Service" />
-				</div>
-				<div class="col-12 mt-2">
-					<p class="m-0 w-full p-3 text-center text-xs text-gray-400">
-						<a
-							target="_blank"
-							href="https://simbad.cds.unistra.fr/simbad/">
-							SIMBAD Astronomical Database - CDS (Strasbourg)
-						</a>
-					</p>
-				</div>
-			</div>
-		</p-tabPanel>
-		<p-tabPanel header="Minor Planets">
-			<ng-template #header>
+			</p-tab>
+			<p-tab value="1">
 				<div class="flex items-center gap-2">
 					<span>Minor Planets</span>
 					<neb-checkbox
 						[(value)]="annotation.request.minorPlanets"
-						(valueChange)="savePreference()"
-						class="py-1" />
-				</div>
-			</ng-template>
-			<div class="mt-2 grid">
-				<div class="col-5">
-					<neb-input-number
-						label="Mag. Limit"
-						[disabled]="!annotation.request.minorPlanets"
-						[min]="-10"
-						[max]="30"
-						[step]="0.1"
-						[(value)]="annotation.request.minorPlanetsMagLimit"
 						(valueChange)="savePreference()" />
 				</div>
-				<div class="col-7">
-					<neb-checkbox
-						[disabled]="!annotation.request.minorPlanets"
-						[(value)]="annotation.request.includeMinorPlanetsWithoutMagnitude"
-						(valueChange)="savePreference()"
-						class="py-1"
-						label="Include objects without magnitude" />
-				</div>
-				@if (annotation.request.minorPlanetsMagLimit >= 20 || annotation.request.includeMinorPlanetsWithoutMagnitude) {
-					<div class="col-12 justify-center pt-0 text-sm text-gray-300">
-						<i class="mdi mdi-alert mdi-sm text-warning mr-1"></i>
-						Can take a long time
-					</div>
-				}
-				<div class="col-12 mt-2">
-					<p class="m-0 w-full p-3 text-center text-xs text-gray-400">
-						<a
-							target="_blank"
-							href="https://ssd-api.jpl.nasa.gov/doc/sb_ident.html">
-							Small-Body Identification API
-						</a>
-					</p>
-				</div>
-			</div>
-		</p-tabPanel>
-		<p-tabPanel [disabled]="!annotation.data.length">
-			<ng-template #header>
+			</p-tab>
+			<p-tab
+				value="2"
+				[disabled]="!annotation.data.length">
 				<div class="flex items-center gap-2">
 					<span>Objects</span>
 					<p-badge
 						severity="success"
 						[value]="annotation.filtered.length" />
 				</div>
-			</ng-template>
-			<div class="mt-3 flex flex-col items-center justify-center gap-2">
-				<div class="flex items-center justify-center gap-1">
-					<neb-input-text
-						label="Search"
-						[(value)]="annotation.search.text"
-						(valueChange)="searchAnnotations()" />
-					<neb-input-number
-						label="Mag. min"
-						[min]="-30"
-						[max]="30"
-						[step]="0.1"
-						[(value)]="annotation.search.magnitudeMin"
-						(valueChange)="searchAnnotations()" />
-					<neb-input-number
-						label="Mag. max"
-						[min]="-30"
-						[max]="30"
-						[step]="0.1"
-						[(value)]="annotation.search.magnitudeMax"
-						(valueChange)="searchAnnotations()" />
-				</div>
-				<div class="flex w-full items-center justify-center">
+			</p-tab>
+		</p-tablist>
+		<p-tabpanels>
+			<p-tabpanel value="0">
+				<div class="flex flex-col gap-3">
 					<neb-checkbox
-						label="Display only filtered annotations"
-						[(value)]="annotation.displayOnlyFiltered" />
+						[disabled]="!annotation.request.starsAndDSOs"
+						[(value)]="annotation.request.useSimbad"
+						(valueChange)="savePreference()"
+						class="w-full py-1"
+						label="Search on SIMBAD Database Service" />
 				</div>
-				<p-scroller
-					[items]="annotation.filtered"
-					[itemSize]="36"
-					scrollHeight="180px"
-					class="mt-1 w-full"
-					[style]="{ width: '100%', height: '180px' }">
-					<ng-template
-						#item
-						let-item>
-						<div
-							class="hover:surface-hover border-round align-items-start justfiy-justify-center flex cursor-pointer flex-col gap-1 p-2"
-							[class.surface-card]="annotation.selected === item"
-							style="height: 36px"
-							(click)="annotationSelected(item)">
-							<div class="flex w-full items-center justify-between">
-								<span class="text-sm font-bold">{{ item.star?.type ?? item.dso?.type }}</span>
-								<span class="monospaced text-xs font-bold">{{ item.x.toFixed(0).padStart(5, '&nbsp;') }} | {{ item.y.toFixed(0).padStart(5, '&nbsp;') }}</span>
-							</div>
-							<span class="overflow-hidden text-xs">{{ (item.star ?? item.dso ?? item.minorPlanet)?.name?.join(' · ') }}</span>
+			</p-tabpanel>
+			<p-tabpanel value="1">
+				<div class="flex flex-col items-center gap-2">
+					<div class="flex items-center gap-3">
+						<div class="w-5/12">
+							<neb-input-number
+								label="Mag. Limit"
+								[disabled]="!annotation.request.minorPlanets"
+								[min]="-10"
+								[max]="30"
+								[step]="0.1"
+								[(value)]="annotation.request.minorPlanetsMagLimit"
+								(valueChange)="savePreference()" />
 						</div>
-					</ng-template>
-				</p-scroller>
-			</div>
-		</p-tabPanel>
-	</p-tabView>
+						<div class="w-7/12">
+							<neb-checkbox
+								[disabled]="!annotation.request.minorPlanets"
+								[(value)]="annotation.request.includeMinorPlanetsWithoutMagnitude"
+								(valueChange)="savePreference()"
+								label="Include objects without magnitude" />
+						</div>
+					</div>
+					@if (annotation.request.minorPlanetsMagLimit >= 20 || annotation.request.includeMinorPlanetsWithoutMagnitude) {
+						<div class="w-full justify-center pt-0 text-sm text-orange-500">
+							<i class="mdi mdi-alert mdi-sm text-warning mr-1"></i>
+							Can take a long time
+						</div>
+					}
+				</div>
+			</p-tabpanel>
+			<p-tabpanel value="2">
+				<div class="mt-3 flex flex-col items-center justify-center gap-3">
+					<div class="grid w-full grid-cols-8 gap-3">
+						<div class="col-span-4">
+							<neb-input-text
+								label="Search"
+								[(value)]="annotation.search.text"
+								(valueChange)="searchAnnotations()" />
+						</div>
+						<div class="col-span-2">
+							<neb-input-number
+								label="Mag. min"
+								[min]="-30"
+								[max]="30"
+								[step]="0.1"
+								[(value)]="annotation.search.magnitudeMin"
+								(valueChange)="searchAnnotations()" />
+						</div>
+						<div class="col-span-2">
+							<neb-input-number
+								label="Mag. max"
+								[min]="-30"
+								[max]="30"
+								[step]="0.1"
+								[(value)]="annotation.search.magnitudeMax"
+								(valueChange)="searchAnnotations()" />
+						</div>
+					</div>
+					<div class="flex w-full items-center justify-center">
+						<neb-checkbox
+							label="Display only filtered annotations"
+							[(value)]="annotation.displayOnlyFiltered" />
+					</div>
+					<p-scroller
+						[items]="annotation.filtered"
+						[itemSize]="46"
+						scrollHeight="180px"
+						class="mt-1 w-full"
+						[style]="{ width: '100%', height: '180px' }">
+						<ng-template
+							#item
+							let-item>
+							<div
+								class="flex h-16 cursor-pointer flex-col items-start justify-center gap-1 rounded p-2 hover:bg-gray-700"
+								[class.surface-card]="annotation.selected === item"
+								(click)="annotationSelected(item)">
+								<div class="flex w-full items-center gap-2">
+									<span class="text-sm font-bold">{{ item.star?.type ?? item.dso?.type }}</span>
+									<span class="rounded bg-gray-800 p-1 font-mono text-xs font-bold">{{ item.x.toFixed(0) }} | {{ item.y.toFixed(0) }}</span>
+								</div>
+								<span class="overflow-hidden whitespace-nowrap text-xs">{{ (item.star ?? item.dso ?? item.minorPlanet)?.name?.join(' · ') }}</span>
+							</div>
+						</ng-template>
+					</p-scroller>
+				</div>
+			</p-tabpanel>
+		</p-tabpanels>
+	</p-tabs>
 	<ng-template #footer>
+		@let mActiveTab = annotationTabs.value();
+
+		@if (mActiveTab === '0') {
+			<a
+				class="m-0 flex-1 p-3 text-center text-sm text-gray-500"
+				target="_blank"
+				href="https://simbad.cds.unistra.fr/simbad/">
+				SIMBAD Astronomical Database - CDS (Strasbourg)
+			</a>
+		} @else if (mActiveTab === '1') {
+			<a
+				class="m-0 flex-1 p-3 text-center text-sm text-gray-500"
+				target="_blank"
+				href="https://ssd-api.jpl.nasa.gov/doc/sb_ident.html">
+				Small-Body Identification API
+			</a>
+		}
 		<neb-button
 			[disabled]="annotation.running || (!annotation.request.starsAndDSOs && !annotation.request.minorPlanets)"
 			icon="mdi mdi-check"
@@ -410,108 +419,112 @@
 	[draggable]="true"
 	[(visible)]="solver.showDialog"
 	[modal]="false"
-	[style]="{ width: 'min-content', minWidth: '340px' }"
+	[style]="{ width: '330px' }"
 	class="pointer-events-none">
-	<div class="grid pt-2">
-		<div class="col-12 items-center gap-2">
-			<neb-dropdown-enum
-				label="Solver"
-				[options]="'PLATE_SOLVER' | dropdownOptions"
-				[(value)]="solver.request.type"
-				(valueChange)="savePreference()" />
-			<neb-checkbox
-				[disabled]="solver.request.type === 'SIRIL' || solver.request.type === 'PIXINSIGHT'"
-				label="Blind"
-				[(value)]="solver.request.blind"
-				(valueChange)="savePreference()" />
-		</div>
-		<div class="col-8">
-			<div class="grid">
-				<div class="col-6">
-					<neb-input-text
-						label="Center RA (h)"
-						[disabled]="solver.request.blind && solver.request.type !== 'SIRIL'"
-						[(value)]="solver.request.centerRA"
-						(valueChange)="savePreference()" />
-				</div>
-				<div class="col-6">
-					<neb-input-text
-						label="Center DEC (°)"
-						[disabled]="solver.request.blind && solver.request.type !== 'SIRIL'"
-						[(value)]="solver.request.centerDEC"
-						(valueChange)="savePreference()" />
-				</div>
+	<div class="flex flex-col gap-3 pt-2">
+		<div class="grid w-full grid-cols-12 gap-3">
+			<div class="col-span-8">
+				<neb-dropdown-enum
+					label="Solver"
+					[options]="'PLATE_SOLVER' | dropdownOptions"
+					[(value)]="solver.request.type"
+					(valueChange)="savePreference()" />
+			</div>
+			<div class="col-span-4 flex items-center justify-center">
+				<neb-checkbox
+					[disabled]="solver.request.type === 'SIRIL' || solver.request.type === 'PIXINSIGHT'"
+					label="Blind"
+					[(value)]="solver.request.blind"
+					(valueChange)="savePreference()" />
 			</div>
 		</div>
-		<div class="col-4 flex items-center">
-			<neb-input-number
-				label="Radius (°)"
-				[disabled]="(solver.request.blind && solver.request.type !== 'SIRIL') || solver.request.type === 'PIXINSIGHT'"
-				[min]="1"
-				[max]="180"
-				[(value)]="solver.request.radius"
-				(valueChange)="savePreference()" />
+		<div class="flex w-full items-center gap-3">
+			<div class="flex-1">
+				<neb-input-text
+					label="Center RA (h)"
+					[disabled]="solver.request.blind && solver.request.type !== 'SIRIL'"
+					[(value)]="solver.request.centerRA"
+					(valueChange)="savePreference()" />
+			</div>
+			<div class="flex-1">
+				<neb-input-text
+					label="Center DEC (°)"
+					[disabled]="solver.request.blind && solver.request.type !== 'SIRIL'"
+					[(value)]="solver.request.centerDEC"
+					(valueChange)="savePreference()" />
+			</div>
+			<div class="max-w-[7rem]">
+				<neb-input-number
+					label="Radius (°)"
+					[disabled]="(solver.request.blind && solver.request.type !== 'SIRIL') || solver.request.type === 'PIXINSIGHT'"
+					[min]="1"
+					[max]="180"
+					[(value)]="solver.request.radius"
+					(valueChange)="savePreference()" />
+			</div>
 		</div>
-		<div class="col-6 flex items-center">
-			<neb-input-number
-				label="Focal length (mm)"
-				[min]="0"
-				[max]="10000"
-				[(value)]="solver.request.focalLength"
-				(valueChange)="savePreference()" />
-		</div>
-		<div class="col-6 flex items-center">
-			<neb-input-number
-				label="Pixel size (µm)"
-				[min]="0"
-				[max]="100"
-				[step]="0.01"
-				[fractionDigits]="2"
-				[(value)]="solver.request.pixelSize"
-				(valueChange)="savePreference()" />
+		<div class="grid w-full grid-cols-2 gap-3">
+			<div>
+				<neb-input-number
+					label="Focal length (mm)"
+					[min]="0"
+					[max]="10000"
+					[(value)]="solver.request.focalLength"
+					(valueChange)="savePreference()" />
+			</div>
+			<div>
+				<neb-input-number
+					label="Pixel size (µm)"
+					[min]="0"
+					[max]="100"
+					[step]="0.01"
+					[fractionDigits]="2"
+					[(value)]="solver.request.pixelSize"
+					(valueChange)="savePreference()" />
+			</div>
 		</div>
 	</div>
 	<ng-template #footer>
-		<div class="grid pt-2">
-			<div class="col-4">
-				<neb-input-text
-					label="RA (J2000)"
-					[readonly]="true"
-					[value]="solver.solved.rightAscensionJ2000" />
+		<div class="flex flex-col gap-3">
+			<div class="grid grid-cols-3 gap-3 pt-2">
+				<div>
+					<neb-input-text
+						label="RA (J2000)"
+						[readonly]="true"
+						[value]="solver.solved.rightAscensionJ2000" />
+				</div>
+				<div>
+					<neb-input-text
+						label="DEC (J2000)"
+						[readonly]="true"
+						[value]="solver.solved.declinationJ2000" />
+				</div>
+				<div>
+					<neb-input-text
+						label="Orientation (°)"
+						[readonly]="true"
+						[value]="solver.solved.orientation.toFixed(4)" />
+				</div>
+				<div>
+					<neb-input-text
+						label="Scale (arcsec/px)"
+						[readonly]="true"
+						[value]="solver.solved.scale.toFixed(4)" />
+				</div>
+				<div>
+					<neb-input-text
+						label="Field size (arcmin)"
+						[readonly]="true"
+						[value]="solver.solved.width.toFixed(2) + ' x ' + solver.solved.height.toFixed(2)" />
+				</div>
+				<div>
+					<neb-input-text
+						label="Radius (°)"
+						[readonly]="true"
+						[value]="solver.solved.radius.toFixed(4)" />
+				</div>
 			</div>
-			<div class="col-4">
-				<neb-input-text
-					label="DEC (J2000)"
-					[readonly]="true"
-					[value]="solver.solved.declinationJ2000" />
-			</div>
-			<div class="col-4">
-				<neb-input-text
-					label="Orientation (°)"
-					[readonly]="true"
-					[value]="solver.solved.orientation.toFixed(4)" />
-			</div>
-			<div class="col-4">
-				<neb-input-text
-					label="Scale (arcsec/px)"
-					[readonly]="true"
-					[value]="solver.solved.scale.toFixed(4)" />
-			</div>
-			<div class="col-4">
-				<neb-input-text
-					label="Field size (arcmin)"
-					[readonly]="true"
-					[value]="solver.solved.width.toFixed(2) + ' x ' + solver.solved.height.toFixed(2)" />
-			</div>
-			<div class="col-4">
-				<neb-input-text
-					label="Radius (°)"
-					[readonly]="true"
-					[value]="solver.solved.radius.toFixed(4)" />
-			</div>
-		</div>
-		<div class="mb-2 mt-2 grid">
-			<div class="col-12 flex justify-center">
+			<div class="flex w-full items-center justify-center gap-2">
 				<neb-button
 					[disabled]="solver.running || !solver.solved.solved"
 					(action)="mountSync(solver.solved)"
@@ -536,19 +549,20 @@
 					icon="mdi mdi-image"
 					label="Frame" />
 			</div>
+			<div class="flex w-full items-center justify-end gap-2">
+				<neb-button
+					[disabled]="!solver.running || !canPlateSolve"
+					icon="mdi mdi-stop"
+					label="Stop"
+					(action)="solverStop()"
+					severity="danger" />
+				<neb-button
+					[disabled]="solver.running || !canPlateSolve"
+					icon="mdi mdi-sigma"
+					label="Solve"
+					(action)="solverStart()" />
+			</div>
 		</div>
-
-		<neb-button
-			[disabled]="!solver.running || !canPlateSolve"
-			icon="mdi mdi-stop"
-			label="Stop"
-			(action)="solverStop()"
-			severity="danger" />
-		<neb-button
-			[disabled]="solver.running || !canPlateSolve"
-			icon="mdi mdi-sigma"
-			label="Solve"
-			(action)="solverStart()" />
 	</ng-template>
 </p-dialog>
 
@@ -557,45 +571,49 @@
 	[draggable]="true"
 	[(visible)]="stretch.showDialog"
 	[modal]="false"
-	[style]="{ width: 'min-content', minWidth: '320px' }"
+	[style]="{ width: '280px' }"
 	class="pointer-events-none">
-	<div class="grid px-2 pt-2">
-		<div class="col-8 flex flex-col">
-			<div class="flex items-center justify-between gap-2">
+	<div class="flex flex-col gap-3 px-2 pt-2">
+		<div class="grid w-full grid-cols-2 gap-3">
+			<div>
 				<neb-input-number
 					label="Shadow"
 					[min]="0"
 					[max]="65536"
 					[(value)]="stretch.transformation.shadow" />
+			</div>
+			<div>
 				<neb-input-number
 					[min]="0"
 					[max]="65536"
 					label="Highlight"
 					[(value)]="stretch.transformation.highlight" />
 			</div>
+		</div>
+		<div>
 			<p-slider
-				class="mt-3 px-2"
+				class="px-3"
 				[min]="0"
 				[max]="65536"
 				[ngModel]="[stretch.transformation.shadow, stretch.transformation.highlight]"
 				(ngModelChange)="stretch.transformation.shadow = $event[0]; stretch.transformation.highlight = $event[1]"
 				[range]="true" />
 		</div>
-		<div class="col-4 flex flex-col">
-			<div class="w-full text-center">
-				<neb-input-number
-					label="Midtone"
-					[min]="0"
-					[max]="65536"
-					[(value)]="stretch.transformation.midtone" />
-			</div>
+		<div>
+			<neb-input-number
+				label="Midtone"
+				[min]="0"
+				[max]="65536"
+				[(value)]="stretch.transformation.midtone" />
+		</div>
+		<div>
 			<p-slider
-				class="mt-3 px-2"
+				class="px-3"
 				[min]="0"
 				[max]="65536"
 				[(ngModel)]="stretch.transformation.midtone" />
 		</div>
-		<div class="col-12 mt-2 flex items-center gap-1">
+		<div class="flex w-full items-center gap-1">
 			<neb-input-number
 				label="Auto Stretch Mean Background"
 				[min]="0"
@@ -1134,76 +1152,81 @@
 	[modal]="false"
 	[style]="{ width: '260px' }"
 	class="pointer-events-none">
-	<div class="mt-2 grid">
-		<div class="col-12">
+	<div class="mt-2 flex flex-col gap-3">
+		<div class="w-full">
 			<neb-path-chooser
 				key="imageSaveAs"
 				[directory]="false"
 				[save]="true"
 				[(path)]="saveAs.path"
-				(pathChange)="pathChangedForSaveAs()"
-				class="w-full" />
+				(pathChange)="pathChangedForSaveAs()" />
 		</div>
-		<div class="col-12 flex items-center justify-center">
+		<div class="w-full">
 			<neb-select-button-enum
 				[options]="'IMAGE_FORMAT' | dropdownOptions"
 				[(value)]="saveAs.format" />
 		</div>
 		@if (imageInfo) {
-			<div class="col-2">
-				<neb-button
-					[disabled]="!hasROI"
-					icon="mdi mdi-artboard"
-					tooltip="ROI Size"
-					(action)="useROIAreaForSaveAs()" />
+			<div class="grid w-full grid-cols-12 gap-3">
+				<div class="col-span-2">
+					<neb-button
+						[disabled]="!hasROI"
+						icon="mdi mdi-artboard"
+						tooltip="ROI Size"
+						(action)="useROIAreaForSaveAs()" />
+				</div>
+				<div class="col-span-5">
+					<neb-input-number
+						label="X"
+						[min]="0"
+						[max]="imageInfo.width"
+						[(value)]="saveAs.subFrame.x" />
+				</div>
+				<div class="col-span-5">
+					<neb-input-number
+						label="Y"
+						[min]="0"
+						[max]="imageInfo.height"
+						[(value)]="saveAs.subFrame.y" />
+				</div>
 			</div>
-			<div class="col-5">
-				<neb-input-number
-					label="X"
-					[min]="0"
-					[max]="imageInfo.width"
-					[(value)]="saveAs.subFrame.x" />
-			</div>
-			<div class="col-5">
-				<neb-input-number
-					label="Y"
-					[min]="0"
-					[max]="imageInfo.height"
-					[(value)]="saveAs.subFrame.y" />
-			</div>
-			<div class="col-2">
-				<neb-button
-					icon="mdi mdi-restore"
-					tooltip="Image Size"
-					(action)="useImageAreaForSaveAs()" />
-			</div>
-			<div class="col-5">
-				<neb-input-number
-					label="Width"
-					[min]="0"
-					[max]="imageInfo.width"
-					[(value)]="saveAs.subFrame.width" />
-			</div>
-			<div class="col-5">
-				<neb-input-number
-					label="Height"
-					[min]="0"
-					[max]="imageInfo.height"
-					[(value)]="saveAs.subFrame.height" />
+			<div class="grid grid-cols-12 gap-3">
+				<div class="col-span-2">
+					<neb-button
+						icon="mdi mdi-restore"
+						tooltip="Image Size"
+						(action)="useImageAreaForSaveAs()" />
+				</div>
+				<div class="col-span-5">
+					<neb-input-number
+						label="Width"
+						[min]="0"
+						[max]="imageInfo.width"
+						[(value)]="saveAs.subFrame.width" />
+				</div>
+				<div class="col-span-5">
+					<neb-input-number
+						label="Height"
+						[min]="0"
+						[max]="imageInfo.height"
+						[(value)]="saveAs.subFrame.height" />
+				</div>
 			</div>
 		}
-		<div class="col-7 items-center justify-center">
-			<neb-dropdown-enum
-				label="Format"
-				[disabled]="saveAs.format !== 'FITS' && saveAs.format !== 'XISF'"
-				[options]="'IMAGE_BITPIX' | dropdownOptions"
-				[(value)]="saveAs.bitpix" />
-		</div>
-		<div class="col-5 flex-col items-center justify-center gap-1">
-			<neb-checkbox
-				label="Transformed"
-				[vertical]="true"
-				[(value)]="saveAs.shouldBeTransformed" />
+		<div class="grid w-full grid-cols-2 gap-3">
+			<div>
+				<neb-dropdown-enum
+					label="Format"
+					[disabled]="saveAs.format !== 'FITS' && saveAs.format !== 'XISF'"
+					[options]="'IMAGE_BITPIX' | dropdownOptions"
+					[(value)]="saveAs.bitpix" />
+			</div>
+			<div class="flex items-center justify-center">
+				<neb-checkbox
+					label="Transformed"
+					direction="column-reverse"
+					[(value)]="saveAs.shouldBeTransformed" />
+			</div>
 		</div>
 	</div>
 	<ng-template #footer>
@@ -1220,18 +1243,16 @@
 	[draggable]="false"
 	[(visible)]="settings.showDialog"
 	[modal]="false"
-	[style]="{ width: 'min-content', minWidth: '338px' }">
-	<div class="grid">
-		<div class="col-12 flex-col gap-2">
-			<neb-checkbox
-				[(value)]="settings.preference.transformation.useJPEG"
-				(valueChange)="savePreference()"
-				label="JPEG (reduces the loading time but less quality)" />
-			<neb-checkbox
-				[(value)]="settings.preference.pixelated"
-				(valueChange)="savePreference()"
-				label="Pixelated (scaling algorithm)" />
-		</div>
+	[style]="{ width: '338px' }">
+	<div class="flex flex-col gap-3">
+		<neb-checkbox
+			[(value)]="settings.preference.transformation.useJPEG"
+			(valueChange)="savePreference()"
+			label="JPEG (reduces the loading time but less quality)" />
+		<neb-checkbox
+			[(value)]="settings.preference.pixelated"
+			(valueChange)="savePreference()"
+			label="Pixelated (scaling algorithm)" />
 	</div>
 </p-dialog>
 
@@ -1283,8 +1304,8 @@
 	[draggable]="true"
 	[(visible)]="adjustment.showDialog"
 	[modal]="false"
-	[style]="{ width: 'min-content', minWidth: '338px' }">
-	<div class="mt-2 flex flex-col justify-center gap-2">
+	[style]="{ width: '338px' }">
+	<div class="mt-2 flex flex-col justify-center gap-3">
 		<neb-checkbox
 			label="Enabled"
 			class="mb-2"
@@ -1335,7 +1356,7 @@
 </p-dialog>
 
 @if (mouseCoordinate && isMouseCoordinateVisible) {
-	<div class="coordinates monospaced fixed p-3 text-sm">
+	<div class="coordinates fixed p-3 font-mono text-sm">
 		<div class="m-0 grid">
 			<div class="col-6 m-0 p-0">X: {{ mouseCoordinate.x }}</div>
 			<div class="col-6 m-0 p-0">Y: {{ mouseCoordinate.y }}</div>

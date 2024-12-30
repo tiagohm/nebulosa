@@ -5,13 +5,14 @@ import { CheckboxChangeEvent } from 'primeng/checkbox'
 	standalone: false,
 	selector: 'neb-checkbox',
 	template: `
-		<div class="flex items-center justify-start gap-1 text-sm">
+		<div
+			class="flex items-center justify-start gap-2 text-sm"
+			[style]="{ flexDirection: direction() }">
 			<p-checkbox
 				[binary]="true"
 				[disabled]="disabled()"
 				[(ngModel)]="value"
 				[class.white-space-nowrap]="noWrap()"
-				[class.vertical]="vertical()"
 				(onChange)="action.emit($event); $event.originalEvent?.stopImmediatePropagation()" />
 			<label>{{ label() }}</label>
 		</div>
@@ -35,6 +36,6 @@ export class CheckboxComponent {
 	readonly value = model(false)
 	readonly disabled = input(false)
 	readonly noWrap = input(false)
-	readonly vertical = input(false)
+	readonly direction = input<'row' | 'column' | 'row-reverse' | 'column-reverse'>('row')
 	readonly action = output<CheckboxChangeEvent>()
 }

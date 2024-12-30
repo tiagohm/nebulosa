@@ -31,7 +31,7 @@ export interface SplitButtonClickEvent {
 									<neb-checkbox
 										[label]="item.label"
 										[disabled]="item.disabled ?? false"
-										[vertical]="true"
+										direction="column"
 										[value]="item.checked ?? false"
 										(valueChange)="item.checked = $event"
 										(action)="item.check?.($event)" />

@@ -6,6 +6,7 @@ import type { FloatLabelDesignTokens } from '@primeng/themes/types/floatlabel'
 import type { ListboxDesignTokens } from '@primeng/themes/types/listbox'
 import type { MenuDesignTokens } from '@primeng/themes/types/menu'
 import type { SelectDesignTokens } from '@primeng/themes/types/select'
+import type { SliderDesignTokens } from '@primeng/themes/types/slider'
 import type { TabsDesignTokens } from '@primeng/themes/types/tabs'
 import type { ToggleButtonDesignTokens } from '@primeng/themes/types/togglebutton'
 
@@ -130,5 +131,14 @@ export const AppTheme: AuraBaseDesignTokens = definePreset(Aura, {
 				borderColor: 'transparent',
 			},
 		} as TabsDesignTokens,
+		slider: {
+			handle: {
+				background: '{indigo.700}',
+				contentBackground: '{indigo.800}',
+				content: {
+					hoverBackground: '{indigo.800}',
+				},
+			},
+		} as SliderDesignTokens,
 	},
 } as AuraBaseDesignTokens)

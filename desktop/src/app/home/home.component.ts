@@ -353,7 +353,7 @@ export class HomeComponent implements AfterContentInit {
 						icon: 'mdi mdi-download',
 						command: () => {
 							openLink('https://github.com/tiagohm/nebulosa/releases/latest')
-						}
+						},
 					})
 				}
 			} catch {
@@ -439,13 +439,13 @@ export class HomeComponent implements AfterContentInit {
 	}
 
 	protected addConnection() {
-		this.connectionDialog.edited = false
+		this.connectionDialog.editMode = false
 		this.connectionDialog.connection = structuredClone(DEFAULT_CONNECTION_DETAILS)
 		this.connectionDialog.showDialog = true
 	}
 
 	protected editConnection(connection: ConnectionDetails) {
-		this.connectionDialog.edited = true
+		this.connectionDialog.editMode = true
 		this.connectionDialog.connection = connection
 		this.connectionDialog.showDialog = true
 	}
@@ -469,7 +469,7 @@ export class HomeComponent implements AfterContentInit {
 	}
 
 	protected saveConnection() {
-		if (!this.connectionDialog.edited) {
+		if (!this.connectionDialog.editMode) {
 			this.connection = this.connectionDialog.connection
 			this.preference.connections.push(this.connection)
 		}

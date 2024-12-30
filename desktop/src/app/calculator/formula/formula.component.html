@@ -9,26 +9,21 @@
 <div class="mt-6 flex flex-col items-center justify-center gap-3">
 	@for (item of mFormula.operands; track item.label) {
 		<div class="flex w-full items-center justify-center gap-2">
-			<div class="flex w-1/6 items-center justify-end">
-				<span class="text-bold text-xl">{{ item.prefix }}</span>
-			</div>
-			<div class="w-4/6">
-				<neb-input-number
-					[label]="item.label"
-					[value]="item.value ?? 0"
-					(valueChange)="item.value = $event; calculate()"
-					[fractionDigits]="item.maxFractionDigits ?? 4"
-					[min]="item.min ?? 0" />
-			</div>
-			<div class="flex w-1/6 items-center justify-start">
-				<span class="text-bold text-xl">{{ item.suffix }}</span>
-			</div>
+			<span class="text-bold w-1/6 text-end text-xl">{{ item.prefix }}</span>
+			<neb-input-number
+				[label]="item.label"
+				[value]="item.value ?? 0"
+				(valueChange)="item.value = $event; calculate()"
+				[fractionDigits]="item.maxFractionDigits ?? 4"
+				[min]="item.min ?? 0"
+				class="w-4/6" />
+			<span class="text-bold w-1/6 text-xl">{{ item.suffix }}</span>
 		</div>
 	}
 </div>
 <p class="text-bold mb-1 mt-0 text-center text-5xl">=</p>
 <div class="flex items-center justify-center gap-2">
-	<span class="text-bold w-1/6 text-2xl">{{ mFormula.result.prefix }}</span>
+	<span class="text-bold w-1/6 text-end text-xl">{{ mFormula.result.prefix }}</span>
 	<div class="w-4/6">
 		<neb-input-number
 			[label]="mFormula.result.label"

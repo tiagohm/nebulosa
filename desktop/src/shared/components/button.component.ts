@@ -61,6 +61,6 @@ export class ButtonComponent {
 	readonly disabled = input<boolean | undefined>(false)
 	readonly severity = input<ButtonSeverity>()
 	readonly badge = input<string>()
-	readonly badgeSeverity = input<ButtonSeverity>()
+	readonly badgeSeverity = input<ButtonSeverity>('danger')
 	readonly action = output<MouseEvent>()
 }
