@@ -21,6 +21,8 @@ export type ButtonSeverity = Severity | 'help' | 'primary' | 'secondary' | 'cont
 			[life]="2000"
 			[badge]="badge()"
 			[badgeSeverity]="badgeSeverity()"
+			(mouseup)="$event.stopImmediatePropagation();"
+			(mousedown)="$event.stopImmediatePropagation();"
 			class="inline-flex"
 			styleClass="white-space-nowrap cursor-pointer select-none">
 			<ng-content></ng-content>

@@ -31,13 +31,13 @@
 								severity="info"
 								tooltip="Edit"
 								tooltipPosition="bottom"
-								(action)="editConnection(item)" />
+								(action)="editConnection(item); connectionDropdown.hide()" />
 							<neb-button
 								icon="mdi mdi-close"
 								severity="danger"
 								tooltip="Remove"
 								tooltipPosition="bottom"
-								(action)="deleteConnection(item)" />
+								(action)="deleteConnection(item); connectionDropdown.hide()" />
 						</div>
 					</div>
 				}
