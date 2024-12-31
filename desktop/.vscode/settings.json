@@ -35,5 +35,6 @@
 	"[jsonc]": {
 		"editor.defaultFormatter": "esbenp.prettier-vscode"
 	},
-	"tailwindCSS.classAttributes": ["class", "className", "ngClass", "class:list", "styleClass", "icon"]
+	"tailwindCSS.classAttributes": ["class", "className", "ngClass", "class:list", "styleClass", "icon"],
+	"tailwindCSS.rootFontSize": 12
 }

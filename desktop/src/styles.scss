@@ -14,15 +14,15 @@
 
 html,
 body {
-	@apply h-full overflow-hidden scroll-smooth;
-	font-size: 11.5px;
+	@apply m-0 h-full overflow-hidden scroll-smooth;
+	font-size: 12px;
 	background-color: var(--p-content-background);
-	font-family: 'Roboto';
+	font-family: 'Roboto', sans-serif;
 }
 
-body {
-	@apply m-0;
-	font-family: 'Roboto';
+img,
+video {
+	max-width: initial;
 }
 
 .p-contextmenu *,
@@ -34,6 +34,24 @@ body {
 .no-draggable-region,
 .p-button.p-dialog-header-close {
 	-webkit-app-region: no-drag;
+}
+
+.p-contextmenu {
+	max-height: 434px;
+	@apply overflow-y-auto;
+
+	&::-webkit-scrollbar {
+		@apply hidden;
+	}
+
+	.p-contextmenu-submenu {
+		border: 1px solid var(--p-surface-800);
+		background: var(--p-surface-700);
+	}
+}
+
+.p-toast-close-icon {
+	color: #fff;
 }
 
 .mdi {

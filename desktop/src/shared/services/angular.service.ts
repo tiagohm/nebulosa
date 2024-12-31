@@ -39,6 +39,6 @@ export class AngularService {
 	}
 
 	message(text: string, severity: 'success' | 'info' | 'warn' | 'error' = 'success') {
-		this.messageService.add({ severity, detail: text, life: 4000 })
+		this.messageService.add({ severity, detail: text, summary: severity.toUpperCase(), life: 4000 })
 	}
 }

@@ -659,21 +659,21 @@
 	[modal]="false"
 	[style]="{ width: '270px' }"
 	class="pointer-events-none">
-	<div class="grid px-2">
-		<div class="col-12 flex items-center">
+	<div class="grid grid-cols-12 gap-3">
+		<div class="col-span-full">
 			<neb-select-button-enum
 				[options]="['NONE', 'RED', 'GREEN', 'BLUE']"
 				[value]="scnr.transformation.channel ?? 'NONE'"
 				(valueChange)="scnr.transformation.channel = $event === 'NONE' ? undefined : $event" />
 		</div>
-		<div class="col-7 flex items-center">
+		<div class="col-span-7">
 			<neb-dropdown-enum
 				label="Protection Method"
 				[disabled]="!scnr.transformation.channel"
 				[options]="'SCNR_PROTECTION_METHOD' | dropdownOptions"
 				[(value)]="scnr.transformation.method" />
 		</div>
-		<div class="col-5 flex items-center">
+		<div class="col-span-5">
 			<neb-input-number
 				label="Amount"
 				[disabled]="!scnr.transformation.channel || !scnr.transformation.method.endsWith('MASK')"
@@ -727,77 +727,76 @@
 	[draggable]="true"
 	[(visible)]="statistics.showDialog"
 	[modal]="false"
-	[style]="{ width: 'min-content', minWidth: '336px' }"
+	[style]="{ width: '336px' }"
 	class="pointer-events-none">
 	@if (statistics.statistics && imageInfo) {
-		<div class="grid p-2">
-			<div class="col-12 flex items-center">
+		<div class="grid grid-cols-12 gap-3">
+			<div class="col-span-full">
 				<neb-select-button-enum
 					[disabled]="imageInfo.mono"
 					[options]="'IMAGE_CHANNEL' | dropdownOptions"
 					[(value)]="statistics.channel"
 					(valueChange)="computeStatistics(true)" />
 			</div>
-			<div class="col-4">
+			<div class="col-span-4">
 				<neb-input-text
 					label="Count (px)"
 					[readonly]="true"
 					[value]="statistics.statistics.count" />
 			</div>
-			<div class="col-4">
+			<div class="col-span-4">
 				<neb-input-text
 					label="Mean"
 					[readonly]="true"
 					[value]="(statistics.statistics.mean * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
 			</div>
-			<div class="col-4">
+			<div class="col-span-4">
 				<neb-input-text
 					label="Median"
 					[readonly]="true"
 					[value]="(statistics.statistics.median * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
 			</div>
-			<div class="col-4">
+			<div class="col-span-4">
 				<neb-input-text
 					label="Variance"
 					[readonly]="true"
 					[value]="(statistics.statistics.variance * statistics.bitOption.rangeMax * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
 			</div>
-			<div class="col-4">
+			<div class="col-span-4">
 				<neb-input-text
 					label="Avg Dev"
 					[readonly]="true"
 					[value]="(statistics.statistics.avgDev * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
 			</div>
-			<div class="col-4">
+			<div class="col-span-4">
 				<neb-input-text
 					label="Std Dev"
 					[readonly]="true"
 					[value]="(statistics.statistics.stdDev * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
 			</div>
-			<div class="col-3">
+			<div class="col-span-3">
 				<neb-input-text
 					label="Minimum"
 					[readonly]="true"
 					[value]="(statistics.statistics.minimum * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
 			</div>
-			<div class="col-3">
+			<div class="col-span-3">
 				<neb-input-text
 					label="Maximum"
 					[readonly]="true"
 					[value]="(statistics.statistics.maximum * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
 			</div>
-			<div class="col-6">
+			<div class="col-span-6">
 				<neb-dropdown
 					label="Bits"
 					[options]="'IMAGE_STATISTICS_BIT_OPTION' | dropdownOptions"
 					[(value)]="statistics.bitOption"
 					(valueChange)="savePreference()" />
 			</div>
-			<div class="col-12">
+			<div class="col-span-full">
 				<neb-histogram
 					#histogram
-					class="w-full"
-					style="max-height: 94px" />
+					class="max-h-32 w-full" />
 			</div>
 		</div>
 	}
@@ -810,15 +809,15 @@
 	[modal]="false"
 	[style]="{ width: '360px' }"
 	class="pointer-events-none">
-	<div class="mt-2 grid">
-		<div class="col-7 flex items-center">
+	<div class="mt-2 grid grid-cols-12 gap-3">
+		<div class="col-span-7">
 			<neb-dropdown-enum
 				label="Detector"
 				[options]="'STAR_DETECTOR' | dropdownOptions"
 				[(value)]="starDetector.request.type" />
 		</div>
 		@if (starDetector.request.type !== 'SIRIL') {
-			<div class="col-5 items-center">
+			<div class="col-span-5">
 				<neb-input-number
 					label="Min SNR"
 					[min]="0"
@@ -827,7 +826,7 @@
 			</div>
 		}
 		@if (starDetector.request.type === 'SIRIL') {
-			<div class="col-5 items-center">
+			<div class="col-span-5">
 				<neb-input-number
 					label="Max Stars"
 					[min]="0"
@@ -835,67 +834,65 @@
 					[(value)]="starDetector.request.maxStars" />
 			</div>
 		}
-		<div class="col-12 mt-1">
+		<div class="col-span-full mt-1">
 			<span class="text-sm font-bold">COMPUTED</span>
 		</div>
-		<div class="col-2 items-center">
+		<div class="col-span-2">
 			<neb-input-text
 				label="Stars"
 				[readonly]="true"
 				[value]="starDetector.stars.length" />
 		</div>
-		<div class="col-4 items-center">
+		<div class="col-span-4">
 			<neb-input-text
 				label="HFD (Std Dev)"
 				[readonly]="true"
 				value="{{ starDetector.computed.hfd.toFixed(2) }} | {{ starDetector.computed.stdDev.toFixed(4) }}" />
 		</div>
-		<div class="col-2 items-center">
+		<div class="col-span-2">
 			<neb-input-text
 				label="SNR"
 				[readonly]="true"
 				[value]="starDetector.computed.snr.toFixed(1)" />
 		</div>
-		<div class="col-4 items-center">
+		<div class="col-span-4">
 			<neb-input-text
 				label="Flux (min | max)"
 				[readonly]="true"
 				value="{{ starDetector.computed.fluxMin.toFixed(0) }} | {{ starDetector.computed.fluxMax.toFixed(0) }}" />
 		</div>
-		<div class="col-12 mt-1">
+		<div class="col-span-full mt-1">
 			<span class="text-sm font-bold">SELECTED</span>
 		</div>
-		<div class="col-5">
+		<div class="col-span-6 flex justify-center">
 			<canvas
 				#detectedStarCanvas
 				class="detected-star"></canvas>
 		</div>
-		<div class="col-7">
-			<div class="grid">
-				<div class="col-6 items-center">
-					<neb-input-text
-						label="Coordinates"
-						[readonly]="true"
-						value="{{ starDetector.selected.x.toFixed(0) }} | {{ starDetector.selected.y.toFixed(0) }}" />
-				</div>
-				<div class="col-6 items-center">
-					<neb-input-text
-						label="Flux"
-						[readonly]="true"
-						[value]="starDetector.selected.flux.toFixed(0)" />
-				</div>
-				<div class="col-6 items-center">
-					<neb-input-text
-						label="HFD"
-						[readonly]="true"
-						[value]="starDetector.selected.hfd.toFixed(2)" />
-				</div>
-				<div class="col-6 items-center">
-					<neb-input-text
-						label="SNR"
-						[readonly]="true"
-						[value]="starDetector.selected.snr.toFixed(1)" />
-				</div>
+		<div class="col-span-6 grid auto-rows-min grid-cols-subgrid gap-3">
+			<div class="col-span-3">
+				<neb-input-text
+					label="Coordinates"
+					[readonly]="true"
+					value="{{ starDetector.selected.x.toFixed(0) }} | {{ starDetector.selected.y.toFixed(0) }}" />
+			</div>
+			<div class="col-span-3">
+				<neb-input-text
+					label="Flux"
+					[readonly]="true"
+					[value]="starDetector.selected.flux.toFixed(0)" />
+			</div>
+			<div class="col-span-3">
+				<neb-input-text
+					label="HFD"
+					[readonly]="true"
+					[value]="starDetector.selected.hfd.toFixed(2)" />
+			</div>
+			<div class="col-span-3">
+				<neb-input-text
+					label="SNR"
+					[readonly]="true"
+					[value]="starDetector.selected.snr.toFixed(1)" />
 			</div>
 		</div>
 	</div>
@@ -1261,9 +1258,9 @@
 	[draggable]="true"
 	[(visible)]="rotation.showDialog"
 	[modal]="false"
-	[style]="{ width: 'min-content', minWidth: '230px' }">
-	<div class="grid">
-		<div class="col-12 relative items-center justify-center gap-2">
+	[style]="{ width: '230px' }">
+	<div class="grid grid-cols-1 gap-3">
+		<div class="relative col-span-full flex items-center justify-center gap-2">
 			<p-knob
 				[min]="0"
 				[max]="720"
@@ -1277,24 +1274,28 @@
 				label="Angle (°)"
 				[min]="-360"
 				[max]="360"
-				class="max-w-8rem absolute"
+				class="absolute max-w-28"
 				[(value)]="rotation.transformation.angle"
 				(valueChange)="savePreference()"
 				[fractionDigits]="2" />
 		</div>
-		<div class="col-12 items-center justify-center gap-1">
+		<div class="col-span-full flex items-center justify-center gap-1">
 			<neb-button
 				label="0°"
-				(action)="rotate(0)" />
+				(action)="rotate(0)"
+				class="min-w-12" />
 			<neb-button
 				label="90°"
-				(action)="rotate(90)" />
+				(action)="rotate(90)"
+				class="min-w-12" />
 			<neb-button
 				label="180°"
-				(action)="rotate(180)" />
+				(action)="rotate(180)"
+				class="min-w-12" />
 			<neb-button
 				label="270°"
-				(action)="rotate(270)" />
+				(action)="rotate(270)"
+				class="min-w-12" />
 		</div>
 	</div>
 </p-dialog>
