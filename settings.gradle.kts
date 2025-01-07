@@ -26,7 +26,7 @@ dependencyResolutionManagement {
             library("xml", "com.fasterxml:aalto-xml:1.3.3")
             library("csv", "de.siegmar:fastcsv:3.4.0")
             library("apache-lang3", "org.apache.commons:commons-lang3:3.17.0")
-            library("apache-codec", "commons-codec:commons-codec:1.17.1")
+            library("apache-codec", "commons-codec:commons-codec:1.17.2")
             library("apache-collections", "org.apache.commons:commons-collections4:4.4")
             library("apache-math", "org.apache.commons:commons-math3:3.6.1")
             library("apache-numbers-complex", "org.apache.commons:commons-numbers-complex:1.2")
