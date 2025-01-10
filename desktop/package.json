@@ -78,7 +78,7 @@
 		"prettier": "3.4.2",
 		"typescript": "5.5.4",
 		"typescript-eslint": "8.19.1",
-		"wait-on": "8.0.1"
+		"wait-on": "8.0.2"
 	},
 	"engines": {
 		"node": ">= 20.11.1"
