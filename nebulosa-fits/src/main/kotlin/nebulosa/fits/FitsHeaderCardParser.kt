@@ -137,7 +137,7 @@ internal data class FitsHeaderCardParser(private val line: CharSequence) {
 
             if (parsePos > FitsHeaderCard.MAX_KEYWORD_LENGTH) {
                 // equal sign = after the 9th char -- only supported with hierarch keys...
-                if (!key.startsWith(FitsKeyword.HIERARCH.key + "")) {
+                if (!key.startsWith(FitsKeyword.HIERARCH.key)) {
                     LOG.d { debug("[{}] possibly misplaced '=' (after byte 9)", key) }
                     // It's not a HIERARCH key
                     return

@@ -18,7 +18,7 @@ object VSOP87EReader {
 
     // All VSOP87E .txt files sum ~6.9 MB
     fun readTxtFormat(source: Source): VSOP87ETerms {
-        val buffer = if (source is BufferedSource) source else source.buffer()
+        val buffer = source as? BufferedSource ?: source.buffer()
 
         var xyz = 0
         var exp = 0
@@ -49,7 +49,7 @@ object VSOP87EReader {
 
     // All VSOP87E .dat files sum ~1.2 MB
     fun readBinaryFormat(source: Source): VSOP87ETerms {
-        val buffer = if (source is BufferedSource) source else source.buffer()
+        val buffer = source as? BufferedSource ?: source.buffer()
         val terms = Array(6) { Array(3) { DoubleArray(0) } }
 
         for (exp in 0..2) {
@@ -64,7 +64,7 @@ object VSOP87EReader {
 
     fun convertTxtToBinaryFormat(source: Source, sink: Sink) {
         val terms = readTxtFormat(source)
-        val buffer = if (sink is BufferedSink) sink else sink.buffer()
+        val buffer = sink as? BufferedSink ?: sink.buffer()
 
         // number of terms: 2 bytes, data: n * 8 bytes]
 
