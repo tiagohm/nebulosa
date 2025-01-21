@@ -1,56 +1,13 @@
 neb-atlas {
-	display: flex;
-	flex-direction: column;
-	height: 100vh;
+	@apply flex h-screen flex-col;
 
-	.p-tabview {
-		p-table.planet .p-datatable-wrapper {
-			height: 229px;
-		}
+	.main {
+		.p-tab {
+			@apply flex w-1/6 items-center justify-center;
 
-		p-table.minorPlanet .p-datatable-wrapper {
-			height: 154px;
-		}
-
-		p-table.skyObject .p-datatable-wrapper,
-		p-table.satellite .p-datatable-wrapper {
-			height: 143px;
-		}
-
-		.p-tabview-nav li.main {
-			width: calc(100% / 6) !important;
-
-			.p-tabview-nav-link {
-				display: flex;
-				justify-content: center;
-				padding: 0px;
-				height: 100%;
-
-				img {
-					height: 20px;
-				}
+			img {
+				width: 32px;
 			}
 		}
-	}
-
-	.info.p-tabview {
-		padding-left: 0.21rem;
-		padding-right: 0.21rem;
-	}
-
-	.p-tabview .p-tabview-left-icon {
-		margin-right: 0px;
-	}
-
-	.p-input-icon-left span.pi:first-of-type {
-		position: absolute;
-		top: 50%;
-		margin-top: -0.5rem;
-		left: 0.75rem;
-		z-index: 1;
-	}
-
-	.p-input-icon-right p-checkbox {
-		margin-top: -0.745rem;
 	}
 }
