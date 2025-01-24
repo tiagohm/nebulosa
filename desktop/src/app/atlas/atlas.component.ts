@@ -1,13 +1,15 @@
-import { AfterContentInit, AfterViewInit, Component, HostListener, NgZone, OnDestroy, OnInit, ViewEncapsulation, effect, inject, viewChild } from '@angular/core'
-import { Chart, ChartData, ChartOptions } from 'chart.js'
+import type { AfterContentInit, AfterViewInit, OnDestroy, OnInit } from '@angular/core'
+import { Component, HostListener, NgZone, ViewEncapsulation, effect, inject, viewChild } from '@angular/core'
+import type { ChartData, ChartOptions } from 'chart.js'
+import { Chart } from 'chart.js'
 import zoomPlugin from 'chartjs-plugin-zoom'
 import { injectQueryParams } from 'ngxtension/inject-query-params'
-import { UIChart } from 'primeng/chart'
-import { ListboxChangeEvent } from 'primeng/listbox'
-import { Popover } from 'primeng/popover'
+import type { UIChart } from 'primeng/chart'
+import type { ListboxChangeEvent } from 'primeng/listbox'
+import type { Popover } from 'primeng/popover'
 import { timer } from 'rxjs'
-import { DeviceListMenuComponent } from '../../shared/components/device-list-menu.component'
-import { SlideMenuItem } from '../../shared/components/menu-item.component'
+import type { DeviceListMenuComponent } from '../../shared/components/device-list-menu.component'
+import type { SlideMenuItem } from '../../shared/components/menu-item.component'
 import { ONE_DECIMAL_PLACE_FORMATTER, TWO_DIGITS_FORMATTER } from '../../shared/constants'
 import { AngularService } from '../../shared/services/angular.service'
 import { ApiService } from '../../shared/services/api.service'
@@ -16,10 +18,9 @@ import { DeviceService } from '../../shared/services/device.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { extractDate, extractTime } from '../../shared/types/angular.types'
+import type { AltitudePoint, BodyTag, EarthSeason, FavoritedSkyBody, Location, MinorPlanetListItem, SkyAtlasInput, SkyAtlasSettings } from '../../shared/types/atlas.types'
 import {
-	AltitudePoint,
 	BodyTabType,
-	BodyTag,
 	DEFAULT_BODY_TAB_REFRESH,
 	DEFAULT_DATE_TIME_AND_LOCATION,
 	DEFAULT_LOCATION,
@@ -33,17 +34,11 @@ import {
 	DEFAULT_SKY_OBJECT_SEARCH_FILTER,
 	DEFAULT_SUN,
 	EARTH_SEASONS,
-	EarthSeason,
-	FavoritedSkyBody,
-	Location,
-	MinorPlanetListItem,
 	SATELLITE_GROUPS,
-	SkyAtlasInput,
-	SkyAtlasSettings,
 	resetSatelliteSearchGroup,
 	skyObjectSearchFilterWithDefault,
 } from '../../shared/types/atlas.types'
-import { Mount } from '../../shared/types/mount.types'
+import type { Mount } from '../../shared/types/mount.types'
 import { AppComponent } from '../app.component'
 
 @Component({

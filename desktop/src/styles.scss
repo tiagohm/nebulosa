@@ -25,6 +25,10 @@ video {
 	max-width: initial;
 }
 
+a:link {
+	@apply font-bold text-gray-400 underline decoration-dotted;
+}
+
 .p-contextmenu *,
 .p-select *,
 .p-multiselect-header *,

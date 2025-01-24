@@ -130,6 +130,9 @@ export const AppTheme: AuraBaseDesignTokens = definePreset(Aura, {
 			tablist: {
 				borderColor: 'transparent',
 			},
+			tabpanel: {
+				padding: '0',
+			},
 		} as TabsDesignTokens,
 		slider: {
 			handle: {
