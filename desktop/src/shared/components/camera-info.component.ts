@@ -13,7 +13,7 @@ import type { Wheel } from '../types/wheel.types'
 
 			@if (hasType()) {
 				<div class="flex flex-col items-center">
-					<label class="text-success bg-black-alpha-40 p-2-4 mb-1px border-round-sm text-xs">Type</label>
+					<label class="bg-black-alpha-40 p-2-4 mb-1px border-round-sm text-xs text-green-500">Type</label>
 					<span class="min-w-3rem text-center text-sm">{{ mInfo.frameType }}</span>
 				</div>
 			}
@@ -29,7 +29,7 @@ import type { Wheel } from '../types/wheel.types'
 			}
 			@if (mInfo.exposureDelay) {
 				<div class="flex flex-col items-center">
-					<label class="text-info bg-black-alpha-40 p-2-4 mb-1px border-round-sm text-xs">Delay</label>
+					<label class="bg-black-alpha-40 p-2-4 mb-1px border-round-sm text-xs text-blue-500">Delay</label>
 					<span class="min-w-3rem text-center text-sm">{{ mInfo.exposureDelay * 1000000 | exposureTime }}</span>
 				</div>
 			}

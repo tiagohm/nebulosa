@@ -57,7 +57,7 @@
 							{{ event.id }}
 						</span>
 						<span
-							class="bg-success line-height-3 text-center text-sm text-gray-900"
+							class="line-height-3 bg-green-500 text-center text-sm text-gray-900"
 							style="min-width: 62px"
 							pTooltip="Elapsed time"
 							tooltipPosition="bottom">
@@ -65,7 +65,7 @@
 							{{ event.elapsedTime | exposureTime }}
 						</span>
 						<span
-							class="bg-success line-height-3 text-center text-sm text-gray-900"
+							class="line-height-3 bg-green-500 text-center text-sm text-gray-900"
 							style="min-width: 62px"
 							pTooltip="Remaining time"
 							tooltipPosition="bottom">
@@ -73,7 +73,7 @@
 							{{ event.remainingTime | exposureTime }}
 						</span>
 						<span
-							class="bg-success border-round-right-md line-height-3 text-center text-sm text-gray-900"
+							class="border-round-right-md line-height-3 bg-green-500 text-center text-sm text-gray-900"
 							style="min-width: 52px">
 							<i class="mdi mdi-percent mdi-sm"></i>
 							{{ event.progress * 100 | number: '1.1-1' }}
@@ -86,7 +86,7 @@
 							{{ exposureTotal.frames }}
 						</span>
 						<span
-							class="bg-success border-round-right-md line-height-3 text-center text-sm text-gray-900"
+							class="border-round-right-md line-height-3 bg-green-500 text-center text-sm text-gray-900"
 							style="min-width: 62px">
 							<i class="mdi mdi-timer mdi-sm"></i>
 							{{ exposureTotal.time | exposureTime }}
@@ -218,7 +218,7 @@
 					<div class="flex items-center gap-2">
 						<neb-button
 							[disabled]="running"
-							icon="mdi {{ plan.autoSubFolderMode === 'OFF' ? 'mdi-folder-off text-gray-500' : plan.autoSubFolderMode === 'NOON' ? 'mdi-weather-sunny text-yellow-600' : 'mdi-weather-night text-info' }}"
+							icon="mdi {{ plan.autoSubFolderMode === 'OFF' ? 'mdi-folder-off text-gray-500' : plan.autoSubFolderMode === 'NOON' ? 'mdi-weather-sunny text-yellow-600' : 'mdi-weather-night text-blue-500' }}"
 							tooltip="{{ 'Auto sub folder: ' + plan.autoSubFolderMode }}"
 							(action)="toggleAutoSubFolder()" />
 						<neb-path-chooser

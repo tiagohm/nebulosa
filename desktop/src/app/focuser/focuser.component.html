@@ -21,12 +21,12 @@
 		</div>
 		<div class="col-12 my-1 flex items-center justify-between gap-1 pt-0 text-sm text-gray-400">
 			<div class="flex items-center gap-1">
-				<i class="mdi mdi-information text-info"></i>
+				<i class="mdi mdi-information text-blue-500"></i>
 				<span style="display: contents">{{ focuser.moving ? 'moving' : 'idle' }}</span>
 			</div>
 			@if (focuser.hasThermometer) {
 				<div class="flex items-center gap-1">
-					<i class="mdi mdi-thermometer text-danger"></i>
+					<i class="mdi mdi-thermometer text-red-500"></i>
 					<span style="display: contents">{{ focuser.temperature | number: '1.2-2' }}°C</span>
 				</div>
 			}

@@ -1,33 +1,23 @@
-import { Component, effect, HostListener, inject, NgZone, OnDestroy, viewChild } from '@angular/core'
+import type { OnDestroy } from '@angular/core'
+import { Component, effect, HostListener, inject, NgZone, viewChild } from '@angular/core'
 import { injectQueryParams } from 'ngxtension/inject-query-params'
-import { CameraExposureComponent } from '../../shared/components/camera-exposure.component'
-import { MenuItemCommandEvent, SlideMenuItem } from '../../shared/components/menu-item.component'
+import type { CameraExposureComponent } from '../../shared/components/camera-exposure.component'
+import type { MenuItemCommandEvent, SlideMenuItem } from '../../shared/components/menu-item.component'
 import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { Tickable, Ticker } from '../../shared/services/ticker.service'
-import {
-	Camera,
-	cameraCaptureNamingFormatWithDefault,
-	CameraDialogInput,
-	CameraDitherDialog,
-	CameraLiveStackingDialog,
-	CameraMode,
-	CameraNamingFormatDialog,
-	CameraStartCapture,
-	DEFAULT_CAMERA,
-	DEFAULT_CAMERA_PREFERENCE,
-	FrameType,
-	updateCameraStartCaptureFromCamera,
-} from '../../shared/types/camera.types'
-import { Device, DeviceType } from '../../shared/types/device.types'
-import { Focuser } from '../../shared/types/focuser.types'
-import { Mount } from '../../shared/types/mount.types'
-import { Rotator } from '../../shared/types/rotator.types'
+import type { Tickable } from '../../shared/services/ticker.service'
+import { Ticker } from '../../shared/services/ticker.service'
+import type { Camera, CameraDialogInput, CameraDitherDialog, CameraLiveStackingDialog, CameraMode, CameraNamingFormatDialog, CameraStartCapture, FrameType } from '../../shared/types/camera.types'
+import { cameraCaptureNamingFormatWithDefault, DEFAULT_CAMERA, DEFAULT_CAMERA_PREFERENCE, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
+import type { Device, DeviceType } from '../../shared/types/device.types'
+import type { Focuser } from '../../shared/types/focuser.types'
+import type { Mount } from '../../shared/types/mount.types'
+import type { Rotator } from '../../shared/types/rotator.types'
 import { resetCameraCaptureNamingFormat } from '../../shared/types/settings.types'
-import { Wheel } from '../../shared/types/wheel.types'
+import type { Wheel } from '../../shared/types/wheel.types'
 import { AppComponent } from '../app.component'
 
 @Component({

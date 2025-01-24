@@ -1,17 +1,17 @@
 import { Injectable } from '@angular/core'
-import { OpenWindow, WindowPreference } from '../types/app.types'
-import { SkyAtlasInput } from '../types/atlas.types'
-import { Camera, CameraDialogInput, CameraStartCapture } from '../types/camera.types'
-import { Device } from '../types/device.types'
-import { DustCap } from '../types/dustcap.types'
-import { Focuser } from '../types/focuser.types'
-import { FramingRequest } from '../types/framing.types'
-import { ImageSource, OpenImage } from '../types/image.types'
-import { LightBox } from '../types/lightbox.types'
-import { Mount } from '../types/mount.types'
-import { Rotator, RotatorDialogInput } from '../types/rotator.types'
-import { Wheel, WheelDialogInput } from '../types/wheel.types'
-import { Undefinable } from '../utils/types'
+import type { OpenWindow, WindowPreference } from '../types/app.types'
+import type { SkyAtlasInput } from '../types/atlas.types'
+import type { Camera, CameraDialogInput, CameraStartCapture } from '../types/camera.types'
+import type { Device } from '../types/device.types'
+import type { DustCap } from '../types/dustcap.types'
+import type { Focuser } from '../types/focuser.types'
+import type { FramingRequest } from '../types/framing.types'
+import type { ImageSource, OpenImage } from '../types/image.types'
+import type { LightBox } from '../types/lightbox.types'
+import type { Mount } from '../types/mount.types'
+import type { Rotator, RotatorDialogInput } from '../types/rotator.types'
+import type { Wheel, WheelDialogInput } from '../types/wheel.types'
+import type { Undefinable } from '../utils/types'
 
 @Injectable({ providedIn: 'root' })
 export class BrowserWindowService {
@@ -31,7 +31,7 @@ export class BrowserWindowService {
 	}
 
 	openCamera(data: Camera, preference: WindowPreference = {}) {
-		Object.assign(preference, { icon: 'camera', width: 390, height: 477 })
+		Object.assign(preference, { icon: 'camera', width: 400, height: 477 })
 		return this.openWindow({ preference, data, id: `camera.${data.name}`, path: 'camera' })
 	}
 

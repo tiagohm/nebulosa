@@ -1,5 +1,6 @@
 import { Component, input, model, ViewEncapsulation } from '@angular/core'
-import { CameraCaptureEvent, CameraCaptureState, DEFAULT_CAMERA_CAPTURE_INFO, DEFAULT_CAMERA_STEP_INFO } from '../types/camera.types'
+import type { CameraCaptureEvent, CameraCaptureState } from '../types/camera.types'
+import { DEFAULT_CAMERA_CAPTURE_INFO, DEFAULT_CAMERA_STEP_INFO } from '../types/camera.types'
 
 @Component({
 	standalone: false,
@@ -7,11 +8,11 @@ import { CameraCaptureEvent, CameraCaptureState, DEFAULT_CAMERA_CAPTURE_INFO, DE
 	template: `
 		<div class="flex flex-col items-start justify-center gap-1">
 			<span class="flex items-center gap-1 text-left">
-				<i class="mdi mdi-sm mdi-information text-info"></i>
+				<i class="mdi mdi-sm mdi-information text-blue-500"></i>
 				{{ info() || state || 'IDLE' | enum | lowercase }}
 			</span>
-			<span class="gap-1px flex">
-				<span class="bg-warning state min-w-7rem flex items-center justify-center gap-1 text-gray-900">
+			<span class="flex gap-[1px]">
+				<span class="state flex min-w-28 items-center justify-center gap-1 bg-orange-500 text-gray-900">
 					<i class="mdi mdi-sm mdi-counter"></i>
 					{{ capture.count }}
 					@if (!capture.looping) {
@@ -19,19 +20,19 @@ import { CameraCaptureEvent, CameraCaptureState, DEFAULT_CAMERA_CAPTURE_INFO, DE
 					}
 				</span>
 				@if (!capture.looping) {
-					<span class="bg-success state min-w-6rem flex items-center justify-center gap-1 text-gray-900">
+					<span class="state flex min-w-24 items-center justify-center gap-1 bg-green-500 text-gray-900">
 						<i class="mdi mdi-sm mdi-percent"></i>
 						{{ capture.progress * 100 | number: '1.1-1' }}
 					</span>
 				}
 				@if (capture.looping) {
-					<span class="bg-info state min-w-6rem flex items-center justify-center gap-1 text-gray-900">
+					<span class="state flex min-w-24 items-center justify-center gap-1 bg-blue-500 text-gray-900">
 						<i class="mdi mdi-sm mdi-timer-sand-complete"></i>
 						{{ capture.elapsedTime | exposureTime }}
 					</span>
 				} @else {
 					<span
-						class="bg-info state min-w-6rem flex cursor-pointer items-center justify-center gap-1 text-gray-900"
+						class="state flex min-w-24 cursor-pointer items-center justify-center gap-1 bg-blue-500 text-gray-900"
 						(click)="showRemainingTime.set(!showRemainingTime())">
 						@if (showRemainingTime()) {
 							<span class="flex items-center gap-1">
@@ -48,7 +49,7 @@ import { CameraCaptureEvent, CameraCaptureState, DEFAULT_CAMERA_CAPTURE_INFO, DE
 				}
 				@if (capture.amount !== 1 && (state === 'EXPOSURING' || state === 'WAITING')) {
 					<span
-						class="state min-w-6rem flex cursor-pointer items-center justify-center gap-1 bg-cyan-300 text-gray-900"
+						class="state flex min-w-24 cursor-pointer items-center justify-center gap-1 bg-cyan-300 text-gray-900"
 						(click)="showRemainingTime.set(!showRemainingTime())">
 						@if (showRemainingTime()) {
 							<span class="flex items-center gap-1">
@@ -62,7 +63,7 @@ import { CameraCaptureEvent, CameraCaptureState, DEFAULT_CAMERA_CAPTURE_INFO, DE
 							</span>
 						}
 					</span>
-					<span class="state min-w-5rem flex items-center justify-center gap-1 bg-cyan-300 text-gray-900">
+					<span class="state flex min-w-20 items-center justify-center gap-1 bg-cyan-300 text-gray-900">
 						<i class="mdi mdi-sm mdi-percent"></i>
 						{{ step.progress * 100 | number: '1.1-1' }}
 					</span>

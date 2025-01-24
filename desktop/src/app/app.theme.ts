@@ -56,6 +56,8 @@ export const AppTheme: AuraBaseDesignTokens = definePreset(Aura, {
 				},
 				formField: {
 					filledBorderColor: 'transparent',
+					disabledBackground: '{surface.900}',
+					shadow: 'none',
 					sm: {
 						paddingY: '0.631rem',
 					},

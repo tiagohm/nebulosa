@@ -226,7 +226,7 @@
 					</div>
 					@if (annotation.request.minorPlanetsMagLimit >= 20 || annotation.request.includeMinorPlanetsWithoutMagnitude) {
 						<div class="w-full justify-center pt-0 text-sm text-orange-500">
-							<i class="mdi mdi-alert mdi-sm text-warning mr-1"></i>
+							<i class="mdi mdi-alert mdi-sm text-orange-500ing mr-1"></i>
 							Can take a long time
 						</div>
 					}
@@ -486,7 +486,7 @@
 	</div>
 	<ng-template #footer>
 		<div class="flex flex-col gap-3">
-			<div class="grid grid-cols-3 gap-3 pt-2">
+			<div class="grid grid-cols-3 items-center gap-3 pt-2">
 				<div>
 					<neb-input-text
 						label="RA (J2000)"
@@ -659,7 +659,7 @@
 	[modal]="false"
 	[style]="{ width: '270px' }"
 	class="pointer-events-none">
-	<div class="grid grid-cols-12 gap-3">
+	<div class="grid grid-cols-12 items-center gap-3">
 		<div class="col-span-full">
 			<neb-select-button-enum
 				[options]="['NONE', 'RED', 'GREEN', 'BLUE']"
@@ -730,7 +730,7 @@
 	[style]="{ width: '336px' }"
 	class="pointer-events-none">
 	@if (statistics.statistics && imageInfo) {
-		<div class="grid grid-cols-12 gap-3">
+		<div class="grid grid-cols-12 items-center gap-3">
 			<div class="col-span-full">
 				<neb-select-button-enum
 					[disabled]="imageInfo.mono"
@@ -809,7 +809,7 @@
 	[modal]="false"
 	[style]="{ width: '360px' }"
 	class="pointer-events-none">
-	<div class="mt-2 grid grid-cols-12 gap-3">
+	<div class="mt-2 grid grid-cols-12 items-center gap-3">
 		<div class="col-span-7">
 			<neb-dropdown-enum
 				label="Detector"
@@ -1187,7 +1187,7 @@
 						[(value)]="saveAs.subFrame.y" />
 				</div>
 			</div>
-			<div class="grid grid-cols-12 gap-3">
+			<div class="grid grid-cols-12 items-center gap-3">
 				<div class="col-span-2">
 					<neb-button
 						icon="mdi mdi-restore"
@@ -1259,7 +1259,7 @@
 	[(visible)]="rotation.showDialog"
 	[modal]="false"
 	[style]="{ width: '230px' }">
-	<div class="grid grid-cols-1 gap-3">
+	<div class="grid grid-cols-1 items-center gap-3">
 		<div class="relative col-span-full flex items-center justify-center gap-2">
 			<p-knob
 				[min]="0"

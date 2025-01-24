@@ -58,32 +58,29 @@ a:link {
 	color: #fff;
 }
 
-.mdi {
-	align-items: center;
-	justify-content: center;
-	vertical-align: middle;
-	line-height: 0px;
+.p-tag-icon {
+	&:has(+ .p-tag-label) {
+		@apply mr-1;
+	}
+}
 
+.mdi {
 	&::before {
-		display: inline-flex;
-		justify-content: center;
-		align-items: center;
-		aspect-ratio: 1;
+		@apply inline-flex aspect-square items-center justify-center align-middle leading-none;
 		font-size: 1.25rem;
-		line-height: 0px;
-		vertical-align: middle;
+		text-rendering: geometricPrecision;
 	}
 
 	&.mdi-sm::before {
-		font-size: 1rem;
+		font-size: 1rem !important;
 	}
 
 	&.mdi-xs::before {
-		font-size: 0.9rem;
+		font-size: 0.9rem !important;
 	}
 
 	&.mdi-lg::before {
-		font-size: 2rem;
+		font-size: 2rem !important;
 	}
 }
 

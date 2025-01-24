@@ -21,7 +21,7 @@
 		</div>
 		@if (canShowInfo) {
 			<div class="col-12 my-1 flex items-center gap-1 pt-0 text-sm text-gray-400">
-				<i class="mdi mdi-information text-info"></i>
+				<i class="mdi mdi-information text-blue-500"></i>
 				<span class="mr-3">{{ moving ? 'moving' : 'idle' }}</span>
 				@if (wheel.connected && currentFilter) {
 					@if (currentFilter.position) {
