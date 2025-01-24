@@ -1,6 +1,8 @@
-import { Pipe, PipeTransform } from '@angular/core'
-import { Angle } from '../types/atlas.types'
-import { AngleRange, formatAngle, radiansToDegrees } from '../utils/angle'
+import type { PipeTransform } from '@angular/core'
+import { Pipe } from '@angular/core'
+import type { Angle } from '../types/atlas.types'
+import type { AngleRange } from '../utils/angle'
+import { formatAngle, radiansToDegrees } from '../utils/angle'
 
 @Pipe({ standalone: false, name: 'angle' })
 export class AnglePipe implements PipeTransform {

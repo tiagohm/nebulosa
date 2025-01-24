@@ -1,6 +1,6 @@
 import { Component, input, output, ViewEncapsulation } from '@angular/core'
-import { TooltipPosition } from '../types/angular.types'
-import { ButtonSeverity } from './button.component'
+import type { TooltipPosition } from '../types/angular.types'
+import type { ButtonSeverity } from './button.component'
 
 @Component({
 	standalone: false,

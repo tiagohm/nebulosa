@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http'
 import { Injectable, inject } from '@angular/core'
 import { firstValueFrom } from 'rxjs'
-import { Nullable } from '../utils/types'
+import type { Nullable } from '../utils/types'
 
 export type QueryParamType = Nullable<string | number | boolean> | QueryParamType[]
 

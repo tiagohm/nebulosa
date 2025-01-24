@@ -1,5 +1,5 @@
 import { Component, input, output, ViewEncapsulation } from '@angular/core'
-import { ImageAdjustmentLevel } from '../../shared/types/image.types'
+import type { ImageAdjustmentLevel } from '../../shared/types/image.types'
 
 @Component({
 	standalone: false,

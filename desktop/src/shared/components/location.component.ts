@@ -1,6 +1,7 @@
-import { AfterViewInit, Component, input, output, viewChild, ViewEncapsulation } from '@angular/core'
+import type { AfterViewInit } from '@angular/core'
+import { Component, input, output, viewChild, ViewEncapsulation } from '@angular/core'
 import type { Location } from '../types/atlas.types'
-import { MapComponent } from './map.component'
+import type { MapComponent } from './map.component'
 
 @Component({
 	standalone: false,

@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core'
 import { ConfirmEventType } from 'primeng/api'
-import { ConfirmationEvent } from '../types/api.types'
+import type { ConfirmationEvent } from '../types/api.types'
 import { AngularService } from './angular.service'
 import { ApiService } from './api.service'
 

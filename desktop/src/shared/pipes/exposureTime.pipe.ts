@@ -1,4 +1,5 @@
-import { Pipe, PipeTransform } from '@angular/core'
+import type { PipeTransform } from '@angular/core'
+import { Pipe } from '@angular/core'
 import { THREE_DIGITS_FORMATTER, TWO_DIGITS_FORMATTER } from '../constants'
 
 @Pipe({ standalone: false, name: 'exposureTime' })

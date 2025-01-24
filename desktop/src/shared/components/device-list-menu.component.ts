@@ -2,11 +2,11 @@ import { Component, ViewEncapsulation, effect, inject, input, output, viewChild 
 import { SEPARATOR_MENU_ITEM } from '../constants'
 import { AngularService } from '../services/angular.service'
 import { isGuideHead } from '../types/camera.types'
-import { Device } from '../types/device.types'
+import type { Device } from '../types/device.types'
 import { deviceComparator } from '../utils/comparators'
-import { Undefinable } from '../utils/types'
-import { DialogMenuComponent } from './dialog-menu.component'
-import { MenuItem, SlideMenuItem } from './menu-item.component'
+import type { Undefinable } from '../utils/types'
+import type { DialogMenuComponent } from './dialog-menu.component'
+import type { MenuItem, SlideMenuItem } from './menu-item.component'
 
 export interface DeviceConnectionCommandEvent {
 	device: Device

@@ -1,5 +1,5 @@
 import { Component, ElementRef, inject, input, output, ViewEncapsulation } from '@angular/core'
-import { Severity } from '../types/angular.types'
+import type { Severity } from '../types/angular.types'
 
 export type TagSeverity = Severity | 'secondary' | 'contrast' | undefined
 

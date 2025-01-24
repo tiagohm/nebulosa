@@ -1,4 +1,5 @@
-import { AfterViewInit, Component, ElementRef, OnChanges, OnDestroy, ViewEncapsulation, model, viewChild } from '@angular/core'
+import type { AfterViewInit, ElementRef, OnChanges, OnDestroy } from '@angular/core'
+import { Component, ViewEncapsulation, model, viewChild } from '@angular/core'
 import * as L from 'leaflet'
 
 @Component({

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, effect, input, model, untracked } from '@angular/core'
 import type { ExposureTimeUnit } from '../types/camera.types'
-import { MenuItem } from './menu-item.component'
+import type { MenuItem } from './menu-item.component'
 
 @Component({
 	standalone: false,

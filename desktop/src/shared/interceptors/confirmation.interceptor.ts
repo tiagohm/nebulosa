@@ -1,6 +1,6 @@
-import { HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http'
+import type { HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http'
 import { Injectable, inject } from '@angular/core'
-import { Observable } from 'rxjs'
+import type { Observable } from 'rxjs'
 import { ConfirmationService } from '../services/confirmation.service'
 import { IdempotencyKeyInterceptor } from './idempotency-key.interceptor'
 

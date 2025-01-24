@@ -1,21 +1,23 @@
-import { AfterViewInit, Component, ElementRef, HostListener, NgZone, OnDestroy, effect, inject, viewChild } from '@angular/core'
+import type { AfterViewInit, ElementRef, OnDestroy } from '@angular/core'
+import { Component, HostListener, NgZone, effect, inject, viewChild } from '@angular/core'
 import hotkeys from 'hotkeys-js'
-import { NgxLegacyMoveableComponent, OnDrag, OnResize, OnRotate } from 'ngx-moveable'
+import type { NgxLegacyMoveableComponent, OnDrag, OnResize, OnRotate } from 'ngx-moveable'
 import { injectQueryParams } from 'ngxtension/inject-query-params'
-import { ContextMenu } from 'primeng/contextmenu'
-import { DeviceListMenuComponent } from '../../shared/components/device-list-menu.component'
-import { HistogramComponent } from '../../shared/components/histogram.component'
-import { MenuItem } from '../../shared/components/menu-item.component'
+import type { ContextMenu } from 'primeng/contextmenu'
+import type { DeviceListMenuComponent } from '../../shared/components/device-list-menu.component'
+import type { HistogramComponent } from '../../shared/components/histogram.component'
+import type { MenuItem } from '../../shared/components/menu-item.component'
 import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { DeviceService } from '../../shared/services/device.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { EquatorialCoordinateJ2000, filterAstronomicalObject } from '../../shared/types/atlas.types'
-import { Camera } from '../../shared/types/camera.types'
+import type { EquatorialCoordinateJ2000 } from '../../shared/types/atlas.types'
+import { filterAstronomicalObject } from '../../shared/types/atlas.types'
+import type { Camera } from '../../shared/types/camera.types'
+import type { AstronomicalObjectDialog, DetectedStar, FOV, ImageAnnotation, ImageHeaderItem, ImageHeadersDialog, ImageInfo, ImageSCNRDialog, ImageSolved, ImageStretchDialog, LiveStackingMode, OpenImage } from '../../shared/types/image.types'
 import {
-	AstronomicalObjectDialog,
 	DEFAULT_FOV,
 	DEFAULT_IMAGE_ADJUSTMENT_DIALOG,
 	DEFAULT_IMAGE_ANNOTATION_DIALOG,
@@ -35,24 +37,14 @@ import {
 	DEFAULT_IMAGE_STATISTICS_DIALOG,
 	DEFAULT_IMAGE_ZOOM,
 	DEFAULT_STAR_DETECTOR_DIALOG,
-	DetectedStar,
-	FOV,
-	ImageAnnotation,
-	ImageHeaderItem,
-	ImageHeadersDialog,
-	ImageInfo,
-	ImageSCNRDialog,
-	ImageSolved,
-	ImageStretchDialog,
-	LiveStackingMode,
-	OpenImage,
 	imageFormatFromExtension,
 } from '../../shared/types/image.types'
-import { Mount } from '../../shared/types/mount.types'
-import { PlateSolverRequest } from '../../shared/types/platesolver.types'
-import { StarDetectionRequest } from '../../shared/types/stardetector.types'
+import type { Mount } from '../../shared/types/mount.types'
+import type { PlateSolverRequest } from '../../shared/types/platesolver.types'
+import type { StarDetectionRequest } from '../../shared/types/stardetector.types'
 import { CoordinateInterpolator } from '../../shared/utils/coordinate-interpolation'
-import { PanZoom, PanZoomEventDetail, PanZoomOptions } from '../../shared/utils/pan-zoom'
+import type { PanZoomEventDetail, PanZoomOptions } from '../../shared/utils/pan-zoom'
+import { PanZoom } from '../../shared/utils/pan-zoom'
 import { uid } from '../../shared/utils/random'
 import { AppComponent } from '../app.component'
 

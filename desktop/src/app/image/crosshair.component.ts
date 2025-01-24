@@ -4,7 +4,7 @@ import { Component, ViewEncapsulation } from '@angular/core'
 	standalone: false,
 	selector: 'neb-crosshair',
 	template: `
-		<svg class="w-full h-full pointer-events-none">
+		<svg class="pointer-events-none h-full w-full">
 			<line
 				x1="0"
 				y1="50%"

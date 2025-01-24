@@ -1,5 +1,6 @@
-import { Component, ElementRef, TemplateRef, ViewEncapsulation, effect, input, output } from '@angular/core'
-import { MenuItemCommandEvent, SlideMenuItem } from './menu-item.component'
+import type { ElementRef, TemplateRef } from '@angular/core'
+import { Component, ViewEncapsulation, effect, input, output } from '@angular/core'
+import type { MenuItemCommandEvent, SlideMenuItem } from './menu-item.component'
 
 @Component({
 	standalone: false,

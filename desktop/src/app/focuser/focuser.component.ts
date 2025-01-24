@@ -1,11 +1,14 @@
-import { Component, HostListener, NgZone, OnDestroy, effect, inject } from '@angular/core'
+import type { OnDestroy } from '@angular/core'
+import { Component, HostListener, NgZone, effect, inject } from '@angular/core'
 import hotkeys from 'hotkeys-js'
 import { injectQueryParams } from 'ngxtension/inject-query-params'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { Tickable, Ticker } from '../../shared/services/ticker.service'
-import { DEFAULT_FOCUSER, DEFAULT_FOCUSER_PREFERENCE, Focuser } from '../../shared/types/focuser.types'
+import type { Tickable } from '../../shared/services/ticker.service'
+import { Ticker } from '../../shared/services/ticker.service'
+import type { Focuser } from '../../shared/types/focuser.types'
+import { DEFAULT_FOCUSER, DEFAULT_FOCUSER_PREFERENCE } from '../../shared/types/focuser.types'
 import { AppComponent } from '../app.component'
 
 @Component({

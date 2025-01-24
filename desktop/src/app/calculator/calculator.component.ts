@@ -1,5 +1,6 @@
-import { Component, Type, inject } from '@angular/core'
-import { CalculatorFormula } from '../../shared/types/calculator.types'
+import type { Type } from '@angular/core'
+import { Component, inject } from '@angular/core'
+import type { CalculatorFormula } from '../../shared/types/calculator.types'
 import { AppComponent } from '../app.component'
 import { FormulaComponent } from './formula/formula.component'
 

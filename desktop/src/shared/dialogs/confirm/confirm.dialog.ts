@@ -1,7 +1,8 @@
 import { Component, inject, ViewEncapsulation } from '@angular/core'
-import { Confirmation, ConfirmEventType } from 'primeng/api'
+import type { Confirmation } from 'primeng/api'
+import { ConfirmEventType } from 'primeng/api'
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog'
-import { AngularService } from '../../services/angular.service'
+import type { AngularService } from '../../services/angular.service'
 
 @Component({
 	standalone: false,

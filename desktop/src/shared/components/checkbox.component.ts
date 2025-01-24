@@ -1,5 +1,5 @@
 import { Component, input, model, output, ViewEncapsulation } from '@angular/core'
-import { CheckboxChangeEvent } from 'primeng/checkbox'
+import type { CheckboxChangeEvent } from 'primeng/checkbox'
 
 @Component({
 	standalone: false,

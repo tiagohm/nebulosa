@@ -1,6 +1,7 @@
-import { Component, input, model, Signal, viewChild, ViewEncapsulation, WritableSignal } from '@angular/core'
-import { SelectButton } from 'primeng/selectbutton'
-import { DropdownItem } from './dropdown.component'
+import type { Signal, WritableSignal } from '@angular/core'
+import { Component, input, model, viewChild, ViewEncapsulation } from '@angular/core'
+import type { SelectButton } from 'primeng/selectbutton'
+import type { DropdownItem } from './dropdown.component'
 
 abstract class SelectButtonBaseComponent<O, T> {
 	abstract readonly options: Signal<O[]>

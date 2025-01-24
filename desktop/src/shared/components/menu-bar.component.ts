@@ -1,5 +1,5 @@
 import { Component, input, output, ViewEncapsulation } from '@angular/core'
-import { MenuItem } from './menu-item.component'
+import type { MenuItem } from './menu-item.component'
 
 export interface SplitButtonClickEvent {
 	event: MouseEvent

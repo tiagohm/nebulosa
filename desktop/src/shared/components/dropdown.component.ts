@@ -1,5 +1,6 @@
-import { Component, input, model, Signal, TemplateRef, viewChild, ViewEncapsulation, WritableSignal } from '@angular/core'
-import { Select } from 'primeng/select'
+import type { Signal, TemplateRef, WritableSignal } from '@angular/core'
+import { Component, input, model, viewChild, ViewEncapsulation } from '@angular/core'
+import type { Select } from 'primeng/select'
 
 export interface DropdownItem<T> {
 	label: string

@@ -1,6 +1,7 @@
-import { HttpErrorResponse, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http'
+import type { HttpErrorResponse, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http'
 import { inject, Injectable } from '@angular/core'
-import { catchError, Observable, throwError } from 'rxjs'
+import type { Observable } from 'rxjs'
+import { catchError, throwError } from 'rxjs'
 import { AngularService } from '../services/angular.service'
 
 export interface ErrorResponse {

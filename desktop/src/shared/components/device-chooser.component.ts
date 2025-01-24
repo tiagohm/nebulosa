@@ -1,8 +1,8 @@
 import { Component, ViewEncapsulation, inject, input, model, output, viewChild } from '@angular/core'
 import { ApiService } from '../services/api.service'
-import { Device } from '../types/device.types'
-import { DeviceConnectionCommandEvent, DeviceListMenuComponent } from './device-list-menu.component'
-import { MenuItem } from './menu-item.component'
+import type { Device } from '../types/device.types'
+import type { DeviceConnectionCommandEvent, DeviceListMenuComponent } from './device-list-menu.component'
+import type { MenuItem } from './menu-item.component'
 
 @Component({
 	standalone: false,
@@ -15,8 +15,8 @@ import { MenuItem } from './menu-item.component'
 			[disabled]="disabled()">
 			<div class="flex items-center gap-1">
 				<i [class]="icon()"></i>
-				<div class="flex flex-col text-left gap-1px">
-					<span class="font-bold text-sm">{{ title() }}</span>
+				<div class="flex flex-col gap-[1px] text-left">
+					<span class="text-sm font-bold">{{ title() }}</span>
 					@let mDevice = device();
 
 					@if (mDevice && mDevice.id) {

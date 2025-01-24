@@ -1,5 +1,5 @@
 import { Component, input, output, ViewEncapsulation } from '@angular/core'
-import { Severity, TooltipPosition } from '../types/angular.types'
+import type { Severity, TooltipPosition } from '../types/angular.types'
 
 export type ButtonSeverity = Severity | 'help' | 'primary' | 'secondary' | 'contrast'
 
