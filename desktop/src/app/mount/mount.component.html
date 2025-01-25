@@ -159,13 +159,13 @@
 				(valueChange)="computeTargetCoordinates()" />
 		</div>
 		<div class="col-span-4 flex justify-center">
-			<p-splitButton
-				noDropdown
+			<neb-split-dialog-menu
+				[model]="targetCoordinateModel"
+				header="Target coordinates"
 				[disabled]="!mount.connected || mount.slewing || mount.parking || mount.parked"
 				[label]="targetCoordinateCommand.label"
 				[icon]="targetCoordinateCommand.icon"
-				(onClick)="targetCoordinateCommandClicked()"
-				(onDropdownClick)="targetMenu.show(targetCoordinateModel)" />
+				(clicked)="targetCoordinateClicked()" />
 		</div>
 	</div>
 	<div class="flex w-full flex-row gap-1">
@@ -452,9 +452,6 @@
 	</ng-template>
 </p-dialog>
 
-<neb-dialog-menu
-	#targetMenu
-	header="Target Coordinates" />
 <neb-dialog-menu
 	#ephemerisMenu
 	header="Current Coordinates" />

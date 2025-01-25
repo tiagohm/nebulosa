@@ -72,6 +72,7 @@ import { MoonComponent } from '../shared/components/moon.component'
 import { PathChooserComponent } from '../shared/components/path-chooser.component'
 import { SelectButtonEnumComponent, SelectButtonItemComponent } from '../shared/components/select-button.component'
 import { SlideMenuComponent } from '../shared/components/slide-menu.component'
+import { SplitButtonComponent, SplitButtonDialogMenuComponent, SplitButtonItemComponent } from '../shared/components/split-button.component'
 import { SwitchComponent } from '../shared/components/switch.component'
 import { TagComponent } from '../shared/components/tag.component'
 import { ConfirmDialogComponent } from '../shared/dialogs/confirm/confirm.dialog'
@@ -106,8 +107,8 @@ import { FocuserComponent } from './focuser/focuser.component'
 import { FramingComponent } from './framing/framing.component'
 import { GuiderComponent } from './guider/guider.component'
 import { HomeComponent } from './home/home.component'
-import { ImageAdjustmentInputComponent } from './image/image-adjustment-input.component'
 import { CrossHairComponent } from './image/crosshair.component'
+import { ImageAdjustmentInputComponent } from './image/image-adjustment-input.component'
 import { ImageComponent } from './image/image.component'
 import { INDIComponent } from './indi/indi.component'
 import { INDIPropertyComponent } from './indi/property/indi-property.component'
@@ -181,6 +182,9 @@ import { SettingsComponent } from './settings/settings.component'
 		SettingsComponent,
 		SlideMenuComponent,
 		SpinnableNumberDirective,
+		SplitButtonComponent,
+		SplitButtonDialogMenuComponent,
+		SplitButtonItemComponent,
 		SwitchComponent,
 		TagComponent,
 		WinPipe,

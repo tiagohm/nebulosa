@@ -1,16 +1,15 @@
 neb-indi {
 	.properties {
+		@apply overflow-y-auto;
 		height: calc(100vh - 100px);
-		overflow-y: auto;
 	}
 
 	.properties::-webkit-scrollbar {
-		display: none;
+		@apply hidden;
 	}
 
 	.p-listbox-filter.p-inputtext {
-		border: 0px;
-		border-radius: 4px;
+		@apply rounded-md border-0 border-none;
 		background: var(--p-content-background);
 	}
 }

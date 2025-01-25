@@ -258,7 +258,7 @@ export class MountComponent implements OnDestroy, Tickable {
 		})
 		hotkeys('enter', (event) => {
 			event.preventDefault()
-			void this.targetCoordinateCommandClicked()
+			void this.targetCoordinateClicked()
 		})
 		hotkeys('w,up', { keyup: true }, (event) => {
 			event.preventDefault()
@@ -399,7 +399,7 @@ export class MountComponent implements OnDestroy, Tickable {
 		this.savePreference()
 	}
 
-	protected async targetCoordinateCommandClicked() {
+	protected async targetCoordinateClicked() {
 		if (this.targetCoordinateCommand === this.targetCoordinateModel[0]) {
 			await this.goTo()
 		} else if (this.targetCoordinateCommand === this.targetCoordinateModel[1]) {
