@@ -200,7 +200,7 @@ export class CalculatorComponent {
 				],
 				result: {
 					label: 'Resolution',
-					suffix: `"/pixel`,
+					suffix: `"/px`,
 				},
 				calculate: (pixelSize, focalLength) => {
 					if (pixelSize && focalLength) {

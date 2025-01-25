@@ -1,6 +1,6 @@
-<div class="px-4 py-3">
-	<div class="flex grid items-center">
-		<div class="col-8 items-center gap-1">
+<div class="flex flex-col gap-3 p-4">
+	<div class="grid grid-cols-12 items-center gap-3">
+		<div class="col-span-8 flex items-center gap-3">
 			<neb-device-name [device]="mount" />
 			@if (mount.connected) {
 				<neb-button
@@ -19,7 +19,7 @@
 			}
 			<neb-button-indi [device]="mount" />
 		</div>
-		<div class="col-4 flex items-center justify-end gap-2">
+		<div class="col-span-4 flex items-center justify-end gap-2">
 			<neb-button
 				[disabled]="!mount.connected"
 				(action)="showRemoteControlDialog()"
@@ -36,90 +36,89 @@
 				icon="mdi mdi-clock"
 				tooltip="Time" />
 		</div>
-		<div class="col-12 my-1 flex items-center gap-1 pt-0 text-sm text-gray-400">
+		<div class="col-span-full my-1 flex items-center gap-1 pt-0 text-sm text-gray-400">
 			<i class="mdi mdi-information text-blue-500"></i>
 			<span style="display: contents">
 				{{ mount.parking ? 'parking' : mount.parked ? 'parked' : mount.slewing ? 'slewing' : mount.tracking ? 'tracking' : 'idle' }}
 			</span>
 		</div>
 	</div>
-	<div class="grid pt-2">
-		<div class="col-3">
+	<div class="grid grid-cols-12 items-center gap-3">
+		<div class="col-span-3">
 			<neb-input-text
 				label="RA (J2000)"
 				[readonly]="true"
 				[value]="currentComputedLocation.rightAscensionJ2000" />
 		</div>
-		<div class="col-3">
+		<div class="col-span-3">
 			<neb-input-text
 				label="DEC (J2000)"
 				[readonly]="true"
 				[value]="currentComputedLocation.declinationJ2000" />
 		</div>
-		<div class="col-3">
+		<div class="col-span-3">
 			<neb-input-text
 				label="RA"
 				[readonly]="true"
 				[value]="mount.rightAscension" />
 		</div>
-		<div class="col-3">
+		<div class="col-span-3">
 			<neb-input-text
 				label="DEC"
 				[readonly]="true"
 				[value]="mount.declination" />
 		</div>
-		<div class="col-3">
+		<div class="col-span-3">
 			<neb-input-text
 				label="Azimuth"
 				[readonly]="true"
 				[value]="currentComputedLocation.azimuth" />
 		</div>
-		<div class="col-3">
+		<div class="col-span-3">
 			<neb-input-text
 				label="Altitude"
 				[readonly]="true"
 				[value]="currentComputedLocation.altitude" />
 		</div>
-		<div class="col-3">
+		<div class="col-span-3">
 			<neb-input-text
 				label="LST"
 				[readonly]="true"
 				[value]="currentComputedLocation.lst" />
 		</div>
-		<div class="col-3">
+		<div class="col-span-3">
 			<neb-input-text
 				label="Constellation"
 				[readonly]="true"
 				[value]="currentComputedLocation.constellation" />
 		</div>
-		<div class="col-3">
+		<div class="col-span-3">
 			<neb-input-text
 				label="Meridian at"
 				[readonly]="true"
 				value="{{ currentComputedLocation.meridianAt }} (-{{ currentComputedLocation.timeLeftToMeridianFlip }})" />
 		</div>
-		<div class="col-3">
+		<div class="col-span-3">
 			<neb-input-text
 				label="Pier"
 				[readonly]="true"
 				[value]="currentComputedLocation.pierSide" />
 		</div>
-		<div class="col-3"></div>
-		<div class="col-3 justify-center">
+		<div class="col-span-6 flex justify-center">
 			<neb-button
 				icon="mdi mdi-md mdi-dots-vertical"
 				(action)="ephemerisMenu.show(ephemerisModel)" />
 		</div>
 	</div>
-	<div class="mt-1 grid">
-		<div class="col-4 flex flex-col justify-center">
+	<div class="grid grid-cols-12 items-center gap-3">
+		<div class="col-span-4">
 			<neb-select-button-enum
 				[disabled]="!mount.connected || mount.slewing || mount.parking || mount.parked"
 				[options]="['J2000', 'JNOW']"
 				[(value)]="preference.targetCoordinateType"
 				(valueChange)="computeTargetCoordinates()" />
 		</div>
-		<div class="col-4 flex flex-col items-start justify-center gap-1 text-sm">
+		<div class="col-span-4 flex flex-col items-start justify-center gap-1 text-sm">
 			<div class="flex w-full justify-between">
 				<span class="font-bold">AZ</span>
 				<span>{{ targetComputedLocation.azimuth }}</span>
@@ -129,7 +128,7 @@
 				<span>{{ targetComputedLocation.altitude }}</span>
 			</div>
 		</div>
-		<div class="col-4 flex flex-col items-start justify-center gap-1 text-sm">
+		<div class="col-span-4 flex flex-col items-start justify-center gap-1 text-sm">
 			<div class="flex w-full justify-between">
 				<span class="font-bold">CONST</span>
 				<span>{{ targetComputedLocation.constellation }}</span>
@@ -143,165 +142,160 @@
 				<span>{{ targetComputedLocation.pierSide }}</span>
 			</div>
 		</div>
-		<div class="col-4">
+		<div class="col-span-4">
 			<neb-input-text
 				label="RA (h)"
 				[disabled]="!mount.connected || mount.slewing || mount.parking || mount.parked"
 				[(value)]="preference.targetRightAscension"
 				(valueChange)="computeTargetCoordinates()" />
 		</div>
-		<div class="col-4">
+		<div class="col-span-4">
 			<neb-input-text
 				label="DEC (°)"
 				[disabled]="!mount.connected || mount.slewing || mount.parking || mount.parked"
 				[(value)]="preference.targetDeclination"
 				(valueChange)="computeTargetCoordinates()" />
 		</div>
-		<div class="col-4">
+		<div class="col-span-4 flex justify-center">
 			<p-splitButton
 				noDropdown
 				[disabled]="!mount.connected || mount.slewing || mount.parking || mount.parked"
 				[label]="targetCoordinateCommand.label"
 				[icon]="targetCoordinateCommand.icon"
-				styleClass="w-full"
 				(onClick)="targetCoordinateCommandClicked()"
 				(onDropdownClick)="targetMenu.show(targetCoordinateModel)" />
 		</div>
 	</div>
-	<div class="mt-1 grid">
-		<div class="col-4">
-			<div class="grid">
-				<div class="col-4">
-					<neb-button
-						[disabled]="!mount.connected || (mount.slewing && slewingDirection !== 'NW') || mount.parking || mount.parked"
-						[rounded]="false"
-						(mousedown)="moveTo('NW', true, $event)"
-						(mouseup)="moveTo('NW', false, $event)"
-						(mouseleave)="moveTo('NW', false, $event)"
-						icon="mdi mdi-arrow-top-left-thick" />
-				</div>
-				<div class="col-4">
-					<neb-button
-						[disabled]="!mount.connected || (mount.slewing && slewingDirection !== 'N') || mount.parking || mount.parked"
-						[rounded]="false"
-						(mousedown)="moveTo('N', true, $event)"
-						(mouseup)="moveTo('N', false, $event)"
-						(mouseleave)="moveTo('N', false, $event)"
-						icon="mdi mdi-arrow-up-thick" />
-				</div>
-				<div class="col-4">
-					<neb-button
-						[disabled]="!mount.connected || (mount.slewing && slewingDirection !== 'NE') || mount.parking || mount.parked"
-						[rounded]="false"
-						(mousedown)="moveTo('NE', true, $event)"
-						(mouseup)="moveTo('NE', false, $event)"
-						(mouseleave)="moveTo('NE', false, $event)"
-						icon="mdi mdi-arrow-top-right-thick" />
-				</div>
-				<div class="col-4">
-					<neb-button
-						[disabled]="!mount.connected || (mount.slewing && slewingDirection !== 'W') || mount.parking || mount.parked"
-						[rounded]="false"
-						(mousedown)="moveTo('W', true, $event)"
-						(mouseup)="moveTo('W', false, $event)"
-						(mouseleave)="moveTo('W', false, $event)"
-						icon="mdi mdi-arrow-left-thick" />
-				</div>
-				<div class="col-4">
-					<neb-button
-						[disabled]="!mount.connected || mount.parked"
-						[rounded]="false"
-						icon="mdi mdi-lg mdi-close-circle"
-						severity="danger"
-						(action)="abort()" />
-				</div>
-				<div class="col-4">
-					<neb-button
-						[disabled]="!mount.connected || (mount.slewing && slewingDirection !== 'E') || mount.parking || mount.parked"
-						[rounded]="false"
-						(mousedown)="moveTo('E', true, $event)"
-						(mouseup)="moveTo('E', false, $event)"
-						(mouseleave)="moveTo('E', false, $event)"
-						icon="mdi mdi-arrow-right-thick" />
-				</div>
-				<div class="col-4">
-					<neb-button
-						[disabled]="!mount.connected || (mount.slewing && slewingDirection !== 'SW') || mount.parking || mount.parked"
-						[rounded]="false"
-						(mousedown)="moveTo('SW', true, $event)"
-						(mouseup)="moveTo('SW', false, $event)"
-						(mouseleave)="moveTo('SW', false, $event)"
-						icon="mdi mdi-arrow-bottom-left-thick" />
-				</div>
-				<div class="col-4">
-					<neb-button
-						[disabled]="!mount.connected || (mount.slewing && slewingDirection !== 'S') || mount.parking || mount.parked"
-						[rounded]="false"
-						(mousedown)="moveTo('S', true, $event)"
-						(mouseup)="moveTo('S', false, $event)"
-						(mouseleave)="moveTo('S', false, $event)"
-						icon="mdi mdi-arrow-down-thick" />
-				</div>
-				<div class="col-4">
-					<neb-button
-						[disabled]="!mount.connected || (mount.slewing && slewingDirection !== 'SE') || mount.parking || mount.parked"
-						[rounded]="false"
-						(mousedown)="moveTo('SE', true, $event)"
-						(mouseup)="moveTo('SE', false, $event)"
-						(mouseleave)="moveTo('SE', false, $event)"
-						icon="mdi mdi-arrow-bottom-right-thick" />
-				</div>
+	<div class="flex w-full flex-row gap-1">
+		<div class="grid w-5/12 grid-cols-3 place-items-center items-center">
+			<div class="col-span-1">
+				<neb-button
+					[disabled]="!mount.connected || (mount.slewing && slewingDirection !== 'NW') || mount.parking || mount.parked"
+					[rounded]="false"
+					(mousedown)="moveTo('NW', true, $event)"
+					(mouseup)="moveTo('NW', false, $event)"
+					(mouseleave)="moveTo('NW', false, $event)"
+					icon="mdi mdi-arrow-top-left-thick" />
+			</div>
+			<div class="col-span-1">
+				<neb-button
+					[disabled]="!mount.connected || (mount.slewing && slewingDirection !== 'N') || mount.parking || mount.parked"
+					[rounded]="false"
+					(mousedown)="moveTo('N', true, $event)"
+					(mouseup)="moveTo('N', false, $event)"
+					(mouseleave)="moveTo('N', false, $event)"
+					icon="mdi mdi-arrow-up-thick" />
+			</div>
+			<div class="col-span-1">
+				<neb-button
+					[disabled]="!mount.connected || (mount.slewing && slewingDirection !== 'NE') || mount.parking || mount.parked"
+					[rounded]="false"
+					(mousedown)="moveTo('NE', true, $event)"
+					(mouseup)="moveTo('NE', false, $event)"
+					(mouseleave)="moveTo('NE', false, $event)"
+					icon="mdi mdi-arrow-top-right-thick" />
+			</div>
+			<div class="col-span-1">
+				<neb-button
+					[disabled]="!mount.connected || (mount.slewing && slewingDirection !== 'W') || mount.parking || mount.parked"
+					[rounded]="false"
+					(mousedown)="moveTo('W', true, $event)"
+					(mouseup)="moveTo('W', false, $event)"
+					(mouseleave)="moveTo('W', false, $event)"
+					icon="mdi mdi-arrow-left-thick" />
+			</div>
+			<div class="col-span-1">
+				<neb-button
+					[disabled]="!mount.connected || mount.parked"
+					[rounded]="false"
+					icon="mdi mdi-lg mdi-close-circle"
+					severity="danger"
+					(action)="abort()" />
+			</div>
+			<div class="col-span-1">
+				<neb-button
+					[disabled]="!mount.connected || (mount.slewing && slewingDirection !== 'E') || mount.parking || mount.parked"
+					[rounded]="false"
+					(mousedown)="moveTo('E', true, $event)"
+					(mouseup)="moveTo('E', false, $event)"
+					(mouseleave)="moveTo('E', false, $event)"
+					icon="mdi mdi-arrow-right-thick" />
+			</div>
+			<div class="col-span-1">
+				<neb-button
+					[disabled]="!mount.connected || (mount.slewing && slewingDirection !== 'SW') || mount.parking || mount.parked"
+					[rounded]="false"
+					(mousedown)="moveTo('SW', true, $event)"
+					(mouseup)="moveTo('SW', false, $event)"
+					(mouseleave)="moveTo('SW', false, $event)"
+					icon="mdi mdi-arrow-bottom-left-thick" />
+			</div>
+			<div class="col-span-1">
+				<neb-button
+					[disabled]="!mount.connected || (mount.slewing && slewingDirection !== 'S') || mount.parking || mount.parked"
+					[rounded]="false"
+					(mousedown)="moveTo('S', true, $event)"
+					(mouseup)="moveTo('S', false, $event)"
+					(mouseleave)="moveTo('S', false, $event)"
+					icon="mdi mdi-arrow-down-thick" />
+			</div>
+			<div class="col-span-1">
+				<neb-button
+					[disabled]="!mount.connected || (mount.slewing && slewingDirection !== 'SE') || mount.parking || mount.parked"
+					[rounded]="false"
+					(mousedown)="moveTo('SE', true, $event)"
+					(mouseup)="moveTo('SE', false, $event)"
+					(mouseleave)="moveTo('SE', false, $event)"
+					icon="mdi mdi-arrow-bottom-right-thick" />
 			</div>
 		</div>
-		<div class="col-8">
-			<div class="grid">
-				<div class="col-6 flex flex-col items-center justify-center text-center">
-					<neb-switch
-						label="Tracking"
-						[disabled]="!mount.connected || mount.slewing || mount.parking || mount.parked"
-						[value]="mount.tracking"
-						(valueChange)="trackingToggled($event)" />
-				</div>
-				<div class="col-6 flex items-center justify-center gap-2">
-					@if (mount.parked) {
-						<neb-button
-							[disabled]="!mount.connected || !mount.canPark || mount.slewing || mount.parking"
-							icon="mdi mdi-play"
-							(action)="unpark()"
-							tooltip="Unpark"
-							severity="success" />
-					} @else {
-						<neb-button
-							[disabled]="!mount.connected || !mount.canPark || mount.slewing || mount.parking"
-							icon="mdi mdi-stop"
-							(action)="park()"
-							tooltip="Park"
-							severity="danger" />
-					}
+		<div class="grid w-7/12 grid-cols-12 items-center gap-3">
+			<div class="col-span-6 flex flex-col items-center justify-center text-center">
+				<neb-switch
+					label="Tracking"
+					[disabled]="!mount.connected || mount.slewing || mount.parking || mount.parked"
+					[value]="mount.tracking"
+					(valueChange)="trackingToggled($event)" />
+			</div>
+			<div class="col-span-6 flex items-center justify-center gap-2">
+				@if (mount.parked) {
 					<neb-button
-						[disabled]="!mount.connected || !mount.canHome || mount.slewing || mount.parking || mount.parked"
-						icon="mdi mdi-home"
-						(action)="home()"
-						tooltip="Home"
-						severity="info" />
-				</div>
-				<div class="col-6">
-					<neb-dropdown-enum
-						label="Tracking mode"
-						[disabled]="!mount.connected || mount.slewing || mount.parking || mount.parked"
-						[options]="mount.trackModes"
-						[value]="mount.trackMode"
-						(valueChange)="$event && trackModeChanged($event)" />
-				</div>
-				<div class="col-6">
-					<neb-dropdown-item
-						label="Slew rate"
-						[disabled]="!mount.connected || mount.slewing || mount.parking || mount.parked"
-						[options]="mount.slewRates"
-						[(value)]="slewRate"
-						(valueChange)="slewRateChanged()"
-						emptyMessage="No rate available" />
-				</div>
+						[disabled]="!mount.connected || !mount.canPark || mount.slewing || mount.parking"
+						icon="mdi mdi-play"
+						(action)="unpark()"
+						tooltip="Unpark"
+						severity="success" />
+				} @else {
+					<neb-button
+						[disabled]="!mount.connected || !mount.canPark || mount.slewing || mount.parking"
+						icon="mdi mdi-stop"
+						(action)="park()"
+						tooltip="Park"
+						severity="danger" />
+				}
+				<neb-button
+					[disabled]="!mount.connected || !mount.canHome || mount.slewing || mount.parking || mount.parked"
+					icon="mdi mdi-home"
+					(action)="home()"
+					tooltip="Home"
+					severity="info" />
+			</div>
+			<div class="col-span-6">
+				<neb-dropdown-enum
+					label="Tracking mode"
+					[disabled]="!mount.connected || mount.slewing || mount.parking || mount.parked"
+					[options]="mount.trackModes"
+					[value]="mount.trackMode"
+					(valueChange)="$event && trackModeChanged($event)" />
+			</div>
+			<div class="col-span-6">
+				<neb-dropdown-item
+					label="Slew rate"
+					[disabled]="!mount.connected || mount.slewing || mount.parking || mount.parked"
+					[options]="mount.slewRates"
+					[(value)]="slewRate"
+					(valueChange)="slewRateChanged()"
+					emptyMessage="No rate available" />
 			</div>
 		</div>
 	</div>
@@ -313,28 +307,29 @@
 	[draggable]="false"
 	[(visible)]="remoteControl.showDialog"
 	[style]="{ maxWidth: '90vw' }">
-	<div class="grid p-2">
-		<div class="col-4">
+	<div class="mt-2 grid grid-cols-12 items-center gap-3">
+		<div class="col-span-4">
 			<neb-dropdown-enum
 				label="Protocol"
 				[options]="'MOUNT_REMOTE_CONTROL_PROTOCOL' | dropdownOptions"
 				[(value)]="remoteControl.protocol" />
 		</div>
-		<div class="col-5">
+		<div class="col-span-5">
 			<neb-input-text
 				label="Host"
 				[(value)]="remoteControl.host"
 				placeholder="0.0.0.0" />
 		</div>
-		<div class="col-3">
+		<div class="col-span-3">
 			<neb-input-number
 				label="Port"
 				[min]="1024"
 				[max]="65535"
+				[format]="false"
 				[(value)]="remoteControl.port"
 				placeholder="10001" />
 		</div>
-		<div class="col-12 flex items-center justify-center pt-0 text-sm">
+		<div class="col-span-full flex items-center justify-center pt-0 text-sm">
 			@if (remoteControl.protocol === 'LX200') {
 				<span>
 					Use together with the
@@ -355,14 +350,14 @@
 				</span>
 			}
 		</div>
-		<div class="col-12 flex items-center justify-center">
+		<div class="col-span-full flex items-center justify-center">
 			<neb-button
 				[disabled]="!remoteControl.host || !remoteControl.port"
 				label="Connect"
 				icon="mdi mdi-connection"
 				(action)="startRemoteControl()" />
 		</div>
-		<div class="col-12 mt-2">
+		<div class="col-span-full mt-2">
 			<p-listbox
 				[options]="remoteControl.controls"
 				[style]="{ width: '100%' }"
@@ -398,7 +393,7 @@
 	[(visible)]="site.showDialog"
 	[style]="{ maxWidth: '82vw' }">
 	<div class="grid p-2">
-		<div class="col-12">
+		<div class="col-span-full">
 			@if (site.showDialog) {
 				<neb-location
 					[location]="site.location"
@@ -419,9 +414,9 @@
 	[modal]="true"
 	[draggable]="false"
 	[(visible)]="time.showDialog"
-	[style]="{ maxWidth: '90vw' }">
-	<div class="grid p-2">
-		<div class="col-8">
+	[style]="{ maxWidth: '80vw' }">
+	<div class="mt-2 grid grid-cols-12 items-center gap-3">
+		<div class="col-span-8">
 			<p-date-picker
 				[(ngModel)]="time.dateTime"
 				[showIcon]="true"
@@ -439,7 +434,7 @@
 				</ng-template>
 			</p-date-picker>
 		</div>
-		<div class="col-4">
+		<div class="col-span-4">
 			<neb-input-number
 				label="Offset (min)"
 				[min]="-720"

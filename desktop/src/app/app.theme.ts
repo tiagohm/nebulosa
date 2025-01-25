@@ -2,6 +2,7 @@
 import { definePreset } from '@primeng/themes'
 import Aura from '@primeng/themes/aura'
 import type { AuraBaseDesignTokens } from '@primeng/themes/aura/base'
+import type { DialogDesignTokens } from '@primeng/themes/types/dialog'
 import type { FloatLabelDesignTokens } from '@primeng/themes/types/floatlabel'
 import type { ListboxDesignTokens } from '@primeng/themes/types/listbox'
 import type { MenuDesignTokens } from '@primeng/themes/types/menu'
@@ -58,6 +59,7 @@ export const AppTheme: AuraBaseDesignTokens = definePreset(Aura, {
 					filledBorderColor: 'transparent',
 					disabledBackground: '{surface.900}',
 					shadow: 'none',
+					borderColor: 'transparent',
 					sm: {
 						paddingY: '0.631rem',
 					},
@@ -145,5 +147,10 @@ export const AppTheme: AuraBaseDesignTokens = definePreset(Aura, {
 				},
 			},
 		} as SliderDesignTokens,
+		dialog: {
+			title: {
+				fontSize: '1rem',
+			},
+		} as DialogDesignTokens,
 	},
 } as AuraBaseDesignTokens)

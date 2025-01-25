@@ -6,7 +6,7 @@ import type { MenuItem } from './menu-item.component'
 	standalone: false,
 	selector: 'neb-exposure-time',
 	template: `
-		<div class="relative flex items-center justify-center">
+		<div class="relative">
 			<neb-input-number
 				[label]="label() || 'Exposure Time'"
 				[disabled]="!canExposureTime() || disabled()"
@@ -22,8 +22,8 @@ import type { MenuItem } from './menu-item.component'
 			<neb-button
 				[disabled]="!canExposureTime() || !canExposureTimeUnit() || disabled()"
 				(action)="exposureTimeMenu.toggle($event)"
-				class="absolute"
-				[style]="{ right: '30px', top: '2.5px', maxHeight: '22px' }"
+				class="absolute top-0"
+				[style]="{ right: '30px' }"
 				[label]="unit() | enum"
 				severity="info"
 				(wheel)="exposureTimeUnitWheeled($event)" />

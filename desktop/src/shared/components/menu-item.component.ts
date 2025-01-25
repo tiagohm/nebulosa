@@ -62,7 +62,7 @@ export interface SlideMenuItem extends MenuItem {
 		<a
 			pRipple
 			[class.bg-green-900]="mItem.selected"
-			class="p-contextmenu-item-link flex w-full items-center justify-between gap-2">
+			class="p-contextmenu-item-link flex min-h-9 w-full cursor-pointer items-center justify-between gap-2 p-1">
 			<div class="flex items-center justify-between gap-2">
 				<i [class]="mItem.icon"></i>
 				<span>{{ mItem.label }}</span>
