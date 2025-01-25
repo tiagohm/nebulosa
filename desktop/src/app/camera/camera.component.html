@@ -109,7 +109,7 @@
 			</div>
 		}
 		@if (canShowInfo) {
-			<div class="col-span-full my-1 flex items-center gap-1 pb-1 pt-0 text-center text-xs text-gray-400">
+			<div class="col-span-full my-1 pb-1 pt-0 text-center text-xs text-gray-400">
 				<neb-camera-exposure #cameraExposure />
 			</div>
 		}
@@ -128,27 +128,25 @@
 				[disabled]="!camera.connected || !hasDewHeater || running"
 				[(value)]="camera!.dewHeater" />
 		</div>
-		<div class="col-span-6 grid grid-cols-subgrid gap-1">
-			<div class="col-span-4">
-				<neb-input-number
-					label="Temperature ({{ camera.temperature | number: '1.1-1' }}°C)"
-					[disabled]="!camera.connected || !camera.canSetTemperature || running"
-					[(value)]="preference.setpointTemperature"
-					(valueChange)="savePreference()"
-					[step]="0.1"
-					suffix="℃"
-					[min]="-50"
-					[max]="50"
-					class="flex-1" />
-			</div>
-			<div class="col-span-2 flex items-center justify-center">
-				<neb-button
-					[disabled]="!camera.connected || !camera.canSetTemperature || running"
-					(action)="applySetpointTemperature()"
-					icon="mdi mdi-check"
-					severity="success"
-					tooltip="Apply" />
-			</div>
+		<div class="col-span-5">
+			<neb-input-number
+				label="Temperature ({{ camera.temperature | number: '1.1-1' }}°C)"
+				[disabled]="!camera.connected || !camera.canSetTemperature || running"
+				[(value)]="preference.setpointTemperature"
+				(valueChange)="savePreference()"
+				[step]="0.1"
+				suffix="℃"
+				[min]="-50"
+				[max]="50"
+				class="flex-1" />
+		</div>
+		<div class="col-span-1">
+			<neb-button
+				[disabled]="!camera.connected || !camera.canSetTemperature || running"
+				(action)="applySetpointTemperature()"
+				icon="mdi mdi-check"
+				severity="success"
+				tooltip="Apply" />
 		</div>
 	</div>
 	<div class="grid grid-cols-12 gap-3">

@@ -188,7 +188,7 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy, Tickable {
 
 			const filters = makeFilter(this.wheel, this.filters, 0)
 
-			if (filters !== this.filters) {
+			if (filters !== this.filters && filters.length) {
 				this.filters = filters
 				this.request.filters = this.filters.filter((e) => this.request.filters.includes(e.position)).map((e) => e.position)
 				this.savePreference()

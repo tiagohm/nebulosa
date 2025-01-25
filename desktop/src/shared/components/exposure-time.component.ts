@@ -29,6 +29,11 @@ import type { MenuItem } from './menu-item.component'
 				(wheel)="exposureTimeUnitWheeled($event)" />
 		</div>
 	`,
+	styles: `
+		neb-exposure-time {
+			max-width: 100%;
+		}
+	`,
 	encapsulation: ViewEncapsulation.None,
 	changeDetection: ChangeDetectionStrategy.OnPush,
 })

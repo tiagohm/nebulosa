@@ -2,10 +2,12 @@
 import { definePreset } from '@primeng/themes'
 import Aura from '@primeng/themes/aura'
 import type { AuraBaseDesignTokens } from '@primeng/themes/aura/base'
+import type { ChipDesignTokens } from '@primeng/themes/types/chip'
 import type { DialogDesignTokens } from '@primeng/themes/types/dialog'
 import type { FloatLabelDesignTokens } from '@primeng/themes/types/floatlabel'
 import type { ListboxDesignTokens } from '@primeng/themes/types/listbox'
 import type { MenuDesignTokens } from '@primeng/themes/types/menu'
+import type { MultiSelectDesignTokens } from '@primeng/themes/types/multiselect'
 import type { SelectDesignTokens } from '@primeng/themes/types/select'
 import type { SliderDesignTokens } from '@primeng/themes/types/slider'
 import type { TabsDesignTokens } from '@primeng/themes/types/tabs'
@@ -58,6 +60,7 @@ export const AppTheme: AuraBaseDesignTokens = definePreset(Aura, {
 				formField: {
 					filledBorderColor: 'transparent',
 					disabledBackground: '{surface.900}',
+					background: '{surface.800}',
 					shadow: 'none',
 					borderColor: 'transparent',
 					sm: {
@@ -152,5 +155,19 @@ export const AppTheme: AuraBaseDesignTokens = definePreset(Aura, {
 				fontSize: '1rem',
 			},
 		} as DialogDesignTokens,
+		multiselect: {
+			root: {
+				focusBorderColor: '{surface.800}',
+				hoverBorderColor: '{surface.800}',
+			},
+		} as MultiSelectDesignTokens,
+		chip: {
+			root: {
+				background: '{surface.700}',
+			},
+			removeIcon: {
+				color: '{red.500}',
+			},
+		} as ChipDesignTokens,
 	},
 } as AuraBaseDesignTokens)

@@ -37,6 +37,14 @@ a:link {
 	}
 }
 
+.p-tooltip-text {
+	@apply text-sm;
+}
+
+.p-tabs {
+	@apply w-full;
+}
+
 .p-contextmenu *,
 .p-select *,
 .p-multiselect-header *,

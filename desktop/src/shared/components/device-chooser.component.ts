@@ -11,18 +11,18 @@ import type { MenuItem } from './menu-item.component'
 		<neb-button
 			(action)="show()"
 			[rounded]="false"
-			severity="success"
+			[severity]="device()?.connected ? 'success' : 'danger'"
 			[disabled]="disabled()">
 			<div class="flex items-center gap-1">
 				<i [class]="icon()"></i>
 				<div class="flex flex-col gap-[1px] text-left">
-					<span class="text-sm font-bold">{{ title() }}</span>
 					@let mDevice = device();
 
+					<span class="text-sm font-bold">{{ title() }}</span>
 					@if (mDevice && mDevice.id) {
 						<span class="text-xs font-normal">{{ mDevice.name }}</span>
 					} @else {
-						<span class="text-xs font-normal text-gray-600">{{ noDeviceMessage() || 'Choose a device' }}</span>
+						<span class="text-xs font-normal">{{ noDeviceMessage() || 'Choose a device' }}</span>
 					}
 				</div>
 			</div>

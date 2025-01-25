@@ -17,7 +17,8 @@ import { ElectronService } from '../services/electron.service'
 				[disabled]="disabled() || readonly()"
 				icon="mdi mdi-folder-open"
 				(action)="choosePath()"
-				tooltip="{{ directory() ? 'Choose directory' : 'Choose file' }}" />
+				tooltip="{{ directory() ? 'Choose directory' : 'Choose file' }}"
+				tooltipPosition="left" />
 		</div>
 	`,
 	encapsulation: ViewEncapsulation.None,
