@@ -1,7 +1,9 @@
-<div class="px-4 py-3">
-	<div class="flex grid items-center">
-		<div class="col-12 items-center gap-1">
-			<neb-device-name [device]="dustCap" />
+<div class="flex flex-col gap-3 p-4">
+	<div class="grid grid-cols-12 gap-3">
+		<div class="col-span-full flex items-center gap-3">
+			<neb-device-name
+				[device]="dustCap"
+				class="flex-1" />
 			@if (dustCap.connected) {
 				<neb-button
 					[disabled]="dustCap.parking"
@@ -19,32 +21,26 @@
 			}
 			<neb-button-indi [device]="dustCap" />
 		</div>
-		<div class="col-12 my-1 flex items-center justify-between gap-1 pt-0 text-sm text-gray-400">
-			<div class="flex items-center gap-1">
-				<i class="mdi mdi-information text-blue-500"></i>
-				<span style="display: contents">{{ dustCap.parking ? 'moving' : dustCap.parked ? 'closed' : 'open' }}</span>
-			</div>
+		<div class="col-span-full my-1 flex items-center justify-between gap-1 pt-0 text-sm text-gray-400">
+			<i class="mdi mdi-information text-blue-500"></i>
+			<span style="display: contents">{{ dustCap.parking ? 'moving' : dustCap.parked ? 'closed' : 'open' }}</span>
 		</div>
-	</div>
-	<div class="mt-1 grid">
-		<div class="col-12 items-center justify-center text-center">
-			<div class="flex flex-col items-center justify-center gap-2 text-center">
-				@if (dustCap.parked) {
-					<neb-button
-						[disabled]="!dustCap.connected || dustCap.parking"
-						icon="mdi mdi-lock-open"
-						severity="danger"
-						label="Open"
-						(action)="togglePark()" />
-				} @else {
-					<neb-button
-						[disabled]="!dustCap.connected || dustCap.parking"
-						icon="mdi mdi-lock"
-						severity="success"
-						label="Close"
-						(action)="togglePark()" />
-				}
-			</div>
+		<div class="col-span-full items-center justify-center text-center">
+			@if (dustCap.parked) {
+				<neb-button
+					[disabled]="!dustCap.connected || dustCap.parking"
+					icon="mdi mdi-lock-open"
+					severity="danger"
+					label="Open"
+					(action)="togglePark()" />
+			} @else {
+				<neb-button
+					[disabled]="!dustCap.connected || dustCap.parking"
+					icon="mdi mdi-lock"
+					severity="success"
+					label="Close"
+					(action)="togglePark()" />
+			}
 		</div>
 	</div>
 </div>

@@ -32,6 +32,8 @@ import { Component, computed, input, model, ViewEncapsulation } from '@angular/c
 		neb-input-number {
 			display: flex;
 			align-items: center;
+			flex: 1;
+			max-width: 100%;
 
 			p-inputnumber {
 				width: 100%;

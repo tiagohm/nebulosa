@@ -1,7 +1,9 @@
-<div class="px-4 py-3">
-	<div class="flex grid items-center">
-		<div class="col-12 items-center gap-1">
-			<neb-device-name [device]="focuser" />
+<div class="flex flex-col gap-3 p-4">
+	<div class="grid grid-cols-12 gap-3">
+		<div class="col-span-full flex items-center gap-3">
+			<neb-device-name
+				[device]="focuser"
+				class="flex-1" />
 			@if (focuser.connected) {
 				<neb-button
 					[disabled]="focuser.moving"
@@ -19,7 +21,7 @@
 			}
 			<neb-button-indi [device]="focuser" />
 		</div>
-		<div class="col-12 my-1 flex items-center justify-between gap-1 pt-0 text-sm text-gray-400">
+		<div class="col-span-full my-1 flex items-center gap-1 pt-0 text-sm text-gray-400">
 			<div class="flex items-center gap-1">
 				<i class="mdi mdi-information text-blue-500"></i>
 				<span style="display: contents">{{ focuser.moving ? 'moving' : 'idle' }}</span>
@@ -32,20 +34,22 @@
 			}
 		</div>
 	</div>
-	<div class="mt-1 grid">
-		<div class="col-8">
+	<div class="grid grid-cols-12 gap-3">
+		<div class="col-span-8">
 			<neb-input-number
 				label="Position (max: {{ focuser.maxPosition | number }})"
 				[readonly]="true"
 				[value]="focuser.position" />
 		</div>
-		<div class="col-3 justify-between gap-2 text-center">
+		<div class="col-span-2">
 			<neb-button
 				[disabled]="!focuser.connected || !focuser.canAbort || !focuser.moving"
 				icon="mdi mdi-stop"
 				severity="danger"
 				tooltip="Abort"
 				(action)="abort()" />
+		</div>
+		<div class="col-span-2">
 			<neb-button
 				[disabled]="!focuser.connected || !focuser.canSync || focuser.moving"
 				(action)="sync()"
@@ -53,12 +57,14 @@
 				severity="info"
 				tooltip="Sync" />
 		</div>
-		<div class="col-12 flex items-center gap-1">
+		<div class="col-span-3 flex justify-end">
 			<neb-button
 				[disabled]="!focuser.connected || !focuser.canRelativeMove || focuser.moving || !preference.stepsRelative"
 				(action)="moveIn()"
 				icon="mdi mdi-arrow-left-bold"
 				tooltip="Move In" />
+		</div>
+		<div class="col-span-6">
 			<neb-input-number
 				label="Relative"
 				[disabled]="!focuser.connected || !focuser.canRelativeMove"
@@ -66,13 +72,15 @@
 				[max]="focuser.maxPosition"
 				[(value)]="preference.stepsRelative"
 				(valueChange)="savePreference()" />
+		</div>
+		<div class="col-span-3 flex justify-start">
 			<neb-button
 				[disabled]="!focuser.connected || !focuser.canRelativeMove || focuser.moving || !preference.stepsRelative"
 				(action)="moveOut()"
 				icon="mdi mdi-arrow-right-bold"
 				tooltip="Move Out" />
 		</div>
-		<div class="col-12 flex items-center justify-end gap-1">
+		<div class="col-span-6 col-start-4">
 			<neb-input-number
 				label="Absolute"
 				[disabled]="!focuser.connected || !focuser.canAbsoluteMove"
@@ -80,6 +88,8 @@
 				[max]="focuser.maxPosition"
 				[(value)]="preference.stepsAbsolute"
 				(valueChange)="savePreference()" />
+		</div>
+		<div class="col-span-3">
 			<neb-button
 				[disabled]="!focuser.connected || !focuser.canAbsoluteMove || focuser.moving || preference.stepsAbsolute === focuser.position"
 				(action)="moveTo()"

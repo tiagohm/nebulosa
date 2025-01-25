@@ -1,7 +1,9 @@
 <div class="flex flex-col gap-3 p-4">
-	<div class="grid grid-cols-12 items-center gap-3">
+	<div class="grid grid-cols-12 gap-3">
 		<div class="col-span-8 flex items-center gap-3">
-			<neb-device-name [device]="mount" />
+			<neb-device-name
+				[device]="mount"
+				class="flex-1" />
 			@if (mount.connected) {
 				<neb-button
 					[disabled]="mount.slewing || mount.parking"
@@ -43,7 +45,7 @@
 			</span>
 		</div>
 	</div>
-	<div class="grid grid-cols-12 items-center gap-3">
+	<div class="grid grid-cols-12 gap-3">
 		<div class="col-span-3">
 			<neb-input-text
 				label="RA (J2000)"
@@ -110,7 +112,7 @@
 				(action)="ephemerisMenu.show(ephemerisModel)" />
 		</div>
 	</div>
-	<div class="grid grid-cols-12 items-center gap-3">
+	<div class="grid grid-cols-12 gap-3">
 		<div class="col-span-4">
 			<neb-select-button-enum
 				[disabled]="!mount.connected || mount.slewing || mount.parking || mount.parked"
@@ -167,7 +169,7 @@
 		</div>
 	</div>
 	<div class="flex w-full flex-row gap-1">
-		<div class="grid w-5/12 grid-cols-3 place-items-center items-center">
+		<div class="grid w-5/12 grid-cols-3">
 			<div class="col-span-1">
 				<neb-button
 					[disabled]="!mount.connected || (mount.slewing && slewingDirection !== 'NW') || mount.parking || mount.parked"
@@ -307,7 +309,7 @@
 	[draggable]="false"
 	[(visible)]="remoteControl.showDialog"
 	[style]="{ maxWidth: '90vw' }">
-	<div class="mt-2 grid grid-cols-12 items-center gap-3">
+	<div class="mt-2 grid grid-cols-12 gap-3">
 		<div class="col-span-4">
 			<neb-dropdown-enum
 				label="Protocol"
@@ -415,7 +417,7 @@
 	[draggable]="false"
 	[(visible)]="time.showDialog"
 	[style]="{ maxWidth: '80vw' }">
-	<div class="mt-2 grid grid-cols-12 items-center gap-3">
+	<div class="mt-2 grid grid-cols-12 gap-3">
 		<div class="col-span-8">
 			<p-date-picker
 				[(ngModel)]="time.dateTime"

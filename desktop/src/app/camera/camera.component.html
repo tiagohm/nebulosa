@@ -1,7 +1,9 @@
 <div class="flex flex-col gap-3 p-4">
-	<div class="grid grid-cols-12 items-center gap-3">
+	<div class="grid grid-cols-12 gap-3">
 		<div class="col-span-8 flex items-center gap-3">
-			<neb-device-name [device]="camera" />
+			<neb-device-name
+				[device]="camera"
+				class="flex-1" />
 			@if (camera.connected) {
 				<neb-button
 					[disabled]="running"
@@ -112,7 +114,7 @@
 			</div>
 		}
 	</div>
-	<div class="grid grid-cols-12 items-center gap-3">
+	<div class="grid grid-cols-12 gap-3">
 		<div class="col-span-3">
 			<neb-switch
 				label="Cooler ({{ camera.coolerPower | number: '1.1-1' }}%)"
@@ -126,7 +128,7 @@
 				[disabled]="!camera.connected || !hasDewHeater || running"
 				[(value)]="camera!.dewHeater" />
 		</div>
-		<div class="col-span-6 grid grid-cols-subgrid items-center gap-1">
+		<div class="col-span-6 grid grid-cols-subgrid gap-1">
 			<div class="col-span-4">
 				<neb-input-number
 					label="Temperature ({{ camera.temperature | number: '1.1-1' }}°C)"
@@ -149,7 +151,7 @@
 			</div>
 		</div>
 	</div>
-	<div class="grid grid-cols-12 items-center gap-3">
+	<div class="grid grid-cols-12 gap-3">
 		<div class="col-span-6">
 			<neb-exposure-time
 				[(exposureTime)]="request.exposureTime"
@@ -173,7 +175,7 @@
 				(valueChange)="savePreference()" />
 		</div>
 	</div>
-	<div class="grid grid-cols-12 items-center gap-3">
+	<div class="grid grid-cols-12 gap-3">
 		<div class="col-span-6">
 			<neb-select-button-enum
 				[disabled]="!canExposureMode || !camera.connected || running"
@@ -200,7 +202,7 @@
 				(valueChange)="savePreference()" />
 		</div>
 	</div>
-	<div class="grid grid-cols-12 items-center gap-3">
+	<div class="grid grid-cols-12 gap-3">
 		<div class="col-span-3">
 			<neb-input-number
 				label="X"
@@ -238,7 +240,7 @@
 				(valueChange)="savePreference()" />
 		</div>
 	</div>
-	<div class="grid grid-cols-12 items-center gap-3">
+	<div class="grid grid-cols-12 gap-3">
 		<div class="col-span-3">
 			<neb-switch
 				label="Subframe"
@@ -273,7 +275,7 @@
 				(valueChange)="savePreference()" />
 		</div>
 	</div>
-	<div class="grid grid-cols-12 items-center gap-3">
+	<div class="grid grid-cols-12 gap-3">
 		<div class="col-span-6">
 			<neb-dropdown-enum
 				label="Frame Format"
@@ -419,7 +421,7 @@
 			</div>
 		</div>
 	</ng-template>
-	<div class="mt-2 grid grid-cols-12 items-center gap-3">
+	<div class="mt-2 grid grid-cols-12 gap-3">
 		<div class="col-span-3">
 			<neb-switch
 				label="RA only"
@@ -465,7 +467,7 @@
 			</div>
 		</div>
 	</ng-template>
-	<div class="mt-2 grid grid-cols-12 items-center gap-3">
+	<div class="mt-2 grid grid-cols-12 gap-3">
 		<div class="col-span-8">
 			<neb-dropdown-enum
 				label="Live Stacker"

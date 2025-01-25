@@ -29,6 +29,14 @@ a:link {
 	@apply font-bold text-gray-400 underline decoration-dotted;
 }
 
+.grid {
+	@apply items-center;
+
+	> *[class^='col-span-'] {
+		@apply flex justify-center;
+	}
+}
+
 .p-contextmenu *,
 .p-select *,
 .p-multiselect-header *,
