@@ -537,7 +537,7 @@ export class HomeComponent implements AfterContentInit {
 
 		if (devices.length === 0) return
 
-		const device = await this.deviceMenu().show(devices, undefined, type)
+		const device = await this.deviceMenu().show(devices, undefined, type.replace('_', ' '))
 
 		if (device && device !== 'NONE') {
 			await this.openDeviceWindow(device)

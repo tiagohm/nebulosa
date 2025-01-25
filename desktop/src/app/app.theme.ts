@@ -2,6 +2,7 @@
 import { definePreset } from '@primeng/themes'
 import Aura from '@primeng/themes/aura'
 import type { AuraBaseDesignTokens } from '@primeng/themes/aura/base'
+import type { ButtonDesignTokens } from '@primeng/themes/types/button'
 import type { ChipDesignTokens } from '@primeng/themes/types/chip'
 import type { DialogDesignTokens } from '@primeng/themes/types/dialog'
 import type { FloatLabelDesignTokens } from '@primeng/themes/types/floatlabel'
@@ -31,25 +32,24 @@ export const AppTheme: AuraBaseDesignTokens = definePreset(Aura, {
 		colorScheme: {
 			dark: {
 				surface: {
-					0: '#ffffff',
+					0: '#fdfdfd',
 					50: '{zinc.50}',
 					100: '{zinc.100}',
 					200: '{zinc.200}',
 					300: '{zinc.300}',
 					400: '{zinc.400}',
 					500: '{zinc.500}',
-					600: '#353548',
-					700: '#28282b',
-					800: '#242429',
-					850: '#222227',
-					900: '#202023',
-					950: '#09090b',
+					600: '#252529',
+					700: '#222226',
+					800: '#202024',
+					900: '#191922',
+					950: '#141418',
 				},
 				primary: {
-					color: '{indigo.500}',
-					inverseColor: '{indigo.950}',
-					hoverColor: '{indigo.400}',
-					activeColor: '{indigo.500}',
+					color: '{primary.500}',
+					inverseColor: '{primary.950}',
+					hoverColor: '{primary.400}',
+					activeColor: '{primary.500}',
 				},
 				highlight: {
 					background: 'rgba(250, 250, 250, .16)',
@@ -79,13 +79,29 @@ export const AppTheme: AuraBaseDesignTokens = definePreset(Aura, {
 		},
 	},
 	components: {
+		button: {
+			text: {
+				success: {
+					color: '{green.500}',
+				},
+				info: {
+					color: '{blue.500}',
+				},
+				danger: {
+					color: '{red.500}',
+				},
+				warning: {
+					color: '{orange.500}',
+				},
+			},
+		} as ButtonDesignTokens,
 		select: {
 			root: {
 				background: '{surface.800}',
 				borderColor: 'transparent',
 				hoverBorderColor: '{surface.800}',
 				focusBorderColor: '{surface.800}',
-				disabledBackground: '{surface.850}',
+				disabledBackground: '{surface.900}',
 			},
 			overlay: {
 				background: '{surface.800}',
@@ -119,7 +135,15 @@ export const AppTheme: AuraBaseDesignTokens = definePreset(Aura, {
 		} as ToggleButtonDesignTokens,
 		menu: {
 			root: {
+				background: '{surface.700}',
 				borderColor: 'transparent',
+			},
+			list: {
+				padding: '0.675rem 0.825rem',
+			},
+			item: {
+				focusBackground: '{surface.500}',
+				padding: '0.675rem 0.825rem',
 			},
 		} as MenuDesignTokens,
 		listbox: {
