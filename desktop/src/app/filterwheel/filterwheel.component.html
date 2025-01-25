@@ -22,7 +22,7 @@
 			<neb-button-indi [device]="wheel" />
 		</div>
 		@if (canShowInfo) {
-			<div class="col-span-full my-1 flex items-center gap-1 pt-0 text-sm text-gray-400">
+			<div class="col-span-full my-1 flex items-center !justify-start gap-1 pt-0 text-sm text-gray-400">
 				<i class="mdi mdi-information text-blue-500"></i>
 				<span class="mr-3">{{ moving ? 'moving' : 'idle' }}</span>
 				@if (wheel.connected && currentFilter) {

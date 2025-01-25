@@ -1,6 +1,6 @@
-<div class="px-4 py-3">
-	<div class="flex grid items-center">
-		<div class="col-12 items-center gap-1">
+<div class="flex flex-col gap-3 p-4">
+	<div class="grid grid-cols-12 gap-3">
+		<div class="col-span-full flex items-center gap-3">
 			<neb-device-name
 				[device]="rotator"
 				class="flex-1" />
@@ -21,42 +21,42 @@
 			}
 			<neb-button-indi [device]="rotator" />
 		</div>
-		<div class="col-12 my-1 flex items-center justify-between gap-1 pt-0 text-sm text-gray-400">
-			<div class="flex items-center gap-1">
-				<i class="mdi mdi-information text-blue-500"></i>
-				<span style="display: contents">{{ rotator.moving ? 'moving' : 'idle' }}</span>
-			</div>
+		<div class="col-span-full my-1 flex items-center !justify-start gap-1 pt-0 text-sm text-gray-400">
+			<i class="mdi mdi-information text-blue-500"></i>
+			<span style="display: contents">{{ rotator.moving ? 'moving' : 'idle' }}</span>
 		</div>
 	</div>
-	<div class="mt-1 grid">
-		<div class="col-6">
+	<div class="grid grid-cols-12 gap-3">
+		<div class="col-span-5">
 			<neb-input-number
 				label="Angle (°)"
 				[readonly]="true"
 				[(value)]="rotator.angle" />
 		</div>
-		<div class="col-6 items-center justify-between gap-2 text-center">
+		<div class="col-span-2">
 			<neb-button
 				[disabled]="!rotator.connected || !rotator.moving || !canAbort"
 				icon="mdi mdi-stop"
 				severity="danger"
 				tooltip="Abort"
 				(action)="abort()" />
+		</div>
+		<div class="col-span-2">
 			<neb-button
 				[disabled]="!rotator.connected || !rotator.moving || !canHome"
 				icon="mdi mdi-home"
 				severity="info"
 				tooltip="Home"
 				(action)="home()" />
-			<div class="flex items-center justify-center text-center">
-				<neb-switch
-					label="Reversed"
-					[disabled]="!rotator.connected || rotator.moving || !canReverse"
-					[(value)]="rotator.reversed"
-					(valueChange)="reverse($event)" />
-			</div>
 		</div>
-		<div class="col-12 flex items-center gap-1">
+		<div class="col-span-3">
+			<neb-switch
+				label="Reversed"
+				[disabled]="!rotator.connected || rotator.moving || !canReverse"
+				[(value)]="rotator.reversed"
+				(valueChange)="reverse($event)" />
+		</div>
+		<div class="col-span-8">
 			<neb-input-number
 				label="Move"
 				[disabled]="!rotator.connected"
@@ -65,12 +65,16 @@
 				[max]="rotator.maxAngle"
 				[(value)]="angle"
 				(valueChange)="savePreference()" />
+		</div>
+		<div class="col-span-2">
 			<neb-button
 				[disabled]="!rotator.connected || rotator.moving || !canSync"
 				(action)="sync()"
 				icon="mdi mdi-sync"
 				severity="info"
 				tooltip="Sync" />
+		</div>
+		<div class="col-span-2">
 			<neb-button
 				[disabled]="!rotator.connected || rotator.moving || preference.angle === rotator.angle || !canMove"
 				(action)="move()"
@@ -80,15 +84,13 @@
 		</div>
 	</div>
 	@if (canApply) {
-		<div class="mt-2 grid">
-			<div class="col-12 flex justify-center gap-2">
-				<neb-button
-					[disabled]="!rotator.connected"
-					label="Save"
-					(action)="apply()"
-					icon="mdi mdi-content-save"
-					severity="info" />
-			</div>
+		<div class="col-span-full">
+			<neb-button
+				[disabled]="!rotator.connected"
+				label="Save"
+				(action)="apply()"
+				icon="mdi mdi-content-save"
+				severity="info" />
 		</div>
 	}
 </div>
