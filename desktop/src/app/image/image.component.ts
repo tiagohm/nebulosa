@@ -310,8 +310,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		icon: 'mdi mdi-select',
 		selected: false,
 		command: () => {
-			this.imageROI.show = !this.imageROI.show
-			this.roiMenuItem.selected = this.hasROI
+			this.toggleROI()
 		},
 	}
 
@@ -1087,7 +1086,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		}
 	}
 
-	private async toggleStretch() {
+	protected async toggleStretch() {
 		this.stretch.transformation.auto = !this.stretch.transformation.auto
 		this.savePreference()
 		this.autoStretchMenuItem.selected = this.stretch.transformation.auto
@@ -1128,7 +1127,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		return this.loadImage()
 	}
 
-	private invertImage() {
+	protected invertImage() {
 		this.transformation.invert = !this.transformation.invert
 		this.invertMenuItem.selected = this.transformation.invert
 		this.savePreference()
@@ -1139,13 +1138,18 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		return this.loadImage()
 	}
 
-	private toggleCrosshair() {
+	protected toggleCrosshair() {
 		this.preference.crossHair = !this.preference.crossHair
 		this.savePreference()
 		this.crosshairMenuItem.selected = this.preference.crossHair
 	}
 
-	private zoomIn() {
+	protected toggleROI() {
+		this.imageROI.show = !this.imageROI.show
+		this.roiMenuItem.selected = this.hasROI
+	}
+
+	protected zoomIn() {
 		if (this.zoom.panZoom) {
 			const { innerWidth, innerHeight } = window
 			const { offsetTop, offsetLeft } = this.image().nativeElement.parentElement!.parentElement!
@@ -1153,7 +1157,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		}
 	}
 
-	private zoomOut() {
+	protected zoomOut() {
 		if (this.zoom.panZoom) {
 			const { innerWidth, innerHeight } = window
 			const { offsetTop, offsetLeft } = this.image().nativeElement.parentElement!.parentElement!
@@ -1161,13 +1165,13 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		}
 	}
 
-	private center() {
+	protected center() {
 		if (this.zoom.panZoom) {
 			this.zoom.panZoom.centerAt(window.innerWidth / 2, window.innerHeight / 2)
 		}
 	}
 
-	private resetZoom(fitToScreen: boolean = false, center: boolean = true) {
+	protected resetZoom(fitToScreen: boolean = false, center: boolean = true) {
 		if (this.zoom.panZoom) {
 			if (fitToScreen) {
 				const image = this.image().nativeElement
@@ -1203,11 +1207,11 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		this.rotate(((angle % 360) + 360) % 360)
 	}
 
-	private async enterFullscreen() {
+	protected async enterFullscreen() {
 		this.app.showTopBar = !(await this.electronService.fullscreenWindow(true))
 	}
 
-	private async exitFullscreen() {
+	protected async exitFullscreen() {
 		this.app.showTopBar = !(await this.electronService.fullscreenWindow(false))
 	}
 
