@@ -9,6 +9,7 @@ import nebulosa.fits.FitsKeyword
 import nebulosa.image.algorithms.transformation.CfaPattern
 import nebulosa.image.format.HeaderCard
 import nebulosa.indi.device.Device
+import nebulosa.indi.device.DriverInfo
 import nebulosa.indi.device.MessageSender
 import nebulosa.indi.device.PropertyVector
 import nebulosa.indi.device.camera.Camera
@@ -241,7 +242,7 @@ class CameraCaptureNamingFormatterTest {
     }
 
     @Suppress("LeakingThis")
-    private abstract class Simulator(override val name: String) : Device, MessageSender {
+    private abstract class Simulator(override val name: String) : Device, MessageSender, DriverInfo {
 
         final override val sender = this
         final override val id = UUID.randomUUID().toString()
@@ -249,6 +250,8 @@ class CameraCaptureNamingFormatterTest {
         final override val properties = emptyMap<String, PropertyVector<*, *>>()
         final override val messages = emptyList<String>()
         final override val snoopedDevices = emptyList<Device>()
+        final override val driver = this
+        final override val version = "1.0"
 
         final override fun sendMessageToServer(message: INDIProtocol) = Unit
 
