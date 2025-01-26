@@ -1,7 +1,7 @@
-:host {
+neb-image {
 	@apply relative block h-screen w-screen;
+}
 
-	.p-contextmenu {
-		max-height: 440px;
-	}
+.image-contextmenu.p-contextmenu {
+	max-height: 440px;
 }

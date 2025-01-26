@@ -38,7 +38,7 @@ export const AppTheme: AuraBaseDesignTokens = definePreset(Aura, {
 					200: '{zinc.200}',
 					300: '{zinc.300}',
 					400: '{zinc.400}',
-					500: '{zinc.500}',
+					500: '#343438',
 					600: '#252529',
 					700: '#222226',
 					800: '#202024',
@@ -113,7 +113,7 @@ export const AppTheme: AuraBaseDesignTokens = definePreset(Aura, {
 				borderColor: 'transparent',
 			},
 			option: {
-				focusBackground: '{surface.600}',
+				focusBackground: '{surface.500}',
 				selectedBackground: '{surface.600}',
 				selectedFocusBackground: '{surface.600}',
 			},
@@ -157,7 +157,7 @@ export const AppTheme: AuraBaseDesignTokens = definePreset(Aura, {
 				background: '{surface.800}',
 			},
 			option: {
-				focusBackground: '{surface.600}',
+				focusBackground: '{surface.500}',
 				selectedBackground: '{surface.600}',
 				selectedFocusBackground: '{surface.600}',
 			},

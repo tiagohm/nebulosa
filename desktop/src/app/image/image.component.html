@@ -154,7 +154,8 @@
 	#menu
 	[model]="contextMenuModel"
 	appendTo="body"
-	breakpoint="99999px">
+	breakpoint="99999px"
+	styleClass="image-contextmenu">
 	<ng-template
 		#item
 		let-item>
@@ -1364,13 +1365,13 @@
 
 @if (mouseCoordinate && isMouseCoordinateVisible) {
 	<div class="coordinates fixed bottom-3 left-1/2 -translate-x-1/2 rounded-sm bg-black p-3 font-mono text-sm opacity-70">
-		<div class="grid grid-cols-2 !justify-start gap-0">
-			<div class="col-span-1">X: {{ mouseCoordinate.x }}</div>
-			<div class="col-span-1">Y: {{ mouseCoordinate.y }}</div>
-			<div class="col-span-1">α: {{ mouseCoordinate.alpha }}</div>
-			<div class="col-span-1">δ: {{ mouseCoordinate.delta }}</div>
-			<div class="col-span-1">l: {{ mouseCoordinate.l }}</div>
-			<div class="col-span-1">b: {{ mouseCoordinate.b }}</div>
+		<div class="grid grid-cols-2 gap-0 gap-x-3">
+			<div>X: {{ mouseCoordinate.x }}</div>
+			<div>Y: {{ mouseCoordinate.y }}</div>
+			<div>α: {{ mouseCoordinate.alpha }}</div>
+			<div>δ: {{ mouseCoordinate.delta }}</div>
+			<div>l: {{ mouseCoordinate.l }}</div>
+			<div>b: {{ mouseCoordinate.b }}</div>
 		</div>
 	</div>
 }

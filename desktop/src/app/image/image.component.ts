@@ -1,5 +1,5 @@
 import type { AfterViewInit, ElementRef, OnDestroy } from '@angular/core'
-import { Component, HostListener, NgZone, effect, inject, viewChild } from '@angular/core'
+import { Component, HostListener, NgZone, ViewEncapsulation, effect, inject, viewChild } from '@angular/core'
 import hotkeys from 'hotkeys-js'
 import type { NgxLegacyMoveableComponent, OnDrag, OnResize, OnRotate } from 'ngx-moveable'
 import { injectQueryParams } from 'ngxtension/inject-query-params'
@@ -53,6 +53,7 @@ import { AppComponent } from '../app.component'
 	selector: 'neb-image',
 	templateUrl: 'image.component.html',
 	styleUrls: ['image.component.scss'],
+	encapsulation: ViewEncapsulation.None,
 })
 export class ImageComponent implements AfterViewInit, OnDestroy {
 	private readonly app = inject(AppComponent)
