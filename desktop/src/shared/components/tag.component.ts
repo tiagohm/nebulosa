@@ -1,17 +1,19 @@
 import { Component, ElementRef, inject, input, output, ViewEncapsulation } from '@angular/core'
+import type { Severity } from '../types/angular.types'
 
-export type TagSeverity = 'success' | 'secondary' | 'info' | 'warning' | 'danger' | 'contrast' | undefined
+export type TagSeverity = Severity | 'secondary' | 'contrast' | undefined
 
 export type TagSize = 'large' | 'normal'
 
 @Component({
+	standalone: false,
 	selector: 'neb-tag, neb-info, neb-success, neb-warn, neb-error',
 	template: `
 		<p-tag
 			[severity]="severity()"
 			[icon]="icon()"
 			[value]="label()"
-			styleClass="cursor-pointer white-space-nowrap {{ size() }}"
+			styleClass="cursor-pointer whitespace-nowrap {{ size() }}"
 			(pointerup)="$event.stopImmediatePropagation(); !disabled() && action.emit($event)" />
 	`,
 	styles: `
@@ -33,7 +35,7 @@ export type TagSize = 'large' | 'normal'
 				min-height: 12.1px;
 
 				&.large {
-					font-size: 1.2rem;
+					font-size: 1.1rem;
 					line-height: 15px;
 					padding: 3px 8px;
 				}
@@ -67,7 +69,7 @@ export class TagComponent {
 	private severityFromTagName(tagName: string): TagSeverity {
 		if (tagName.endsWith('-info')) return 'info'
 		else if (tagName.endsWith('-success')) return 'success'
-		else if (tagName.endsWith('-warn')) return 'warning'
+		else if (tagName.endsWith('-warn')) return 'warn'
 		else if (tagName.endsWith('-error')) return 'danger'
 		return undefined
 	}

@@ -1,9 +1,12 @@
 import { Component, computed, input, model, ViewEncapsulation } from '@angular/core'
 
 @Component({
+	standalone: false,
 	selector: 'neb-input-number',
 	template: `
-		<p-floatLabel class="w-full">
+		<p-floatLabel
+			class="w-full"
+			variant="on">
 			<p-inputNumber
 				[disabled]="disabled()"
 				[min]="min()"
@@ -29,12 +32,20 @@ import { Component, computed, input, model, ViewEncapsulation } from '@angular/c
 		neb-input-number {
 			display: flex;
 			align-items: center;
+			flex: 1;
+			max-width: 100%;
+
+			p-inputnumber {
+				width: 100%;
+				max-width: 100%;
+			}
 
 			.p-button-icon-only.p-inputnumber-button {
 				width: 2rem;
 			}
 
 			.p-inputtext {
+				max-width: 100%;
 				border: 1px solid rgba(255, 255, 255, 0) !important;
 			}
 		}

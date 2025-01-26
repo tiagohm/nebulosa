@@ -1,12 +1,14 @@
-import { Component, ElementRef, ViewEncapsulation, effect, viewChild } from '@angular/core'
-import { ImageHistrogram } from '../types/image.types'
+import type { ElementRef } from '@angular/core'
+import { Component, ViewEncapsulation, effect, viewChild } from '@angular/core'
+import type { ImageHistrogram } from '../types/image.types'
 
 @Component({
+	standalone: false,
 	selector: 'neb-histogram',
 	template: `
 		<canvas
 			#canvas
-			class="w-full h-full"></canvas>
+			class="h-full w-full"></canvas>
 	`,
 	encapsulation: ViewEncapsulation.None,
 })

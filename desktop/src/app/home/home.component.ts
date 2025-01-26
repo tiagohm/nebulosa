@@ -1,22 +1,33 @@
-import { AfterContentInit, Component, inject, NgZone, viewChild, ViewEncapsulation } from '@angular/core'
+import type { AfterContentInit } from '@angular/core'
+import { Component, inject, NgZone, viewChild, ViewEncapsulation } from '@angular/core'
 import packageJson from '../../../package.json' with { type: 'json' }
 import { DeviceChooserComponent } from '../../shared/components/device-chooser.component'
-import { DeviceConnectionCommandEvent, DeviceListMenuComponent } from '../../shared/components/device-list-menu.component'
-import { MenuItem, SlideMenuItem } from '../../shared/components/menu-item.component'
+import type { DeviceConnectionCommandEvent, DeviceListMenuComponent } from '../../shared/components/device-list-menu.component'
+import type { MenuItem, SlideMenuItem } from '../../shared/components/menu-item.component'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { Camera, isCamera } from '../../shared/types/camera.types'
-import { Device, DeviceType } from '../../shared/types/device.types'
-import { DustCap, isDustCap } from '../../shared/types/dustcap.types'
-import { Focuser, isFocuser } from '../../shared/types/focuser.types'
-import { GuideOutput, isGuideOuptut } from '../../shared/types/guider.types'
-import { ConnectionDetails, DEFAULT_CONNECTION_DETAILS, DEFAULT_HOME_CONNECTION_DIALOG, DEFAULT_HOME_PREFERENCE, HomeWindowType } from '../../shared/types/home.types'
-import { isLightBox, LightBox } from '../../shared/types/lightbox.types'
-import { isMount, Mount } from '../../shared/types/mount.types'
-import { isRotator, Rotator } from '../../shared/types/rotator.types'
-import { isWheel, Wheel } from '../../shared/types/wheel.types'
+import type { Camera } from '../../shared/types/camera.types'
+import { isCamera } from '../../shared/types/camera.types'
+import type { Device, DeviceType } from '../../shared/types/device.types'
+import type { DustCap } from '../../shared/types/dustcap.types'
+import { isDustCap } from '../../shared/types/dustcap.types'
+import type { Focuser } from '../../shared/types/focuser.types'
+import { isFocuser } from '../../shared/types/focuser.types'
+import type { GuideOutput } from '../../shared/types/guider.types'
+import { isGuideOuptut } from '../../shared/types/guider.types'
+import type { ConnectionDetails, HomeWindowType } from '../../shared/types/home.types'
+import { DEFAULT_CONNECTION_DETAILS, DEFAULT_HOME_CONNECTION_DIALOG, DEFAULT_HOME_PREFERENCE } from '../../shared/types/home.types'
+import type { LightBox } from '../../shared/types/lightbox.types'
+import { isLightBox } from '../../shared/types/lightbox.types'
+import type { Mount } from '../../shared/types/mount.types'
+import { isMount } from '../../shared/types/mount.types'
+import type { Rotator } from '../../shared/types/rotator.types'
+import { isRotator } from '../../shared/types/rotator.types'
+import type { Wheel } from '../../shared/types/wheel.types'
+import { isWheel } from '../../shared/types/wheel.types'
+import { openLink } from '../../shared/utils/common'
 import { AppComponent } from '../app.component'
 
 function scrollPageOf(element: Element) {
@@ -24,11 +35,22 @@ function scrollPageOf(element: Element) {
 }
 
 @Component({
+	standalone: false,
 	selector: 'neb-home',
 	templateUrl: 'home.component.html',
+	styles: `
+		neb-home {
+			neb-button-image {
+				.p-button {
+					max-height: 62px;
+				}
+			}
+		}
+	`,
 	encapsulation: ViewEncapsulation.None,
 })
 export class HomeComponent implements AfterContentInit {
+	private readonly app = inject(AppComponent)
 	private readonly electronService = inject(ElectronService)
 	private readonly browserWindowService = inject(BrowserWindowService)
 	private readonly api = inject(ApiService)
@@ -164,10 +186,9 @@ export class HomeComponent implements AfterContentInit {
 	}
 
 	constructor() {
-		const app = inject(AppComponent)
 		const ngZone = inject(NgZone)
 
-		app.title = 'Nebulosa'
+		this.app.title = 'Nebulosa'
 
 		this.electronService.on('CAMERA.ATTACHED', (event) => {
 			ngZone.run(() => {
@@ -337,7 +358,13 @@ export class HomeComponent implements AfterContentInit {
 				const release = await this.api.latestRelease()
 
 				if (release.tag_name && packageJson.version !== release.tag_name) {
-					this.newVersion = release.name
+					this.app.topMenu.push({
+						label: `New version: ${release.name}`,
+						icon: 'mdi mdi-download',
+						command: () => {
+							openLink('https://github.com/tiagohm/nebulosa/releases/latest')
+						},
+					})
 				}
 			} catch {
 				console.error('failed to check for new version')
@@ -422,19 +449,18 @@ export class HomeComponent implements AfterContentInit {
 	}
 
 	protected addConnection() {
-		this.connectionDialog.edited = false
+		this.connectionDialog.editMode = false
 		this.connectionDialog.connection = structuredClone(DEFAULT_CONNECTION_DETAILS)
 		this.connectionDialog.showDialog = true
 	}
 
-	protected editConnection(connection: ConnectionDetails, event: MouseEvent) {
-		this.connectionDialog.edited = true
+	protected editConnection(connection: ConnectionDetails) {
+		this.connectionDialog.editMode = true
 		this.connectionDialog.connection = connection
 		this.connectionDialog.showDialog = true
-		event.stopImmediatePropagation()
 	}
 
-	protected deleteConnection(connection: ConnectionDetails, event: MouseEvent) {
+	protected deleteConnection(connection: ConnectionDetails) {
 		const index = this.preference.connections.findIndex((e) => e === connection)
 
 		if (index >= 0 && !connection.connected) {
@@ -450,12 +476,10 @@ export class HomeComponent implements AfterContentInit {
 
 			this.savePreference()
 		}
-
-		event.stopImmediatePropagation()
 	}
 
 	protected saveConnection() {
-		if (!this.connectionDialog.edited) {
+		if (!this.connectionDialog.editMode) {
 			this.connection = this.connectionDialog.connection
 			this.preference.connections.push(this.connection)
 		}
@@ -513,7 +537,7 @@ export class HomeComponent implements AfterContentInit {
 
 		if (devices.length === 0) return
 
-		const device = await this.deviceMenu().show(devices, undefined, type)
+		const device = await this.deviceMenu().show(devices, undefined, type.replace('_', ' '))
 
 		if (device && device !== 'NONE') {
 			await this.openDeviceWindow(device)

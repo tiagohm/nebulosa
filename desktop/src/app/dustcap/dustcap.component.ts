@@ -1,12 +1,16 @@
-import { Component, HostListener, NgZone, OnDestroy, effect, inject } from '@angular/core'
+import type { OnDestroy } from '@angular/core'
+import { Component, HostListener, NgZone, effect, inject } from '@angular/core'
 import { injectQueryParams } from 'ngxtension/inject-query-params'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
-import { Tickable, Ticker } from '../../shared/services/ticker.service'
-import { DEFAULT_DUST_CAP, DustCap } from '../../shared/types/dustcap.types'
+import type { Tickable } from '../../shared/services/ticker.service'
+import { Ticker } from '../../shared/services/ticker.service'
+import type { DustCap } from '../../shared/types/dustcap.types'
+import { DEFAULT_DUST_CAP } from '../../shared/types/dustcap.types'
 import { AppComponent } from '../app.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-dustcap',
 	templateUrl: 'dustcap.component.html',
 })

@@ -1,9 +1,12 @@
 import { Component, input, model, ViewEncapsulation } from '@angular/core'
 
 @Component({
+	standalone: false,
 	selector: 'neb-input-text',
 	template: `
-		<p-floatLabel class="w-full">
+		<p-floatLabel
+			class="w-full"
+			variant="on">
 			<input
 				pInputText
 				class="p-inputtext-sm w-full"
@@ -19,11 +22,14 @@ import { Component, input, model, ViewEncapsulation } from '@angular/core'
 	`,
 	styles: `
 		neb-input-text {
-			width: 100%;
+			max-width: 100%;
 			display: flex;
 			align-items: center;
+			flex: 1;
 
 			.p-inputtext {
+				width: 100%;
+				max-width: 100%;
 				border: 1px solid rgba(255, 255, 255, 0) !important;
 			}
 		}

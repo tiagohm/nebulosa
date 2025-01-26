@@ -2,20 +2,23 @@ import { Component, inject, input, model, ViewEncapsulation } from '@angular/cor
 import { ElectronService } from '../services/electron.service'
 
 @Component({
+	standalone: false,
 	selector: 'neb-path-chooser',
 	template: `
-		<div class="flex align-items-center gap-1">
+		<div class="flex items-center gap-1">
 			<neb-input-text
 				[label]="label() ?? 'Path'"
 				[disabled]="disabled()"
 				[readonly]="readonly()"
 				[placeholder]="placeholder() ?? ''"
-				[(value)]="path" />
+				[(value)]="path"
+				class="w-full" />
 			<neb-button
 				[disabled]="disabled() || readonly()"
 				icon="mdi mdi-folder-open"
 				(action)="choosePath()"
-				tooltip="{{ directory() ? 'Choose directory' : 'Choose file' }}" />
+				tooltip="{{ directory() ? 'Choose directory' : 'Choose file' }}"
+				tooltipPosition="left" />
 		</div>
 	`,
 	encapsulation: ViewEncapsulation.None,

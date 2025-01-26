@@ -1,13 +1,15 @@
-import { AfterViewInit, Component, ElementRef, OnChanges, OnDestroy, ViewEncapsulation, model, viewChild } from '@angular/core'
+import type { AfterViewInit, ElementRef, OnChanges, OnDestroy } from '@angular/core'
+import { Component, ViewEncapsulation, model, viewChild } from '@angular/core'
 import * as L from 'leaflet'
 
 @Component({
+	standalone: false,
 	selector: 'neb-map',
 	template: `
 		<div
 			#map
 			style="height: 150px"
-			class="border-round-md relative"></div>
+			class="relative rounded-md"></div>
 	`,
 	styles: `
 		neb-map {

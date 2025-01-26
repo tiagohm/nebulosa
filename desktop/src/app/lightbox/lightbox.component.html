@@ -1,7 +1,9 @@
-<div class="container px-4 py-3">
-	<div class="grid flex align-items-center">
-		<div class="col-12 align-items-center gap-1">
-			<neb-device-name [device]="lightBox" />
+<div class="flex flex-col gap-3 p-4">
+	<div class="grid grid-cols-12 gap-3">
+		<div class="col-span-full flex items-center gap-3">
+			<neb-device-name
+				[device]="lightBox"
+				class="flex-1" />
 			@if (lightBox.connected) {
 				<neb-button
 					(action)="connect()"
@@ -18,15 +20,15 @@
 			<neb-button-indi [device]="lightBox" />
 		</div>
 	</div>
-	<div class="grid mt-1">
-		<div class="col-4 text-center align-items-center justify-content-center">
+	<div class="grid grid-cols-12 gap-3">
+		<div class="col-span-4">
 			<neb-switch
 				label="Enabled"
 				[disabled]="!lightBox.connected"
 				[value]="lightBox.enabled"
 				(valueChange)="toggleEnable()" />
 		</div>
-		<div class="col-8 flex align-items-center justify-content-center">
+		<div class="col-span-8">
 			<p-knob
 				[disabled]="!lightBox.connected || !lightBox.enabled"
 				[min]="lightBox.minIntensity"

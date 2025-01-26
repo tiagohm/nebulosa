@@ -1,21 +1,27 @@
-import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, inject, viewChild } from '@angular/core'
-import { ChartData, ChartOptions } from 'chart.js'
-import { Point } from 'electron'
-import { UIChart } from 'primeng/chart'
-import { CameraExposureComponent } from '../../shared/components/camera-exposure.component'
+import type { AfterViewInit, OnDestroy } from '@angular/core'
+import { Component, HostListener, NgZone, inject, viewChild } from '@angular/core'
+import type { ChartData, ChartOptions } from 'chart.js'
+import type { Point } from 'electron'
+import type { UIChart } from 'primeng/chart'
+import type { CameraExposureComponent } from '../../shared/components/camera-exposure.component'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { Tickable, Ticker } from '../../shared/services/ticker.service'
-import { AutoFocusChart, AutoFocusState, DEFAULT_AUTO_FOCUS_PREFERENCE } from '../../shared/types/autofocus.type'
-import { Camera, DEFAULT_CAMERA, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
-import { DEFAULT_FOCUSER, Focuser } from '../../shared/types/focuser.types'
+import type { Tickable } from '../../shared/services/ticker.service'
+import { Ticker } from '../../shared/services/ticker.service'
+import type { AutoFocusChart, AutoFocusState } from '../../shared/types/autofocus.type'
+import { DEFAULT_AUTO_FOCUS_PREFERENCE } from '../../shared/types/autofocus.type'
+import type { Camera } from '../../shared/types/camera.types'
+import { DEFAULT_CAMERA, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
+import type { Focuser } from '../../shared/types/focuser.types'
+import { DEFAULT_FOCUSER } from '../../shared/types/focuser.types'
 import { deviceComparator } from '../../shared/utils/comparators'
 import { AppComponent } from '../app.component'
 import { CameraComponent } from '../camera/camera.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-autofocus',
 	templateUrl: 'autofocus.component.html',
 })

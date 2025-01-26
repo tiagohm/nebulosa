@@ -1,27 +1,28 @@
 import { Component, ViewEncapsulation, inject, input, model, output, viewChild } from '@angular/core'
 import { ApiService } from '../services/api.service'
-import { Device } from '../types/device.types'
-import { DeviceConnectionCommandEvent, DeviceListMenuComponent } from './device-list-menu.component'
-import { MenuItem } from './menu-item.component'
+import type { Device } from '../types/device.types'
+import type { DeviceConnectionCommandEvent, DeviceListMenuComponent } from './device-list-menu.component'
+import type { MenuItem } from './menu-item.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-device-chooser',
 	template: `
 		<neb-button
 			(action)="show()"
 			[rounded]="false"
-			severity="success"
+			[severity]="device()?.connected ? 'success' : 'danger'"
 			[disabled]="disabled()">
-			<div class="flex align-items-center gap-1">
+			<div class="flex items-center gap-1">
 				<i [class]="icon()"></i>
-				<div class="flex flex-column text-left gap-1px">
-					<span class="font-bold text-sm">{{ title() }}</span>
+				<div class="flex flex-col gap-[1px] text-left">
 					@let mDevice = device();
 
+					<span class="text-sm font-bold">{{ title() }}</span>
 					@if (mDevice && mDevice.id) {
 						<span class="text-xs font-normal">{{ mDevice.name }}</span>
 					} @else {
-						<span class="text-xs font-normal text-gray-600">{{ noDeviceMessage() || 'Choose a device' }}</span>
+						<span class="text-xs font-normal">{{ noDeviceMessage() || 'Choose a device' }}</span>
 					}
 				</div>
 			</div>

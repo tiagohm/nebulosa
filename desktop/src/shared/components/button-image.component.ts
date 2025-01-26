@@ -1,6 +1,9 @@
 import { Component, input, output, ViewEncapsulation } from '@angular/core'
+import type { TooltipPosition } from '../types/angular.types'
+import type { ButtonSeverity } from './button.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-button-image',
 	template: `
 		<p-button
@@ -13,21 +16,27 @@ import { Component, input, output, ViewEncapsulation } from '@angular/core'
 			[severity]="severity()"
 			(onClick)="action.emit($event); $event.stopImmediatePropagation()"
 			class="flex"
-			styleClass="w-full select-none cursor-pointer flex-column">
+			styleClass="w-full cursor-pointer select-none flex-col gap-[4px]">
 			<img
 				[src]="image()"
 				[style]="{ height: imageHeight() }" />
 
 			@if (label()) {
-				<div class="mt-1 text-sm">{{ label() }}</div>
+				<div class="p-button-label text-sm">{{ label() }}</div>
 			}
 		</p-button>
 	`,
 	styles: `
 		neb-button-image {
-			.p-disabled {
+			.p-button[disabled] {
+				cursor: default !important;
+
 				img {
 					filter: grayscale(1);
+				}
+
+				.p-button-label {
+					color: var(--p-text-muted-color);
 				}
 			}
 
@@ -43,9 +52,9 @@ export class ButtonImageComponent {
 	readonly image = input.required<string>()
 	readonly imageHeight = input('16px')
 	readonly tooltip = input<string>()
-	readonly tooltipPosition = input<'right' | 'left' | 'top' | 'bottom'>('bottom')
+	readonly tooltipPosition = input<TooltipPosition>('bottom')
 	readonly disabled = input<boolean | undefined>(false)
 	readonly rounded = input<boolean | undefined>(false)
-	readonly severity = input<'success' | 'info' | 'warning' | 'danger' | 'help' | 'primary' | 'secondary' | 'contrast'>()
+	readonly severity = input<ButtonSeverity>()
 	readonly action = output<MouseEvent>()
 }

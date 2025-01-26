@@ -1,13 +1,18 @@
-import { Component, effect, HostListener, inject, NgZone, OnDestroy } from '@angular/core'
+import type { OnDestroy } from '@angular/core'
+import { Component, effect, HostListener, inject, NgZone } from '@angular/core'
 import { injectQueryParams } from 'ngxtension/inject-query-params'
-import { debounceTime, Subject, Subscription } from 'rxjs'
+import type { Subscription } from 'rxjs'
+import { debounceTime, Subject } from 'rxjs'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
-import { Tickable, Ticker } from '../../shared/services/ticker.service'
-import { DEFAULT_LIGHT_BOX, LightBox } from '../../shared/types/lightbox.types'
+import type { Tickable } from '../../shared/services/ticker.service'
+import { Ticker } from '../../shared/services/ticker.service'
+import type { LightBox } from '../../shared/types/lightbox.types'
+import { DEFAULT_LIGHT_BOX } from '../../shared/types/lightbox.types'
 import { AppComponent } from '../app.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-lightbox',
 	templateUrl: 'lightbox.component.html',
 })

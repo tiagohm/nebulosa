@@ -1,13 +1,16 @@
-import { Component, HostListener, NgZone, OnDestroy, effect, inject } from '@angular/core'
+import type { OnDestroy } from '@angular/core'
+import { Component, HostListener, NgZone, effect, inject } from '@angular/core'
 import { injectQueryParams } from 'ngxtension/inject-query-params'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { DEFAULT_FRAMING_FOV_DIALOG, DEFAULT_FRAMING_PREFERENCE, FramingRequest, HipsSurvey } from '../../shared/types/framing.types'
+import type { FramingRequest, HipsSurvey } from '../../shared/types/framing.types'
+import { DEFAULT_FRAMING_FOV_DIALOG, DEFAULT_FRAMING_PREFERENCE } from '../../shared/types/framing.types'
 import { AppComponent } from '../app.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-framing',
 	templateUrl: 'framing.component.html',
 })

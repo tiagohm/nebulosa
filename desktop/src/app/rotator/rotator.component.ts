@@ -1,15 +1,20 @@
-import { Component, HostListener, NgZone, OnDestroy, effect, inject } from '@angular/core'
+import type { OnDestroy } from '@angular/core'
+import { Component, HostListener, NgZone, effect, inject } from '@angular/core'
 import { injectQueryParams } from 'ngxtension/inject-query-params'
 import { ApiService } from '../../shared/services/api.service'
-import { BrowserWindowService } from '../../shared/services/browser-window.service'
+import type { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { Tickable, Ticker } from '../../shared/services/ticker.service'
-import { CameraStartCapture, DEFAULT_CAMERA_START_CAPTURE } from '../../shared/types/camera.types'
-import { DEFAULT_ROTATOR, DEFAULT_ROTATOR_PREFERENCE, Rotator, RotatorDialogInput, RotatorDialogMode } from '../../shared/types/rotator.types'
+import type { Tickable } from '../../shared/services/ticker.service'
+import { Ticker } from '../../shared/services/ticker.service'
+import type { CameraStartCapture } from '../../shared/types/camera.types'
+import { DEFAULT_CAMERA_START_CAPTURE } from '../../shared/types/camera.types'
+import type { Rotator, RotatorDialogInput, RotatorDialogMode } from '../../shared/types/rotator.types'
+import { DEFAULT_ROTATOR, DEFAULT_ROTATOR_PREFERENCE } from '../../shared/types/rotator.types'
 import { AppComponent } from '../app.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-rotator',
 	templateUrl: 'rotator.component.html',
 })

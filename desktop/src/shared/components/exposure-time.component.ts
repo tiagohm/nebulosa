@@ -1,11 +1,12 @@
 import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, effect, input, model, untracked } from '@angular/core'
 import type { ExposureTimeUnit } from '../types/camera.types'
-import { MenuItem } from './menu-item.component'
+import type { MenuItem } from './menu-item.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-exposure-time',
 	template: `
-		<div class="relative flex justify-content-center align-items-center">
+		<div class="relative">
 			<neb-input-number
 				[label]="label() || 'Exposure Time'"
 				[disabled]="!canExposureTime() || disabled()"
@@ -21,12 +22,17 @@ import { MenuItem } from './menu-item.component'
 			<neb-button
 				[disabled]="!canExposureTime() || !canExposureTimeUnit() || disabled()"
 				(action)="exposureTimeMenu.toggle($event)"
-				class="absolute"
-				[style]="{ right: '30px', top: '2.5px', maxHeight: '22px' }"
+				class="absolute top-0"
+				[style]="{ right: '30px' }"
 				[label]="unit() | enum"
 				severity="info"
 				(wheel)="exposureTimeUnitWheeled($event)" />
 		</div>
+	`,
+	styles: `
+		neb-exposure-time {
+			max-width: 100%;
+		}
 	`,
 	encapsulation: ViewEncapsulation.None,
 	changeDetection: ChangeDetectionStrategy.OnPush,

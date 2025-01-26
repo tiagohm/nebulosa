@@ -1,16 +1,19 @@
-import { AfterViewInit, Component, HostListener, OnDestroy, ViewEncapsulation, inject, viewChildren } from '@angular/core'
-import { Listbox } from 'primeng/listbox'
-import { MenuItem } from '../../shared/components/menu-item.component'
+import type { AfterViewInit, OnDestroy } from '@angular/core'
+import { Component, HostListener, ViewEncapsulation, inject, viewChildren } from '@angular/core'
+import type { Listbox } from 'primeng/listbox'
+import type { MenuItem } from '../../shared/components/menu-item.component'
 import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { CalibrationFrame, DEFAULT_CALIBRATION_GROUP_DIALOG, DEFAULT_CALIBRATION_PREFERENCE } from '../../shared/types/calibration.types'
+import type { CalibrationFrame } from '../../shared/types/calibration.types'
+import { DEFAULT_CALIBRATION_GROUP_DIALOG, DEFAULT_CALIBRATION_PREFERENCE } from '../../shared/types/calibration.types'
 import { textComparator } from '../../shared/utils/comparators'
 import { AppComponent } from '../app.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-calibration',
 	templateUrl: 'calibration.component.html',
 	encapsulation: ViewEncapsulation.None,
@@ -124,9 +127,8 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
 			},
 		},
 		{
-			icon: 'mdi mdi-delete',
+			icon: 'mdi mdi-delete text-red-500',
 			label: 'Delete All',
-			iconClass: 'text-danger',
 			command: async () => {
 				if (this.activeGroup && this.activeFrames.length) {
 					await this.deleteFrameGroup(this.activeGroup)

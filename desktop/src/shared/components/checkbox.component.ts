@@ -1,17 +1,28 @@
 import { Component, input, model, output, ViewEncapsulation } from '@angular/core'
-import { CheckboxChangeEvent } from 'primeng/checkbox'
+import type { CheckboxChangeEvent } from 'primeng/checkbox'
+import type { TooltipPosition } from '../types/angular.types'
 
 @Component({
+	standalone: false,
 	selector: 'neb-checkbox',
 	template: `
-		<p-checkbox
-			[binary]="true"
-			[label]="label()"
-			[disabled]="disabled()"
-			[(ngModel)]="value"
-			[class.white-space-nowrap]="noWrap()"
-			[class.vertical]="vertical()"
-			(onChange)="action.emit($event); $event.originalEvent?.stopImmediatePropagation()" />
+		<div
+			class="flex items-center justify-start gap-2 text-sm"
+			[style]="{ flexDirection: direction() }">
+			<p-checkbox
+				[binary]="true"
+				[disabled]="disabled()"
+				[(ngModel)]="value"
+				[class.whitespace-nowrap]="noWrap()"
+				(onChange)="action.emit($event); $event.originalEvent?.stopImmediatePropagation()"
+				(click)="$event.stopImmediatePropagation()"
+				(mouseup)="$event.stopImmediatePropagation()"
+				(mousedown)="$event.stopImmediatePropagation()"
+				[pTooltip]="tooltip()"
+				[tooltipPosition]="tooltipPosition()"
+				[life]="2000" />
+			<label>{{ label() }}</label>
+		</div>
 	`,
 	styles: `
 		neb-checkbox {
@@ -32,6 +43,8 @@ export class CheckboxComponent {
 	readonly value = model(false)
 	readonly disabled = input(false)
 	readonly noWrap = input(false)
-	readonly vertical = input(false)
+	readonly direction = input<'row' | 'column' | 'row-reverse' | 'column-reverse'>('row')
+	readonly tooltip = input<string>()
+	readonly tooltipPosition = input<TooltipPosition>('bottom')
 	readonly action = output<CheckboxChangeEvent>()
 }

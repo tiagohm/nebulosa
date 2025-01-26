@@ -1,8 +1,9 @@
 import { Component, inject, input, ViewEncapsulation } from '@angular/core'
 import { BrowserWindowService } from '../services/browser-window.service'
-import { Device } from '../types/device.types'
+import type { Device } from '../types/device.types'
 
 @Component({
+	standalone: false,
 	selector: 'neb-button-indi',
 	template: `
 		@if (device().sender.type === 'INDI') {

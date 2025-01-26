@@ -1,15 +1,20 @@
-import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, OnInit, inject, viewChild } from '@angular/core'
-import { Chart, ChartData, ChartOptions } from 'chart.js'
+import type { AfterViewInit, OnDestroy, OnInit } from '@angular/core'
+import { Component, HostListener, NgZone, inject, viewChild } from '@angular/core'
+import type { ChartData, ChartOptions } from 'chart.js'
+import { Chart } from 'chart.js'
 import zoomPlugin from 'chartjs-plugin-zoom'
-import { UIChart } from 'primeng/chart'
+import type { UIChart } from 'primeng/chart'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { Tickable, Ticker } from '../../shared/services/ticker.service'
-import { DEFAULT_GUIDER_CHART_INFO, DEFAULT_GUIDER_PHD2, DEFAULT_GUIDER_PREFERENCE, GuideDirection, GuideOutput, Guider, GuiderHistoryStep } from '../../shared/types/guider.types'
+import type { Tickable } from '../../shared/services/ticker.service'
+import { Ticker } from '../../shared/services/ticker.service'
+import type { GuideDirection, GuideOutput, Guider, GuiderHistoryStep } from '../../shared/types/guider.types'
+import { DEFAULT_GUIDER_CHART_INFO, DEFAULT_GUIDER_PHD2, DEFAULT_GUIDER_PREFERENCE } from '../../shared/types/guider.types'
 import { AppComponent } from '../app.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-guider',
 	templateUrl: 'guider.component.html',
 })

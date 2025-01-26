@@ -1,9 +1,11 @@
-import { Component, Type, inject } from '@angular/core'
-import { CalculatorFormula } from '../../shared/types/calculator.types'
+import type { Type } from '@angular/core'
+import { Component, inject } from '@angular/core'
+import type { CalculatorFormula } from '../../shared/types/calculator.types'
 import { AppComponent } from '../app.component'
 import { FormulaComponent } from './formula/formula.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-calculator',
 	templateUrl: 'calculator.component.html',
 })
@@ -198,7 +200,7 @@ export class CalculatorComponent {
 				],
 				result: {
 					label: 'Resolution',
-					suffix: `"/pixel`,
+					suffix: `"/px`,
 				},
 				calculate: (pixelSize, focalLength) => {
 					if (pixelSize && focalLength) {

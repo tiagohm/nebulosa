@@ -1,9 +1,10 @@
 import { Component, input, model, ViewEncapsulation } from '@angular/core'
 
 @Component({
+	standalone: false,
 	selector: 'neb-indicator',
 	template: `
-		<div class="flex flex-column align-items-center justify-content-center">
+		<div class="flex flex-col items-center justify-center">
 			@for (item of count() | repeat; track $index) {
 				<span
 					class="indicator"

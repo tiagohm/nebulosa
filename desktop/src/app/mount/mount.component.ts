@@ -1,19 +1,25 @@
-import { Component, HostListener, NgZone, OnDestroy, effect, inject } from '@angular/core'
+import type { OnDestroy } from '@angular/core'
+import { Component, HostListener, NgZone, effect, inject } from '@angular/core'
 import hotkeys from 'hotkeys-js'
 import { injectQueryParams } from 'ngxtension/inject-query-params'
-import { Subject, Subscription, interval, throttleTime } from 'rxjs'
-import { SlideMenuItem } from '../../shared/components/menu-item.component'
+import type { Subscription } from 'rxjs'
+import { Subject, interval, throttleTime } from 'rxjs'
+import type { SlideMenuItem } from '../../shared/components/menu-item.component'
 import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { Tickable, Ticker } from '../../shared/services/ticker.service'
-import { BodyTabType, ComputedLocation, DEFAULT_COMPUTED_LOCATION } from '../../shared/types/atlas.types'
-import { DEFAULT_MOUNT, DEFAULT_MOUNT_PREFERENCE, DEFAULT_MOUNT_REMOTE_CONTROL_DIALOG, DEFAULT_MOUNT_SITE_DIALOG, DEFAULT_MOUNT_TIME_DIALOG, Mount, MountRemoteControlProtocol, MountSlewDirection, TrackMode } from '../../shared/types/mount.types'
+import type { Tickable } from '../../shared/services/ticker.service'
+import { Ticker } from '../../shared/services/ticker.service'
+import type { ComputedLocation } from '../../shared/types/atlas.types'
+import { BodyTabType, DEFAULT_COMPUTED_LOCATION } from '../../shared/types/atlas.types'
+import type { Mount, MountRemoteControlProtocol, MountSlewDirection, TrackMode } from '../../shared/types/mount.types'
+import { DEFAULT_MOUNT, DEFAULT_MOUNT_PREFERENCE, DEFAULT_MOUNT_REMOTE_CONTROL_DIALOG, DEFAULT_MOUNT_SITE_DIALOG, DEFAULT_MOUNT_TIME_DIALOG } from '../../shared/types/mount.types'
 import { AppComponent } from '../app.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-mount',
 	templateUrl: 'mount.component.html',
 })
@@ -252,7 +258,7 @@ export class MountComponent implements OnDestroy, Tickable {
 		})
 		hotkeys('enter', (event) => {
 			event.preventDefault()
-			void this.targetCoordinateCommandClicked()
+			void this.targetCoordinateClicked()
 		})
 		hotkeys('w,up', { keyup: true }, (event) => {
 			event.preventDefault()
@@ -393,7 +399,7 @@ export class MountComponent implements OnDestroy, Tickable {
 		this.savePreference()
 	}
 
-	protected async targetCoordinateCommandClicked() {
+	protected async targetCoordinateClicked() {
 		if (this.targetCoordinateCommand === this.targetCoordinateModel[0]) {
 			await this.goTo()
 		} else if (this.targetCoordinateCommand === this.targetCoordinateModel[1]) {

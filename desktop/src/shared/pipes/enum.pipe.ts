@@ -1,17 +1,18 @@
-import { Pipe, PipeTransform } from '@angular/core'
-import { DARVState, Hemisphere, TPPAState } from '../types/alignment.types'
-import { Constellation, MoonPhase, SatelliteGroupType, SkyObjectType } from '../types/atlas.types'
-import { AutoFocusFittingMode, AutoFocusState, BacklashCompensationMode } from '../types/autofocus.type'
-import { CameraCaptureState, ExposureMode, ExposureTimeUnit, FrameType, LiveStackerType } from '../types/camera.types'
-import { DeviceType } from '../types/device.types'
-import { FlatWizardState } from '../types/flat-wizard.types'
-import { GuideDirection, GuideState, GuiderPlotMode, GuiderYAxisUnit } from '../types/guider.types'
-import { Bitpix, ImageChannel, ImageFilterType, SCNRProtectionMethod } from '../types/image.types'
-import { MountRemoteControlProtocol, TrackMode } from '../types/mount.types'
-import { PlateSolverType } from '../types/platesolver.types'
-import { SequencerCaptureMode, SequencerState } from '../types/sequencer.types'
-import { StarDetectorType } from '../types/stardetector.types'
-import { Undefinable } from '../utils/types'
+import type { PipeTransform } from '@angular/core'
+import { Pipe } from '@angular/core'
+import type { DARVState, Hemisphere, TPPAState } from '../types/alignment.types'
+import type { Constellation, MoonPhase, SatelliteGroupType, SkyObjectType } from '../types/atlas.types'
+import type { AutoFocusFittingMode, AutoFocusState, BacklashCompensationMode } from '../types/autofocus.type'
+import type { CameraCaptureState, ExposureMode, ExposureTimeUnit, FrameType, LiveStackerType } from '../types/camera.types'
+import type { DeviceType } from '../types/device.types'
+import type { FlatWizardState } from '../types/flat-wizard.types'
+import type { GuideDirection, GuideState, GuiderPlotMode, GuiderYAxisUnit } from '../types/guider.types'
+import type { Bitpix, ImageChannel, ImageFilterType, SCNRProtectionMethod } from '../types/image.types'
+import type { MountRemoteControlProtocol, TrackMode } from '../types/mount.types'
+import type { PlateSolverType } from '../types/platesolver.types'
+import type { SequencerCaptureMode, SequencerState } from '../types/sequencer.types'
+import type { StarDetectorType } from '../types/stardetector.types'
+import type { Undefinable } from '../utils/types'
 
 export type EnumPipeKey =
 	| SCNRProtectionMethod
@@ -47,7 +48,7 @@ export type EnumPipeKey =
 	| TrackMode
 	| 'ALL'
 
-@Pipe({ name: 'enum' })
+@Pipe({ standalone: false, name: 'enum' })
 export class EnumPipe implements PipeTransform {
 	private readonly enums: Record<EnumPipeKey, Undefinable<string>> = {
 		'DX/DY': 'dx/dy',

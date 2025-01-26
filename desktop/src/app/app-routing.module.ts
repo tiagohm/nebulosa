@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core'
-import { RouterModule, Routes } from '@angular/router'
+import type { Routes } from '@angular/router'
+import { RouterModule } from '@angular/router'
 import { APP_CONFIG } from '../environments/environment'
 import { AboutComponent } from './about/about.component'
 import { AlignmentComponent } from './alignment/alignment.component'

@@ -1,16 +1,18 @@
-import { Component, ElementRef, TemplateRef, ViewEncapsulation, effect, input, output } from '@angular/core'
-import { MenuItemCommandEvent, SlideMenuItem } from './menu-item.component'
+import type { ElementRef, TemplateRef } from '@angular/core'
+import { Component, ViewEncapsulation, effect, input, output } from '@angular/core'
+import type { MenuItemCommandEvent, SlideMenuItem } from './menu-item.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-slide-menu',
 	template: `
-		<div class="flex flex-column justify-content-center align-items-center gap-1">
+		<div class="flex flex-col items-center justify-center gap-1">
 			<p-menu
 				[model]="currentMenu"
 				[appendTo]="appendTo()"
-				styleClass="border-0 w-full min-w-18rem">
+				styleClass="min-w-18rem w-full">
 				<ng-template
-					pTemplate="item"
+					#item
 					let-item>
 					<neb-menu-item [item]="item" />
 				</ng-template>

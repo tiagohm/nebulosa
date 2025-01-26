@@ -1,4 +1,4 @@
-export type Severity = 'success' | 'info' | 'warning' | 'danger'
+export type Severity = 'success' | 'info' | 'warn' | 'danger'
 
 export type TooltipPosition = 'right' | 'left' | 'top' | 'bottom'
 

@@ -1,10 +1,11 @@
 import { Component, input, output, ViewEncapsulation } from '@angular/core'
-import { ImageAdjustmentLevel } from '../../shared/types/image.types'
+import type { ImageAdjustmentLevel } from '../../shared/types/image.types'
 
 @Component({
+	standalone: false,
 	selector: 'neb-image-adjustment-input',
 	template: `
-		<div class="w-full inline-flex justify-content-center align-items-center gap-1">
+		<div class="inline-flex w-full items-center justify-center gap-1">
 			@let mLevel = level();
 
 			<neb-checkbox
@@ -18,7 +19,7 @@ import { ImageAdjustmentLevel } from '../../shared/types/image.types'
 				[max]="max()"
 				[step]="0.01"
 				[fractionDigits]="2"
-				class="max-w-10rem"
+				class="max-w-40"
 				[(value)]="mLevel.value"
 				(valueChange)="update.emit()" />
 			<p-slider
@@ -26,7 +27,7 @@ import { ImageAdjustmentLevel } from '../../shared/types/image.types'
 				[min]="min()"
 				[max]="max()"
 				[step]="0.1"
-				class="flex-1 mx-3"
+				class="mx-3 flex-1"
 				[(ngModel)]="mLevel.value"
 				(ngModelChange)="update.emit()" />
 			<neb-button

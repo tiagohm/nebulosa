@@ -1,8 +1,10 @@
-import { Injectable, Type, inject } from '@angular/core'
+import type { Type } from '@angular/core'
+import { Injectable, inject } from '@angular/core'
 import { MessageService } from 'primeng/api'
-import { DialogService, DynamicDialogConfig } from 'primeng/dynamicdialog'
+import type { DynamicDialogConfig } from 'primeng/dynamicdialog'
+import { DialogService } from 'primeng/dynamicdialog'
 import { ConfirmDialogComponent } from '../dialogs/confirm/confirm.dialog'
-import { Undefinable } from '../utils/types'
+import type { Undefinable } from '../utils/types'
 
 @Injectable({ providedIn: 'root' })
 export class AngularService {
@@ -39,6 +41,6 @@ export class AngularService {
 	}
 
 	message(text: string, severity: 'success' | 'info' | 'warn' | 'error' = 'success') {
-		this.messageService.add({ severity, detail: text, life: 4000 })
+		this.messageService.add({ severity, detail: text, summary: severity.toUpperCase(), life: 4000 })
 	}
 }

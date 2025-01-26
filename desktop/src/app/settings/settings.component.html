@@ -1,81 +1,75 @@
-<div class="grid px-3 pb-2 pt-3 relative">
+<div class="relative px-3 pb-2 pt-3">
 	@if (tab === 'GENERAL') {
-		<div class="col-12">
-			<div class="grid">
-				<div class="col-12">
-					<neb-checkbox
-						label="Check for new version on startup"
-						[(value)]="preference.checkVersion"
-						(valueChange)="savePreference()" />
-				</div>
-			</div>
+		<div class="flex">
+			<neb-checkbox
+				label="Check for new version on startup"
+				[(value)]="preference.checkVersion"
+				(valueChange)="savePreference()" />
 		</div>
 	} @else if (tab === 'LOCATION') {
-		<div class="col-12">
-			<div class="grid">
-				<div class="col-12 gap-2">
-					<neb-dropdown
-						label="Location"
-						[options]="preference.locations"
-						[(value)]="preference.location"
-						(valueChange)="locationChanged($event)"
-						emptyMessage="No location available" />
-					<div class="flex gap-1">
-						<neb-button
-							icon="mdi mdi-plus"
-							severity="success"
-							tooltip="New"
-							(action)="addLocation()" />
-						<neb-button
-							[disabled]="preference.locations.length <= 1"
-							icon="mdi mdi-delete"
-							severity="danger"
-							tooltip="Delete"
-							(action)="deleteLocation()" />
-					</div>
+		<div class="flex flex-col gap-1">
+			<div class="flex w-full items-center gap-2">
+				<neb-dropdown
+					label="Location"
+					[options]="preference.locations"
+					[(value)]="preference.location"
+					(valueChange)="locationChanged($event)"
+					emptyMessage="No location available" />
+				<div class="flex items-center gap-1">
+					<neb-button
+						icon="mdi mdi-plus"
+						severity="success"
+						tooltip="New"
+						(action)="addLocation()" />
+					<neb-button
+						[disabled]="preference.locations.length <= 1"
+						icon="mdi mdi-delete"
+						severity="danger"
+						tooltip="Delete"
+						(action)="deleteLocation()" />
 				</div>
-				<div class="col-12">
-					<neb-location
-						[location]="preference.location"
-						(update)="locationChanged()" />
-				</div>
+			</div>
+			<div class="w-full">
+				<neb-location
+					[location]="preference.location"
+					(update)="locationChanged()" />
 			</div>
 		</div>
 	} @else if (tab === 'PLATE_SOLVER') {
-		<div class="col-12">
-			<div class="grid">
-				<div class="col-8">
-					<neb-dropdown-enum
-						label="Solver"
-						[options]="'PLATE_SOLVER' | dropdownOptions"
-						[(value)]="plateSolverType" />
+		<div class="grid grid-cols-3 gap-3">
+			<div class="col-span-full">
+				<neb-dropdown-enum
+					label="Solver"
+					[options]="'PLATE_SOLVER' | dropdownOptions"
+					[(value)]="plateSolverType" />
+			</div>
+			@if (plateSolverType !== 'ASTROMETRY_NET_ONLINE') {
+				<div class="col-span-full">
+					<neb-path-chooser
+						key="plateSolverExecutableFile"
+						[directory]="false"
+						label="Executable path"
+						[(path)]="plateSolver.executablePath"
+						class="w-full"
+						(pathChange)="savePreference()" />
 				</div>
-				@if (plateSolverType !== 'ASTROMETRY_NET_ONLINE') {
-					<div class="col-12">
-						<neb-path-chooser
-							key="plateSolverExecutableFile"
-							[directory]="false"
-							label="Executable path"
-							[(path)]="plateSolver.executablePath"
-							class="w-full"
-							(pathChange)="savePreference()" />
-					</div>
-				} @else {
-					<div class="col-8">
-						<neb-input-text
-							label="API URL"
-							[(value)]="plateSolver.apiUrl"
-							(valueChange)="savePreference()" />
-					</div>
-					<div class="col-4">
-						<neb-input-text
-							label="API Key"
-							[(value)]="plateSolver.apiKey"
-							(valueChange)="savePreference()" />
-					</div>
-				}
-				@if (plateSolverType !== 'PIXINSIGHT') {
-					<div class="col-6">
+			} @else {
+				<div class="col-span-2">
+					<neb-input-text
+						label="API URL"
+						[(value)]="plateSolver.apiUrl"
+						(valueChange)="savePreference()" />
+				</div>
+				<div class="col-span-1">
+					<neb-input-text
+						label="API Key"
+						[(value)]="plateSolver.apiKey"
+						(valueChange)="savePreference()" />
+				</div>
+			}
+			@if (plateSolverType !== 'PIXINSIGHT') {
+				<div class="col-span-full flex gap-3">
+					<div class="w-5/12">
 						<neb-input-number
 							label="Downsample factor"
 							[min]="0"
@@ -83,7 +77,7 @@
 							[(value)]="plateSolver.downsampleFactor"
 							(valueChange)="savePreference()" />
 					</div>
-					<div class="col-6">
+					<div class="w-4/12">
 						<neb-input-number
 							label="Timeout (s)"
 							[max]="300"
@@ -91,142 +85,141 @@
 							[(value)]="plateSolver.timeout"
 							(valueChange)="savePreference()" />
 					</div>
-				} @else {
-					<div class="col-4">
-						<neb-input-number
-							label="Slot"
-							[min]="0"
-							[max]="256"
-							[(value)]="plateSolver.slot"
-							(valueChange)="savePreference()" />
-					</div>
-				}
-			</div>
+				</div>
+			} @else {
+				<div class="col-span-1">
+					<neb-input-number
+						label="Slot"
+						[min]="0"
+						[max]="256"
+						[(value)]="plateSolver.slot"
+						(valueChange)="savePreference()" />
+				</div>
+			}
 		</div>
 	} @else if (tab === 'STAR_DETECTOR') {
-		<div class="col-12">
-			<div class="grid">
-				<div class="col-6">
-					<neb-dropdown-enum
-						label="Detector"
-						[options]="'STAR_DETECTOR' | dropdownOptions"
-						[(value)]="starDetectorType" />
-				</div>
-				<div class="col-12">
-					<neb-path-chooser
-						key="starDetectorExecutableFile"
-						[directory]="false"
-						label="Executable path"
-						[(path)]="starDetector.executablePath"
-						class="w-full"
-						(pathChange)="savePreference()" />
-				</div>
-				<div class="col-4">
-					<neb-input-number
-						label="Timeout (s)"
-						[(value)]="starDetector.timeout"
-						(valueChange)="savePreference()"
-						[min]="0"
-						[max]="300" />
-				</div>
-				@if (starDetectorType === 'PIXINSIGHT') {
-					<div class="col-4">
-						<neb-input-number
-							label="Slot"
-							[min]="0"
-							[max]="256"
-							[(value)]="starDetector.slot"
-							(valueChange)="savePreference()" />
-					</div>
-				}
+		<div class="grid grid-cols-3 gap-3">
+			<div class="col-span-full">
+				<neb-dropdown-enum
+					label="Detector"
+					[options]="'STAR_DETECTOR' | dropdownOptions"
+					[(value)]="starDetectorType" />
 			</div>
+			<div class="col-span-full">
+				<neb-path-chooser
+					key="starDetectorExecutableFile"
+					[directory]="false"
+					label="Executable path"
+					[(path)]="starDetector.executablePath"
+					class="w-full"
+					(pathChange)="savePreference()" />
+			</div>
+			<div class="col-span-1">
+				<neb-input-number
+					label="Timeout (s)"
+					[(value)]="starDetector.timeout"
+					(valueChange)="savePreference()"
+					[min]="0"
+					[max]="300" />
+			</div>
+			@if (starDetectorType === 'PIXINSIGHT') {
+				<div class="col-span-1">
+					<neb-input-number
+						label="Slot"
+						[min]="0"
+						[max]="256"
+						[(value)]="starDetector.slot"
+						(valueChange)="savePreference()" />
+				</div>
+			}
 		</div>
 	} @else if (tab === 'LIVE_STACKER') {
-		<div class="col-12">
-			<div class="grid">
-				<div class="col-6">
-					<neb-dropdown-enum
-						label="Stacker"
-						[options]="'LIVE_STACKER' | dropdownOptions"
-						[(value)]="liveStackerType" />
-				</div>
-				<div class="col-12">
-					<neb-path-chooser
-						key="liveStackerExecutableFile"
-						[directory]="false"
-						class="w-full"
-						[(path)]="liveStacker.executablePath"
-						label="Executable path"
-						(pathChange)="savePreference()" />
-				</div>
-				@if (liveStackerType === 'PIXINSIGHT') {
-					<div class="col-4">
-						<neb-input-number
-							label="Slot"
-							[min]="0"
-							[max]="256"
-							[(value)]="liveStacker.slot"
-							(valueChange)="savePreference()" />
-					</div>
-				}
+		<div class="grid grid-cols-3 gap-3">
+			<div class="col-span-full">
+				<neb-dropdown-enum
+					label="Stacker"
+					[options]="'LIVE_STACKER' | dropdownOptions"
+					[(value)]="liveStackerType" />
 			</div>
+			<div class="col-span-full">
+				<neb-path-chooser
+					key="liveStackerExecutableFile"
+					[directory]="false"
+					class="w-full"
+					[(path)]="liveStacker.executablePath"
+					label="Executable path"
+					(pathChange)="savePreference()" />
+			</div>
+			@if (liveStackerType === 'PIXINSIGHT') {
+				<div class="col-span-1">
+					<neb-input-number
+						label="Slot"
+						[min]="0"
+						[max]="256"
+						[(value)]="liveStacker.slot"
+						(valueChange)="savePreference()" />
+				</div>
+			}
 		</div>
 	} @else if (tab === 'CAPTURE_NAMING_FORMAT') {
-		<div class="col-12">
-			<div class="grid">
-				<div class="col-12 gap-1">
-					<neb-input-text
-						label="Light"
-						[(value)]="preference.namingFormat.light"
-						(valueChange)="savePreference()" />
-					<neb-button
-						icon="mdi mdi-restore"
-						(action)="resetCameraCaptureNamingFormat('LIGHT')"
-						tooltip="Reset" />
-				</div>
-				<div class="col-12 gap-1">
-					<neb-input-text
-						label="Dark"
-						[(value)]="preference.namingFormat.dark"
-						(valueChange)="savePreference()" />
-					<neb-button
-						icon="mdi mdi-restore"
-						(action)="resetCameraCaptureNamingFormat('DARK')"
-						tooltip="Reset" />
-				</div>
-				<div class="col-12 gap-1">
-					<neb-input-text
-						label="Flat"
-						[(value)]="preference.namingFormat.flat"
-						(valueChange)="savePreference()" />
-					<neb-button
-						icon="mdi mdi-restore"
-						(action)="resetCameraCaptureNamingFormat('FLAT')"
-						tooltip="Reset" />
-				</div>
-				<div class="col-12 gap-1">
-					<neb-input-text
-						label="Bias"
-						[(value)]="preference.namingFormat.bias"
-						(valueChange)="savePreference()" />
-					<neb-button
-						icon="mdi mdi-restore"
-						(action)="resetCameraCaptureNamingFormat('BIAS')"
-						tooltip="Reset" />
-				</div>
+		<div class="grid grid-cols-3 gap-3">
+			<div class="col-span-full flex items-center gap-1">
+				<neb-input-text
+					label="Light"
+					[(value)]="preference.namingFormat.light"
+					(valueChange)="savePreference()"
+					class="flex-1" />
+				<neb-button
+					icon="mdi mdi-restore"
+					(action)="resetCameraCaptureNamingFormat('LIGHT')"
+					tooltip="Reset" />
+			</div>
+			<div class="col-span-full flex items-center gap-1">
+				<neb-input-text
+					label="Dark"
+					[(value)]="preference.namingFormat.dark"
+					(valueChange)="savePreference()"
+					class="flex-1" />
+				<neb-button
+					icon="mdi mdi-restore"
+					(action)="resetCameraCaptureNamingFormat('DARK')"
+					tooltip="Reset" />
+			</div>
+			<div class="col-span-full flex items-center gap-1">
+				<neb-input-text
+					label="Flat"
+					[(value)]="preference.namingFormat.flat"
+					(valueChange)="savePreference()"
+					class="flex-1" />
+				<neb-button
+					icon="mdi mdi-restore"
+					(action)="resetCameraCaptureNamingFormat('FLAT')"
+					tooltip="Reset" />
+			</div>
+			<div class="col-span-full flex items-center gap-1">
+				<neb-input-text
+					label="Bias"
+					[(value)]="preference.namingFormat.bias"
+					(valueChange)="savePreference()"
+					class="flex-1" />
+				<neb-button
+					icon="mdi mdi-restore"
+					(action)="resetCameraCaptureNamingFormat('BIAS')"
+					tooltip="Reset" />
 			</div>
 		</div>
 	}
 </div>
 
-<p-sidebar
+<p-drawer
 	[(visible)]="showMenu"
 	[fullScreen]="true"
 	appendTo="body"
 	[modal]="false"
 	[dismissible]="true"
-	styleClass="bg-black-alpha-70">
+	[closeButtonProps]="{ severity: 'danger', text: true, rounded: true, size: 'small' }"
+	styleClass="bg-black bg-opacity-70">
 	<p-menu
 		[model]="menuModel"
-		styleClass="w-full border-0 px-2" />
-</p-sidebar>
+		styleClass="w-full px-2" />
+</p-drawer>

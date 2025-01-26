@@ -1,6 +1,10 @@
 import { Component, input, output, ViewEncapsulation } from '@angular/core'
+import type { Severity, TooltipPosition } from '../types/angular.types'
+
+export type ButtonSeverity = Severity | 'help' | 'primary' | 'secondary' | 'contrast'
 
 @Component({
+	standalone: false,
 	selector: 'neb-button',
 	template: `
 		<p-button
@@ -11,12 +15,17 @@ import { Component, input, output, ViewEncapsulation } from '@angular/core'
 			[icon]="icon()"
 			[disabled]="disabled()"
 			[severity]="severity()"
-			(onClick)="action.emit($event); $event.stopImmediatePropagation()"
+			(onClick)="$event.stopImmediatePropagation(); action.emit($event)"
 			[pTooltip]="tooltip()"
 			[tooltipPosition]="tooltipPosition()"
 			[life]="2000"
+			[badge]="badge()"
+			[badgeSeverity]="badgeSeverity()"
+			(mouseup)="$event.stopImmediatePropagation()"
+			(mousedown)="$event.stopImmediatePropagation()"
 			class="inline-flex"
-			styleClass="white-space-nowrap select-none cursor-pointer">
+			[class.w-full]="!!label()"
+			styleClass="w-full cursor-pointer select-none whitespace-nowrap">
 			<ng-content></ng-content>
 		</p-button>
 	`,
@@ -30,6 +39,15 @@ import { Component, input, output, ViewEncapsulation } from '@angular/core'
 				&:has(.mdi-lg) {
 					height: 3.25rem;
 				}
+
+				&[disabled] {
+					cursor: default !important;
+
+					.p-button-icon,
+					.p-button-label {
+						color: var(--p-text-muted-color);
+					}
+				}
 			}
 		}
 	`,
@@ -39,9 +57,11 @@ export class ButtonComponent {
 	readonly label = input<string>()
 	readonly icon = input<string>()
 	readonly tooltip = input<string>()
-	readonly tooltipPosition = input<'right' | 'left' | 'top' | 'bottom'>('bottom')
+	readonly tooltipPosition = input<TooltipPosition>('bottom')
 	readonly rounded = input(true)
 	readonly disabled = input<boolean | undefined>(false)
-	readonly severity = input<'success' | 'info' | 'warning' | 'danger' | 'help' | 'primary' | 'secondary' | 'contrast'>()
+	readonly severity = input<ButtonSeverity>()
+	readonly badge = input<string>()
+	readonly badgeSeverity = input<ButtonSeverity>('danger')
 	readonly action = output<MouseEvent>()
 }

@@ -1,469 +1,468 @@
-<div class="container pt-1 pb-3">
-	<div class="grid py-1 flex align-items-center">
-		<p-tabView
-			class="w-full"
-			[scrollable]="true">
-			<p-tabPanel>
-				<ng-template pTemplate="header">
-					<div
-						class="w-full flex align-items-center justify-content-center p-3"
-						pTooltip="Sequences"
-						tooltipPosition="bottom"
-						positionLeft="20">
+<div class="pb-3 pt-1">
+	<div class="flex items-center py-1">
+		<p-tabs value="0">
+			<p-tablist>
+				<p-tab
+					value="0"
+					pTooltip="Sequences"
+					tooltipPosition="bottom"
+					positionLeft="20">
+					<div class="flex w-full items-center justify-center">
 						<i class="mdi mdi-play"></i>
 					</div>
-				</ng-template>
-				<div class="grid px-4 pt-3">
-					<div class="col-12 align-items-center justify-content-center flex-nowrap overflow-y-hidden gap-2">
-						<neb-device-chooser
-							title="MOUNT"
-							icon="mdi mdi-telescope"
-							[devices]="mounts"
-							[(device)]="plan.mount"
-							[hasNone]="true"
-							(deviceChange)="mountChanged()" />
-						<neb-device-chooser
-							title="FILTER WHEEL"
-							icon="mdi mdi-palette"
-							[devices]="wheels"
-							[(device)]="plan.wheel"
-							[hasNone]="true"
-							(deviceChange)="wheelChanged()" />
-						<neb-device-chooser
-							title="FOCUSER"
-							icon="mdi mdi-image-filter-center-focus"
-							[devices]="focusers"
-							[(device)]="plan.focuser"
-							[hasNone]="true"
-							(deviceChange)="focuserChanged()" />
-						<neb-device-chooser
-							title="ROTATOR"
-							icon="mdi mdi-rotate-right"
-							[devices]="rotators"
-							[(device)]="plan.rotator"
-							[hasNone]="true"
-							(deviceChange)="rotatorChanged()" />
-					</div>
-				</div>
-				<div
-					class="flex absolute right-0 align-items-center justify-content-end mr-4"
-					style="top: 56px">
-					@if (event && running) {
-						<span class="mr-2 text-sm">{{ event.state | enum }}</span>
-						<span
-							class="bg-warning border-round-left-md text-gray-900 line-height-3 text-sm text-center"
-							style="min-width: 48px">
-							<i class="mdi mdi-counter mdi-sm"></i>
-							{{ event.id }}
-						</span>
-						<span
-							class="bg-success text-gray-900 line-height-3 text-sm text-center"
-							style="min-width: 62px"
-							pTooltip="Elapsed time"
-							tooltipPosition="bottom">
-							<i class="mdi mdi-timer-sand-complete mdi-sm"></i>
-							{{ event.elapsedTime | exposureTime }}
-						</span>
-						<span
-							class="bg-success text-gray-900 line-height-3 text-sm text-center"
-							style="min-width: 62px"
-							pTooltip="Remaining time"
-							tooltipPosition="bottom">
-							<i class="mdi mdi-timer-sand mdi-sm"></i>
-							{{ event.remainingTime | exposureTime }}
-						</span>
-						<span
-							class="bg-success border-round-right-md text-gray-900 line-height-3 text-sm text-center"
-							style="min-width: 52px">
-							<i class="mdi mdi-percent mdi-sm"></i>
-							{{ event.progress * 100 | number: '1.1-1' }}
-						</span>
-					} @else {
-						<span
-							class="bg-warning border-round-left-md text-gray-900 line-height-3 text-sm text-center"
-							style="min-width: 48px">
-							<i class="mdi mdi-counter mdi-sm"></i>
-							{{ exposureTotal.frames }}
-						</span>
-						<span
-							class="bg-success border-round-right-md text-gray-900 line-height-3 text-sm text-center"
-							style="min-width: 62px">
-							<i class="mdi mdi-timer mdi-sm"></i>
-							{{ exposureTotal.time | exposureTime }}
-						</span>
-					}
-				</div>
-				<div
-					cdkDropList
-					[cdkDropListDisabled]="running"
-					(cdkDropListDropped)="drop($event)"
-					class="grid px-4 mt-1 flex align-items-center gap-0 overflow-y-auto"
-					style="max-height: calc(100vh - 200px)">
-					@for (sequence of plan.sequences; track sequence; let i = $index) {
-						<p-card
-							cdkDrag
-							class="lg:col-6 col-12"
-							styleClass="w-full pt-2">
-							<ng-template pTemplate="header">
-								<div class="grid">
-									<div
-										cdkDragHandle
-										class="cursor-move col-1 pb-1 align-items-center justify-content-center gap-2">
-										<span class="font-bold text-xl ml-3">#{{ i + 1 }}</span>
-									</div>
-									<div class="col pb-1 align-items-center gap-1">
-										<neb-button
-											[disabled]="running || !plan.camera || !sequence.enabled"
-											icon="mdi mdi-camera-iris"
-											label="Camera"
-											[severity]="plan.camera?.connected ? 'success' : 'danger'"
-											(action)="showCameraDialog(sequence)" />
-										<neb-button
-											[disabled]="running || !plan.wheel || !sequence.enabled"
-											icon="mdi mdi-palette"
-											label="Filter Wheel"
-											[severity]="plan.wheel?.connected ? 'success' : 'danger'"
-											(action)="showWheelDialog(sequence)" />
-										<neb-button
-											[disabled]="running || !plan.rotator || !sequence.enabled"
-											icon="mdi mdi-restore"
-											label="Rotator"
-											[severity]="plan.rotator?.connected ? 'success' : 'danger'"
-											(action)="showRotatorDialog(sequence)" />
-										@if (plan.liveStacking.enabled) {
-											<neb-dropdown-enum
-												[disabled]="running"
-												[options]="'IMAGE_FILTER_TYPE' | dropdownOptions"
-												[(value)]="sequence.stackerGroupType"
-												(valueChange)="savePreference()" />
-											@if (plan.liveStacking.useCalibrationGroup) {
-												<neb-dropdown-item
-													[disabled]="sequence.stackerGroupType === 'NONE' || running"
-													[options]="calibrationGroups"
-													[(value)]="sequence.calibrationGroup"
-													(valueChange)="savePreference()" />
-											}
-										}
-									</div>
-									<div class="col pb-1 pr-4 align-items-center justify-content-end gap-2">
-										<neb-button
-											[disabled]="plan.sequences.length <= 1 || running"
-											icon="mdi mdi-md mdi-dots-vertical"
-											(click)="showSequenceMenu(sequence, sequenceMenu)" />
-										<neb-button
-											[disabled]="running || plan.sequences.length <= 1"
-											icon="mdi mdi-delete"
-											severity="danger"
-											tooltip="Delete"
-											(action)="deleteSequence(sequence, i)" />
-										<neb-button
-											[disabled]="running"
-											icon="mdi mdi-content-duplicate"
-											severity="info"
-											tooltip="Duplicate"
-											(action)="duplicateSequence(sequence, i)" />
-										<neb-checkbox
-											[disabled]="running"
-											[(value)]="sequence.enabled"
-											(valueChange)="savePreference()" />
-									</div>
-								</div>
-							</ng-template>
-							<div class="grid">
-								<div class="col-12 pt-1 flex">
-									<neb-camera-info
-										[info]="sequence"
-										[wheel]="plan.wheel"
-										[focuser]="plan.focuser"
-										[rotator]="plan.rotator"
-										[canRemoveFilter]="sequence.enabled"
-										[canRemoveAngle]="sequence.enabled"
-										(filterRemoved)="filterRemoved(sequence)"
-										(angleRemoved)="angleRemoved(sequence)"
-										[disabled]="running" />
-								</div>
-								<div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1 text-center text-sm">
-									<neb-camera-exposure #cameraExposure />
-								</div>
-							</div>
-						</p-card>
-					}
-				</div>
-			</p-tabPanel>
-			<p-tabPanel>
-				<ng-template pTemplate="header">
-					<div
-						class="w-full flex align-items-center justify-content-center p-3"
-						pTooltip="Capture"
-						tooltipPosition="bottom">
+				</p-tab>
+				<p-tab
+					value="1"
+					pTooltip="Capture"
+					tooltipPosition="bottom">
+					<div class="flex w-full items-center justify-center">
 						<i class="mdi mdi-camera-iris"></i>
 					</div>
-				</ng-template>
-				<div class="align-content-start justify-content-center align-items-center flex flex-row flex-wrap gap-3 justify-content-start pt-3 px-4">
-					<neb-input-number
-						label="Initial Delay (s)"
-						class="max-w-10rem"
-						[disabled]="running"
-						[min]="0"
-						[max]="60"
-						[(value)]="plan.initialDelay"
-						(valueChange)="savePreference()" />
-					<neb-dropdown-enum
-						label="Mode"
-						class="max-w-14rem"
-						[disabled]="running"
-						[options]="'SEQUENCER_CAPTURE_MODE' | dropdownOptions"
-						[(value)]="plan.captureMode"
-						(valueChange)="savePreference()" />
-					<div class="flex flex-row align-items-center gap-2">
-						<neb-button
-							[disabled]="running"
-							icon="mdi {{ plan.autoSubFolderMode === 'OFF' ? 'mdi-folder-off text-gray-500' : plan.autoSubFolderMode === 'NOON' ? 'mdi-weather-sunny text-yellow-600' : 'mdi-weather-night text-info' }}"
-							tooltip="{{ 'Auto sub folder: ' + plan.autoSubFolderMode }}"
-							(action)="toggleAutoSubFolder()" />
-						<neb-path-chooser
-							key="sequencerOutputDirectory"
-							[directory]="true"
-							label="Output directory"
-							[(path)]="plan.savePath"
-							(pathChange)="savePreference()"
-							class="min-w-22rem"
-							[disabled]="running" />
-					</div>
-					<div class="flex gap-1">
-						<neb-input-text
-							label="Light"
-							class="min-w-22rem"
-							[disabled]="running"
-							[(value)]="plan.namingFormat.light"
-							(valueChange)="savePreference()" />
-						<neb-button
-							icon="mdi mdi-restore"
-							(action)="resetCameraCaptureNamingFormat('LIGHT')"
-							tooltip="Reset" />
-					</div>
-					<div class="flex gap-1">
-						<neb-input-text
-							label="Dark"
-							class="min-w-22rem"
-							[disabled]="running"
-							[(value)]="plan.namingFormat.dark"
-							(valueChange)="savePreference()" />
-						<neb-button
-							icon="mdi mdi-restore"
-							(action)="resetCameraCaptureNamingFormat('DARK')"
-							tooltip="Reset" />
-					</div>
-					<div class="flex gap-1">
-						<neb-input-text
-							label="Flat"
-							class="min-w-22rem"
-							[disabled]="running"
-							[(value)]="plan.namingFormat.flat"
-							(valueChange)="savePreference()" />
-						<neb-button
-							icon="mdi mdi-restore"
-							(action)="resetCameraCaptureNamingFormat('FLAT')"
-							tooltip="Reset" />
-					</div>
-					<div class="flex gap-1">
-						<neb-input-text
-							label="Bias"
-							class="min-w-22rem"
-							[disabled]="running"
-							[(value)]="plan.namingFormat.bias"
-							(valueChange)="savePreference()" />
-						<neb-button
-							icon="mdi mdi-restore"
-							(action)="resetCameraCaptureNamingFormat('BIAS')"
-							tooltip="Reset" />
-					</div>
-				</div>
-			</p-tabPanel>
-			<p-tabPanel>
-				<ng-template pTemplate="header">
-					<div
-						class="flex gap-2 align-items-center justify-content-center p-3"
-						pTooltip="Dither"
-						tooltipPosition="bottom">
+				</p-tab>
+				<p-tab
+					value="2"
+					pTooltip="Dither"
+					tooltipPosition="bottom">
+					<div class="flex flex-shrink-0 items-center justify-center gap-2">
 						<i class="mdi mdi-pulse"></i>
 						<neb-checkbox
 							[disabled]="running"
 							[(value)]="plan.dither.enabled"
 							(valueChange)="savePreference()" />
 					</div>
-				</ng-template>
-				<div class="align-content-start justify-content-center align-items-center flex flex-row flex-wrap gap-3 justify-content-start pt-3 px-4">
-					<neb-checkbox
-						[disabled]="running || !plan.dither.enabled"
-						label="RA only"
-						[(value)]="plan.dither.raOnly"
-						(valueChange)="savePreference()" />
-					<neb-input-number
-						label="Dither (px)"
-						class="max-w-12rem"
-						[disabled]="running || !plan.dither.enabled"
-						[min]="0.1"
-						[max]="60"
-						[step]="0.1"
-						[(value)]="plan.dither.amount"
-						(valueChange)="savePreference()" />
-					<neb-input-number
-						label="After exposures"
-						class="max-w-12rem"
-						[disabled]="running || !plan.dither.enabled"
-						[min]="1"
-						[max]="1000"
-						[(value)]="plan.dither.afterExposures"
-						(valueChange)="savePreference()" />
-				</div>
-			</p-tabPanel>
-			<p-tabPanel>
-				<ng-template pTemplate="header">
-					<div
-						class="flex flex-shrink-0 gap-2 align-items-center justify-content-center p-3"
-						pTooltip="Auto Focus"
-						tooltipPosition="bottom">
+				</p-tab>
+				<p-tab
+					value="3"
+					[disabled]="true"
+					pTooltip="Auto Focus"
+					tooltipPosition="bottom">
+					<div class="flex flex-shrink-0 items-center justify-center gap-2">
 						<i class="mdi mdi-image-filter-center-focus"></i>
 						<neb-checkbox
 							[disabled]="running"
 							[(value)]="plan.autoFocus.enabled"
 							(valueChange)="savePreference()" />
 					</div>
-				</ng-template>
-				<div class="align-content-start justify-content-center align-items-center flex flex-row flex-wrap gap-3 justify-content-start pt-3 px-4">
-					<neb-checkbox
-						[disabled]="running || !plan.autoFocus.enabled"
-						label="On start"
-						[(value)]="plan.autoFocus.onStart"
-						(valueChange)="savePreference()" />
-					<neb-checkbox
-						[disabled]="running || !plan.autoFocus.enabled"
-						label="On filter change"
-						[(value)]="plan.autoFocus.onFilterChange"
-						(valueChange)="savePreference()" />
-					<div class="flex align-items-center gap-1">
-						<neb-checkbox
-							[disabled]="running || !plan.autoFocus.enabled"
-							[(value)]="plan.autoFocus.afterElapsedTimeEnabled"
-							(valueChange)="savePreference()" />
-						<neb-input-number
-							label="After elapsed time (s)"
-							class="max-w-12rem"
-							[disabled]="running || !plan.autoFocus.afterElapsedTimeEnabled || !plan.autoFocus.enabled"
-							[min]="1"
-							[max]="86400"
-							[(value)]="plan.autoFocus.afterElapsedTime"
-							(valueChange)="savePreference()" />
-					</div>
-					<div class="flex align-items-center gap-1">
-						<neb-checkbox
-							[disabled]="running || !plan.autoFocus.enabled"
-							[(value)]="plan.autoFocus.afterExposuresEnabled"
-							(valueChange)="savePreference()" />
-						<neb-input-number
-							label="After exposures"
-							class="max-w-10rem"
-							[disabled]="running || !plan.autoFocus.afterExposuresEnabled || !plan.autoFocus.enabled"
-							[min]="1"
-							[max]="1000"
-							[(value)]="plan.autoFocus.afterExposures"
-							(valueChange)="savePreference()" />
-					</div>
-					<div class="flex align-items-center gap-1">
-						<neb-checkbox
-							[disabled]="running || !plan.autoFocus.enabled"
-							[(value)]="plan.autoFocus.afterHFDIncreaseEnabled"
-							(valueChange)="savePreference()" />
-						<neb-input-number
-							label="After HFD increase (%)"
-							class="max-w-12rem"
-							[disabled]="running || !plan.autoFocus.afterHFDIncreaseEnabled || !plan.autoFocus.enabled"
-							[min]="1"
-							[max]="1000"
-							[(value)]="plan.autoFocus.afterHFDIncrease"
-							(valueChange)="savePreference()" />
-					</div>
-					<div class="flex align-items-center gap-1">
-						<neb-checkbox
-							[disabled]="running || !plan.autoFocus.enabled"
-							[(value)]="plan.autoFocus.afterTemperatureChangeEnabled"
-							(valueChange)="savePreference()" />
-						<neb-input-number
-							label="After temperature change (°C)"
-							class="max-w-15rem"
-							[disabled]="running || !plan.autoFocus.afterTemperatureChangeEnabled || !plan.autoFocus.enabled"
-							[min]="1"
-							[max]="10"
-							[(value)]="plan.autoFocus.afterTemperatureChange"
-							(valueChange)="savePreference()" />
-					</div>
-				</div>
-			</p-tabPanel>
-			<p-tabPanel>
-				<ng-template pTemplate="header">
-					<div
-						class="flex gap-2 align-items-center justify-content-center p-3"
-						pTooltip="Live Stacking"
-						tooltipPosition="bottom">
+				</p-tab>
+				<p-tab
+					value="4"
+					pTooltip="Live Stacking"
+					tooltipPosition="bottom">
+					<div class="flex flex-shrink-0 items-center justify-center gap-2">
 						<i class="mdi mdi-image-multiple"></i>
 						<neb-checkbox
 							[disabled]="running"
 							[(value)]="plan.liveStacking.enabled"
 							(valueChange)="savePreference()" />
 					</div>
-				</ng-template>
-				<div class="align-content-start justify-content-center align-items-center flex flex-row flex-wrap gap-3 justify-content-start pt-3 px-4">
-					<neb-dropdown-enum
-						label="Live Stacker"
-						class="max-w-12rem"
-						[disabled]="!plan.liveStacking.enabled || running"
-						[options]="['PIXINSIGHT']"
-						[(value)]="plan.liveStacking.type"
-						(valueChange)="savePreference()" />
-					<div class="col-2 flex align-items-center justify-content-center text-center">
-						<neb-switch
-							label="32-bit (slower)"
-							[disabled]="!plan.liveStacking.enabled || running"
-							[(value)]="plan.liveStacking.use32Bits"
+				</p-tab>
+			</p-tablist>
+			<p-tabpanels>
+				<p-tabpanel value="0">
+					<div class="grid grid-cols-12 gap-3 p-4">
+						<div class="col-span-full flex-nowrap items-center justify-center gap-2 overflow-y-hidden">
+							<neb-device-chooser
+								title="MOUNT"
+								icon="mdi mdi-telescope"
+								[devices]="mounts"
+								[(device)]="plan.mount"
+								[hasNone]="true"
+								(deviceChange)="mountChanged()" />
+							<neb-device-chooser
+								title="FILTER WHEEL"
+								icon="mdi mdi-palette"
+								[devices]="wheels"
+								[(device)]="plan.wheel"
+								[hasNone]="true"
+								(deviceChange)="wheelChanged()" />
+							<neb-device-chooser
+								title="FOCUSER"
+								icon="mdi mdi-image-filter-center-focus"
+								[devices]="focusers"
+								[(device)]="plan.focuser"
+								[hasNone]="true"
+								(deviceChange)="focuserChanged()" />
+							<neb-device-chooser
+								title="ROTATOR"
+								icon="mdi mdi-rotate-right"
+								[devices]="rotators"
+								[(device)]="plan.rotator"
+								[hasNone]="true"
+								(deviceChange)="rotatorChanged()" />
+						</div>
+					</div>
+					<div class="absolute right-0 top-[56px] mr-4 flex items-center justify-end">
+						@if (event && running) {
+							<span class="mr-2 text-sm">{{ event.state | enum }}</span>
+							<span class="min-w-[48px] rounded-l-md bg-orange-500 text-center text-sm leading-3 text-gray-900">
+								<i class="mdi mdi-counter mdi-sm"></i>
+								{{ event.id }}
+							</span>
+							<span
+								class="min-w-[62px] bg-green-500 text-center text-sm leading-3 text-gray-900"
+								pTooltip="Elapsed time"
+								tooltipPosition="bottom">
+								<i class="mdi mdi-timer-sand-complete mdi-sm"></i>
+								{{ event.elapsedTime | exposureTime }}
+							</span>
+							<span
+								class="min-w-[62px] bg-green-500 text-center text-sm leading-3 text-gray-900"
+								pTooltip="Remaining time"
+								tooltipPosition="bottom">
+								<i class="mdi mdi-timer-sand mdi-sm"></i>
+								{{ event.remainingTime | exposureTime }}
+							</span>
+							<span class="min-w-[52px] rounded-r-md bg-green-500 text-center text-sm leading-3 text-gray-900">
+								<i class="mdi mdi-percent mdi-sm"></i>
+								{{ event.progress * 100 | number: '1.1-1' }}
+							</span>
+						} @else {
+							<span class="min-w-[48px] rounded-l-md bg-orange-500 text-center text-sm leading-3 text-gray-900">
+								<i class="mdi mdi-counter mdi-sm"></i>
+								{{ exposureTotal.frames }}
+							</span>
+							<span class="min-w-[62px] rounded-r-md bg-green-500 text-center text-sm leading-3 text-gray-900">
+								<i class="mdi mdi-timer mdi-sm"></i>
+								{{ exposureTotal.time | exposureTime }}
+							</span>
+						}
+					</div>
+					<div
+						cdkDropList
+						[cdkDropListDisabled]="running"
+						(cdkDropListDropped)="drop($event)"
+						class="mt-1 grid grid-cols-2 gap-3 overflow-y-auto px-4"
+						style="max-height: calc(100vh - 216px)">
+						@for (sequence of plan.sequences; track sequence; let i = $index) {
+							<p-card
+								cdkDrag
+								class="col-span-full lg:col-span-1"
+								styleClass="w-full bg-surface-700 pt-2">
+								<ng-template #header>
+									<div class="grid grid-cols-12 gap-3">
+										<div
+											cdkDragHandle
+											class="col-span-1 cursor-move items-center !justify-start pb-1">
+											<span class="ml-3 text-xl font-bold">#{{ i + 1 }}</span>
+										</div>
+										<div class="col-span-7 items-center !justify-start gap-1 pb-1">
+											<neb-button
+												[disabled]="running || !plan.camera || !sequence.enabled"
+												icon="mdi mdi-camera-iris"
+												tooltip="Camera"
+												[severity]="plan.camera?.connected ? 'success' : 'danger'"
+												(action)="showCameraDialog(sequence)" />
+											<neb-button
+												[disabled]="running || !plan.wheel || !sequence.enabled"
+												icon="mdi mdi-palette"
+												tooltip="Filter Wheel"
+												[severity]="plan.wheel?.connected ? 'success' : 'danger'"
+												(action)="showWheelDialog(sequence)" />
+											<neb-button
+												[disabled]="running || !plan.rotator || !sequence.enabled"
+												icon="mdi mdi-rotate-right"
+												tooltip="Rotator"
+												[severity]="plan.rotator?.connected ? 'success' : 'danger'"
+												(action)="showRotatorDialog(sequence)" />
+											@if (plan.liveStacking.enabled) {
+												<neb-dropdown-enum
+													[disabled]="running"
+													[options]="'IMAGE_FILTER_TYPE' | dropdownOptions"
+													[(value)]="sequence.stackerGroupType"
+													(valueChange)="savePreference()" />
+												@if (plan.liveStacking.useCalibrationGroup) {
+													<neb-dropdown-item
+														[disabled]="sequence.stackerGroupType === 'NONE' || running"
+														[options]="calibrationGroups"
+														[(value)]="sequence.calibrationGroup"
+														(valueChange)="savePreference()" />
+												}
+											}
+										</div>
+										<div class="col-span-4 items-center !justify-end gap-2 pb-1 pr-4">
+											<neb-button
+												[disabled]="plan.sequences.length <= 1 || running"
+												icon="mdi mdi-md mdi-dots-vertical"
+												(action)="showSequenceMenu(sequence, sequenceMenu)" />
+											<neb-button
+												[disabled]="running || plan.sequences.length <= 1"
+												icon="mdi mdi-delete"
+												severity="danger"
+												tooltip="Delete"
+												(action)="deleteSequence(sequence, i)" />
+											<neb-button
+												[disabled]="running"
+												icon="mdi mdi-content-duplicate"
+												severity="info"
+												tooltip="Duplicate"
+												(action)="duplicateSequence(sequence, i)" />
+											<neb-checkbox
+												[disabled]="running"
+												[(value)]="sequence.enabled"
+												(valueChange)="savePreference()"
+												tooltip="Enabled" />
+										</div>
+									</div>
+								</ng-template>
+								<div class="grid grid-cols-12 gap-3">
+									<div class="col-span-full pt-1">
+										<neb-camera-info
+											[info]="sequence"
+											[wheel]="plan.wheel"
+											[focuser]="plan.focuser"
+											[rotator]="plan.rotator"
+											[canRemoveFilter]="sequence.enabled"
+											[canRemoveAngle]="sequence.enabled"
+											(filterRemoved)="filterRemoved(sequence)"
+											(angleRemoved)="angleRemoved(sequence)"
+											[disabled]="running" />
+									</div>
+									<div class="col-span-full my-1 pb-1 pt-0 text-center text-xs text-gray-400">
+										<neb-camera-exposure #cameraExposure />
+									</div>
+								</div>
+							</p-card>
+						}
+					</div>
+				</p-tabpanel>
+				<p-tabpanel value="1">
+					<div class="flex flex-wrap items-center justify-center gap-3 p-4">
+						<neb-input-number
+							label="Initial Delay (s)"
+							class="!max-w-[10rem]"
+							[disabled]="running"
+							[min]="0"
+							[max]="60"
+							[(value)]="plan.initialDelay"
+							(valueChange)="savePreference()" />
+						<neb-dropdown-enum
+							label="Mode"
+							class="!max-w-[14rem]"
+							[disabled]="running"
+							[options]="'SEQUENCER_CAPTURE_MODE' | dropdownOptions"
+							[(value)]="plan.captureMode"
+							(valueChange)="savePreference()" />
+						<div class="flex items-center gap-2">
+							<neb-button
+								[disabled]="running"
+								icon="mdi {{ plan.autoSubFolderMode === 'OFF' ? 'mdi-folder-off text-gray-500' : plan.autoSubFolderMode === 'NOON' ? 'mdi-weather-sunny text-yellow-600' : 'mdi-weather-night text-blue-500' }}"
+								tooltip="{{ 'Auto sub folder: ' + plan.autoSubFolderMode }}"
+								(action)="toggleAutoSubFolder()" />
+							<neb-path-chooser
+								key="sequencerOutputDirectory"
+								[directory]="true"
+								label="Output directory"
+								[(path)]="plan.savePath"
+								(pathChange)="savePreference()"
+								class="min-w-[22rem]"
+								[disabled]="running" />
+						</div>
+						<div class="flex items-center gap-1">
+							<neb-input-text
+								label="Light"
+								class="min-w-[22rem]"
+								[disabled]="running"
+								[(value)]="plan.namingFormat.light"
+								(valueChange)="savePreference()" />
+							<neb-button
+								icon="mdi mdi-restore"
+								(action)="resetCameraCaptureNamingFormat('LIGHT')"
+								tooltip="Reset" />
+						</div>
+						<div class="flex items-center gap-1">
+							<neb-input-text
+								label="Dark"
+								class="min-w-[22rem]"
+								[disabled]="running"
+								[(value)]="plan.namingFormat.dark"
+								(valueChange)="savePreference()" />
+							<neb-button
+								icon="mdi mdi-restore"
+								(action)="resetCameraCaptureNamingFormat('DARK')"
+								tooltip="Reset" />
+						</div>
+						<div class="flex items-center gap-1">
+							<neb-input-text
+								label="Flat"
+								class="min-w-[22rem]"
+								[disabled]="running"
+								[(value)]="plan.namingFormat.flat"
+								(valueChange)="savePreference()" />
+							<neb-button
+								icon="mdi mdi-restore"
+								(action)="resetCameraCaptureNamingFormat('FLAT')"
+								tooltip="Reset" />
+						</div>
+						<div class="flex items-center gap-1">
+							<neb-input-text
+								label="Bias"
+								class="min-w-[22rem]"
+								[disabled]="running"
+								[(value)]="plan.namingFormat.bias"
+								(valueChange)="savePreference()" />
+							<neb-button
+								icon="mdi mdi-restore"
+								(action)="resetCameraCaptureNamingFormat('BIAS')"
+								tooltip="Reset" />
+						</div>
+					</div>
+				</p-tabpanel>
+				<p-tabpanel value="2">
+					<div class="flex flex-wrap items-center justify-center gap-3 p-4">
+						<neb-checkbox
+							[disabled]="running || !plan.dither.enabled"
+							label="RA only"
+							[(value)]="plan.dither.raOnly"
+							(valueChange)="savePreference()" />
+						<neb-input-number
+							label="Dither (px)"
+							class="!max-w-[12rem]"
+							[disabled]="running || !plan.dither.enabled"
+							[min]="0.1"
+							[max]="60"
+							[step]="0.1"
+							[(value)]="plan.dither.amount"
+							(valueChange)="savePreference()" />
+						<neb-input-number
+							label="After exposures"
+							class="!max-w-[12rem]"
+							[disabled]="running || !plan.dither.enabled"
+							[min]="1"
+							[max]="1000"
+							[(value)]="plan.dither.afterExposures"
 							(valueChange)="savePreference()" />
 					</div>
-					<neb-checkbox
-						[disabled]="!plan.liveStacking.enabled || running"
-						label="Use calibration group"
-						[(value)]="plan.liveStacking.useCalibrationGroup"
-						(valueChange)="savePreference()" />
-					<neb-path-chooser
-						[disabled]="!plan.liveStacking.enabled || plan.liveStacking.useCalibrationGroup || running"
-						[directory]="false"
-						label="Dark File"
-						key="liveStackerDarkFile"
-						[(path)]="plan.liveStacking.darkPath"
-						class="min-w-22rem"
-						(pathChange)="savePreference()" />
-					<neb-path-chooser
-						[disabled]="!plan.liveStacking.enabled || plan.liveStacking.useCalibrationGroup || running"
-						[directory]="false"
-						label="Flat File"
-						key="liveStackerFlatFile"
-						[(path)]="plan.liveStacking.flatPath"
-						class="min-w-22rem"
-						(pathChange)="savePreference()" />
-					<neb-path-chooser
-						[disabled]="!plan.liveStacking.enabled || plan.liveStacking.type !== 'PIXINSIGHT' || plan.liveStacking.useCalibrationGroup || running"
-						[directory]="false"
-						label="Bias File"
-						key="liveStackerDarkFile"
-						[(path)]="plan.liveStacking.biasPath"
-						class="min-w-22rem"
-						(pathChange)="savePreference()" />
-				</div>
-			</p-tabPanel>
-		</p-tabView>
+				</p-tabpanel>
+				<p-tabpanel value="3">
+					<div class="flex flex-wrap items-center justify-center gap-3 p-4">
+						<neb-checkbox
+							[disabled]="running || !plan.autoFocus.enabled"
+							label="On start"
+							[(value)]="plan.autoFocus.onStart"
+							(valueChange)="savePreference()" />
+						<neb-checkbox
+							[disabled]="running || !plan.autoFocus.enabled"
+							label="On filter change"
+							[(value)]="plan.autoFocus.onFilterChange"
+							(valueChange)="savePreference()" />
+						<div class="flex items-center gap-1">
+							<neb-checkbox
+								[disabled]="running || !plan.autoFocus.enabled"
+								[(value)]="plan.autoFocus.afterElapsedTimeEnabled"
+								(valueChange)="savePreference()" />
+							<neb-input-number
+								label="After elapsed time (s)"
+								class="!max-w-[12rem]"
+								[disabled]="running || !plan.autoFocus.afterElapsedTimeEnabled || !plan.autoFocus.enabled"
+								[min]="1"
+								[max]="86400"
+								[(value)]="plan.autoFocus.afterElapsedTime"
+								(valueChange)="savePreference()" />
+						</div>
+						<div class="flex items-center gap-1">
+							<neb-checkbox
+								[disabled]="running || !plan.autoFocus.enabled"
+								[(value)]="plan.autoFocus.afterExposuresEnabled"
+								(valueChange)="savePreference()" />
+							<neb-input-number
+								label="After exposures"
+								class="!max-w-[10rem]"
+								[disabled]="running || !plan.autoFocus.afterExposuresEnabled || !plan.autoFocus.enabled"
+								[min]="1"
+								[max]="1000"
+								[(value)]="plan.autoFocus.afterExposures"
+								(valueChange)="savePreference()" />
+						</div>
+						<div class="flex items-center gap-1">
+							<neb-checkbox
+								[disabled]="running || !plan.autoFocus.enabled"
+								[(value)]="plan.autoFocus.afterHFDIncreaseEnabled"
+								(valueChange)="savePreference()" />
+							<neb-input-number
+								label="After HFD increase (%)"
+								class="!max-w-[12rem]"
+								[disabled]="running || !plan.autoFocus.afterHFDIncreaseEnabled || !plan.autoFocus.enabled"
+								[min]="1"
+								[max]="1000"
+								[(value)]="plan.autoFocus.afterHFDIncrease"
+								(valueChange)="savePreference()" />
+						</div>
+						<div class="flex items-center gap-1">
+							<neb-checkbox
+								[disabled]="running || !plan.autoFocus.enabled"
+								[(value)]="plan.autoFocus.afterTemperatureChangeEnabled"
+								(valueChange)="savePreference()" />
+							<neb-input-number
+								label="After temperature change (°C)"
+								class="!max-w-[15rem]"
+								[disabled]="running || !plan.autoFocus.afterTemperatureChangeEnabled || !plan.autoFocus.enabled"
+								[min]="1"
+								[max]="10"
+								[(value)]="plan.autoFocus.afterTemperatureChange"
+								(valueChange)="savePreference()" />
+						</div>
+					</div>
+				</p-tabpanel>
+				<p-tabpanel value="4">
+					<div class="flex flex-wrap items-center justify-center gap-3 p-4">
+						<neb-dropdown-enum
+							label="Live Stacker"
+							class="!max-w-[12rem]"
+							[disabled]="!plan.liveStacking.enabled || running"
+							[options]="['PIXINSIGHT']"
+							[(value)]="plan.liveStacking.type"
+							(valueChange)="savePreference()" />
+						<div class="flex w-2/12 items-center justify-center text-center">
+							<neb-switch
+								label="32-bit (slower)"
+								[disabled]="!plan.liveStacking.enabled || running"
+								[(value)]="plan.liveStacking.use32Bits"
+								(valueChange)="savePreference()" />
+						</div>
+						<div class="grid grid-cols-3 gap-3 p-2">
+							<div class="col-span-full">
+								<neb-checkbox
+									[disabled]="!plan.liveStacking.enabled || running"
+									label="Use calibration group"
+									[(value)]="plan.liveStacking.useCalibrationGroup"
+									(valueChange)="savePreference()" />
+							</div>
+							<div class="col-span-1">
+								<neb-path-chooser
+									[disabled]="!plan.liveStacking.enabled || plan.liveStacking.useCalibrationGroup || running"
+									[directory]="false"
+									label="Dark File"
+									key="liveStackerDarkFile"
+									[(path)]="plan.liveStacking.darkPath"
+									(pathChange)="savePreference()" />
+							</div>
+							<div class="col-span-1">
+								<neb-path-chooser
+									[disabled]="!plan.liveStacking.enabled || plan.liveStacking.useCalibrationGroup || running"
+									[directory]="false"
+									label="Flat File"
+									key="liveStackerFlatFile"
+									[(path)]="plan.liveStacking.flatPath"
+									(pathChange)="savePreference()" />
+							</div>
+							<div class="col-span-1">
+								<neb-path-chooser
+									[disabled]="!plan.liveStacking.enabled || plan.liveStacking.type !== 'PIXINSIGHT' || plan.liveStacking.useCalibrationGroup || running"
+									[directory]="false"
+									label="Bias File"
+									key="liveStackerDarkFile"
+									[(path)]="plan.liveStacking.biasPath"
+									(pathChange)="savePreference()" />
+							</div>
+						</div>
+					</div>
+				</p-tabpanel>
+			</p-tabpanels>
+		</p-tabs>
 	</div>
 
-	<div class="fixed flex w-full justify-content-between align-items-center left-0 bottom-0 px-6 pb-3">
-		<div class="flex align-items-center justify-content-center flex-1 gap-1">
+	<div class="fixed bottom-0 left-0 flex w-full items-center justify-between px-6 pb-3">
+		<div class="flex flex-1 items-center justify-center gap-1">
 			@if (pausingOrPaused) {
 				<neb-button
 					[disabled]="event?.state === 'PAUSING'"
@@ -514,8 +513,8 @@
 	[modal]="true"
 	[(visible)]="property.showDialog"
 	[style]="{ maxWidth: '400px' }">
-	<div class="grid p-2">
-		<div class="col-12 gap-2 justify-content-end">
+	<div class="grid grid-cols-12 gap-3">
+		<div class="col-span-full flex !justify-end gap-3">
 			<neb-button
 				icon="mdi mdi-checkbox-marked"
 				label="Select All"
@@ -525,80 +524,80 @@
 				label="Unselect All"
 				(action)="selectSequenceProperty(false)" />
 		</div>
-		<div class="col-6">
+		<div class="col-span-6 !justify-start">
 			<neb-checkbox
 				label="Exposure Time"
 				[(value)]="property.properties.EXPOSURE_TIME" />
 		</div>
-		<div class="col-6">
+		<div class="col-span-6 !justify-start">
 			<neb-checkbox
 				label="Exposure Amount"
 				[(value)]="property.properties.EXPOSURE_AMOUNT" />
 		</div>
-		<div class="col-6">
+		<div class="col-span-6 !justify-start">
 			<neb-checkbox
 				label="Exposure Delay"
 				[(value)]="property.properties.EXPOSURE_DELAY" />
 		</div>
-		<div class="col-6">
+		<div class="col-span-6 !justify-start">
 			<neb-checkbox
 				label="Frame Type"
 				[(value)]="property.properties.FRAME_TYPE" />
 		</div>
-		<div class="col-6">
+		<div class="col-span-6 !justify-start">
 			<neb-checkbox
 				label="X"
 				[(value)]="property.properties.X" />
 		</div>
-		<div class="col-6">
+		<div class="col-span-6 !justify-start">
 			<neb-checkbox
 				label="Y"
 				[(value)]="property.properties.Y" />
 		</div>
-		<div class="col-6">
+		<div class="col-span-6 !justify-start">
 			<neb-checkbox
 				label="Width"
 				[(value)]="property.properties.WIDTH" />
 		</div>
-		<div class="col-6">
+		<div class="col-span-6 !justify-start">
 			<neb-checkbox
 				label="Height"
 				[(value)]="property.properties.HEIGHT" />
 		</div>
-		<div class="col-6">
+		<div class="col-span-6 !justify-start">
 			<neb-checkbox
 				label="Bin"
 				[(value)]="property.properties.BIN" />
 		</div>
-		<div class="col-6">
+		<div class="col-span-6 !justify-start">
 			<neb-checkbox
 				label="Frame Format"
 				[(value)]="property.properties.FRAME_FORMAT" />
 		</div>
-		<div class="col-6">
+		<div class="col-span-6 !justify-start">
 			<neb-checkbox
 				label="Gain"
 				[(value)]="property.properties.GAIN" />
 		</div>
-		<div class="col-6">
+		<div class="col-span-6 !justify-start">
 			<neb-checkbox
 				label="Offset"
 				[(value)]="property.properties.OFFSET" />
 		</div>
-		<div class="col-6">
+		<div class="col-span-6 !justify-start">
 			<neb-checkbox
 				label="Calibration Group"
 				[(value)]="property.properties.CALIBRATION_GROUP" />
 		</div>
 		@if (plan.liveStacking.enabled) {
-			<div class="col-6">
+			<div class="col-span-6 !justify-start">
 				<neb-checkbox
 					label="Stacking Group"
 					[(value)]="property.properties.STACKING_GROUP" />
 			</div>
 		}
 	</div>
-	<ng-template pTemplate="footer">
+	<ng-template #footer>
 		<neb-button
 			icon="mdi mdi-check"
 			label="Apply"

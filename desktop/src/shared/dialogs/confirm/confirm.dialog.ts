@@ -1,10 +1,27 @@
-import { Component, inject } from '@angular/core'
-import { ConfirmEventType, Confirmation } from 'primeng/api'
+import { Component, inject, ViewEncapsulation } from '@angular/core'
+import type { Confirmation } from 'primeng/api'
+import { ConfirmEventType } from 'primeng/api'
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog'
-import { AngularService } from '../../services/angular.service'
+import type { AngularService } from '../../services/angular.service'
 
 @Component({
-	templateUrl: 'confirm.dialog.html',
+	standalone: false,
+	template: `
+		<span>{{ message }}</span>
+		<div class="px-0 py-3">
+			<neb-button
+				icon="mdi mdi-close"
+				label="No"
+				(action)="reject()"
+				severity="danger" />
+			<neb-button
+				icon="mdi mdi-check"
+				label="Yes"
+				(action)="accept()"
+				severity="success" />
+		</div>
+	`,
+	encapsulation: ViewEncapsulation.None,
 })
 export class ConfirmDialogComponent {
 	private readonly dialogRef = inject(DynamicDialogRef)

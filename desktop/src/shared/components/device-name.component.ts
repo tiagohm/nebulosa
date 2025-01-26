@@ -2,15 +2,16 @@ import { Component, ViewEncapsulation, input } from '@angular/core'
 import type { Device } from '../types/device.types'
 
 @Component({
+	standalone: false,
 	selector: 'neb-device-name',
 	template: `
-		<div class="flex flex-column justify-content-center gap-0">
+		<div class="flex flex-col justify-center gap-0">
 			@let mDevice = device();
 
-			<span class="font-bold white-space-nowrap">{{ mDevice.name }}</span>
+			<span class="whitespace-nowrap font-bold">{{ mDevice.name }}</span>
 
 			@if (mDevice.driver.name) {
-				<div class="flex flex-row align-items-center text-xs text-gray-400 gap-1">
+				<div class="flex items-center gap-1 text-xs text-gray-400">
 					<span>DRIVER: {{ mDevice.driver.name }}</span>
 					<span>V{{ mDevice.driver.version }}</span>
 				</div>

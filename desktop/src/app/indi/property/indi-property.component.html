@@ -1,14 +1,14 @@
 @let mProperty = property();
 
-<div class="grid flex align-items-center m-0 px-4 py-2">
-	<div class="col-3 flex align-items-center font-bold">
+<div class="m-0 grid grid-cols-12 gap-3 p-4">
+	<div class="col-span-3 !justify-start font-bold">
 		<i class="mdi mdi-circle {{ mProperty.state }}"></i>
 		<span class="ml-2">{{ mProperty.label }}</span>
 	</div>
-	<div class="col-9">
+	<div class="col-span-9 !justify-start">
 		@if (mProperty.type === 'SWITCH') {
 			@if (mProperty.rule === 'ONE_OF_MANY') {
-				<div class="flex align-items-center gap-1">
+				<div class="flex items-center gap-3">
 					@for (item of mProperty.items; track item.name) {
 						<neb-button
 							[disabled]="mProperty.perm === 'RO' || disabled()"
@@ -20,7 +20,7 @@
 				</div>
 			}
 			@if (mProperty.rule === 'AT_MOST_ONE') {
-				<div class="flex align-items-center gap-1">
+				<div class="flex items-center gap-3">
 					@for (item of mProperty.items; track item.name) {
 						<neb-button
 							[disabled]="mProperty.perm === 'RO' || disabled()"
@@ -31,7 +31,7 @@
 				</div>
 			}
 			@if (mProperty.rule === 'ANY_OF_MANY') {
-				<div class="flex align-items-center gap-1">
+				<div class="flex items-center gap-3">
 					@for (item of mProperty.items; track item.name) {
 						<neb-button
 							[disabled]="mProperty.perm === 'RO' || disabled()"
@@ -43,12 +43,12 @@
 				</div>
 			}
 		} @else if (mProperty.type === 'NUMBER') {
-			<div class="grid flex align-items-center">
-				<div class="col-9 flex-column">
+			<div class="flex w-full flex-row items-center gap-3">
+				<div class="flex w-9/12 flex-col justify-center gap-3">
 					@for (item of mProperty.items; track item.name) {
-						<div class="grid my-0 flex align-items-center">
+						<div class="my-0 flex w-full flex-row items-center gap-3">
 							@if (mProperty.perm !== 'WO') {
-								<div class="col-6">
+								<div class="w-1/2">
 									<neb-input-text
 										[label]="item.label"
 										[readonly]="true"
@@ -56,7 +56,7 @@
 								</div>
 							}
 							@if (mProperty.perm !== 'RO') {
-								<div class="col-6">
+								<div class="w-1/2">
 									<neb-input-text
 										[label]="item.label"
 										[(value)]="item.valueToSend" />
@@ -65,7 +65,7 @@
 						</div>
 					}
 				</div>
-				<div class="col-3 text-center">
+				<div class="w-3/12 text-center">
 					@if (mProperty.perm !== 'RO') {
 						<neb-button
 							[disabled]="disabled()"
@@ -76,12 +76,12 @@
 				</div>
 			</div>
 		} @else if (mProperty.type === 'TEXT') {
-			<div class="grid flex align-items-center">
-				<div class="col-9 flex-column">
+			<div class="flex w-full flex-row items-center gap-3">
+				<div class="flex w-9/12 flex-col justify-center gap-3">
 					@for (item of mProperty.items; track item.name) {
-						<div class="grid my-0 flex align-items-center">
+						<div class="my-0 flex w-full flex-row items-center gap-3">
 							@if (mProperty.perm !== 'WO') {
-								<div class="col-6">
+								<div class="w-1/2">
 									<neb-input-text
 										[label]="item.label"
 										[readonly]="true"
@@ -89,7 +89,7 @@
 								</div>
 							}
 							@if (mProperty.perm !== 'RO') {
-								<div class="col-6">
+								<div class="w-1/2">
 									<neb-input-text
 										[label]="item.label"
 										[(value)]="item.valueToSend" />
@@ -98,7 +98,7 @@
 						</div>
 					}
 				</div>
-				<div class="col-3 text-center">
+				<div class="w-3/12 text-center">
 					@if (mProperty.perm !== 'RO') {
 						<neb-button
 							[disabled]="disabled()"

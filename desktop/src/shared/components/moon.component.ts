@@ -1,6 +1,8 @@
-import { AfterViewInit, Component, ElementRef, OnChanges, ViewEncapsulation, input, viewChild } from '@angular/core'
+import type { AfterViewInit, ElementRef, OnChanges } from '@angular/core'
+import { Component, ViewEncapsulation, input, viewChild } from '@angular/core'
 
 @Component({
+	standalone: false,
 	selector: 'neb-moon',
 	template: `
 		<canvas

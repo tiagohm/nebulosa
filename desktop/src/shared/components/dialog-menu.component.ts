@@ -1,7 +1,8 @@
 import { Component, ViewEncapsulation, effect, input, model } from '@angular/core'
-import { MenuItemCommandEvent, SlideMenuItem } from './menu-item.component'
+import type { MenuItemCommandEvent, SlideMenuItem } from './menu-item.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-dialog-menu',
 	template: `
 		<p-dialog
@@ -9,15 +10,13 @@ import { MenuItemCommandEvent, SlideMenuItem } from './menu-item.component'
 			[resizable]="false"
 			[(visible)]="visible"
 			[modal]="true"
+			[header]="currentHeader"
 			[closeOnEscape]="true"
 			[dismissableMask]="true"
 			[closable]="true"
 			[draggable]="false"
 			(onHide)="hide()"
 			[style]="{ width: 'auto', maxWidth: '90vw' }">
-			@if (currentHeader) {
-				<span class="text-sm font-bold uppercase">{{ currentHeader }}</span>
-			}
 			<neb-slide-menu
 				[model]="model"
 				appendTo="body"

@@ -1,7 +1,7 @@
 import { Component, ViewEncapsulation, input } from '@angular/core'
-import { CheckboxChangeEvent } from 'primeng/checkbox'
-import { InputSwitchChangeEvent } from 'primeng/inputswitch'
-import { Severity, TooltipPosition } from '../types/angular.types'
+import type { CheckboxChangeEvent } from 'primeng/checkbox'
+import type { ToggleSwitchChangeEvent } from 'primeng/toggleswitch'
+import type { Severity, TooltipPosition } from '../types/angular.types'
 
 export interface MenuItemCommandEvent {
 	originalEvent?: Event
@@ -43,7 +43,7 @@ export interface MenuItem {
 
 	command?: (event: MenuItemCommandEvent) => void
 	check?: (event: CheckboxChangeEvent) => void
-	toggle?: (event: InputSwitchChangeEvent) => void
+	toggle?: (event: ToggleSwitchChangeEvent) => void
 
 	styleClass?: string
 	iconClass?: string
@@ -54,14 +54,16 @@ export interface SlideMenuItem extends MenuItem {
 }
 
 @Component({
+	standalone: false,
 	selector: 'neb-menu-item',
 	template: `
 		@let mItem = item();
 
 		<a
-			[class.p-menuitem-selected]="mItem.selected"
-			class="p-menuitem-link flex justify-content-between align-items-center gap-2">
-			<div class="flex justify-content-between align-items-center gap-2">
+			pRipple
+			[class.bg-green-900]="mItem.selected"
+			class="p-contextmenu-item-link flex min-h-10 w-full cursor-pointer items-center justify-between gap-2 rounded-md p-1">
+			<div class="flex items-center justify-between gap-2">
 				<i [class]="mItem.icon"></i>
 				<span>{{ mItem.label }}</span>
 			</div>

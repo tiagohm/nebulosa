@@ -1,21 +1,23 @@
-import { AfterViewInit, Component, ElementRef, HostListener, NgZone, OnDestroy, effect, inject, viewChild } from '@angular/core'
+import type { AfterViewInit, ElementRef, OnDestroy } from '@angular/core'
+import { Component, HostListener, NgZone, ViewEncapsulation, effect, inject, viewChild } from '@angular/core'
 import hotkeys from 'hotkeys-js'
-import { NgxLegacyMoveableComponent, OnDrag, OnResize, OnRotate } from 'ngx-moveable'
+import type { NgxLegacyMoveableComponent, OnDrag, OnResize, OnRotate } from 'ngx-moveable'
 import { injectQueryParams } from 'ngxtension/inject-query-params'
-import { ContextMenu } from 'primeng/contextmenu'
-import { DeviceListMenuComponent } from '../../shared/components/device-list-menu.component'
-import { HistogramComponent } from '../../shared/components/histogram.component'
-import { MenuItem } from '../../shared/components/menu-item.component'
+import type { ContextMenu } from 'primeng/contextmenu'
+import type { DeviceListMenuComponent } from '../../shared/components/device-list-menu.component'
+import type { HistogramComponent } from '../../shared/components/histogram.component'
+import type { MenuItem } from '../../shared/components/menu-item.component'
 import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { DeviceService } from '../../shared/services/device.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { EquatorialCoordinateJ2000, filterAstronomicalObject } from '../../shared/types/atlas.types'
-import { Camera } from '../../shared/types/camera.types'
+import type { EquatorialCoordinateJ2000 } from '../../shared/types/atlas.types'
+import { filterAstronomicalObject } from '../../shared/types/atlas.types'
+import type { Camera } from '../../shared/types/camera.types'
+import type { AstronomicalObjectDialog, DetectedStar, FOV, ImageAnnotation, ImageHeaderItem, ImageHeadersDialog, ImageInfo, ImageSCNRDialog, ImageSolved, ImageStretchDialog, LiveStackingMode, OpenImage } from '../../shared/types/image.types'
 import {
-	AstronomicalObjectDialog,
 	DEFAULT_FOV,
 	DEFAULT_IMAGE_ADJUSTMENT_DIALOG,
 	DEFAULT_IMAGE_ANNOTATION_DIALOG,
@@ -35,31 +37,23 @@ import {
 	DEFAULT_IMAGE_STATISTICS_DIALOG,
 	DEFAULT_IMAGE_ZOOM,
 	DEFAULT_STAR_DETECTOR_DIALOG,
-	DetectedStar,
-	FOV,
-	ImageAnnotation,
-	ImageHeaderItem,
-	ImageHeadersDialog,
-	ImageInfo,
-	ImageSCNRDialog,
-	ImageSolved,
-	ImageStretchDialog,
-	LiveStackingMode,
-	OpenImage,
 	imageFormatFromExtension,
 } from '../../shared/types/image.types'
-import { Mount } from '../../shared/types/mount.types'
-import { PlateSolverRequest } from '../../shared/types/platesolver.types'
-import { StarDetectionRequest } from '../../shared/types/stardetector.types'
+import type { Mount } from '../../shared/types/mount.types'
+import type { PlateSolverRequest } from '../../shared/types/platesolver.types'
+import type { StarDetectionRequest } from '../../shared/types/stardetector.types'
 import { CoordinateInterpolator } from '../../shared/utils/coordinate-interpolation'
-import { PanZoom, PanZoomEventDetail, PanZoomOptions } from '../../shared/utils/pan-zoom'
+import type { PanZoomEventDetail, PanZoomOptions } from '../../shared/utils/pan-zoom'
+import { PanZoom } from '../../shared/utils/pan-zoom'
 import { uid } from '../../shared/utils/random'
 import { AppComponent } from '../app.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-image',
 	templateUrl: 'image.component.html',
 	styleUrls: ['image.component.scss'],
+	encapsulation: ViewEncapsulation.None,
 })
 export class ImageComponent implements AfterViewInit, OnDestroy {
 	private readonly app = inject(AppComponent)
@@ -317,8 +311,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		icon: 'mdi mdi-select',
 		selected: false,
 		command: () => {
-			this.imageROI.show = !this.imageROI.show
-			this.roiMenuItem.selected = this.hasROI
+			this.toggleROI()
 		},
 	}
 
@@ -1094,7 +1087,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		}
 	}
 
-	private async toggleStretch() {
+	protected async toggleStretch() {
 		this.stretch.transformation.auto = !this.stretch.transformation.auto
 		this.savePreference()
 		this.autoStretchMenuItem.selected = this.stretch.transformation.auto
@@ -1135,7 +1128,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		return this.loadImage()
 	}
 
-	private invertImage() {
+	protected invertImage() {
 		this.transformation.invert = !this.transformation.invert
 		this.invertMenuItem.selected = this.transformation.invert
 		this.savePreference()
@@ -1146,13 +1139,18 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		return this.loadImage()
 	}
 
-	private toggleCrosshair() {
+	protected toggleCrosshair() {
 		this.preference.crossHair = !this.preference.crossHair
 		this.savePreference()
 		this.crosshairMenuItem.selected = this.preference.crossHair
 	}
 
-	private zoomIn() {
+	protected toggleROI() {
+		this.imageROI.show = !this.imageROI.show
+		this.roiMenuItem.selected = this.hasROI
+	}
+
+	protected zoomIn() {
 		if (this.zoom.panZoom) {
 			const { innerWidth, innerHeight } = window
 			const { offsetTop, offsetLeft } = this.image().nativeElement.parentElement!.parentElement!
@@ -1160,7 +1158,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		}
 	}
 
-	private zoomOut() {
+	protected zoomOut() {
 		if (this.zoom.panZoom) {
 			const { innerWidth, innerHeight } = window
 			const { offsetTop, offsetLeft } = this.image().nativeElement.parentElement!.parentElement!
@@ -1168,13 +1166,13 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		}
 	}
 
-	private center() {
+	protected center() {
 		if (this.zoom.panZoom) {
 			this.zoom.panZoom.centerAt(window.innerWidth / 2, window.innerHeight / 2)
 		}
 	}
 
-	private resetZoom(fitToScreen: boolean = false, center: boolean = true) {
+	protected resetZoom(fitToScreen: boolean = false, center: boolean = true) {
 		if (this.zoom.panZoom) {
 			if (fitToScreen) {
 				const image = this.image().nativeElement
@@ -1210,11 +1208,11 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		this.rotate(((angle % 360) + 360) % 360)
 	}
 
-	private async enterFullscreen() {
+	protected async enterFullscreen() {
 		this.app.showTopBar = !(await this.electronService.fullscreenWindow(true))
 	}
 
-	private async exitFullscreen() {
+	protected async exitFullscreen() {
 		this.app.showTopBar = !(await this.electronService.fullscreenWindow(false))
 	}
 

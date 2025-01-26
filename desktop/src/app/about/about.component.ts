@@ -1,10 +1,12 @@
 import { Component, inject } from '@angular/core'
 import packageJson from '../../../package.json' with { type: 'json' }
 import dependencyGraph from '../../assets/data/dependencyGraph.json' with { type: 'json' }
-import { DependencyItem, FLAT_ICON_URL, IconItem } from '../../shared/types/about.types'
+import type { DependencyItem, IconItem } from '../../shared/types/about.types'
+import { FLAT_ICON_URL } from '../../shared/types/about.types'
 import { AppComponent } from '../app.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-about',
 	templateUrl: 'about.component.html',
 })

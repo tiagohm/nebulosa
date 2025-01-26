@@ -1,19 +1,24 @@
-import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, inject, viewChild } from '@angular/core'
-import { CameraExposureComponent } from '../../shared/components/camera-exposure.component'
+import type { AfterViewInit, OnDestroy } from '@angular/core'
+import { Component, HostListener, NgZone, inject, viewChild } from '@angular/core'
+import type { CameraExposureComponent } from '../../shared/components/camera-exposure.component'
 import { AngularService } from '../../shared/services/angular.service'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { Tickable, Ticker } from '../../shared/services/ticker.service'
-import { Camera, DEFAULT_CAMERA, cameraCaptureNamingFormatWithDefault, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
+import type { Tickable } from '../../shared/services/ticker.service'
+import { Ticker } from '../../shared/services/ticker.service'
+import type { Camera } from '../../shared/types/camera.types'
+import { DEFAULT_CAMERA, cameraCaptureNamingFormatWithDefault, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
 import { DEFAULT_FLAT_WIZARD_PREFERENCE } from '../../shared/types/flat-wizard.types'
-import { DEFAULT_WHEEL, Filter, Wheel, makeFilter } from '../../shared/types/wheel.types'
+import type { Filter, Wheel } from '../../shared/types/wheel.types'
+import { DEFAULT_WHEEL, makeFilter } from '../../shared/types/wheel.types'
 import { deviceComparator } from '../../shared/utils/comparators'
 import { AppComponent } from '../app.component'
 import { CameraComponent } from '../camera/camera.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-flat-wizard',
 	templateUrl: 'flat-wizard.component.html',
 })
@@ -183,7 +188,7 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy, Tickable {
 
 			const filters = makeFilter(this.wheel, this.filters, 0)
 
-			if (filters !== this.filters) {
+			if (filters !== this.filters && filters.length) {
 				this.filters = filters
 				this.request.filters = this.filters.filter((e) => this.request.filters.includes(e.position)).map((e) => e.position)
 				this.savePreference()

@@ -1,23 +1,21 @@
-<div class="grid p-4">
-	<div class="col-12">
-		<ng-template
-			#formulaDropdownItem
-			let-item
-			let-selected="selected">
-			<div class="flex flex-column gap-2">
-				<span class="text-bold">{{ item.formula.title }}</span>
+<div class="flex flex-col p-4">
+	<ng-template
+		#formulaDropdownItem
+		let-item
+		let-selected="selected">
+		<div class="flex flex-col gap-1">
+			<span class="font-bold">{{ item.formula.title }}</span>
 
-				@if (!selected) {
-					<span class="text-sm white-space-normal">{{ item.formula.description }}</span>
-				}
-			</div>
-		</ng-template>
-		<neb-dropdown
-			[options]="formulae"
-			[(value)]="formula"
-			[itemTemplate]="formulaDropdownItem" />
-	</div>
-	<div class="col-12">
-		<ng-container *ngComponentOutlet="formula.component; inputs: { formula: formula.formula }" />
+			@if (!selected) {
+				<span class="whitespace-normal text-sm">{{ item.formula.description }}</span>
+			}
+		</div>
+	</ng-template>
+	<neb-dropdown
+		[options]="formulae"
+		[(value)]="formula"
+		[itemTemplate]="formulaDropdownItem" />
+	<div class="w-full">
+		<ng-content *ngComponentOutlet="formula.component; inputs: { formula: formula.formula }" />
 	</div>
 </div>

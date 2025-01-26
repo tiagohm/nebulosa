@@ -1,13 +1,15 @@
-import { AfterContentInit, AfterViewInit, Component, HostListener, NgZone, OnDestroy, OnInit, ViewEncapsulation, effect, inject, viewChild } from '@angular/core'
-import { Chart, ChartData, ChartOptions } from 'chart.js'
+import type { AfterContentInit, AfterViewInit, OnDestroy, OnInit } from '@angular/core'
+import { Component, HostListener, NgZone, ViewEncapsulation, effect, inject, viewChild } from '@angular/core'
+import type { ChartData, ChartOptions } from 'chart.js'
+import { Chart } from 'chart.js'
 import zoomPlugin from 'chartjs-plugin-zoom'
 import { injectQueryParams } from 'ngxtension/inject-query-params'
-import { UIChart } from 'primeng/chart'
-import { ListboxChangeEvent } from 'primeng/listbox'
-import { OverlayPanel } from 'primeng/overlaypanel'
+import type { UIChart } from 'primeng/chart'
+import type { ListboxChangeEvent } from 'primeng/listbox'
+import type { Popover } from 'primeng/popover'
 import { timer } from 'rxjs'
-import { DeviceListMenuComponent } from '../../shared/components/device-list-menu.component'
-import { SlideMenuItem } from '../../shared/components/menu-item.component'
+import type { DeviceListMenuComponent } from '../../shared/components/device-list-menu.component'
+import type { SlideMenuItem } from '../../shared/components/menu-item.component'
 import { ONE_DECIMAL_PLACE_FORMATTER, TWO_DIGITS_FORMATTER } from '../../shared/constants'
 import { AngularService } from '../../shared/services/angular.service'
 import { ApiService } from '../../shared/services/api.service'
@@ -16,10 +18,9 @@ import { DeviceService } from '../../shared/services/device.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { extractDate, extractTime } from '../../shared/types/angular.types'
+import type { AltitudePoint, BodyTag, EarthSeason, FavoritedSkyBody, Location, MinorPlanetListItem, SkyAtlasInput, SkyAtlasSettings } from '../../shared/types/atlas.types'
 import {
-	AltitudePoint,
 	BodyTabType,
-	BodyTag,
 	DEFAULT_BODY_TAB_REFRESH,
 	DEFAULT_DATE_TIME_AND_LOCATION,
 	DEFAULT_LOCATION,
@@ -33,20 +34,15 @@ import {
 	DEFAULT_SKY_OBJECT_SEARCH_FILTER,
 	DEFAULT_SUN,
 	EARTH_SEASONS,
-	EarthSeason,
-	FavoritedSkyBody,
-	Location,
-	MinorPlanetListItem,
 	SATELLITE_GROUPS,
-	SkyAtlasInput,
-	SkyAtlasSettings,
 	resetSatelliteSearchGroup,
 	skyObjectSearchFilterWithDefault,
 } from '../../shared/types/atlas.types'
-import { Mount } from '../../shared/types/mount.types'
+import type { Mount } from '../../shared/types/mount.types'
 import { AppComponent } from '../app.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-atlas',
 	templateUrl: 'atlas.component.html',
 	styleUrls: ['atlas.component.scss'],
@@ -347,8 +343,8 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 	]
 
 	private readonly deviceMenu = viewChild.required<DeviceListMenuComponent>('deviceMenu')
-	private readonly dateTimeAndLocationPanel = viewChild.required<OverlayPanel>('dateTimeAndLocationPanel')
-	private readonly favoritesPanel = viewChild.required<OverlayPanel>('favoritesPanel')
+	private readonly dateTimeAndLocationPopover = viewChild.required<Popover>('dateTimeAndLocationPopover')
+	private readonly bookmarkPopover = viewChild.required<Popover>('bookmarkPopover')
 	private readonly chart = viewChild.required<UIChart>('chart')
 
 	get body() {
@@ -402,7 +398,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 			icon: 'mdi mdi-bookmark',
 			tooltip: 'Favorites',
 			command: (e) => {
-				this.favoritesPanel().toggle(e.originalEvent)
+				this.bookmarkPopover().toggle(e.originalEvent)
 			},
 		})
 
@@ -410,7 +406,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 			icon: 'mdi mdi-calendar',
 			tooltip: 'Date Time and Location',
 			command: (e) => {
-				this.dateTimeAndLocationPanel().toggle(e.originalEvent)
+				this.dateTimeAndLocationPopover().toggle(e.originalEvent)
 			},
 		})
 
@@ -517,7 +513,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 			// if (minorPlanet.kind) tags.push({ label: minorPlanet.kind, severity: 'success' })
 			if (minorPlanet.orbitType) tags.push({ label: minorPlanet.orbitType, severity: 'success' })
 			if (minorPlanet.pha) tags.push({ label: 'PHA', severity: 'danger' })
-			if (minorPlanet.neo) tags.push({ label: 'NEO', severity: 'warning' })
+			if (minorPlanet.neo) tags.push({ label: 'NEO', severity: 'warn' })
 			this.minorPlanet.tags = tags
 
 			this.refreshTab(false, true)

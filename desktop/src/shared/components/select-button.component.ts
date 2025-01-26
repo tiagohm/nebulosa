@@ -1,6 +1,7 @@
-import { Component, input, model, Signal, viewChild, ViewEncapsulation, WritableSignal } from '@angular/core'
-import { SelectButton } from 'primeng/selectbutton'
-import { DropdownItem } from './dropdown.component'
+import type { Signal, WritableSignal } from '@angular/core'
+import { Component, input, model, viewChild, ViewEncapsulation } from '@angular/core'
+import type { SelectButton } from 'primeng/selectbutton'
+import type { DropdownItem } from './dropdown.component'
 
 abstract class SelectButtonBaseComponent<O, T> {
 	abstract readonly options: Signal<O[]>
@@ -10,6 +11,7 @@ abstract class SelectButtonBaseComponent<O, T> {
 }
 
 @Component({
+	standalone: false,
 	selector: 'neb-select-button-item',
 	template: `
 		<p-selectButton
@@ -18,7 +20,7 @@ abstract class SelectButtonBaseComponent<O, T> {
 			[(ngModel)]="value"
 			optionLabel="label"
 			optionValue="value"
-			styleClass="border-0 w-full" />
+			styleClass="w-full" />
 	`,
 	styles: `
 		neb-select-button-enum {
@@ -40,6 +42,7 @@ export class SelectButtonItemComponent<T> extends SelectButtonBaseComponent<Drop
 }
 
 @Component({
+	standalone: false,
 	selector: 'neb-select-button-enum',
 	template: `
 		<p-selectButton
@@ -49,7 +52,8 @@ export class SelectButtonItemComponent<T> extends SelectButtonBaseComponent<Drop
 			[disabled]="disabled() ?? false"
 			optionLabel="label"
 			optionValue="value"
-			styleClass="border-0 w-full" />
+			class="w-full"
+			styleClass="w-full" />
 	`,
 	styles: `
 		neb-select-button-enum {

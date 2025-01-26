@@ -1,14 +1,15 @@
-import { Component, HostListener, NgZone, OnDestroy, ViewEncapsulation, effect, inject, viewChild } from '@angular/core'
+import type { OnDestroy } from '@angular/core'
+import { Component, HostListener, NgZone, ViewEncapsulation, effect, inject, viewChild } from '@angular/core'
 import { injectQueryParams } from 'ngxtension/inject-query-params'
-import { MenuItem } from 'primeng/api'
-import { Listbox } from 'primeng/listbox'
+import type { Listbox } from 'primeng/listbox'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
-import { Device, INDIProperty, INDIPropertyItem, INDISendProperty } from '../../shared/types/device.types'
+import type { Device, INDIProperty, INDIPropertyItem, INDISendProperty } from '../../shared/types/device.types'
 import { deviceComparator, textComparator } from '../../shared/utils/comparators'
 import { AppComponent } from '../app.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-indi',
 	templateUrl: 'indi.component.html',
 	styleUrls: ['indi.component.scss'],
@@ -20,7 +21,7 @@ export class INDIComponent implements OnDestroy {
 
 	protected devices: Device[] = []
 	protected properties: INDIProperty[] = []
-	protected groups: MenuItem[] = []
+	protected groups: string[] = []
 
 	protected device?: Device
 	protected group = ''
@@ -162,13 +163,13 @@ export class INDIComponent implements OnDestroy {
 
 		if (this.groups.length === groups.size) {
 			for (const group of groups) {
-				if (!this.groups.find((e) => e.label === group)) {
+				if (!this.groups.find((e) => e === group)) {
 					groupsChanged = true
 					break
 				}
 			}
 			for (const group of this.groups) {
-				if (group.label && !groups.has(group.label)) {
+				if (group && !groups.has(group)) {
 					groupsChanged = true
 					break
 				}
@@ -178,21 +179,11 @@ export class INDIComponent implements OnDestroy {
 		}
 
 		if (this.groups.length === 0 || groupsChanged) {
-			this.groups = Array.from(groups)
-				.sort(textComparator)
-				.map((e) => {
-					return {
-						icon: 'mdi mdi-sitemap',
-						label: e,
-						command: () => {
-							this.changeGroup(e)
-						},
-					}
-				})
+			this.groups = Array.from(groups).sort(textComparator)
 		}
 
-		if (!this.group || !this.groups.find((e) => e.label === this.group)) {
-			this.group = this.groups[0].label!
+		if (!this.group || !this.groups.find((e) => e === this.group)) {
+			this.group = this.groups[0]
 		}
 	}
 
