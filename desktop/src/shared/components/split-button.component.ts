@@ -77,7 +77,7 @@ abstract class SplitButtonBaseComponent<O, T> {
 			[label]="label()"
 			[icon]="icon()"
 			[disabled]="disabled()"
-			(onClick)="clicked.emit($event); $event.stopImmediatePropagation()"
+			(onClick)="action.emit($event); $event.stopImmediatePropagation()"
 			[model]="model()"
 			[severity]="severity()"
 			size="small"
@@ -103,7 +103,7 @@ export class SplitButtonComponent<T extends string> extends SplitButtonBaseCompo
 	readonly options = input<T[]>([])
 	readonly optionIcon = input<string | ((option: T) => string) | undefined>()
 	readonly value = model<T>()
-	readonly clicked = output<MouseEvent>()
+	readonly action = output<MouseEvent>()
 	readonly disabled = input<boolean | undefined>(false)
 	readonly severity = input<ButtonSeverity>()
 	protected readonly splitButton = viewChild.required<SplitButton>('splitButton')
@@ -118,7 +118,7 @@ export class SplitButtonComponent<T extends string> extends SplitButtonBaseCompo
 			[label]="label()"
 			[icon]="icon()"
 			[disabled]="disabled()"
-			(onClick)="clicked.emit($event); $event.stopImmediatePropagation()"
+			(onClick)="action.emit($event); $event.stopImmediatePropagation()"
 			[model]="model()"
 			[severity]="severity()"
 			size="small"
@@ -144,7 +144,7 @@ export class SplitButtonItemComponent<T> extends SplitButtonBaseComponent<Dropdo
 	readonly options = input<DropdownItem<T>[]>([])
 	readonly optionIcon = input<string | ((option: T) => string) | undefined>()
 	readonly value = model<T>()
-	readonly clicked = output<MouseEvent>()
+	readonly action = output<MouseEvent>()
 	readonly disabled = input<boolean | undefined>(false)
 	readonly severity = input<ButtonSeverity>()
 	protected readonly splitButton = viewChild.required<SplitButton>('splitButton')
@@ -168,7 +168,7 @@ export class SplitButtonItemComponent<T> extends SplitButtonBaseComponent<Dropdo
 			[label]="label()"
 			[icon]="icon()"
 			[severity]="severity()"
-			(onClick)="clicked.emit($event); $event.stopImmediatePropagation()"
+			(onClick)="action.emit($event); $event.stopImmediatePropagation()"
 			(onDropdownClick)="splitButtonMenu.show(model())"
 			size="small"
 			appendTo="body"
@@ -194,7 +194,7 @@ export class SplitButtonDialogMenuComponent {
 	readonly label = input<string>()
 	readonly icon = input<string>()
 	readonly model = input.required<SlideMenuItem[]>()
-	readonly clicked = output<MouseEvent>()
+	readonly action = output<MouseEvent>()
 	readonly disabled = input<boolean | undefined>(false)
 	readonly severity = input<ButtonSeverity>()
 	protected readonly splitButton = viewChild.required<SplitButton>('splitButton')

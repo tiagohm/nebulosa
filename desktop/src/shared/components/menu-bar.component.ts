@@ -34,7 +34,9 @@ export interface SplitButtonClickEvent {
 										direction="column"
 										[value]="item.checked ?? false"
 										(valueChange)="item.checked = $event"
-										(action)="item.check?.($event)" />
+										(action)="item.check?.($event)"
+										[tooltip]="item.tooltip"
+										[tooltipPosition]="item.tooltipPosition ?? 'bottom'" />
 								</div>
 							}
 						} @else if (item.label && item.splitButtonMenu?.length) {

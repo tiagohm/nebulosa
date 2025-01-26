@@ -165,7 +165,7 @@
 				[disabled]="!mount.connected || mount.slewing || mount.parking || mount.parked"
 				[label]="targetCoordinateCommand.label"
 				[icon]="targetCoordinateCommand.icon"
-				(clicked)="targetCoordinateClicked()" />
+				(action)="targetCoordinateClicked()" />
 		</div>
 	</div>
 	<div class="flex w-full flex-row gap-1">

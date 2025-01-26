@@ -1,5 +1,6 @@
 import { Component, input, model, output, ViewEncapsulation } from '@angular/core'
 import type { CheckboxChangeEvent } from 'primeng/checkbox'
+import type { TooltipPosition } from '../types/angular.types'
 
 @Component({
 	standalone: false,
@@ -16,7 +17,10 @@ import type { CheckboxChangeEvent } from 'primeng/checkbox'
 				(onChange)="action.emit($event); $event.originalEvent?.stopImmediatePropagation()"
 				(click)="$event.stopImmediatePropagation()"
 				(mouseup)="$event.stopImmediatePropagation()"
-				(mousedown)="$event.stopImmediatePropagation()" />
+				(mousedown)="$event.stopImmediatePropagation()"
+				[pTooltip]="tooltip()"
+				[tooltipPosition]="tooltipPosition()"
+				[life]="2000" />
 			<label>{{ label() }}</label>
 		</div>
 	`,
@@ -40,5 +44,7 @@ export class CheckboxComponent {
 	readonly disabled = input(false)
 	readonly noWrap = input(false)
 	readonly direction = input<'row' | 'column' | 'row-reverse' | 'column-reverse'>('row')
+	readonly tooltip = input<string>()
+	readonly tooltipPosition = input<TooltipPosition>('bottom')
 	readonly action = output<CheckboxChangeEvent>()
 }

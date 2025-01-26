@@ -35,7 +35,6 @@ import { RotatorComponent } from '../rotator/rotator.component'
 	standalone: false,
 	selector: 'neb-sequencer',
 	templateUrl: 'sequencer.component.html',
-	styleUrls: ['sequencer.component.scss'],
 	encapsulation: ViewEncapsulation.None,
 })
 export class SequencerComponent implements OnDestroy, Tickable {

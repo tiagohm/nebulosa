@@ -31,12 +31,12 @@ export class BrowserWindowService {
 	}
 
 	openCamera(data: Camera, preference: WindowPreference = {}) {
-		Object.assign(preference, { icon: 'camera', width: 420, height: 499 })
+		Object.assign(preference, { icon: 'camera', width: 410, height: 499 })
 		return this.openWindow({ preference, data, id: `camera.${data.name}`, path: 'camera' })
 	}
 
 	openCameraDialog(data: CameraDialogInput, preference: WindowPreference = {}) {
-		Object.assign(preference, { icon: 'camera', width: 420, height: 409 })
+		Object.assign(preference, { icon: 'camera', width: 410, height: 409 })
 		return this.openModal<CameraStartCapture>({ preference, data, id: `camera.${data.camera.name}.modal`, path: 'camera' })
 	}
 
@@ -66,17 +66,17 @@ export class BrowserWindowService {
 	}
 
 	openWheelDialog(data: WheelDialogInput, preference: WindowPreference = {}) {
-		Object.assign(preference, { icon: 'filter-wheel', width: 300, height: 217 })
+		Object.assign(preference, { icon: 'filter-wheel', width: 280, height: 256 })
 		return this.openModal<CameraStartCapture>({ preference, data, id: `wheel.${data.wheel.name}.modal`, path: 'wheel' })
 	}
 
 	openRotatorDialog(data: RotatorDialogInput, preference: WindowPreference = {}) {
-		Object.assign(preference, { icon: 'rotate', width: 280, height: 210 })
+		Object.assign(preference, { icon: 'rotate', width: 280, height: 260 })
 		return this.openModal<CameraStartCapture>({ preference, data, id: `rotator.${data.rotator.name}.modal`, path: 'rotator' })
 	}
 
 	openGuider(preference: WindowPreference = {}) {
-		Object.assign(preference, { icon: 'guider', width: 380, height: 444 })
+		Object.assign(preference, { icon: 'guider', width: 415, height: 472 })
 		return this.openWindow({ preference, id: 'guider', path: 'guider' })
 	}
 

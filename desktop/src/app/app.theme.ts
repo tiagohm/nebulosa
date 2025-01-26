@@ -3,6 +3,7 @@ import { definePreset } from '@primeng/themes'
 import Aura from '@primeng/themes/aura'
 import type { AuraBaseDesignTokens } from '@primeng/themes/aura/base'
 import type { ButtonDesignTokens } from '@primeng/themes/types/button'
+import type { CheckboxDesignTokens } from '@primeng/themes/types/checkbox'
 import type { ChipDesignTokens } from '@primeng/themes/types/chip'
 import type { DialogDesignTokens } from '@primeng/themes/types/dialog'
 import type { FloatLabelDesignTokens } from '@primeng/themes/types/floatlabel'
@@ -59,7 +60,7 @@ export const AppTheme: AuraBaseDesignTokens = definePreset(Aura, {
 				},
 				formField: {
 					filledBorderColor: 'transparent',
-					disabledBackground: '{surface.900}',
+					disabledBackground: 'transparent',
 					background: '{surface.800}',
 					shadow: 'none',
 					borderColor: 'transparent',
@@ -106,7 +107,7 @@ export const AppTheme: AuraBaseDesignTokens = definePreset(Aura, {
 				borderColor: 'transparent',
 				hoverBorderColor: '{surface.800}',
 				focusBorderColor: '{surface.800}',
-				disabledBackground: '{surface.900}',
+				disabledBackground: 'transparent',
 			},
 			overlay: {
 				background: '{surface.800}',
@@ -198,5 +199,10 @@ export const AppTheme: AuraBaseDesignTokens = definePreset(Aura, {
 				color: '{red.500}',
 			},
 		} as ChipDesignTokens,
+		checkbox: {
+			root: {
+				filledBackground: '{surface.600}',
+			},
+		} as CheckboxDesignTokens,
 	},
 } as AuraBaseDesignTokens)
