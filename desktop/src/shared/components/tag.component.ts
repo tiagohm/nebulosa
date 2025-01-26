@@ -13,7 +13,7 @@ export type TagSize = 'large' | 'normal'
 			[severity]="severity()"
 			[icon]="icon()"
 			[value]="label()"
-			styleClass="cursor-pointer white-space-nowrap {{ size() }}"
+			styleClass="cursor-pointer whitespace-nowrap {{ size() }}"
 			(pointerup)="$event.stopImmediatePropagation(); !disabled() && action.emit($event)" />
 	`,
 	styles: `

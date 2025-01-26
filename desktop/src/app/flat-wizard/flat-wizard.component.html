@@ -30,7 +30,7 @@
 		</div>
 	</div>
 	<div class="grid grid-cols-12 gap-3">
-		<div class="col-span-12">
+		<div class="col-span-full">
 			<neb-path-chooser
 				key="flatWizardSaveFile"
 				[disabled]="!camera?.connected || running"
@@ -76,7 +76,7 @@
 				(valueChange)="savePreference()" />
 		</div>
 		@if (filters.length && wheel?.connected && wheel?.count) {
-			<div class="col-span-12">
+			<div class="col-span-full">
 				<p-floatLabel
 					class="w-full"
 					variant="in">
@@ -99,7 +99,7 @@
 		}
 	</div>
 	<div class="grid grid-cols-12 gap-3">
-		<div class="col-span-12 flex items-center justify-center gap-1">
+		<div class="col-span-full flex items-center justify-center gap-1">
 			<neb-button
 				[disabled]="!camera?.connected || !request.capture.savePath || running"
 				label="Start"

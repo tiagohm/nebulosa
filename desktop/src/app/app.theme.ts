@@ -75,6 +75,11 @@ export const AppTheme: AuraBaseDesignTokens = definePreset(Aura, {
 				content: {
 					background: '{surface.900}',
 				},
+				navigation: {
+					list: {
+						padding: '0.5rem 0.5rem',
+					},
+				},
 			},
 		},
 	},

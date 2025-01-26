@@ -98,7 +98,7 @@
 	@if (imageInfo) {
 		<svg
 			[style]="'transform: rotate(' + rotation.transformation.angle + 'deg)'"
-			class="fov pointer-events-none absolute left-0 top-0 h-full w-full select-none overflow-visible">
+			class="pointer-events-none absolute left-0 top-0 h-full w-full select-none overflow-visible fill-transparent stroke-[0.25rem]">
 			@for (item of fov.fovs; track $index) {
 				@if (item.enabled && item.computed) {
 					<rect
@@ -117,7 +117,7 @@
 		#roi
 		[class.hidden]="!hasROI"
 		[style]="'transform: rotate(' + rotation.transformation.angle + 'deg)'"
-		class="roi absolute left-0 top-0"
+		class="absolute left-0 top-0 box-border h-[128px] w-[128px]"
 		(contextmenu)="imageClicked($event, true)"></div>
 	@if (hasROI) {
 		<ngx-moveable
@@ -136,7 +136,7 @@
 </div>
 
 @if (hasROI) {
-	<div class="roi-coordinates fixed flex items-center gap-2">
+	<div class="fixed left-1/2 top-16 flex min-w-24 -translate-x-1/2 items-center gap-2 whitespace-nowrap rounded-sm bg-black p-2 opacity-50">
 		<span>X: {{ imageROI.area.x.toFixed(0) }} Y: {{ imageROI.area.y.toFixed(0) }} W: {{ imageROI.area.width.toFixed(0) }} H: {{ imageROI.area.height.toFixed(0) }}</span>
 		<neb-button
 			(action)="roiForCamera()"
@@ -329,28 +329,28 @@
 	[(visible)]="astronomicalObject.showDialog"
 	[modal]="false"
 	[style]="{ width: 'min-content', minWidth: '325px' }">
-	<div class="mt-2 grid">
+	<div class="mt-2 grid grid-cols-12 gap-3">
 		@if (astronomicalObject.info) {
-			<div class="col-12">
+			<div class="col-span-full">
 				<neb-input-text
 					label="Name"
 					[readonly]="true"
 					[value]="astronomicalObject.info.name.join(' · ')" />
 			</div>
-			<div class="col-4">
+			<div class="col-span-4">
 				<neb-input-text
 					label="RA (J2000)"
 					[readonly]="true"
 					[value]="astronomicalObject.info.rightAscensionJ2000 | angle: true : 24" />
 			</div>
-			<div class="col-4">
+			<div class="col-span-4">
 				<neb-input-text
 					label="DEC (J2000)"
 					[readonly]="true"
 					[value]="astronomicalObject.info.declinationJ2000 | angle: true : 360" />
 			</div>
 			@if (astronomicalObject.info.constellation) {
-				<div class="col-4">
+				<div class="col-span-4">
 					<neb-input-text
 						label="Constellation"
 						[readonly]="true"
@@ -358,7 +358,7 @@
 				</div>
 			}
 			@if (astronomicalObject.info.magnitude) {
-				<div class="col-3">
+				<div class="col-span-3">
 					<neb-input-text
 						label="Magnitude"
 						[readonly]="true"
@@ -366,7 +366,7 @@
 				</div>
 			}
 			@if (astronomicalObject.info.type) {
-				<div class="col-6">
+				<div class="col-span-6">
 					<neb-input-text
 						label="Type"
 						[readonly]="true"
@@ -374,7 +374,7 @@
 				</div>
 			}
 			@if (astronomicalObject.info.distance) {
-				<div class="col-3">
+				<div class="col-span-3">
 					<neb-input-text
 						label="Dist. (ly)"
 						[readonly]="true"
@@ -383,7 +383,7 @@
 			}
 		}
 		@if (astronomicalObject.info?.type) {
-			<div class="col-12 justify-center text-sm">
+			<div class="col-span-full justify-center text-sm">
 				<a
 					target="_blank"
 					href="{{ 'https://simbad.cds.unistra.fr/simbad/sim-id?Ident=' + astronomicalObject.info!.name[0] }}">
@@ -393,7 +393,7 @@
 		}
 	</div>
 	<ng-template #footer>
-		<div class="col-12 flex justify-center">
+		<div class="flex w-full justify-center gap-3">
 			<neb-button
 				[disabled]="!astronomicalObject.info"
 				(action)="mountSync(astronomicalObject.info!)"
@@ -703,14 +703,15 @@
 	[draggable]="true"
 	[(visible)]="headers.showDialog"
 	[modal]="false"
-	[style]="{ width: 'min-content', minWidth: '340px', minHeight: '340px' }"
+	[style]="{ width: 'min-content', minWidth: '340px', minHeight: '340px', maxHeight: '480px' }"
 	class="pointer-events-none">
 	<div class="p-2">
 		<p-table
 			[value]="headers.headers"
 			class="w-full"
 			dataKey="name"
-			styleClass="p-datatable-striped w-full pb-4">
+			size="small"
+			styleClass="w-full pb-4">
 			<ng-template #header>
 				<tr>
 					<th>Name</th>
@@ -874,7 +875,7 @@
 		<div class="col-span-6 row-span-4 flex justify-center">
 			<canvas
 				#detectedStarCanvas
-				class="detected-star"></canvas>
+				class="pixelated h-44 w-44 rounded-md bg-slate-950"></canvas>
 		</div>
 		<div class="col-span-3">
 			<neb-input-text
@@ -917,8 +918,8 @@
 	[modal]="false"
 	[style]="{ width: '390px' }"
 	class="pointer-events-none">
-	<div class="grid p-2">
-		<div class="col-2 items-center justify-center gap-2">
+	<div class="grid grid-cols-12 gap-3 p-2">
+		<div class="col-span-2 items-center justify-center gap-2">
 			<p-colorPicker
 				[(ngModel)]="fov.selected.color"
 				(ngModelChange)="saveFOV(false)"
@@ -926,31 +927,33 @@
 				[autofocus]="false"
 				[style]="{ width: '23px', height: '23px' }" />
 		</div>
-		<div class="col-6 items-center justify-start gap-2">
+		<div class="col-span-1">
 			<neb-button
 				icon="mdi mdi-telescope"
 				(action)="showFOVTelescopeDialog()"
 				tooltip="Choose telescope" />
+		</div>
+		<div class="col-span-5">
 			<neb-input-number
 				label="Focal Length (mm)"
 				[(value)]="fov.selected.focalLength"
 				(valueChange)="saveFOV()" />
 		</div>
-		<div class="col-4">
+		<div class="col-span-4">
 			<neb-input-number
 				label="Aperture (mm)"
 				[(value)]="fov.selected.aperture"
 				(valueChange)="saveFOV()" />
 		</div>
-		<div class="col-4 items-center justify-center">Resolution (px)</div>
-		<div class="col-4 items-center justify-center gap-2">
+		<div class="col-span-4 !justify-start">Resolution (px)</div>
+		<div class="col-span-4">
 			<neb-button
 				icon="mdi mdi-camera-iris"
 				(action)="showFOVCameraDialog()"
 				tooltip="Choose camera" />
 		</div>
-		<div class="col-4 items-center justify-center">Pixel Size (µm)</div>
-		<div class="col-3">
+		<div class="col-span-4 !justify-end">Pixel Size (µm)</div>
+		<div class="col-span-3">
 			<neb-input-number
 				label="Width"
 				[min]="1"
@@ -958,7 +961,7 @@
 				[(value)]="fov.selected.cameraSize.width"
 				(valueChange)="saveFOV()" />
 		</div>
-		<div class="col-3">
+		<div class="col-span-3">
 			<neb-input-number
 				label="Height"
 				[min]="1"
@@ -966,7 +969,7 @@
 				[(value)]="fov.selected.cameraSize.height"
 				(valueChange)="saveFOV()" />
 		</div>
-		<div class="col-3">
+		<div class="col-span-3">
 			<neb-input-number
 				label="Width"
 				[min]="0"
@@ -976,7 +979,7 @@
 				[(value)]="fov.selected.pixelSize.width"
 				(valueChange)="saveFOV()" />
 		</div>
-		<div class="col-3">
+		<div class="col-span-3">
 			<neb-input-number
 				label="Height"
 				[min]="0"
@@ -986,7 +989,7 @@
 				[(value)]="fov.selected.pixelSize.height"
 				(valueChange)="saveFOV()" />
 		</div>
-		<div class="col-4">
+		<div class="col-span-4">
 			<neb-input-number
 				label="Barlow/Reducer"
 				[min]="0.01"
@@ -996,7 +999,7 @@
 				[(value)]="fov.selected.barlowReducer"
 				(valueChange)="saveFOV()" />
 		</div>
-		<div class="col-3">
+		<div class="col-span-3">
 			<neb-input-number
 				label="Bin"
 				[min]="1"
@@ -1004,7 +1007,7 @@
 				[(value)]="fov.selected.bin"
 				(valueChange)="saveFOV()" />
 		</div>
-		<div class="col-4 gap-1">
+		<div class="col-span-4">
 			<neb-input-number
 				label="Rotation (°)"
 				[min]="0"
@@ -1013,7 +1016,7 @@
 				[(value)]="fov.selected.rotation"
 				(valueChange)="saveFOV(false)" />
 		</div>
-		<div class="col-1 flex items-center justify-center gap-2">
+		<div class="col-span-1">
 			<neb-button
 				[disabled]="!canAddFOV"
 				icon="mdi mdi-plus"
@@ -1022,12 +1025,10 @@
 				(action)="addFOV()" />
 		</div>
 		@if (fov.fovs.length) {
-			<div
-				class="col-12 mt-2 flex-col gap-1 overflow-auto p-0"
-				style="max-height: 112px">
+			<div class="col-span-full mt-2 !block max-h-[148.5px] overflow-auto p-0">
 				@for (item of fov.fovs; track $index) {
 					<div
-						class="border-left-3 border-round flex cursor-pointer items-center gap-2 p-2"
+						class="flex cursor-pointer items-center gap-2 rounded border-l-4 p-2"
 						[class.bg-blue-900]="fov.selected === item"
 						[style.border-color]="item.color"
 						(click)="selectFOV(item)">
@@ -1082,16 +1083,16 @@
 				[style]="{ width: '100%' }"
 				[listStyle]="{ 'max-height': '210px' }"
 				[virtualScroll]="true"
-				[virtualScrollItemSize]="42"
+				[virtualScrollItemSize]="54"
 				filterBy="name,sensor"
 				filterMatchMode="contains"
 				[filterFields]="['name', 'sensor']">
 				<ng-template
 					#item
 					let-item>
-					<div class="flex flex-col justify-center">
-						<span class="white-space-nowrap font-bold">{{ item.name }}</span>
-						<span class="font-italic white-space-nowrap text-sm">{{ item.sensor }}</span>
+					<div class="flex flex-col justify-center py-2 leading-none">
+						<span class="whitespace-nowrap font-bold">{{ item.name }}</span>
+						<span class="whitespace-nowrap text-sm italic">{{ item.sensor }}</span>
 						<span class="text-sm">{{ item.width }}x{{ item.height }} / {{ item.pixelSize }}µm</span>
 					</div>
 				</ng-template>
@@ -1130,8 +1131,8 @@
 				<ng-template
 					#item
 					let-item>
-					<div class="flex flex-col justify-center">
-						<span class="white-space-nowrap font-bold">{{ item.name }}</span>
+					<div class="flex flex-col justify-center py-2 leading-none">
+						<span class="whitespace-nowrap font-bold">{{ item.name }}</span>
 						<span class="text-sm">{{ item.aperture }}mm / {{ item.focalLength }}mm</span>
 					</div>
 				</ng-template>
@@ -1362,14 +1363,14 @@
 </p-dialog>
 
 @if (mouseCoordinate && isMouseCoordinateVisible) {
-	<div class="coordinates fixed p-3 font-mono text-sm">
-		<div class="m-0 grid">
-			<div class="col-6 m-0 p-0">X: {{ mouseCoordinate.x }}</div>
-			<div class="col-6 m-0 p-0">Y: {{ mouseCoordinate.y }}</div>
-			<div class="col-6 m-0 p-0">α: {{ mouseCoordinate.alpha }}</div>
-			<div class="col-6 m-0 p-0">δ: {{ mouseCoordinate.delta }}</div>
-			<div class="col-6 m-0 p-0">l: {{ mouseCoordinate.l }}</div>
-			<div class="col-6 m-0 p-0">b: {{ mouseCoordinate.b }}</div>
+	<div class="coordinates fixed bottom-3 left-1/2 -translate-x-1/2 rounded-sm bg-black p-3 font-mono text-sm opacity-70">
+		<div class="grid grid-cols-2 !justify-start gap-0">
+			<div class="col-span-1">X: {{ mouseCoordinate.x }}</div>
+			<div class="col-span-1">Y: {{ mouseCoordinate.y }}</div>
+			<div class="col-span-1">α: {{ mouseCoordinate.alpha }}</div>
+			<div class="col-span-1">δ: {{ mouseCoordinate.delta }}</div>
+			<div class="col-span-1">l: {{ mouseCoordinate.l }}</div>
+			<div class="col-span-1">b: {{ mouseCoordinate.b }}</div>
 		</div>
 	</div>
 }

@@ -25,7 +25,7 @@ export type ButtonSeverity = Severity | 'help' | 'primary' | 'secondary' | 'cont
 			(mousedown)="$event.stopImmediatePropagation()"
 			class="inline-flex"
 			[class.w-full]="!!label()"
-			styleClass="white-space-nowrap w-full cursor-pointer select-none">
+			styleClass="w-full cursor-pointer select-none whitespace-nowrap">
 			<ng-content></ng-content>
 		</p-button>
 	`,

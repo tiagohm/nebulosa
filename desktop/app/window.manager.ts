@@ -116,7 +116,7 @@ export class WindowManager {
 		const minWidth = preference.minWidth ?? 100
 		const computedWidth = preference.width ? Math.trunc(this.computeWidth(preference.width)) : 320
 		const minHeight = preference.minHeight ?? 100
-		const computedHeight = preference.height ? Math.trunc(this.computeHeight(preference.height, computedWidth)) : 416
+		const computedHeight = preference.height ? Math.trunc(this.computeHeight(preference.height, computedWidth)) : 412
 
 		const screenSize = screen.getPrimaryDisplay().workAreaSize
 		const data = store.get(`window.${open.id}`)

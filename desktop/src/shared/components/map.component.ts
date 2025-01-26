@@ -9,7 +9,7 @@ import * as L from 'leaflet'
 		<div
 			#map
 			style="height: 150px"
-			class="border-round-md relative"></div>
+			class="relative rounded-md"></div>
 	`,
 	styles: `
 		neb-map {

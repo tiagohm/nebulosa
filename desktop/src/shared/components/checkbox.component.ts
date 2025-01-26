@@ -12,8 +12,9 @@ import type { CheckboxChangeEvent } from 'primeng/checkbox'
 				[binary]="true"
 				[disabled]="disabled()"
 				[(ngModel)]="value"
-				[class.white-space-nowrap]="noWrap()"
+				[class.whitespace-nowrap]="noWrap()"
 				(onChange)="action.emit($event); $event.originalEvent?.stopImmediatePropagation()"
+				(click)="$event.stopImmediatePropagation()"
 				(mouseup)="$event.stopImmediatePropagation()"
 				(mousedown)="$event.stopImmediatePropagation()" />
 			<label>{{ label() }}</label>

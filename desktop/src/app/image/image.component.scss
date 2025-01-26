@@ -1,48 +1,7 @@
 :host {
-	width: 100vw;
-	height: 100vh;
-	display: block;
-	position: relative;
+	@apply relative block h-screen w-screen;
 
-	svg.fov {
-		fill: transparent;
-		stroke-width: 0.25rem;
-	}
-
-	canvas.detected-star {
-		width: 128px;
-		height: 128px;
-		background: #111;
-		image-rendering: pixelated;
-		border-radius: 4px;
-	}
-
-	.roi {
-		width: 128px;
-		height: 128px;
-		box-sizing: border-box;
-	}
-
-	.roi-coordinates {
-		background: rgba(0, 0, 0, 0.5);
-		padding: 4px 8px;
-		border-radius: 2px;
-		font-size: 12px !important;
-		min-width: 71px;
-		top: 46px;
-		left: 50%;
-		white-space: nowrap;
-		transform: translate(-50%, 0%);
-	}
-
-	.coordinates {
-		bottom: 8px;
-		left: 50%;
-		padding: 8px;
-		border-radius: 2px;
-		background: rgba(0, 0, 0, 0.65);
-		border: 1px solid rgba(255, 255, 255, 0.15);
-		width: 260px;
-		transform: translate(-50%, 0px);
+	.p-contextmenu {
+		max-height: 440px;
 	}
 }

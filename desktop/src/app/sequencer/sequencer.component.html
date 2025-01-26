@@ -51,7 +51,7 @@
 					@if (event && running) {
 						<span class="mr-2 text-sm">{{ event.state | enum }}</span>
 						<span
-							class="bg-warning border-round-left-md line-height-3 text-center text-sm text-gray-900"
+							class="bg-warning line-height-3 rounded-l-md text-center text-sm text-gray-900"
 							style="min-width: 48px">
 							<i class="mdi mdi-counter mdi-sm"></i>
 							{{ event.id }}
@@ -73,20 +73,20 @@
 							{{ event.remainingTime | exposureTime }}
 						</span>
 						<span
-							class="border-round-right-md line-height-3 bg-green-500 text-center text-sm text-gray-900"
+							class="rounded-right-md line-height-3 bg-green-500 text-center text-sm text-gray-900"
 							style="min-width: 52px">
 							<i class="mdi mdi-percent mdi-sm"></i>
 							{{ event.progress * 100 | number: '1.1-1' }}
 						</span>
 					} @else {
 						<span
-							class="bg-warning border-round-left-md line-height-3 text-center text-sm text-gray-900"
+							class="bg-warning line-height-3 rounded-l-md text-center text-sm text-gray-900"
 							style="min-width: 48px">
 							<i class="mdi mdi-counter mdi-sm"></i>
 							{{ exposureTotal.frames }}
 						</span>
 						<span
-							class="border-round-right-md line-height-3 bg-green-500 text-center text-sm text-gray-900"
+							class="rounded-right-md line-height-3 bg-green-500 text-center text-sm text-gray-900"
 							style="min-width: 62px">
 							<i class="mdi mdi-timer mdi-sm"></i>
 							{{ exposureTotal.time | exposureTime }}

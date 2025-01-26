@@ -1,6 +1,6 @@
 <div class="p-4">
 	<div class="grid grid-cols-12 gap-3">
-		<div class="col-span-12 sm:col-span-4">
+		<div class="col-span-full sm:col-span-4">
 			<neb-dropdown
 				label="Device"
 				[options]="devices"
@@ -8,7 +8,7 @@
 				(valueChange)="deviceChanged($event)"
 				emptyMessage="No device available" />
 		</div>
-		<div class="col-span-12 flex items-center !justify-start gap-1 sm:col-span-8">
+		<div class="col-span-full flex items-center !justify-start gap-1 sm:col-span-8">
 			<neb-split-button
 				[label]="group"
 				icon="mdi mdi-sitemap"

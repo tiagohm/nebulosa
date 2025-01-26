@@ -8,7 +8,7 @@ import type { Device } from '../types/device.types'
 		<div class="flex flex-col justify-center gap-0">
 			@let mDevice = device();
 
-			<span class="white-space-nowrap font-bold">{{ mDevice.name }}</span>
+			<span class="whitespace-nowrap font-bold">{{ mDevice.name }}</span>
 
 			@if (mDevice.driver.name) {
 				<div class="flex items-center gap-1 text-xs text-gray-400">
