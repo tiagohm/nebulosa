@@ -30,7 +30,7 @@ dependencyResolutionManagement {
             library("apache-collections", "org.apache.commons:commons-collections4:4.4")
             library("apache-math", "org.apache.commons:commons-math3:3.6.1")
             library("apache-numbers-complex", "org.apache.commons:commons-numbers-complex:1.2")
-            library("oshi", "com.github.oshi:oshi-core:6.6.5")
+            library("oshi", "com.github.oshi:oshi-core:6.6.6")
             library("jna", "net.java.dev.jna:jna:5.16.0")
             library("koin", "io.insert-koin:koin-core:4.0.2")
             library("airline", "com.github.rvesse:airline:3.0.0")
