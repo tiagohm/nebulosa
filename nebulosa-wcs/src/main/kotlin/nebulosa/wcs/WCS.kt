@@ -84,6 +84,7 @@ class WCS(header: ReadableHeader) : AutoCloseable {
 
     companion object {
 
+        private val NAXIS = "NAXIS[1-2]?".toRegex()
         private val CUNIT = "CUNIT[1-2]".toRegex()
         private val CTYPE = "CTYPE[1-2]".toRegex()
         private val CRPIX = "CRPIX[1-2]".toRegex()
@@ -91,6 +92,7 @@ class WCS(header: ReadableHeader) : AutoCloseable {
         private val PS = "PS\\d_\\d".toRegex()
         private val CD = "CD\\d_\\d".toRegex()
         private val PC = "PC\\d_\\d".toRegex()
+        private val PV = "PV\\d_\\d".toRegex()
         private val CDELT = "CDELT[1-2]".toRegex()
         private val CROTA = "CROTA[1-2]".toRegex()
         private val SIP_ABP = "[AB]P?_\\d_\\d".toRegex()
@@ -98,7 +100,7 @@ class WCS(header: ReadableHeader) : AutoCloseable {
         private val SIP_AB_DMAX = "[AB]_DMAX".toRegex()
 
         private val KEYWORDS_REGEX =
-            arrayOf(CUNIT, CTYPE, CRPIX, CRVAL, PS, CD, PC, CDELT, CROTA)
+            arrayOf(NAXIS, CUNIT, CTYPE, CRPIX, CRVAL, PS, CD, PC, PV, CDELT, CROTA)
 
         private val SIP_KEYWORDS_REGEX =
             arrayOf(SIP_ABP_ORDER, SIP_ABP, SIP_AB_DMAX)

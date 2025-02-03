@@ -71,7 +71,7 @@ data class HorizonsEphemeris(private val elements: MutableList<HorizonsElement>)
                 headerLine[3] = trimmedLine
 
                 if (!start) {
-                    start = trimmedLine.startsWith("\$\$SOE")
+                    start = trimmedLine.startsWith("$\$SOE")
 
                     if (!start && trimmedLine.contains("Matching small-bodies", true)) {
                         matchingSmallBodies = true
@@ -80,7 +80,7 @@ data class HorizonsEphemeris(private val elements: MutableList<HorizonsElement>)
                     continue
                 }
 
-                if (trimmedLine.startsWith("\$\$EOE")) break
+                if (trimmedLine.startsWith("$\$EOE")) break
 
                 if (!first) {
                     first = true
