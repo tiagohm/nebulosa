@@ -14,6 +14,7 @@ export class AboutComponent {
 	protected readonly codename = packageJson.codename
 	protected readonly version = packageJson.version
 	protected readonly description = packageJson.description
+	protected readonly copyrightYear = new Date().getFullYear()
 	protected readonly icons: IconItem[] = []
 	protected readonly dependencies: DependencyItem[] = []
 
