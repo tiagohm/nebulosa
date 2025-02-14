@@ -167,7 +167,7 @@ export class WindowManager {
 		if (this.args.serve) {
 			await browserWindow.loadURL(`http://localhost:4200/${open.path}?data=${encodedData}`)
 		} else {
-			const url = new URL(join('file:', __dirname, `index.html`) + `#/${open.path}?data=${encodedData}`)
+			const url = new URL('file://' + join(__dirname, `index.html`) + `#/${open.path}?data=${encodedData}`)
 			await browserWindow.loadURL(url.href)
 		}
 
@@ -290,7 +290,7 @@ export class WindowManager {
 				resizable: false,
 			})
 
-			const url = new URL(join('file:', __dirname, 'assets', 'images', 'splash.png'))
+			const url = new URL('file://' + join(__dirname, 'assets', 'images', 'splash.png'))
 
 			browserWindow.on('ready-to-show', () => {
 				browserWindow.show()
