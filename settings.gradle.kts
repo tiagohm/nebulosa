@@ -35,7 +35,7 @@ dependencyResolutionManagement {
             library("koin", "io.insert-koin:koin-core:4.0.2")
             library("airline", "com.github.rvesse:airline:3.0.0")
             library("h2", "com.h2database:h2:2.3.232")
-            library("flyway", "org.flywaydb:flyway-core:11.3.1")
+            library("flyway", "org.flywaydb:flyway-core:11.3.2")
             library("exposed-core", "org.jetbrains.exposed:exposed-core:0.59.0")
             library("exposed-jdbc", "org.jetbrains.exposed:exposed-jdbc:0.59.0")
             library("ktor-core", "io.ktor:ktor-server-core-jvm:3.0.3")
