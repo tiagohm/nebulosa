@@ -302,6 +302,8 @@ data class SequencerJob(
     override fun beforeStart() {
         LOG.d { debug("Sequencer started. camera={}, mount={}, wheel={}, focuser={}, rotator={}, plan={}", camera, mount, wheel, focuser, rotator, plan) }
 
+        camera.snoop(listOf(mount, wheel, focuser, rotator))
+
         status.state = SequencerState.RUNNING
         status.send()
     }

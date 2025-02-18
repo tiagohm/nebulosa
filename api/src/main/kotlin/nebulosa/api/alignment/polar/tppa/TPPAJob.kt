@@ -221,6 +221,8 @@ data class TPPAJob(
     override fun beforeStart() {
         LOG.d { debug("TPPA started. longitude={}, latitude={}, camera={}, mount={}, request={}", longitude, latitude, camera, mount, request) }
 
+        camera.snoop(camera.snoopedDevices.filter { it !is Mount } + mount)
+
         status.rightAscension = mount.rightAscension
         status.declination = mount.declination
 

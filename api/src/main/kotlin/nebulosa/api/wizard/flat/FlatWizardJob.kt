@@ -141,6 +141,10 @@ data class FlatWizardJob(
     override fun beforeStart() {
         LOG.d { debug("Flat Wizard started. camera={}, request={}", camera, request) }
 
+        val snoopedDevices = camera.snoopedDevices.filter { it !is FilterWheel }
+        if (wheel != null) camera.snoop(snoopedDevices + wheel)
+        else camera.snoop(snoopedDevices)
+
         status.state = FlatWizardState.EXPOSURING
         status.send()
     }
