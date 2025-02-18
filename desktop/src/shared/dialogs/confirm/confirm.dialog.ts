@@ -8,7 +8,7 @@ import type { AngularService } from '../../services/angular.service'
 	standalone: false,
 	template: `
 		<span>{{ message }}</span>
-		<div class="px-0 py-3">
+		<div class="flex justify-end px-0 py-3">
 			<neb-button
 				icon="mdi mdi-close"
 				label="No"
