@@ -262,7 +262,10 @@ data class SequencerJob(
     override fun accept(event: Any) {
         when (event) {
             is DelayEvent -> {
-                status.capture.handleCameraDelayEvent(event)
+                if (event.task !== initialDelayTask) {
+                    status.capture.handleCameraDelayEvent(event)
+                }
+
                 status.elapsedTime += event.waitTime
                 status.computeRemainingTimeAndProgress()
                 status.send()
