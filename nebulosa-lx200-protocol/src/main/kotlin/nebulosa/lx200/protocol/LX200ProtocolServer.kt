@@ -36,13 +36,13 @@ data class LX200ProtocolServer(
         get() = mountHandler.get()?.longitude ?: 0.0
 
     override val slewing
-        get() = mountHandler.get()?.slewing ?: false
+        get() = mountHandler.get()?.slewing == true
 
     override val tracking
-        get() = mountHandler.get()?.tracking ?: false
+        get() = mountHandler.get()?.tracking == true
 
     override val parked
-        get() = mountHandler.get()?.parked ?: false
+        get() = mountHandler.get()?.parked == true
 
     override val channelInitialzer = object : ChannelInitializer<SocketChannel>() {
 
