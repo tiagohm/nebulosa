@@ -117,7 +117,7 @@
 		#roi
 		[class.hidden]="!hasROI"
 		[style]="'transform: rotate(' + rotation.transformation.angle + 'deg)'"
-		class="absolute left-0 top-0 box-border h-[128px] w-[128px]"
+		class="roi absolute left-0 top-0 box-border h-[128px] w-[128px]"
 		(contextmenu)="imageClicked($event, true)"></div>
 	@if (hasROI) {
 		<ngx-moveable
@@ -136,7 +136,7 @@
 </div>
 
 @if (hasROI) {
-	<div class="fixed left-1/2 top-16 flex min-w-24 -translate-x-1/2 items-center gap-2 whitespace-nowrap rounded-sm bg-black p-2 opacity-50">
+	<div class="fixed left-1/2 top-16 flex min-w-24 -translate-x-1/2 items-center gap-2 whitespace-nowrap rounded bg-black p-2 opacity-50">
 		<span>X: {{ imageROI.area.x.toFixed(0) }} Y: {{ imageROI.area.y.toFixed(0) }} W: {{ imageROI.area.width.toFixed(0) }} H: {{ imageROI.area.height.toFixed(0) }}</span>
 		<neb-button
 			(action)="roiForCamera()"
