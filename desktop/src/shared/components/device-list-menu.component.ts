@@ -1,6 +1,7 @@
 import { Component, ViewEncapsulation, effect, inject, input, output, viewChild } from '@angular/core'
 import { SEPARATOR_MENU_ITEM } from '../constants'
 import { AngularService } from '../services/angular.service'
+import { ApiService } from '../services/api.service'
 import { isGuideHead } from '../types/camera.types'
 import type { Device } from '../types/device.types'
 import { deviceComparator } from '../utils/comparators'
@@ -32,6 +33,7 @@ export interface DeviceConnectionCommandEvent {
 	encapsulation: ViewEncapsulation.None,
 })
 export class DeviceListMenuComponent {
+	private readonly api = inject(ApiService)
 	private readonly angularService = inject(AngularService)
 
 	readonly model = input<SlideMenuItem[]>([])
@@ -108,7 +110,6 @@ export class DeviceListMenuComponent {
 				model.push({
 					label: device.name,
 					selected: selected === device,
-					disabled: this.disableIfDeviceIsNotConnected() && !device.connected,
 					slideMenu: [],
 					toolbarMenu: [
 						...toolbarMenu,
@@ -117,16 +118,20 @@ export class DeviceListMenuComponent {
 							severity: device.connected ? 'danger' : 'info',
 							label: device.connected ? 'Disconnect' : 'Connect',
 							visible: !isGuideHead(device),
-							command: (event) => {
+							command: async (event) => {
 								if (event.item) {
-									if (device.connected) this.deviceDisconnect.emit({ device, item: event.item })
-									else this.deviceConnect.emit({ device, item: event.item })
+									const connectionEvent = await DeviceListMenuComponent.handleConnectDevice(this.api, device, event.item)
+									if (connectionEvent) this.deviceConnect.emit(connectionEvent)
 								}
 							},
 						},
 					],
 					command: () => {
-						resolve(device)
+						if (!this.disableIfDeviceIsNotConnected() || device.connected) {
+							resolve(device)
+						} else {
+							this.angularService.message('Please connect the device first', 'warn')
+						}
 					},
 				})
 			}
@@ -142,5 +147,45 @@ export class DeviceListMenuComponent {
 
 	hide() {
 		this.menu().hide()
+	}
+
+	static async handleConnectDevice(api: ApiService, device: Device, item: MenuItem) {
+		const connect = !device.connected
+
+		if (connect) await api.indiDeviceConnect(device)
+		else await api.indiDeviceDisconnect(device)
+
+		item.disabled = true
+
+		return new Promise<DeviceConnectionCommandEvent | undefined>((resolve) => {
+			let counter = 0
+
+			const timer = setInterval(async () => {
+				Object.assign(device, await api.indiDevice(device))
+
+				if (connect === device.connected) {
+					if (connect && device.connected) {
+						item.icon = 'mdi mdi-close'
+						item.severity = 'danger'
+						item.label = 'Disconnect'
+					} else if (!connect && !device.connected) {
+						item.icon = 'mdi mdi-connection'
+						item.severity = 'info'
+						item.label = 'Connect'
+					}
+
+					clearInterval(timer)
+					resolve({ device, item })
+				} else if (counter >= 10) {
+					clearInterval(timer)
+					resolve(undefined)
+				} else {
+					counter++
+					return
+				}
+
+				item.disabled = false
+			}, 1500)
+		})
 	}
 }

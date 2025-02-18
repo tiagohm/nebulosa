@@ -1,8 +1,7 @@
 import type { AfterContentInit } from '@angular/core'
 import { Component, inject, NgZone, viewChild, ViewEncapsulation } from '@angular/core'
 import packageJson from '../../../package.json' with { type: 'json' }
-import { DeviceChooserComponent } from '../../shared/components/device-chooser.component'
-import type { DeviceConnectionCommandEvent, DeviceListMenuComponent } from '../../shared/components/device-list-menu.component'
+import type { DeviceListMenuComponent } from '../../shared/components/device-list-menu.component'
 import type { MenuItem, SlideMenuItem } from '../../shared/components/menu-item.component'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
@@ -507,14 +506,6 @@ export class HomeComponent implements AfterContentInit {
 		} finally {
 			await this.updateConnection()
 		}
-	}
-
-	protected deviceConnected(event: DeviceConnectionCommandEvent) {
-		return DeviceChooserComponent.handleConnectDevice(this.api, event.device, event.item)
-	}
-
-	protected deviceDisconnected(event: DeviceConnectionCommandEvent) {
-		return DeviceChooserComponent.handleDisconnectDevice(this.api, event.device, event.item)
 	}
 
 	protected toggleAuxiliary() {
