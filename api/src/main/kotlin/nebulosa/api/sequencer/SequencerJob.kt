@@ -283,10 +283,6 @@ data class SequencerJob(
                     status.elapsedTime = captureStartElapsedTime + event.elapsedTime
 
                     if (event is CameraExposureFinished) {
-                        if (status.capture.captureRemainingTime <= 0L) {
-                            status.capture.state = CameraCaptureState.IDLE
-                        }
-
                         status.capture.liveStackedPath = addFrameToLiveStacker(event.task.request, status.capture.savedPath)
                         status.capture.send()
                     }
