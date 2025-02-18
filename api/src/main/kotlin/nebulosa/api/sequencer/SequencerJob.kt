@@ -333,6 +333,7 @@ data class SequencerJob(
         liveStackingManager?.close()
 
         status.state = SequencerState.IDLE
+        status.capture.state = CameraCaptureState.IDLE
         status.send()
 
         LOG.d { debug("Sequencer finished. camera={}, mount={}, wheel={}, focuser={}, rotator={}, plan={}", camera, mount, wheel, focuser, rotator, plan) }
