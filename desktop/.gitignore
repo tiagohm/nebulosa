@@ -26,4 +26,5 @@ testem.log
 /typings
 *.tsbuildinfo
 
-**/package-lock.json
+package-lock.json
+bun.lock
