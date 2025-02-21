@@ -5,7 +5,6 @@ import { ApiService } from '../services/api.service'
 import { isGuideHead } from '../types/camera.types'
 import type { Device } from '../types/device.types'
 import { deviceComparator } from '../utils/comparators'
-import type { Undefinable } from '../utils/types'
 import type { DialogMenuComponent } from './dialog-menu.component'
 import type { MenuItem, SlideMenuItem } from './menu-item.component'
 
@@ -60,7 +59,7 @@ export class DeviceListMenuComponent {
 
 		this.currentHeader = header || this.header()
 
-		return new Promise<Undefinable<T | 'NONE'>>((resolve) => {
+		return new Promise<T | 'NONE' | undefined>((resolve) => {
 			if (devices.length <= 0) {
 				resolve(undefined)
 				this.angularService.message('No equipment available to perform this action!', 'warn')

@@ -20,7 +20,6 @@ import type { Rotator } from '../types/rotator.types'
 import type { SequencerPlan } from '../types/sequencer.types'
 import type { StarDetectionRequest } from '../types/stardetector.types'
 import type { Wheel } from '../types/wheel.types'
-import type { Undefinable } from '../utils/types'
 import { HttpService } from './http.service'
 
 @Injectable({ providedIn: 'root' })
@@ -47,7 +46,7 @@ export class ApiService {
 	}
 
 	connectionStatus(id: string) {
-		return this.http.get<Undefinable<ConnectionStatus>>(`connections/${id}`)
+		return this.http.get<ConnectionStatus | undefined>(`connections/${id}`)
 	}
 
 	// CAMERA

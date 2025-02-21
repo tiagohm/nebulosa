@@ -1,5 +1,3 @@
-import type { Undefinable } from '../utils/types'
-
 export interface CalculatorOperand {
 	label: string
 	prefix?: string
@@ -17,5 +15,5 @@ export interface CalculatorFormula {
 	operands: CalculatorOperand[]
 	result: CalculatorOperand
 	tip?: string
-	calculate: (...operands: Undefinable<number>[]) => Undefinable<number>
+	calculate: (...operands: (number | undefined | null)[]) => number | undefined
 }

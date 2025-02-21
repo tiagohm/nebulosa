@@ -11,7 +11,6 @@ import type { LightBox } from '../types/lightbox.types'
 import type { Mount } from '../types/mount.types'
 import type { Rotator, RotatorDialogInput } from '../types/rotator.types'
 import type { Wheel, WheelDialogInput } from '../types/wheel.types'
-import type { Undefinable } from '../utils/types'
 
 @Injectable({ providedIn: 'root' })
 export class BrowserWindowService {
@@ -20,7 +19,7 @@ export class BrowserWindowService {
 		return window.electron.invoke('WINDOW.OPEN', { ...open, windowId: window.id })
 	}
 
-	openModal<R = unknown>(open: OpenWindow): Promise<Undefinable<R>> {
+	openModal<R = unknown>(open: OpenWindow): Promise<R | undefined> {
 		open.preference.modal = true
 		return window.electron.invoke('WINDOW.OPEN', { ...open, windowId: window.id })
 	}

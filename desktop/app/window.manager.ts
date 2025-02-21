@@ -7,7 +7,6 @@ import { join } from 'path'
 import { WebSocket } from 'ws'
 import type { ConfirmationEvent, MessageEvent, NotificationEvent } from '../src/shared/types/api.types'
 import type { CloseWindow, FullscreenWindow, OpenDirectory, OpenFile, OpenWindow, ResizeWindow, WindowCommand } from '../src/shared/types/app.types'
-import type { Nullable } from '../src/shared/utils/types'
 import type { ParsedArgument } from './argument.parser'
 
 // eslint-disable-next-line @typescript-eslint/consistent-indexed-object-style
@@ -310,7 +309,7 @@ export class WindowManager {
 		homeWindow?.close()
 	}
 
-	findWindow(id: Nullable<number | string>) {
+	findWindow(id?: number | string | null) {
 		if (id) {
 			for (const [, window] of this.windows) {
 				if (window.electronId === id || window.windowId === id) {

@@ -4,7 +4,6 @@ import { MessageService } from 'primeng/api'
 import type { DynamicDialogConfig } from 'primeng/dynamicdialog'
 import { DialogService } from 'primeng/dynamicdialog'
 import { ConfirmDialogComponent } from '../dialogs/confirm/confirm.dialog'
-import type { Undefinable } from '../utils/types'
 
 @Injectable({ providedIn: 'root' })
 export class AngularService {
@@ -28,7 +27,7 @@ export class AngularService {
 			},
 		})
 
-		return new Promise<Undefinable<R>>((resolve) => {
+		return new Promise<R | undefined>((resolve) => {
 			const subscription = ref.onClose.subscribe((data?: R) => {
 				subscription.unsubscribe()
 				resolve(data)

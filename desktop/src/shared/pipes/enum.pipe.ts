@@ -12,7 +12,6 @@ import type { MountRemoteControlProtocol, TrackMode } from '../types/mount.types
 import type { PlateSolverType } from '../types/platesolver.types'
 import type { SequencerCaptureMode, SequencerState } from '../types/sequencer.types'
 import type { StarDetectorType } from '../types/stardetector.types'
-import type { Undefinable } from '../utils/types'
 
 export type EnumPipeKey =
 	| SCNRProtectionMethod
@@ -50,7 +49,7 @@ export type EnumPipeKey =
 
 @Pipe({ standalone: false, name: 'enum' })
 export class EnumPipe implements PipeTransform {
-	private readonly enums: Record<EnumPipeKey, Undefinable<string>> = {
+	private readonly enums: Record<EnumPipeKey, string | undefined> = {
 		'DX/DY': 'dx/dy',
 		'RA/DEC': 'RA/DEC',
 		ABSOLUTE: 'Absolute',
