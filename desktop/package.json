@@ -54,7 +54,7 @@
 		"leaflet": "1.9.4",
 		"ngx-moveable": "0.50.0",
 		"ngxtension": "4.3.2",
-		"primeng": "19.0.8",
+		"primeng": "19.0.9",
 		"rxjs": "7.8.2",
 		"tailwindcss-primeui": "0.5.1",
 		"tslib": "2.8.1",
