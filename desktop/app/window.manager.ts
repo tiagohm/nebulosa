@@ -42,7 +42,7 @@ export class ApplicationWindow {
 		return this.browserWindow.id
 	}
 
-	get windowId() {
+	get id() {
 		return this.data.id
 	}
 
@@ -97,7 +97,7 @@ export class WindowManager {
 	}
 
 	async createWindow(open: OpenWindow, parent?: BrowserWindow) {
-		let appWindow = this.windows.get(open.id)
+		let appWindow = this.findWindow(open.id)
 
 		if (appWindow) {
 			if (open.data) {
@@ -178,7 +178,7 @@ export class WindowManager {
 		appWindow = new ApplicationWindow(browserWindow, open, parent)
 
 		browserWindow.on('close', () => {
-			const homeWindow = this.windows.get('home')
+			const homeWindow = this.findWindow('home')
 
 			if (!preference.modal) {
 				this.saveWindowData(appWindow)
@@ -305,14 +305,14 @@ export class WindowManager {
 	}
 
 	close() {
-		const homeWindow = this.windows.get('home')
+		const homeWindow = this.findWindow('home')
 		homeWindow?.close()
 	}
 
 	findWindow(id?: number | string | null) {
 		if (id) {
-			for (const [, window] of this.windows) {
-				if (window.electronId === id || window.windowId === id) {
+			for (const [key, window] of this.windows) {
+				if (key === id || window.electronId === id || window.id === id) {
 					return window
 				}
 			}
