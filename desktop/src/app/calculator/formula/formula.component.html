@@ -1,6 +1,6 @@
 @let mFormula = formula();
 
-<p class="mb-2 mt-1 text-center leading-tight text-gray-400">{{ mFormula.description }}</p>
+<p class="mt-1 mb-2 text-center leading-tight text-gray-400">{{ mFormula.description }}</p>
 <div class="mt-4 flex items-center justify-center">
 	<neb-tag
 		[label]="mFormula.expression"
@@ -21,7 +21,7 @@
 		</div>
 	}
 </div>
-<p class="mb-1 mt-0 text-center text-5xl font-bold">=</p>
+<p class="mt-0 mb-1 text-center text-5xl font-bold">=</p>
 <div class="flex items-center justify-center gap-2">
 	<span class="w-1/6 text-end text-xl font-bold">{{ mFormula.result.prefix }}</span>
 	<div class="w-4/6">
