@@ -1,5 +1,5 @@
 <span
-	class="fixed z-10 flex select-none items-center gap-1 rounded-md bg-black bg-opacity-20 px-3 py-2"
+	class="fixed z-10 flex items-center gap-1 rounded-md bg-black bg-black/20 px-3 py-2 select-none"
 	style="top: 48px; left: 6px">
 	<span
 		pTooltip="Zoom"
@@ -35,13 +35,13 @@
 	@if (preference.crossHair && zoom.panZoom) {
 		<neb-crosshair
 			[style]="'transform: rotate(' + rotation.transformation.angle + 'deg)'"
-			class="absolute left-0 top-0" />
+			class="absolute top-0 left-0" />
 	}
 
 	@if (!transformation.mirrorHorizontal && !transformation.mirrorVertical && annotation.visible) {
 		<svg
 			[style]="'transform: rotate(' + rotation.transformation.angle + 'deg)'"
-			class="pointer-events-none absolute left-0 top-0 h-full w-full select-none">
+			class="pointer-events-none absolute top-0 left-0 h-full w-full select-none">
 			@for (a of annotation.displayOnlyFiltered ? annotation.filtered : annotation.data; track a) {
 				<g
 					(dblclick)="showAnnotationInfo(a)"
@@ -70,7 +70,7 @@
 	@if (!transformation.mirrorHorizontal && !transformation.mirrorVertical && starDetector.visible) {
 		<svg
 			[style]="'transform: rotate(' + rotation.transformation.angle + 'deg)'"
-			class="pointer-events-none absolute left-0 top-0 h-full w-full select-none">
+			class="pointer-events-none absolute top-0 left-0 h-full w-full select-none">
 			@for (s of starDetector.stars; track s) {
 				<g class="pointer-events-auto cursor-pointer">
 					<circle
@@ -98,7 +98,7 @@
 	@if (imageInfo) {
 		<svg
 			[style]="'transform: rotate(' + rotation.transformation.angle + 'deg)'"
-			class="pointer-events-none absolute left-0 top-0 h-full w-full select-none overflow-visible fill-transparent stroke-[0.25rem]">
+			class="pointer-events-none absolute top-0 left-0 h-full w-full overflow-visible fill-transparent stroke-[0.25rem] select-none">
 			@for (item of fov.fovs; track $index) {
 				@if (item.enabled && item.computed) {
 					<rect
@@ -117,7 +117,7 @@
 		#roi
 		[class.hidden]="!hasROI"
 		[style]="'transform: rotate(' + rotation.transformation.angle + 'deg)'"
-		class="roi absolute left-0 top-0 box-border h-[128px] w-[128px]"
+		class="roi absolute top-0 left-0 box-border h-[128px] w-[128px]"
 		(contextmenu)="imageClicked($event, true)"></div>
 	@if (hasROI) {
 		<ngx-moveable
@@ -136,7 +136,7 @@
 </div>
 
 @if (hasROI) {
-	<div class="fixed left-1/2 top-16 flex min-w-24 -translate-x-1/2 items-center gap-2 whitespace-nowrap rounded bg-black p-2 opacity-50">
+	<div class="fixed top-16 left-1/2 flex min-w-24 -translate-x-1/2 items-center gap-2 rounded-sm bg-black p-2 whitespace-nowrap opacity-50">
 		<span>X: {{ imageROI.area.x.toFixed(0) }} Y: {{ imageROI.area.y.toFixed(0) }} W: {{ imageROI.area.width.toFixed(0) }} H: {{ imageROI.area.height.toFixed(0) }}</span>
 		<neb-button
 			(action)="roiForCamera()"
@@ -283,14 +283,14 @@
 							#item
 							let-item>
 							<div
-								class="flex h-16 cursor-pointer flex-col items-start justify-center gap-1 rounded p-2 hover:bg-gray-700"
+								class="flex h-16 cursor-pointer flex-col items-start justify-center gap-1 rounded-sm p-2 hover:bg-gray-700"
 								[class.surface-card]="annotation.selected === item"
 								(click)="annotationSelected(item)">
 								<div class="flex w-full items-center gap-2">
 									<span class="text-sm font-bold">{{ item.star?.type ?? item.dso?.type }}</span>
-									<span class="rounded bg-gray-800 p-1 font-mono text-xs font-bold">{{ item.x.toFixed(0) }} | {{ item.y.toFixed(0) }}</span>
+									<span class="rounded-sm bg-gray-800 p-1 font-mono text-xs font-bold">{{ item.x.toFixed(0) }} | {{ item.y.toFixed(0) }}</span>
 								</div>
-								<span class="overflow-hidden whitespace-nowrap text-xs">{{ (item.star ?? item.dso ?? item.minorPlanet)?.name?.join(' · ') }}</span>
+								<span class="overflow-hidden text-xs whitespace-nowrap">{{ (item.star ?? item.dso ?? item.minorPlanet)?.name?.join(' · ') }}</span>
 							</div>
 						</ng-template>
 					</p-scroller>
@@ -1029,7 +1029,7 @@
 			<div class="col-span-full mt-2 !block max-h-[148.5px] overflow-auto p-0">
 				@for (item of fov.fovs; track $index) {
 					<div
-						class="flex cursor-pointer items-center gap-2 rounded border-l-4 p-2"
+						class="flex cursor-pointer items-center gap-2 rounded-sm border-l-4 p-2"
 						[class.bg-blue-900]="fov.selected === item"
 						[style.border-color]="item.color"
 						(click)="selectFOV(item)">
@@ -1092,8 +1092,8 @@
 					#item
 					let-item>
 					<div class="flex flex-col justify-center py-2 leading-none">
-						<span class="whitespace-nowrap font-bold">{{ item.name }}</span>
-						<span class="whitespace-nowrap text-sm italic">{{ item.sensor }}</span>
+						<span class="font-bold whitespace-nowrap">{{ item.name }}</span>
+						<span class="text-sm whitespace-nowrap italic">{{ item.sensor }}</span>
 						<span class="text-sm">{{ item.width }}x{{ item.height }} / {{ item.pixelSize }}µm</span>
 					</div>
 				</ng-template>
@@ -1133,7 +1133,7 @@
 					#item
 					let-item>
 					<div class="flex flex-col justify-center py-2 leading-none">
-						<span class="whitespace-nowrap font-bold">{{ item.name }}</span>
+						<span class="font-bold whitespace-nowrap">{{ item.name }}</span>
 						<span class="text-sm">{{ item.aperture }}mm / {{ item.focalLength }}mm</span>
 					</div>
 				</ng-template>
@@ -1364,7 +1364,7 @@
 </p-dialog>
 
 @if (mouseCoordinate && isMouseCoordinateVisible) {
-	<div class="coordinates fixed bottom-3 left-1/2 -translate-x-1/2 rounded-sm bg-black p-3 font-mono text-sm opacity-70">
+	<div class="coordinates fixed bottom-3 left-1/2 -translate-x-1/2 rounded-xs bg-black p-3 font-mono text-sm opacity-70">
 		<div class="grid grid-cols-2 gap-0 gap-x-3">
 			<div>X: {{ mouseCoordinate.x }}</div>
 			<div>Y: {{ mouseCoordinate.y }}</div>

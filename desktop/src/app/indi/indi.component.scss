@@ -9,7 +9,8 @@ neb-indi {
 	}
 
 	.p-listbox-filter.p-inputtext {
-		@apply rounded-md border-0 border-none;
+		@apply border-0 border-none;
 		background: var(--p-content-background);
+		border-radius: 4px;
 	}
 }

@@ -258,7 +258,7 @@ import { SettingsComponent } from './settings/settings.component'
 					darkModeSelector: '.dark-mode',
 					cssLayer: {
 						name: 'primeng',
-						order: 'tailwind-base, primeng, tailwind-utilities',
+						order: 'base, components, primeng, utilities',
 					},
 				},
 			},

@@ -1,16 +1,10 @@
 @use '@mdi/font/scss/materialdesignicons.scss';
 @use '@fontsource/roboto';
+@use 'tailwindcss';
 
-@layer tailwind-base, primeng, tailwind-utilities;
+@plugin 'tailwindcss-primeui';
 
-@layer tailwind-base {
-	@tailwind base;
-}
-
-@layer tailwind-utilities {
-	@tailwind components;
-	@tailwind utilities;
-}
+@layer base, components, primeng, utilities;
 
 html,
 body {

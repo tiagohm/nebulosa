@@ -1,4 +1,4 @@
-<div class="pb-3 pt-1">
+<div class="pt-1 pb-3">
 	<div class="flex items-center py-1">
 		<p-tabs value="0">
 			<p-tablist>
@@ -23,7 +23,7 @@
 					value="2"
 					pTooltip="Dither"
 					tooltipPosition="bottom">
-					<div class="flex flex-shrink-0 items-center justify-center gap-2">
+					<div class="flex shrink-0 items-center justify-center gap-2">
 						<i class="mdi mdi-pulse"></i>
 						<neb-checkbox
 							[disabled]="running"
@@ -36,7 +36,7 @@
 					[disabled]="true"
 					pTooltip="Auto Focus"
 					tooltipPosition="bottom">
-					<div class="flex flex-shrink-0 items-center justify-center gap-2">
+					<div class="flex shrink-0 items-center justify-center gap-2">
 						<i class="mdi mdi-image-filter-center-focus"></i>
 						<neb-checkbox
 							[disabled]="running"
@@ -48,7 +48,7 @@
 					value="4"
 					pTooltip="Live Stacking"
 					tooltipPosition="bottom">
-					<div class="flex flex-shrink-0 items-center justify-center gap-2">
+					<div class="flex shrink-0 items-center justify-center gap-2">
 						<i class="mdi mdi-image-multiple"></i>
 						<neb-checkbox
 							[disabled]="running"
@@ -91,7 +91,7 @@
 								(deviceChange)="rotatorChanged()" />
 						</div>
 					</div>
-					<div class="absolute right-0 top-[56px] mr-4 flex items-center justify-end">
+					<div class="absolute top-[56px] right-0 mr-4 flex items-center justify-end">
 						@if (event && running) {
 							<span class="mr-2 text-sm">{{ event.state | enum }}</span>
 							<span class="min-w-[48px] rounded-l-md bg-orange-500 text-center text-sm leading-3 text-gray-900">
@@ -137,7 +137,7 @@
 							<p-card
 								cdkDrag
 								class="col-span-full lg:col-span-1"
-								styleClass="w-full bg-surface-700 pt-2">
+								styleClass="bg-surface-700 w-full pt-2">
 								<ng-template #header>
 									<div class="grid grid-cols-12 gap-3">
 										<div
@@ -179,7 +179,7 @@
 												}
 											}
 										</div>
-										<div class="col-span-4 items-center !justify-end gap-2 pb-1 pr-4">
+										<div class="col-span-4 items-center !justify-end gap-2 pr-4 pb-1">
 											<neb-button
 												[disabled]="plan.sequences.length <= 1 || running"
 												icon="mdi mdi-md mdi-dots-vertical"
@@ -217,7 +217,7 @@
 											(angleRemoved)="angleRemoved(sequence)"
 											[disabled]="running" />
 									</div>
-									<div class="col-span-full my-1 pb-1 pt-0 text-center text-xs text-gray-400">
+									<div class="col-span-full my-1 pt-0 pb-1 text-center text-xs text-gray-400">
 										<neb-camera-exposure #cameraExposure />
 									</div>
 								</div>

@@ -37,5 +37,6 @@
 	},
 	"tailwindCSS.classAttributes": ["class", "className", "ngClass", "class:list", "styleClass", "icon"],
 	"tailwindCSS.rootFontSize": 12,
-	"scss.lint.unknownAtRules": "ignore"
+	"scss.lint.unknownAtRules": "ignore",
+	"tailwindCSS.files.exclude": ["**/.git/**", "**/node_modules/**", "**/.hg/**", "**/.svn/**", "**/dist/**"]
 }

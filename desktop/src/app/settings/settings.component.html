@@ -1,4 +1,4 @@
-<div class="relative px-3 pb-2 pt-3">
+<div class="relative px-3 pt-3 pb-2">
 	@if (tab === 'GENERAL') {
 		<div class="flex">
 			<neb-checkbox
@@ -218,7 +218,7 @@
 	[modal]="false"
 	[dismissible]="true"
 	[closeButtonProps]="{ severity: 'danger', text: true, rounded: true, size: 'small' }"
-	styleClass="bg-black bg-opacity-70">
+	styleClass="bg-black bg-black/70">
 	<p-menu
 		[model]="menuModel"
 		styleClass="w-full px-2" />
