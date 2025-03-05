@@ -174,8 +174,8 @@
 				<neb-button
 					[disabled]="!mount.connected || (mount.slewing && slewingDirection !== 'NW') || mount.parking || mount.parked"
 					[rounded]="false"
-					(mousedown)="moveTo('NW', true, $event)"
-					(mouseup)="moveTo('NW', false, $event)"
+					(mouseActionDown)="moveTo('NW', true, $event)"
+					(mouseActionUp)="moveTo('NW', false, $event)"
 					(mouseleave)="moveTo('NW', false, $event)"
 					icon="mdi mdi-arrow-top-left-thick" />
 			</div>
@@ -183,8 +183,8 @@
 				<neb-button
 					[disabled]="!mount.connected || (mount.slewing && slewingDirection !== 'N') || mount.parking || mount.parked"
 					[rounded]="false"
-					(mousedown)="moveTo('N', true, $event)"
-					(mouseup)="moveTo('N', false, $event)"
+					(mouseActionDown)="moveTo('N', true, $event)"
+					(mouseActionUp)="moveTo('N', false, $event)"
 					(mouseleave)="moveTo('N', false, $event)"
 					icon="mdi mdi-arrow-up-thick" />
 			</div>
@@ -192,8 +192,8 @@
 				<neb-button
 					[disabled]="!mount.connected || (mount.slewing && slewingDirection !== 'NE') || mount.parking || mount.parked"
 					[rounded]="false"
-					(mousedown)="moveTo('NE', true, $event)"
-					(mouseup)="moveTo('NE', false, $event)"
+					(mouseActionDown)="moveTo('NE', true, $event)"
+					(mouseActionUp)="moveTo('NE', false, $event)"
 					(mouseleave)="moveTo('NE', false, $event)"
 					icon="mdi mdi-arrow-top-right-thick" />
 			</div>
@@ -201,8 +201,8 @@
 				<neb-button
 					[disabled]="!mount.connected || (mount.slewing && slewingDirection !== 'W') || mount.parking || mount.parked"
 					[rounded]="false"
-					(mousedown)="moveTo('W', true, $event)"
-					(mouseup)="moveTo('W', false, $event)"
+					(mouseActionDown)="moveTo('W', true, $event)"
+					(mouseActionUp)="moveTo('W', false, $event)"
 					(mouseleave)="moveTo('W', false, $event)"
 					icon="mdi mdi-arrow-left-thick" />
 			</div>
@@ -218,8 +218,8 @@
 				<neb-button
 					[disabled]="!mount.connected || (mount.slewing && slewingDirection !== 'E') || mount.parking || mount.parked"
 					[rounded]="false"
-					(mousedown)="moveTo('E', true, $event)"
-					(mouseup)="moveTo('E', false, $event)"
+					(mouseActionDown)="moveTo('E', true, $event)"
+					(mouseActionUp)="moveTo('E', false, $event)"
 					(mouseleave)="moveTo('E', false, $event)"
 					icon="mdi mdi-arrow-right-thick" />
 			</div>
@@ -227,8 +227,8 @@
 				<neb-button
 					[disabled]="!mount.connected || (mount.slewing && slewingDirection !== 'SW') || mount.parking || mount.parked"
 					[rounded]="false"
-					(mousedown)="moveTo('SW', true, $event)"
-					(mouseup)="moveTo('SW', false, $event)"
+					(mouseActionDown)="moveTo('SW', true, $event)"
+					(mouseActionUp)="moveTo('SW', false, $event)"
 					(mouseleave)="moveTo('SW', false, $event)"
 					icon="mdi mdi-arrow-bottom-left-thick" />
 			</div>
@@ -236,8 +236,8 @@
 				<neb-button
 					[disabled]="!mount.connected || (mount.slewing && slewingDirection !== 'S') || mount.parking || mount.parked"
 					[rounded]="false"
-					(mousedown)="moveTo('S', true, $event)"
-					(mouseup)="moveTo('S', false, $event)"
+					(mouseActionDown)="moveTo('S', true, $event)"
+					(mouseActionUp)="moveTo('S', false, $event)"
 					(mouseleave)="moveTo('S', false, $event)"
 					icon="mdi mdi-arrow-down-thick" />
 			</div>
@@ -245,8 +245,8 @@
 				<neb-button
 					[disabled]="!mount.connected || (mount.slewing && slewingDirection !== 'SE') || mount.parking || mount.parked"
 					[rounded]="false"
-					(mousedown)="moveTo('SE', true, $event)"
-					(mouseup)="moveTo('SE', false, $event)"
+					(mouseActionDown)="moveTo('SE', true, $event)"
+					(mouseActionUp)="moveTo('SE', false, $event)"
 					(mouseleave)="moveTo('SE', false, $event)"
 					icon="mdi mdi-arrow-bottom-right-thick" />
 			</div>

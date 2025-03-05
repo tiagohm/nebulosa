@@ -21,8 +21,8 @@ export type ButtonSeverity = Severity | 'help' | 'primary' | 'secondary' | 'cont
 			[life]="2000"
 			[badge]="badge()"
 			[badgeSeverity]="badgeSeverity()"
-			(mouseup)="$event.stopImmediatePropagation()"
-			(mousedown)="$event.stopImmediatePropagation()"
+			(mouseup)="mouseActionUp.emit($event); $event.stopImmediatePropagation()"
+			(mousedown)="mouseActionDown.emit($event); $event.stopImmediatePropagation()"
 			class="inline-flex"
 			[ngClass]="{ 'w-full': !!label() }"
 			styleClass="w-full cursor-pointer whitespace-nowrap select-none">
@@ -64,4 +64,6 @@ export class ButtonComponent {
 	readonly badge = input<string>()
 	readonly badgeSeverity = input<ButtonSeverity>('danger')
 	readonly action = output<MouseEvent>()
+	readonly mouseActionUp = output<MouseEvent>()
+	readonly mouseActionDown = output<MouseEvent>()
 }
