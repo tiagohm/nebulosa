@@ -6,7 +6,7 @@ import { Injectable } from '@angular/core'
 
 import type { DARVEvent, TPPAEvent } from '../types/alignment.types'
 import type { ConfirmationEvent, DeviceMessageEvent, NotificationEvent, OpenImageEvent } from '../types/api.types'
-import type { CloseWindow, FullscreenWindow, JsonFile, OpenDirectory, OpenFile, ResizeWindow, SaveJson, WindowCommand } from '../types/app.types'
+import type { CloseWindowCommand, FullscreenWindowCommand, JsonFile, OpenDirectoryCommand, OpenFileCommand, ResizeWindowCommand, SaveJsonCommand, WindowCommand } from '../types/app.types'
 import type { Location } from '../types/atlas.types'
 import type { AutoFocusEvent } from '../types/autofocus.type'
 import type { Camera, CameraCaptureEvent } from '../types/camera.types'
@@ -80,18 +80,18 @@ export interface EventMap {
 	'FLAT_WIZARD.ELAPSED': FlatWizardEvent
 	'CONNECTION.CLOSED': ConnectionClosed
 	'CALIBRATION.CHANGED': unknown
-	'FILE.OPEN': OpenFile
-	'FILE.SAVE': OpenFile
-	'DIRECTORY.OPEN': OpenDirectory
+	'FILE.OPEN': OpenFileCommand
+	'FILE.SAVE': OpenFileCommand
+	'DIRECTORY.OPEN': OpenDirectoryCommand
 	'JSON.WRITE': JsonFile
 	'JSON.READ': string
-	'WINDOW.RESIZE': ResizeWindow
+	'WINDOW.RESIZE': ResizeWindowCommand
 	'WINDOW.PIN': WindowCommand
 	'WINDOW.UNPIN': WindowCommand
 	'WINDOW.MINIMIZE': WindowCommand
 	'WINDOW.MAXIMIZE': WindowCommand
-	'WINDOW.FULLSCREEN': FullscreenWindow
-	'WINDOW.CLOSE': CloseWindow
+	'WINDOW.FULLSCREEN': FullscreenWindowCommand
+	'WINDOW.CLOSE': CloseWindowCommand
 	'WINDOW.OPEN_DEV_TOOLS': WindowCommand
 	'WHEEL.RENAMED': WheelRenamed
 	'ROI.SELECTED': ROISelected
@@ -109,19 +109,19 @@ export class ElectronService {
 		window.electron.on(channel, listener)
 	}
 
-	openFile(data?: OpenFile): Promise<string | false> {
+	openFile(data?: OpenFileCommand): Promise<string | false> {
 		return this.send('FILE.OPEN', { ...data, windowId: data?.windowId ?? window.id, multiple: false })
 	}
 
-	openFiles(data?: OpenFile): Promise<string[] | false> {
+	openFiles(data?: OpenFileCommand): Promise<string[] | false> {
 		return this.send('FILE.OPEN', { ...data, windowId: data?.windowId ?? window.id, multiple: true })
 	}
 
-	saveFile(data?: OpenFile): Promise<string | false> {
+	saveFile(data?: OpenFileCommand): Promise<string | false> {
 		return this.send('FILE.SAVE', { ...data, windowId: data?.windowId ?? window.id })
 	}
 
-	openImage(data?: OpenFile) {
+	openImage(data?: OpenFileCommand) {
 		return this.openFile({
 			...data,
 			windowId: data?.windowId ?? window.id,
@@ -129,7 +129,7 @@ export class ElectronService {
 		})
 	}
 
-	openImages(data?: OpenFile) {
+	openImages(data?: OpenFileCommand) {
 		return this.openFiles({
 			...data,
 			windowId: data?.windowId ?? window.id,
@@ -137,7 +137,7 @@ export class ElectronService {
 		})
 	}
 
-	saveImage(data?: OpenFile) {
+	saveImage(data?: OpenFileCommand) {
 		return this.saveFile({
 			...data,
 			windowId: data?.windowId ?? window.id,
@@ -145,11 +145,11 @@ export class ElectronService {
 		})
 	}
 
-	openDirectory(data?: OpenDirectory): Promise<string | false> {
+	openDirectory(data?: OpenDirectoryCommand): Promise<string | false> {
 		return this.send('DIRECTORY.OPEN', { ...data, windowId: data?.windowId ?? window.id })
 	}
 
-	async saveJson<T>(data: SaveJson<T>): Promise<JsonFile<T> | false> {
+	async saveJson<T>(data: SaveJsonCommand<T>): Promise<JsonFile<T> | false> {
 		data.path = data.path || (await this.saveFile({ ...data, windowId: data.windowId ?? window.id, filters: [{ name: 'JSON files', extensions: ['json'] }] })) || undefined
 
 		if (data.path) {
@@ -161,7 +161,7 @@ export class ElectronService {
 		return false
 	}
 
-	async openJson<T>(data?: OpenFile): Promise<JsonFile<T> | false> {
+	async openJson<T>(data?: OpenFileCommand): Promise<JsonFile<T> | false> {
 		const path = await this.openFile({ ...data, windowId: data?.windowId ?? window.id, filters: [{ name: 'JSON files', extensions: ['json'] }] })
 
 		if (path) {

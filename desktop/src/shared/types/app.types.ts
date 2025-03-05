@@ -1,6 +1,6 @@
 export type InternalEventType = (typeof INTERNAL_EVENT_TYPES)[number]
 
-export type SaveJson<T = unknown> = OpenFile & JsonFile<T>
+export type SaveJsonCommand<T = unknown> = OpenFileCommand & JsonFile<T>
 
 export interface WindowPreference {
 	modal?: boolean
@@ -19,30 +19,30 @@ export interface WindowCommand {
 	windowId?: string
 }
 
-export interface OpenWindow extends WindowCommand {
+export interface OpenWindowCommand extends WindowCommand {
 	id: string
 	path: string
 	preference: WindowPreference
 	data?: unknown
 }
 
-export interface CloseWindow extends WindowCommand {
+export interface CloseWindowCommand extends WindowCommand {
 	data?: unknown
 }
 
-export interface FullscreenWindow extends WindowCommand {
+export interface FullscreenWindowCommand extends WindowCommand {
 	enabled?: boolean
 }
 
-export interface ResizeWindow extends WindowCommand {
+export interface ResizeWindowCommand extends WindowCommand {
 	height: number
 }
 
-export interface OpenDirectory extends WindowCommand {
+export interface OpenDirectoryCommand extends WindowCommand {
 	defaultPath?: string
 }
 
-export interface OpenFile extends OpenDirectory {
+export interface OpenFileCommand extends OpenDirectoryCommand {
 	filters?: Electron.FileFilter[]
 	multiple?: boolean
 }

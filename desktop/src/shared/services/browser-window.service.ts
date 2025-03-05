@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core'
-import type { OpenWindow, WindowPreference } from '../types/app.types'
+import type { OpenWindowCommand, WindowPreference } from '../types/app.types'
 import type { SkyAtlasInput } from '../types/atlas.types'
 import type { Camera, CameraDialogInput, CameraStartCapture } from '../types/camera.types'
 import type { Device } from '../types/device.types'
@@ -14,12 +14,12 @@ import type { Wheel, WheelDialogInput } from '../types/wheel.types'
 
 @Injectable({ providedIn: 'root' })
 export class BrowserWindowService {
-	openWindow(open: OpenWindow): Promise<boolean> {
+	openWindow(open: OpenWindowCommand): Promise<boolean> {
 		open.preference.modal = false
 		return window.electron.invoke('WINDOW.OPEN', { ...open, windowId: window.id })
 	}
 
-	openModal<R = unknown>(open: OpenWindow): Promise<R | undefined> {
+	openModal<R = unknown>(open: OpenWindowCommand): Promise<R | undefined> {
 		open.preference.modal = true
 		return window.electron.invoke('WINDOW.OPEN', { ...open, windowId: window.id })
 	}
