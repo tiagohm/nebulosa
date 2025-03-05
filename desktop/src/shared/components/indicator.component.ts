@@ -8,7 +8,7 @@ import { Component, input, model, ViewEncapsulation } from '@angular/core'
 			@for (item of count() | repeat; track $index) {
 				<span
 					class="indicator"
-					[class.selected]="$index === position()"
+					[ngClass]="{ selected: $index === position() }"
 					(click)="position.set($index); $event.stopImmediatePropagation()"></span>
 			}
 		</div>

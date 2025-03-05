@@ -61,7 +61,7 @@ export interface SlideMenuItem extends MenuItem {
 
 		<a
 			pRipple
-			[class.bg-green-900]="mItem.selected"
+			[ngClass]="{ 'bg-green-900': mItem.selected }"
 			class="p-contextmenu-item-link flex min-h-10 w-full cursor-pointer items-center justify-between gap-2 rounded-md p-1">
 			<div class="flex items-center justify-between gap-2">
 				<i [class]="mItem.icon"></i>

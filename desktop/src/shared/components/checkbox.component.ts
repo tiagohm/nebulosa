@@ -13,7 +13,7 @@ import type { TooltipPosition } from '../types/angular.types'
 				[binary]="true"
 				[disabled]="disabled()"
 				[(ngModel)]="value"
-				[class.whitespace-nowrap]="noWrap()"
+				[ngClass]="{ 'whitespace-nowrap': noWrap() }"
 				(onChange)="action.emit($event); $event.originalEvent?.stopImmediatePropagation()"
 				(click)="$event.stopImmediatePropagation()"
 				(mouseup)="$event.stopImmediatePropagation()"

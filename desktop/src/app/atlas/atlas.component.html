@@ -46,7 +46,7 @@
 				<p-tabpanel [value]="0">
 					<div
 						class="relative m-4 flex h-full flex-col items-center justify-center"
-						[class.invisible]="!sun.image">
+						[ngClass]="{ invisible: !sun.image }">
 						<img
 							[src]="sun.image"
 							style="width: 180px" />

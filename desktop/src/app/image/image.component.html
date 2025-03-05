@@ -28,9 +28,8 @@
 		(contextmenu)="imageClicked($event, true)"
 		class="select-none"
 		[style]="'vertical-align: bottom; transform: rotate(' + rotation.transformation.angle + 'deg)'"
-		[class.pixelated]="settings.preference.pixelated"
-		(mousemove)="imageMouseMoved($event)"
-		[class.cursor-crosshair]="isMouseCoordinateVisible" />
+		[ngClass]="{ pixelated: settings.preference.pixelated, 'cursor-crosshair': isMouseCoordinateVisible }"
+		(mousemove)="imageMouseMoved($event)" />
 
 	@if (preference.crossHair && zoom.panZoom) {
 		<neb-crosshair
@@ -115,7 +114,7 @@
 
 	<div
 		#roi
-		[class.hidden]="!hasROI"
+		[ngClass]="{ hidden: !hasROI }"
 		[style]="'transform: rotate(' + rotation.transformation.angle + 'deg)'"
 		class="roi absolute top-0 left-0 box-border h-[128px] w-[128px]"
 		(contextmenu)="imageClicked($event, true)"></div>
@@ -284,7 +283,7 @@
 							let-item>
 							<div
 								class="flex h-16 cursor-pointer flex-col items-start justify-center gap-1 rounded-sm p-2 hover:bg-gray-700"
-								[class.surface-card]="annotation.selected === item"
+								[ngClass]="{ 'surface-card': annotation.selected === item }"
 								(click)="annotationSelected(item)">
 								<div class="flex w-full items-center gap-2">
 									<span class="text-sm font-bold">{{ item.star?.type ?? item.dso?.type }}</span>
@@ -1030,7 +1029,7 @@
 				@for (item of fov.fovs; track $index) {
 					<div
 						class="flex cursor-pointer items-center gap-2 rounded-sm border-l-4 p-2"
-						[class.bg-blue-900]="fov.selected === item"
+						[ngClass]="{ 'bg-blue-900': fov.selected === item }"
 						[style.border-color]="item.color"
 						(click)="selectFOV(item)">
 						<div class="flex items-center justify-center">
