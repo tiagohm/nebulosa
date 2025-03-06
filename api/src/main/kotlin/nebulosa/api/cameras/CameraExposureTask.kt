@@ -111,7 +111,7 @@ data class CameraExposureTask(
             }
 
             with(request.makeSavePath(header ?: outputPath.fits().use { it.first().header })) {
-                LOG.d { debug("saving FITS image at {}", this) }
+                LOG.d { debug("saving FITS image at {}", this@with) }
                 createParentDirectories()
                 outputPath.moveTo(this, true)
                 job.accept(CameraExposureFinished(job, this@CameraExposureTask, this))

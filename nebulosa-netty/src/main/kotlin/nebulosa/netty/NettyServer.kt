@@ -43,7 +43,7 @@ abstract class NettyServer : Runnable, AutoCloseable {
 
         channel.set(future)
 
-        LOG.d { info("{} is running. host={}, port={}", this::class.simpleName, host, port) }
+        LOG.d { info("{} is running. host={}, port={}", this@NettyServer::class.simpleName, host, port) }
 
         future.channel().closeFuture().addListener {
             workerGroup.shutdownGracefully()
@@ -51,7 +51,7 @@ abstract class NettyServer : Runnable, AutoCloseable {
 
             channel.set(null)
 
-            LOG.d { info("{} is closed", this::class.simpleName) }
+            LOG.d { info("{} is closed", this@NettyServer::class.simpleName) }
         }
     }
 

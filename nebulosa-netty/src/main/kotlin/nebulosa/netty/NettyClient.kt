@@ -36,14 +36,14 @@ abstract class NettyClient : AutoCloseable {
 
         channel.set(future)
 
-        LOG.d { info("{} is running. host={}, port={}", this::class.simpleName, host, port) }
+        LOG.d { info("{} is running. host={}, port={}", this@NettyClient::class.simpleName, host, port) }
 
         future.channel().closeFuture().addListener {
             masterGroup.shutdownGracefully()
 
             channel.set(null)
 
-            LOG.d { info("{} closed", this::class.simpleName) }
+            LOG.d { info("{} closed", this@NettyClient::class.simpleName) }
         }
     }
 
