@@ -55,7 +55,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 	private readonly preferenceService = inject(PreferenceService)
 	private readonly angularService = inject(AngularService)
 	private readonly deviceService = inject(DeviceService)
-	private readonly data = injectQueryParams('data', { transform: decodeURIComponent })
+	private readonly data = injectQueryParams('data', { transform: (v) => v && decodeURIComponent(v) })
 
 	protected readonly sun = structuredClone(DEFAULT_SUN)
 	protected readonly moon = structuredClone(DEFAULT_MOON)

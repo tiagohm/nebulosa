@@ -62,7 +62,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	private readonly browserWindowService = inject(BrowserWindowService)
 	private readonly preferenceService = inject(PreferenceService)
 	private readonly deviceService = inject(DeviceService)
-	private readonly data = injectQueryParams('data', { transform: decodeURIComponent })
+	private readonly data = injectQueryParams('data', { transform: (v) => v && decodeURIComponent(v) })
 
 	protected readonly preference = structuredClone(DEFAULT_IMAGE_PREFERENCE)
 	protected readonly solver = structuredClone(DEFAULT_IMAGE_SOLVER_DIALOG)

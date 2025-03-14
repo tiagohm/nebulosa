@@ -45,7 +45,7 @@ export class SequencerComponent implements OnDestroy, Tickable {
 	private readonly preferenceService = inject(PreferenceService)
 	private readonly angularService = inject(AngularService)
 	private readonly ticker = inject(Ticker)
-	private readonly data = injectQueryParams('data', { transform: decodeURIComponent })
+	private readonly data = injectQueryParams('data', { transform: (v) => v && decodeURIComponent(v) })
 
 	protected cameras: Camera[] = []
 	protected mounts: Mount[] = []
