@@ -17,7 +17,7 @@ import { AppComponent } from '../app.component'
 })
 export class INDIComponent implements OnDestroy {
 	private readonly api = inject(ApiService)
-	private readonly data = injectQueryParams('data', { transform: decodeURIComponent })
+	private readonly data = injectQueryParams('data', { transform: (v) => v && decodeURIComponent(v) })
 
 	protected devices: Device[] = []
 	protected properties: INDIProperty[] = []

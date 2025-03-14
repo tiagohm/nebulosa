@@ -29,7 +29,7 @@ export class MountComponent implements OnDestroy, Tickable {
 	private readonly browserWindowService = inject(BrowserWindowService)
 	private readonly preferenceService = inject(PreferenceService)
 	private readonly ticker = inject(Ticker)
-	private readonly data = injectQueryParams('data', { transform: decodeURIComponent })
+	private readonly data = injectQueryParams('data', { transform: (v) => v && decodeURIComponent(v) })
 
 	protected readonly mount = structuredClone(DEFAULT_MOUNT)
 	protected readonly remoteControl = structuredClone(DEFAULT_MOUNT_REMOTE_CONTROL_DIALOG)

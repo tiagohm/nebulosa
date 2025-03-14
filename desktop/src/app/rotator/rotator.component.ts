@@ -23,7 +23,7 @@ export class RotatorComponent implements OnDestroy, Tickable {
 	private readonly api = inject(ApiService)
 	private readonly preferenceService = inject(PreferenceService)
 	private readonly ticker = inject(Ticker)
-	private readonly data = injectQueryParams('data', { transform: decodeURIComponent })
+	private readonly data = injectQueryParams('data', { transform: (v) => v && decodeURIComponent(v) })
 
 	protected readonly rotator = structuredClone(DEFAULT_ROTATOR)
 	protected readonly request = structuredClone(DEFAULT_CAMERA_START_CAPTURE)

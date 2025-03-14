@@ -29,7 +29,7 @@ export class FilterWheelComponent implements OnDestroy, Tickable {
 	private readonly electronService = inject(ElectronService)
 	private readonly preferenceService = inject(PreferenceService)
 	private readonly ticker = inject(Ticker)
-	private readonly data = injectQueryParams('data', { transform: decodeURIComponent })
+	private readonly data = injectQueryParams('data', { transform: (v) => v && decodeURIComponent(v) })
 
 	protected readonly wheel = structuredClone(DEFAULT_WHEEL)
 	protected readonly request = structuredClone(DEFAULT_CAMERA_START_CAPTURE)

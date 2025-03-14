@@ -20,7 +20,7 @@ export class LightBoxComponent implements OnDestroy, Tickable {
 	private readonly app = inject(AppComponent)
 	private readonly api = inject(ApiService)
 	private readonly ticker = inject(Ticker)
-	private readonly data = injectQueryParams('data', { transform: decodeURIComponent })
+	private readonly data = injectQueryParams('data', { transform: (v) => v && decodeURIComponent(v) })
 
 	protected readonly lightBox = structuredClone(DEFAULT_LIGHT_BOX)
 

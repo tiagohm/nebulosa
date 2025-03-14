@@ -19,7 +19,7 @@ export class FramingComponent implements OnDestroy {
 	private readonly browserWindowService = inject(BrowserWindowService)
 	private readonly electronService = inject(ElectronService)
 	private readonly preferenceService = inject(PreferenceService)
-	private readonly data = injectQueryParams('data', { transform: decodeURIComponent })
+	private readonly data = injectQueryParams('data', { transform: (v) => v && decodeURIComponent(v) })
 
 	protected readonly preference = structuredClone(DEFAULT_FRAMING_PREFERENCE)
 	protected readonly fov = structuredClone(DEFAULT_FRAMING_FOV_DIALOG)
