@@ -73,7 +73,7 @@
 		"@types/leaflet": "latest",
 		"@types/node": "latest",
 		"angular-eslint": "latest",
-		"electron": "35.0.3",
+		"electron": "35.1.1",
 		"electron-builder": "26.0.12",
 		"eslint": "latest",
 		"npm-run-all2": "7.0.2",
