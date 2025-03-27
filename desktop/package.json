@@ -69,7 +69,7 @@
 		"@angular/language-service": "19.2.3",
 		"@eslint/js": "latest",
 		"@swc/cli": "latest",
-		"@tailwindcss/postcss": "4.0.16",
+		"@tailwindcss/postcss": "4.0.17",
 		"@types/leaflet": "latest",
 		"@types/node": "latest",
 		"angular-eslint": "latest",
