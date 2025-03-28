@@ -1,12 +1,12 @@
 [
     {
         "name": "commons-codec:commons-codec",
-        "version": "1.17.1",
+        "version": "1.18.0",
         "source": "api"
     },
     {
         "name": "de.siegmar:fastcsv",
-        "version": "3.4.0",
+        "version": "3.6.0",
         "source": "api"
     },
     {
@@ -21,12 +21,12 @@
     },
     {
         "name": "com.github.oshi:oshi-core",
-        "version": "6.6.5",
+        "version": "6.8.0",
         "source": "api"
     },
     {
         "name": "io.insert-koin:koin-core",
-        "version": "4.0.0",
+        "version": "4.0.3",
         "source": "api"
     },
     {
@@ -41,67 +41,67 @@
     },
     {
         "name": "org.jetbrains.exposed:exposed-core",
-        "version": "0.56.0",
+        "version": "0.60.0",
         "source": "api"
     },
     {
         "name": "org.jetbrains.exposed:exposed-jdbc",
-        "version": "0.56.0",
+        "version": "0.60.0",
         "source": "api"
     },
     {
         "name": "org.flywaydb:flyway-core",
-        "version": "11.0.0",
+        "version": "11.5.0",
         "source": "api"
     },
     {
         "name": "io.ktor:ktor-server-core-jvm",
-        "version": "3.0.1",
+        "version": "3.0.3",
         "source": "api"
     },
     {
         "name": "io.ktor:ktor-server-websockets",
-        "version": "3.0.1",
+        "version": "3.0.3",
         "source": "api"
     },
     {
         "name": "io.ktor:ktor-server-content-negotiation",
-        "version": "3.0.1",
+        "version": "3.0.3",
         "source": "api"
     },
     {
         "name": "io.ktor:ktor-serialization-jackson",
-        "version": "3.0.1",
+        "version": "3.0.3",
         "source": "api"
     },
     {
         "name": "io.ktor:ktor-server-call-logging",
-        "version": "3.0.1",
+        "version": "3.0.3",
         "source": "api"
     },
     {
         "name": "io.ktor:ktor-server-cors",
-        "version": "3.0.1",
+        "version": "3.0.3",
         "source": "api"
     },
     {
         "name": "io.ktor:ktor-server-host-common",
-        "version": "3.0.1",
+        "version": "3.0.3",
         "source": "api"
     },
     {
         "name": "io.ktor:ktor-server-resources",
-        "version": "3.0.1",
+        "version": "3.0.3",
         "source": "api"
     },
     {
         "name": "io.ktor:ktor-server-netty",
-        "version": "3.0.1",
+        "version": "3.0.3",
         "source": "api"
     },
     {
         "name": "io.ktor:ktor-server-status-pages",
-        "version": "3.0.1",
+        "version": "3.0.3",
         "source": "api"
     },
     {
@@ -111,22 +111,22 @@
     },
     {
         "name": "primeng",
-        "version": "17.18.12",
+        "version": "19.0.10",
         "source": "desktop"
     },
     {
         "name": "chart.js",
-        "version": "4.4.6",
+        "version": "4.4.8",
+        "source": "desktop"
+    },
+    {
+        "name": "ngxtension",
+        "version": "5.0.0",
         "source": "desktop"
     },
     {
         "name": "@angular/platform-browser",
-        "version": "18.2.12",
-        "source": "desktop"
-    },
-    {
-        "name": "primeng-sass-theme",
-        "version": "github:primefaces/primeng-sass-theme#17.18.3",
+        "version": "19.2.4",
         "source": "desktop"
     },
     {
@@ -135,73 +135,88 @@
         "source": "desktop"
     },
     {
+        "name": "@primeng/themes",
+        "version": "19.0.10",
+        "source": "desktop"
+    },
+    {
         "name": "zone.js",
-        "version": "0.14.10",
+        "version": "0.15.0",
         "source": "desktop"
     },
     {
         "name": "@angular/router",
-        "version": "18.2.12",
+        "version": "19.2.4",
         "source": "desktop"
     },
     {
         "name": "chartjs-plugin-zoom",
-        "version": "2.1.0",
+        "version": "2.2.0",
         "source": "desktop"
     },
     {
         "name": "@angular/common",
-        "version": "18.2.12",
-        "source": "desktop"
-    },
-    {
-        "name": "primeflex",
-        "version": "3.3.1",
+        "version": "19.2.4",
         "source": "desktop"
     },
     {
         "name": "@angular/core",
-        "version": "18.2.12",
+        "version": "19.2.4",
+        "source": "desktop"
+    },
+    {
+        "name": "tailwindcss",
+        "version": "4.0.17",
+        "source": "desktop"
+    },
+    {
+        "name": "utility-types",
+        "version": "3.11.0",
+        "source": "desktop"
+    },
+    {
+        "name": "@fontsource/roboto",
+        "version": "5.2.5",
         "source": "desktop"
     },
     {
         "name": "@angular/animations",
-        "version": "18.2.12",
+        "version": "19.2.4",
+        "source": "desktop"
+    },
+    {
+        "name": "tailwindcss-primeui",
+        "version": "0.6.1",
         "source": "desktop"
     },
     {
         "name": "@angular/compiler",
-        "version": "18.2.12",
+        "version": "19.2.4",
         "source": "desktop"
     },
     {
         "name": "hotkeys-js",
-        "version": "3.13.7",
+        "version": "3.13.9",
         "source": "desktop"
     },
     {
         "name": "@angular/cdk",
-        "version": "18.2.13",
-        "source": "desktop"
-    },
-    {
-        "name": "primeicons",
-        "version": "7.0.0",
+        "version": "19.2.7",
         "source": "desktop"
     },
     {
         "name": "@angular/platform-browser-dynamic",
-        "version": "18.2.12",
+        "version": "19.2.4",
         "source": "desktop"
     },
     {
         "name": "rxjs",
-        "version": "7.8.1",
+        "version": "7.8.2",
         "source": "desktop"
     },
     {
         "name": "@angular/forms",
-        "version": "18.2.12",
+        "version": "19.2.4",
         "source": "desktop"
     },
     {
@@ -216,87 +231,102 @@
     },
     {
         "name": "@types/leaflet",
-        "version": "1.9.14",
+        "version": "latest",
         "source": "desktop"
     },
     {
         "name": "@angular/compiler-cli",
-        "version": "18.2.12",
+        "version": "19.2.4",
         "source": "desktop"
     },
     {
         "name": "@swc/cli",
-        "version": "0.5.1",
+        "version": "latest",
         "source": "desktop"
     },
     {
-        "name": "@types/eslint__js",
-        "version": "8.42.3",
+        "name": "angular-eslint",
+        "version": "latest",
         "source": "desktop"
     },
     {
         "name": "@angular/cli",
-        "version": "18.2.12",
+        "version": "19.2.5",
         "source": "desktop"
     },
     {
         "name": "electron-builder",
-        "version": "25.1.8",
+        "version": "26.0.12",
+        "source": "desktop"
+    },
+    {
+        "name": "postcss",
+        "version": "8.5.3",
         "source": "desktop"
     },
     {
         "name": "prettier",
-        "version": "3.3.3",
+        "version": "latest",
         "source": "desktop"
     },
     {
         "name": "eslint",
-        "version": "9.15.0",
-        "source": "desktop"
-    },
-    {
-        "name": "npm-run-all",
-        "version": "4.1.5",
+        "version": "latest",
         "source": "desktop"
     },
     {
         "name": "@eslint/js",
-        "version": "9.15.0",
+        "version": "latest",
         "source": "desktop"
     },
     {
         "name": "@types/node",
-        "version": "22.9.1",
+        "version": "latest",
         "source": "desktop"
     },
     {
         "name": "@angular-devkit/build-angular",
-        "version": "18.2.12",
+        "version": "19.2.5",
         "source": "desktop"
     },
     {
         "name": "@angular/language-service",
-        "version": "18.2.12",
+        "version": "19.2.4",
         "source": "desktop"
     },
     {
         "name": "electron",
-        "version": "33.2.0",
+        "version": "35.1.2",
         "source": "desktop"
     },
     {
         "name": "typescript-eslint",
-        "version": "8.15.0",
+        "version": "latest",
         "source": "desktop"
     },
     {
         "name": "typescript",
-        "version": "5.5.4",
+        "version": "5.8.2",
+        "source": "desktop"
+    },
+    {
+        "name": "npm-run-all2",
+        "version": "7.0.2",
+        "source": "desktop"
+    },
+    {
+        "name": "@tailwindcss/postcss",
+        "version": "4.0.17",
+        "source": "desktop"
+    },
+    {
+        "name": "prettier-plugin-tailwindcss",
+        "version": "0.6.11",
         "source": "desktop"
     },
     {
         "name": "wait-on",
-        "version": "8.0.1",
+        "version": "8.0.3",
         "source": "desktop"
     },
     {
@@ -306,7 +336,7 @@
     },
     {
         "name": "ws",
-        "version": "8.18.0",
+        "version": "8.18.1",
         "source": "desktop"
     }
 ]
