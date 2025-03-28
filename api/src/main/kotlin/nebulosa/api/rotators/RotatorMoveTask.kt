@@ -1,6 +1,10 @@
 package nebulosa.api.rotators
 
-import nebulosa.indi.device.rotator.*
+import nebulosa.indi.device.rotator.Rotator
+import nebulosa.indi.device.rotator.RotatorAngleChanged
+import nebulosa.indi.device.rotator.RotatorEvent
+import nebulosa.indi.device.rotator.RotatorMoveFailed
+import nebulosa.indi.device.rotator.RotatorMovingChanged
 import nebulosa.job.manager.Job
 import nebulosa.job.manager.Task
 import nebulosa.log.d
@@ -29,13 +33,13 @@ data class RotatorMoveTask(
         if (!job.isCancelled && rotator.connected && !rotator.moving &&
             angle != rotator.angle && angle in 0.0..rotator.maxAngle
         ) {
-            LOG.d("Rotator move started. rotator={}", rotator)
+            LOG.d { debug("Rotator move started. rotator={}", rotator) }
             latch.countUp()
             moving = true
             rotator.moveRotator(angle)
             latch.await()
             moving = false
-            LOG.d("Rotator move finished. rotator={}", rotator)
+            LOG.d { debug("Rotator move finished. rotator={}", rotator) }
         }
     }
 

@@ -1,8 +1,10 @@
 package nebulosa.commandline
 
-import nebulosa.log.di
+import nebulosa.log.d
 import nebulosa.log.loggerFor
 import java.nio.file.Path
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 
@@ -12,15 +14,11 @@ data class CommandLine(
     private val environment: Map<String, String> = emptyMap(),
 ) {
 
-    @Volatile private var process: Process? = null
-
     fun execute(handler: CommandLineHandler? = null, timeout: Long = 0L, unit: TimeUnit = TimeUnit.MILLISECONDS): CommandLineResult {
         val commands = commands.filter { !it.isNullOrEmpty() }.toTypedArray()
 
         with(ProcessBuilder(*commands).directory(workingDirectory?.toFile()).also { it.environment().putAll(environment) }.start()) {
-            LOG.di("executing command: {}. pid={}", commands, pid())
-
-            process = this
+            LOG.d { info("executing command: {}. pid={}", commands, pid()) }
 
             handler?.setProcessErrorStream(errorStream)
             handler?.setProcessOutputStream(inputStream)
@@ -62,6 +60,16 @@ data class CommandLine(
                 }
             }
         }
+    }
+
+    fun executeAsync(executor: Executor, handler: CommandLineHandler? = null, timeout: Long = 0L, unit: TimeUnit = TimeUnit.MILLISECONDS): CompletableFuture<CommandLineResult> {
+        return CompletableFuture.supplyAsync({
+            execute(handler, timeout, unit)
+        }, executor)
+    }
+
+    fun executeAsync(handler: CommandLineHandler? = null, timeout: Long = 0L, unit: TimeUnit = TimeUnit.MILLISECONDS): CompletableFuture<CommandLineResult> {
+        return CompletableFuture.supplyAsync { execute(handler, timeout, unit) }
     }
 
     companion object {

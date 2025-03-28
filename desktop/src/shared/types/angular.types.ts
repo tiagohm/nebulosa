@@ -1,11 +1,6 @@
-export type Severity = 'success' | 'info' | 'warning' | 'danger'
+export type Severity = 'success' | 'info' | 'warn' | 'danger'
 
 export type TooltipPosition = 'right' | 'left' | 'top' | 'bottom'
-
-export interface DropdownItem<T> {
-	label: string
-	value: T
-}
 
 export function extractDateTime(date: Date) {
 	return [extractDate(date), extractTime(date)]

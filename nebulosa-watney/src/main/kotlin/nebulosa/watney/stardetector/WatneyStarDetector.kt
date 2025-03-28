@@ -14,15 +14,15 @@ data class WatneyStarDetector(
 ) : StarDetector<Image> {
 
     override fun detect(input: Image): List<Star> {
-        val starBins = ArrayList<StarPixelBin>()
-
-        val stats = Statistics().compute(input)
+        val stats = Statistics.GRAY.compute(input)
 
         // Too dark or broken image.
         if (stats.mean == 0f) return emptyList()
 
         val flatValue = stats.mean + (stats.stdDev * starDetectionBgOffset)
         var previousLineBins: MutableList<StarPixelBin> = ArrayList(0)
+
+        val starBins = ArrayList<StarPixelBin>()
 
         repeat(input.height) {
             previousLineBins = starBins
@@ -31,13 +31,15 @@ data class WatneyStarDetector(
 
         starBins.forEach(StarPixelBin::recalculateBounds)
         detectionFilter.filter(starBins, input)
+        val output = DoubleArray(3)
 
         return starBins.mapNotNull {
-            val star = it.computeCenterPixelPosAndRelativeBrightness()
-            if (!computeHFD) return@mapNotNull star
-            val computedStar = HFD.compute(input, star.x.roundToInt(), star.y.roundToInt(), (star.size / 2).roundToInt())
+            it.computeCenterPixelPosAndRelativeBrightness(output)
+            val (x, y, size) = output
+            if (!computeHFD) return@mapNotNull Star(x, y)
+            val computedStar = HFD.compute(input, x.roundToInt(), y.roundToInt(), (size / 2).roundToInt())
             if (computedStar.hfd < minHFD) null
-            else Star(computedStar.x.toDouble(), computedStar.y.toDouble(), star.size, computedStar.hfd, computedStar.snr, computedStar.flux)
+            else Star(computedStar.x.toDouble(), computedStar.y.toDouble(), computedStar.hfd, computedStar.snr, computedStar.flux)
         }
     }
 
@@ -53,7 +55,7 @@ data class WatneyStarDetector(
         flatValue: Float,
         previousLineBins: MutableList<StarPixelBin>,
     ): MutableList<StarPixelBin> {
-        val scanLineBins = ArrayList<StarPixelBin>()
+        val scanLineBins = ArrayList<StarPixelBin>(image.width / 2)
         var currentBin: StarPixelBin? = null
 
         var lineIdx = image.indexAt(0, y)
@@ -64,10 +66,10 @@ data class WatneyStarDetector(
             if (pixel >= flatValue) {
                 if (currentBin == null) {
                     currentBin = StarPixelBin()
-                    currentBin!!.add(it, y, pixel)
-                    scanLineBins.add(currentBin!!)
+                    currentBin.add(it, y, pixel)
+                    scanLineBins.add(currentBin)
                 } else {
-                    currentBin!!.add(it, y, pixel)
+                    currentBin.add(it, y, pixel)
                 }
             } else {
                 currentBin = null

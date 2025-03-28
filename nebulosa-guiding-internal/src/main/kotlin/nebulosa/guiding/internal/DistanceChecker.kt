@@ -1,6 +1,6 @@
 package nebulosa.guiding.internal
 
-import nebulosa.log.di
+import nebulosa.log.d
 import nebulosa.log.loggerFor
 
 internal class DistanceChecker(private val guider: MultiStarGuider) {
@@ -32,7 +32,7 @@ internal class DistanceChecker(private val guider: MultiStarGuider) {
         val threshold = tolerance * avgDist
 
         return if (distance > threshold) {
-            LOG.di("reject for large offset. distance={}, threshold={} avgDist={}, count={}", distance, threshold, avgDist, guider.currentErrorFrameCount)
+            LOG.d { info("reject for large offset. distance={}, threshold={} avgDist={}, count={}", distance, threshold, avgDist, guider.currentErrorFrameCount) }
             false
         } else {
             true

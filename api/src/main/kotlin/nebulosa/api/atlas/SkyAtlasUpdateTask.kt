@@ -4,8 +4,6 @@ import nebulosa.api.database.migration.MainDatabaseMigrator
 import nebulosa.api.database.migration.SkyDatabaseMigrator
 import nebulosa.api.message.MessageService
 import nebulosa.api.preference.PreferenceService
-import nebulosa.log.e
-import nebulosa.log.i
 import nebulosa.log.loggerFor
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -36,12 +34,12 @@ class SkyAtlasUpdateTask(
         httpClient.newCall(request).execute().use { response ->
             if (response.isSuccessful) {
                 val newestVersion = response.body!!.string().trim()
-                val currentVersion = preferenceService.getText(VERSION_KEY)
+                val currentVersion = preferenceService[VERSION_KEY]
 
                 if (newestVersion != currentVersion || skyObjectEntityRepository.size == 0L) {
                     skyObjectEntityRepository.clear()
 
-                    LOG.i("Sky Atlas database is out of date. current={}, newest={}", currentVersion, newestVersion)
+                    LOG.info("Sky Atlas database is out of date. current={}, newest={}", currentVersion, newestVersion)
 
                     messageService.sendMessage(SkyAtlasUpdateNotificationEvent.Started)
 
@@ -67,18 +65,20 @@ class SkyAtlasUpdateTask(
                             } else {
                                 messageService.sendMessage(SkyAtlasUpdateNotificationEvent.Failed)
 
-                                LOG.e("failed to download. url={}, code={}", url, it.code)
+                                LOG.error("failed to download. url={}, code={}", url, it.code)
                                 return
                             }
                         }
                     }
 
-                    preferenceService.putText(VERSION_KEY, newestVersion)
+                    preferenceService[VERSION_KEY] = newestVersion
+                    preferenceService.save()
+
                     messageService.sendMessage(SkyAtlasUpdateNotificationEvent.Finished(newestVersion))
 
-                    LOG.i("Sky Atlas database was updated. version={}, size={}", newestVersion, skyObjectEntityRepository.size)
+                    LOG.info("Sky Atlas database was updated. version={}, size={}", newestVersion, skyObjectEntityRepository.size)
                 } else {
-                    LOG.i("Sky Atlas database is up to date. version={}, size={}", newestVersion, skyObjectEntityRepository.size)
+                    LOG.info("Sky Atlas database is up to date. version={}, size={}", newestVersion, skyObjectEntityRepository.size)
                 }
             }
         }
@@ -87,7 +87,7 @@ class SkyAtlasUpdateTask(
     companion object {
 
         const val VERSION_URL = "https://raw.githubusercontent.com/tiagohm/nebulosa.data/main/simbad/VERSION.txt"
-        const val VERSION_KEY = "SKY_ATLAS.VERSION"
+        const val VERSION_KEY = "skyAtlas.version"
 
         const val DATA_URL = "https://raw.githubusercontent.com/tiagohm/nebulosa.data/main/simbad/simbad.%02d.dat"
         const val MAX_DATA_COUNT = 100

@@ -1,23 +1,34 @@
-import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
-import { CameraExposureComponent } from '../../shared/components/camera-exposure/camera-exposure.component'
+import type { AfterViewInit, OnDestroy } from '@angular/core'
+import { Component, HostListener, NgZone, inject, viewChild } from '@angular/core'
+import type { CameraExposureComponent } from '../../shared/components/camera-exposure.component'
 import { AngularService } from '../../shared/services/angular.service'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { Tickable, Ticker } from '../../shared/services/ticker.service'
-import { Camera, DEFAULT_CAMERA, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
+import type { Tickable } from '../../shared/services/ticker.service'
+import { Ticker } from '../../shared/services/ticker.service'
+import type { Camera } from '../../shared/types/camera.types'
+import { DEFAULT_CAMERA, cameraCaptureNamingFormatWithDefault, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
 import { DEFAULT_FLAT_WIZARD_PREFERENCE } from '../../shared/types/flat-wizard.types'
-import { DEFAULT_WHEEL, Filter, Wheel, makeFilter } from '../../shared/types/wheel.types'
+import type { Filter, Wheel } from '../../shared/types/wheel.types'
+import { DEFAULT_WHEEL, makeFilter } from '../../shared/types/wheel.types'
 import { deviceComparator } from '../../shared/utils/comparators'
 import { AppComponent } from '../app.component'
 import { CameraComponent } from '../camera/camera.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-flat-wizard',
-	templateUrl: './flat-wizard.component.html',
+	templateUrl: 'flat-wizard.component.html',
 })
 export class FlatWizardComponent implements AfterViewInit, OnDestroy, Tickable {
+	private readonly api = inject(ApiService)
+	private readonly browserWindowService = inject(BrowserWindowService)
+	private readonly angularService = inject(AngularService)
+	private readonly preferenceService = inject(PreferenceService)
+	private readonly ticker = inject(Ticker)
+
 	protected cameras: Camera[] = []
 	protected camera?: Camera
 
@@ -28,12 +39,9 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy, Tickable {
 	protected request = this.preference.request
 
 	protected filters: Filter[] = []
-	protected selectedFilters: Filter[] = []
-
 	protected running = false
 
-	@ViewChild('cameraExposure')
-	private readonly cameraExposure!: CameraExposureComponent
+	private readonly cameraExposure = viewChild.required<CameraExposureComponent>('cameraExposure')
 
 	get meanTargetMin() {
 		return Math.floor(this.request.meanTarget - (this.request.meanTolerance * this.request.meanTarget) / 100)
@@ -43,31 +51,26 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy, Tickable {
 		return Math.floor(this.request.meanTarget + (this.request.meanTolerance * this.request.meanTarget) / 100)
 	}
 
-	constructor(
-		app: AppComponent,
-		private readonly api: ApiService,
-		electronService: ElectronService,
-		private readonly browserWindowService: BrowserWindowService,
-		private readonly angularService: AngularService,
-		private readonly preferenceService: PreferenceService,
-		private readonly ticker: Ticker,
-		ngZone: NgZone,
-	) {
+	constructor() {
+		const app = inject(AppComponent)
+		const electronService = inject(ElectronService)
+		const ngZone = inject(NgZone)
+
 		app.title = 'Flat Wizard'
 
 		electronService.on('FLAT_WIZARD.ELAPSED', (event) => {
 			ngZone.run(() => {
 				if (event.state === 'EXPOSURING' && event.capture && event.camera.id === this.camera?.id) {
 					this.running = true
-					this.cameraExposure.handleCameraCaptureEvent(event.capture, true)
+					this.cameraExposure().handleCameraCaptureEvent(event.capture, true)
 				} else {
 					this.running = false
-					this.cameraExposure.reset()
+					this.cameraExposure().reset()
 
 					if (event.state === 'CAPTURED') {
 						this.angularService.message('Flat frame captured')
 					} else if (event.state === 'FAILED') {
-						this.angularService.message('Failed to find an optimal exposure time from given parameters', 'danger')
+						this.angularService.message('Failed to find an optimal exposure time from given parameters', 'error')
 					}
 				}
 			})
@@ -183,12 +186,12 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy, Tickable {
 		if (this.wheel?.id) {
 			await this.tick()
 
-			const shutterPosition = this.preferenceService.wheel(this.wheel).get().shutterPosition
-			const filters = makeFilter(this.wheel, this.filters, shutterPosition)
+			const filters = makeFilter(this.wheel, this.filters, 0)
 
-			if (filters !== this.filters) {
+			if (filters !== this.filters && filters.length) {
 				this.filters = filters
-				this.selectedFilters = []
+				this.request.filters = this.filters.filter((e) => this.request.filters.includes(e.position)).map((e) => e.position)
+				this.savePreference()
 			}
 		}
 	}
@@ -196,9 +199,10 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy, Tickable {
 	protected async start() {
 		if (this.camera) {
 			await this.browserWindowService.openCameraImage(this.camera, 'FLAT_WIZARD')
-			// TODO: Iniciar para cada filtro selecionado. Usar os eventos para percorrer (se houver filtro).
-			// Se Falhar, interrompe todo o fluxo.
-			await this.api.flatWizardStart(this.camera, this.request)
+
+			const settings = this.preferenceService.settings.get()
+			this.request.capture.namingFormat = cameraCaptureNamingFormatWithDefault(this.preferenceService.camera(this.camera).get().request.namingFormat, settings.namingFormat)
+			await this.api.flatWizardStart(this.camera, this.request, this.wheel)
 		}
 	}
 

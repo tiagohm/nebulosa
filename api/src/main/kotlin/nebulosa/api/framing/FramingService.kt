@@ -8,7 +8,7 @@ import nebulosa.hips2fits.HipsSurvey
 import nebulosa.image.Image
 import nebulosa.io.resource
 import nebulosa.io.transferAndCloseOutput
-import nebulosa.log.di
+import nebulosa.log.d
 import nebulosa.log.loggerFor
 import nebulosa.math.Angle
 import nebulosa.platesolver.PlateSolution
@@ -45,7 +45,7 @@ class FramingService(
         val image = DEFAULT_PATH.fits().use(Image::open)
         val solution = PlateSolution.from(image.header)
 
-        LOG.di("framing file loaded. calibration={}", solution)
+        LOG.d { info("framing file loaded. calibration={}", solution) }
 
         return Triple(image, solution, DEFAULT_PATH)
     }

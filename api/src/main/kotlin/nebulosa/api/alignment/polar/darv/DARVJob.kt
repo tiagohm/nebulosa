@@ -1,6 +1,10 @@
 package nebulosa.api.alignment.polar.darv
 
-import nebulosa.api.cameras.*
+import nebulosa.api.cameras.AutoSubFolderMode
+import nebulosa.api.cameras.CameraEventAware
+import nebulosa.api.cameras.CameraExposureEvent
+import nebulosa.api.cameras.CameraExposureFinished
+import nebulosa.api.cameras.CameraExposureTask
 import nebulosa.api.guiding.GuidePulseRequest
 import nebulosa.api.guiding.GuidePulseTask
 import nebulosa.api.message.MessageEvent
@@ -79,7 +83,7 @@ data class DARVJob(
     }
 
     override fun beforeStart() {
-        LOG.d("DARV started. camera={}, guideOutput={}, request={}", camera, guideOutput, request)
+        LOG.d { debug("DARV started. camera={}, guideOutput={}, request={}", camera, guideOutput, request) }
 
         status.capture.handleCameraCaptureStarted(cameraExposureTask.exposureTimeInMicroseconds)
     }
@@ -89,7 +93,7 @@ data class DARVJob(
         status.state = DARVState.IDLE
         status.send()
 
-        LOG.d("DARV finished. camera={}, guideOutput={}, request={}", camera, guideOutput, request)
+        LOG.d { debug("DARV finished. camera={}, guideOutput={}, request={}", camera, guideOutput, request) }
     }
 
     @Suppress("NOTHING_TO_INLINE")

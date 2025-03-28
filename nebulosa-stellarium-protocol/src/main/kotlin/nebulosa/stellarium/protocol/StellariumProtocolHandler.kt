@@ -2,8 +2,6 @@ package nebulosa.stellarium.protocol
 
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.ChannelInboundHandlerAdapter
-import nebulosa.log.e
-import nebulosa.log.i
 import nebulosa.log.loggerFor
 import nebulosa.math.Angle
 
@@ -15,13 +13,13 @@ internal class StellariumProtocolHandler(private val server: StellariumProtocolS
         client = ctx
         server.registerCurrentPositionHandler(this)
         sendCurrentPosition(server.rightAscension, server.declination)
-        LOG.i("client connected. address={}", ctx.channel().remoteAddress())
+        LOG.info("client connected. address={}", ctx.channel().remoteAddress())
     }
 
     override fun handlerRemoved(ctx: ChannelHandlerContext) {
         server.unregisterCurrentPositionHandler(this)
         client = null
-        LOG.i("client disconnected. address={}", ctx.channel().remoteAddress())
+        LOG.info("client disconnected. address={}", ctx.channel().remoteAddress())
     }
 
     @Synchronized
@@ -37,7 +35,7 @@ internal class StellariumProtocolHandler(private val server: StellariumProtocolS
 
     @Suppress("OVERRIDE_DEPRECATION")
     override fun exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
-        LOG.e("stellarium protocol error", cause)
+        LOG.error("stellarium protocol error", cause)
         ctx.close()
     }
 

@@ -1,18 +1,11 @@
 package nebulosa.api.image
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import io.ktor.http.ContentType
-import io.ktor.server.application.Application
-import io.ktor.server.request.receive
-import io.ktor.server.response.respond
-import io.ktor.server.response.respondBytes
-import io.ktor.server.response.respondNullable
-import io.ktor.server.routing.RoutingContext
-import io.ktor.server.routing.delete
-import io.ktor.server.routing.get
-import io.ktor.server.routing.post
-import io.ktor.server.routing.put
-import io.ktor.server.routing.routing
+import io.ktor.http.*
+import io.ktor.server.application.*
+import io.ktor.server.request.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 import nebulosa.api.connection.ConnectionService
 import nebulosa.api.ktor.Controller
 import nebulosa.api.ktor.location
@@ -21,6 +14,7 @@ import nebulosa.api.validators.exists
 import nebulosa.api.validators.notEmpty
 import nebulosa.api.validators.notNull
 import nebulosa.api.validators.path
+import nebulosa.api.validators.valid
 import nebulosa.image.format.ImageChannel
 import java.nio.file.Path
 import java.util.*
@@ -91,7 +85,7 @@ class ImageController(
 
     private suspend fun statistics(ctx: RoutingContext) = with(ctx.call) {
         val path = queryParameters[PATH].notNull().path().exists()
-        val transformation = receive<ImageTransformation>()
+        val transformation = receive<ImageTransformation>().valid()
         val channel = queryParameters[CHANNEL]?.enumOf<ImageChannel>() ?: ImageChannel.GRAY
         val camera = queryParameters[CAMERA]?.ifBlank { null }?.let(connectionService::camera)
         respond(imageService.statistics(path, transformation, channel, camera))

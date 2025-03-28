@@ -5,12 +5,36 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import io.netty.buffer.ByteBuf
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.ByteToMessageDecoder
-import nebulosa.log.dw
-import nebulosa.log.e
+import nebulosa.log.d
 import nebulosa.log.loggerFor
 import nebulosa.phd2.client.commands.CompletableCommand
 import nebulosa.phd2.client.commands.PHD2CommandFailedException
-import nebulosa.phd2.client.events.*
+import nebulosa.phd2.client.events.AlertEvent
+import nebulosa.phd2.client.events.AppStateEvent
+import nebulosa.phd2.client.events.CalibratingEvent
+import nebulosa.phd2.client.events.CalibrationCompleteEvent
+import nebulosa.phd2.client.events.CalibrationDataFlippedEvent
+import nebulosa.phd2.client.events.CalibrationFailedEvent
+import nebulosa.phd2.client.events.ConfigurationChangeEvent
+import nebulosa.phd2.client.events.GuideParamChangeEvent
+import nebulosa.phd2.client.events.GuideStepEvent
+import nebulosa.phd2.client.events.GuidingDitheredEvent
+import nebulosa.phd2.client.events.GuidingStoppedEvent
+import nebulosa.phd2.client.events.LockPositionLostEvent
+import nebulosa.phd2.client.events.LockPositionSetEvent
+import nebulosa.phd2.client.events.LockPositionShiftLimitReachedEvent
+import nebulosa.phd2.client.events.LoopingExposuresEvent
+import nebulosa.phd2.client.events.LoopingExposuresStoppedEvent
+import nebulosa.phd2.client.events.PausedEvent
+import nebulosa.phd2.client.events.ResumedEvent
+import nebulosa.phd2.client.events.SettleBeginEvent
+import nebulosa.phd2.client.events.SettleDoneEvent
+import nebulosa.phd2.client.events.SettlingEvent
+import nebulosa.phd2.client.events.StarLostEvent
+import nebulosa.phd2.client.events.StarSelectedEvent
+import nebulosa.phd2.client.events.StartCalibrationEvent
+import nebulosa.phd2.client.events.StartGuidingEvent
+import nebulosa.phd2.client.events.VersionEvent
 import java.io.ByteArrayOutputStream
 
 class PHD2ProtocolDecoder(
@@ -39,7 +63,7 @@ class PHD2ProtocolDecoder(
                         processEvent(eventTree, out)
                     }
                 } catch (e: Throwable) {
-                    LOG.e("failed to process PHD2 message", e)
+                    LOG.error("failed to process PHD2 message", e)
                 } finally {
                     data.reset()
                 }
@@ -55,7 +79,7 @@ class PHD2ProtocolDecoder(
         val command = client.commands.remove(id) as? CompletableCommand<Any>
 
         if (command == null) {
-            LOG.dw("command not found. id={}", id)
+            LOG.d { warn("command not found. id={}", id) }
         } else if (node.has("error")) {
             val message = node.get("error").get("message").textValue()
             client.listeners.forEach { it.onCommandProcessed(command.command, null, message) }

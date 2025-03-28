@@ -1,11 +1,24 @@
 import de.siegmar.fastcsv.reader.CommentStrategy
 import de.siegmar.fastcsv.reader.CsvReader
 import de.siegmar.fastcsv.reader.NamedCsvRecord
-import nebulosa.adql.*
+import nebulosa.adql.Distinct
+import nebulosa.adql.From
+import nebulosa.adql.Ignored
+import nebulosa.adql.LeftJoin
+import nebulosa.adql.Limit
+import nebulosa.adql.QueryBuilder
+import nebulosa.adql.SortBy
+import nebulosa.adql.Table
+import nebulosa.adql.equal
+import nebulosa.adql.greaterThan
+import nebulosa.adql.includes
+import nebulosa.adql.isNotNull
+import nebulosa.adql.lessOrEqual
+import nebulosa.adql.like
+import nebulosa.adql.or
 import nebulosa.api.atlas.SkyDatabaseWriter
 import nebulosa.api.atlas.SkyObjectEntity
 import nebulosa.io.resource
-import nebulosa.log.i
 import nebulosa.log.loggerFor
 import nebulosa.nova.astrometry.Constellation
 import nebulosa.simbad.SimbadCatalogType
@@ -20,7 +33,11 @@ import okio.source
 import org.slf4j.LoggerFactory
 import java.io.InputStreamReader
 import java.nio.file.Path
-import java.util.concurrent.*
+import java.util.concurrent.Callable
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.Executors
+import java.util.concurrent.Future
+import java.util.concurrent.TimeUnit
 import kotlin.io.path.createDirectories
 import kotlin.io.path.deleteRecursively
 import kotlin.math.min
@@ -212,14 +229,14 @@ object SkyDatabaseGenerator {
             }
 
             writer.write(entity)
-            LOG.i("entity: {}", entity)
+            LOG.info("entity: {}", entity)
             count++
         }
 
         writer?.close()
 
-        LOG.i("recorded {} entities", entities.size)
-        LOG.i("remaining names. count={}, stellarium={}", STELLARIUM_NAMES.size, STELLARIUM_NAMES)
+        LOG.info("recorded {} entities", entities.size)
+        LOG.info("remaining names. count={}, stellarium={}", STELLARIUM_NAMES.size, STELLARIUM_NAMES)
 
         EXECUTOR_SERVICE.shutdownNow()
     }

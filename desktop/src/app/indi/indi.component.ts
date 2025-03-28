@@ -1,39 +1,40 @@
-import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, ViewChild, ViewEncapsulation } from '@angular/core'
-import { ActivatedRoute } from '@angular/router'
-import { MenuItem } from 'primeng/api'
-import { Listbox } from 'primeng/listbox'
+import type { OnDestroy } from '@angular/core'
+import { Component, HostListener, NgZone, ViewEncapsulation, effect, inject, viewChild } from '@angular/core'
+import { injectQueryParams } from 'ngxtension/inject-query-params'
+import type { Listbox } from 'primeng/listbox'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
-import { Device, INDIProperty, INDIPropertyItem, INDISendProperty } from '../../shared/types/device.types'
+import type { Device, INDIProperty, INDIPropertyItem, INDISendProperty } from '../../shared/types/device.types'
 import { deviceComparator, textComparator } from '../../shared/utils/comparators'
 import { AppComponent } from '../app.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-indi',
-	templateUrl: './indi.component.html',
-	styleUrls: ['./indi.component.scss'],
+	templateUrl: 'indi.component.html',
+	styleUrls: ['indi.component.scss'],
 	encapsulation: ViewEncapsulation.None,
 })
-export class INDIComponent implements AfterViewInit, OnDestroy {
+export class INDIComponent implements OnDestroy {
+	private readonly api = inject(ApiService)
+	private readonly data = injectQueryParams('data', { transform: (v) => v && decodeURIComponent(v) })
+
 	protected devices: Device[] = []
 	protected properties: INDIProperty[] = []
-	protected groups: MenuItem[] = []
+	protected groups: string[] = []
 
 	protected device?: Device
 	protected group = ''
 	protected showLog = false
 	protected messages: string[] = []
 
-	@ViewChild('listbox')
-	protected readonly messageBox!: Listbox
+	private readonly messageBox = viewChild.required<Listbox>('messageBox')
 
-	constructor(
-		app: AppComponent,
-		private readonly route: ActivatedRoute,
-		private readonly api: ApiService,
-		electronService: ElectronService,
-		ngZone: NgZone,
-	) {
+	constructor() {
+		const app = inject(AppComponent)
+		const electronService = inject(ElectronService)
+		const ngZone = inject(NgZone)
+
 		app.title = 'INDI'
 
 		electronService.on('DEVICE.PROPERTY_CHANGED', (event) => {
@@ -65,30 +66,37 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
 				ngZone.run(() => {
 					if (event.message) {
 						this.messages.splice(0, 0, event.message)
-						this.messageBox.cd.markForCheck()
+						this.messageBox().cd.markForCheck()
 					}
 				})
 			}
 		})
-	}
 
-	async ngAfterViewInit() {
-		this.route.queryParams.subscribe((e) => {
-			const device = JSON.parse(decodeURIComponent(e['data'] as string)) as Device
-
+		electronService.on('DATA.CHANGED', (device: Device) => {
 			if (device.id) {
-				this.device = device
+				ngZone.run(() => {
+					void this.deviceChanged(device)
+				})
 			}
 		})
 
-		const cameras = await this.api.cameras()
-		const mounts = await this.api.mounts()
-		const wheels = await this.api.wheels()
-		const focusers = await this.api.focusers()
-		const rotators = await this.api.rotators()
-		const guideOutputs = await this.api.guideOutputs()
-		const lightBoxes = await this.api.lightBoxes()
-		const dustCaps = await this.api.dustCaps()
+		effect(async () => {
+			const data = this.data()
+
+			await this.loadDevices()
+
+			if (data) {
+				const device = JSON.parse(data) as Device
+
+				if (device.id) {
+					await this.deviceChanged(device)
+				}
+			}
+		})
+	}
+
+	private async loadDevices() {
+		const [cameras, mounts, wheels, focusers, rotators, guideOutputs, lightBoxes, dustCaps] = await Promise.all([this.api.cameras(), this.api.mounts(), this.api.wheels(), this.api.focusers(), this.api.rotators(), this.api.guideOutputs(), this.api.lightBoxes(), this.api.dustCaps()])
 		const devices: Device[] = []
 
 		devices.push(...cameras.filter((a) => !devices.find((b) => a.name === b.name)))
@@ -103,8 +111,7 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
 		this.devices = devices.sort(deviceComparator)
 
 		if (this.devices.length) {
-			this.device = this.devices[0]
-			await this.deviceChanged(this.device)
+			await this.deviceChanged(this.devices[0])
 		}
 	}
 
@@ -115,16 +122,23 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
 		}
 	}
 
-	protected async deviceChanged(device: Device) {
-		if (this.device) {
-			await this.api.indiUnlisten(this.device)
+	protected async deviceChanged(device?: Device) {
+		if (device) {
+			if (this.device) {
+				await this.api.indiUnlisten(this.device)
+			}
+
+			this.device = this.devices.find((e) => e.id === device.id || e.name === device.name)
+
+			await this.updateProperties()
+
+			await this.api.indiListen(device)
+			this.messages = await this.api.indiMessages(device)
+		} else {
+			this.device = undefined
+			this.properties = []
+			this.groups = []
 		}
-
-		this.device = device
-
-		await this.updateProperties()
-		await this.api.indiListen(device)
-		this.messages = await this.api.indiLog(device)
 	}
 
 	protected changeGroup(group: string) {
@@ -149,13 +163,13 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
 
 		if (this.groups.length === groups.size) {
 			for (const group of groups) {
-				if (!this.groups.find((e) => e.label === group)) {
+				if (!this.groups.find((e) => e === group)) {
 					groupsChanged = true
 					break
 				}
 			}
 			for (const group of this.groups) {
-				if (group.label && !groups.has(group.label)) {
+				if (group && !groups.has(group)) {
 					groupsChanged = true
 					break
 				}
@@ -165,21 +179,11 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
 		}
 
 		if (this.groups.length === 0 || groupsChanged) {
-			this.groups = Array.from(groups)
-				.sort(textComparator)
-				.map((e) => {
-					return {
-						icon: 'mdi mdi-sitemap',
-						label: e,
-						command: () => {
-							this.changeGroup(e)
-						},
-					}
-				})
+			this.groups = Array.from(groups).sort(textComparator)
 		}
 
-		if (!this.group || !this.groups.find((e) => e.label === this.group)) {
-			this.group = this.groups[0].label!
+		if (!this.group || !this.groups.find((e) => e === this.group)) {
+			this.group = this.groups[0]
 		}
 	}
 
@@ -198,6 +202,10 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
 			}
 
 			this.updateGroups()
+		} else {
+			this.properties = []
+			this.groups = []
+			this.group = ''
 		}
 	}
 

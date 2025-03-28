@@ -9,20 +9,34 @@ import nebulosa.fits.FitsKeyword
 import nebulosa.image.algorithms.transformation.CfaPattern
 import nebulosa.image.format.HeaderCard
 import nebulosa.indi.device.Device
+import nebulosa.indi.device.DriverInfo
 import nebulosa.indi.device.MessageSender
 import nebulosa.indi.device.PropertyVector
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.FrameType
 import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.focuser.Focuser
-import nebulosa.indi.device.mount.*
+import nebulosa.indi.device.mount.Mount
+import nebulosa.indi.device.mount.MountType
+import nebulosa.indi.device.mount.PierSide
+import nebulosa.indi.device.mount.SlewRate
+import nebulosa.indi.device.mount.TrackMode
 import nebulosa.indi.device.rotator.Rotator
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.PropertyState
-import nebulosa.math.*
+import nebulosa.math.Angle
+import nebulosa.math.Distance
+import nebulosa.math.deg
+import nebulosa.math.hours
+import nebulosa.math.toDegrees
 import nebulosa.time.SystemClock
 import org.junit.jupiter.api.Test
-import java.time.*
+import java.time.Clock
+import java.time.Duration
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import java.util.*
 
 class CameraCaptureNamingFormatterTest {
@@ -228,7 +242,7 @@ class CameraCaptureNamingFormatterTest {
     }
 
     @Suppress("LeakingThis")
-    private abstract class Simulator(override val name: String) : Device, MessageSender {
+    private abstract class Simulator(override val name: String) : Device, MessageSender, DriverInfo {
 
         final override val sender = this
         final override val id = UUID.randomUUID().toString()
@@ -236,6 +250,8 @@ class CameraCaptureNamingFormatterTest {
         final override val properties = emptyMap<String, PropertyVector<*, *>>()
         final override val messages = emptyList<String>()
         final override val snoopedDevices = emptyList<Device>()
+        final override val driver = this
+        final override val version = "1.0"
 
         final override fun sendMessageToServer(message: INDIProtocol) = Unit
 
@@ -356,7 +372,8 @@ class CameraCaptureNamingFormatterTest {
         override val longitude = 0.0
         override val latitude = 0.0
         override val elevation = 0.0
-        override val dateTime: OffsetDateTime = OffsetDateTime.now(SystemClock)
+        override val dateTime: LocalDateTime = LocalDateTime.now(SystemClock)
+        override val offsetInSeconds = 0
         override val canPark = true
         override val parking = false
         override val parked = false

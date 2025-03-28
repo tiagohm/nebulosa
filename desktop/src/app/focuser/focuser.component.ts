@@ -1,31 +1,36 @@
-import { AfterViewInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
-import { ActivatedRoute } from '@angular/router'
+import type { OnDestroy } from '@angular/core'
+import { Component, HostListener, NgZone, effect, inject } from '@angular/core'
 import hotkeys from 'hotkeys-js'
+import { injectQueryParams } from 'ngxtension/inject-query-params'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { Tickable, Ticker } from '../../shared/services/ticker.service'
-import { DEFAULT_FOCUSER, DEFAULT_FOCUSER_PREFERENCE, Focuser } from '../../shared/types/focuser.types'
+import type { Tickable } from '../../shared/services/ticker.service'
+import { Ticker } from '../../shared/services/ticker.service'
+import type { Focuser } from '../../shared/types/focuser.types'
+import { DEFAULT_FOCUSER, DEFAULT_FOCUSER_PREFERENCE } from '../../shared/types/focuser.types'
 import { AppComponent } from '../app.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-focuser',
-	templateUrl: './focuser.component.html',
+	templateUrl: 'focuser.component.html',
 })
-export class FocuserComponent implements AfterViewInit, OnDestroy, Tickable {
+export class FocuserComponent implements OnDestroy, Tickable {
+	private readonly app = inject(AppComponent)
+	private readonly api = inject(ApiService)
+	private readonly preferenceService = inject(PreferenceService)
+	private readonly ticker = inject(Ticker)
+	private readonly data = injectQueryParams('data', { transform: (v) => v && decodeURIComponent(v) })
+
 	protected readonly focuser = structuredClone(DEFAULT_FOCUSER)
 	protected readonly preference = structuredClone(DEFAULT_FOCUSER_PREFERENCE)
 
-	constructor(
-		private readonly app: AppComponent,
-		private readonly api: ApiService,
-		electronService: ElectronService,
-		private readonly preferenceService: PreferenceService,
-		private readonly route: ActivatedRoute,
-		private readonly ticker: Ticker,
-		ngZone: NgZone,
-	) {
-		app.title = 'Focuser'
+	constructor() {
+		const electronService = inject(ElectronService)
+		const ngZone = inject(NgZone)
+
+		this.app.title = 'Focuser'
 
 		electronService.on('FOCUSER.UPDATED', (event) => {
 			if (event.device.id === this.focuser.id) {
@@ -96,13 +101,14 @@ export class FocuserComponent implements AfterViewInit, OnDestroy, Tickable {
 			this.preference.stepsAbsolute = Math.min(this.focuser.maxPosition, this.preference.stepsAbsolute + 1)
 			this.savePreference()
 		})
-	}
 
-	ngAfterViewInit() {
-		this.route.queryParams.subscribe(async (e) => {
-			const data = JSON.parse(decodeURIComponent(e['data'] as string)) as Focuser
-			await this.focuserChanged(data)
-			this.ticker.register(this, 30000)
+		effect(async () => {
+			const data = this.data()
+
+			if (data) {
+				await this.focuserChanged(JSON.parse(data))
+				this.ticker.register(this, 30000)
+			}
 		})
 	}
 

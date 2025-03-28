@@ -5,7 +5,11 @@ import nebulosa.indi.protocol.io.INDIInputStream
 import nebulosa.indi.protocol.io.INDIOutputStream
 import nebulosa.indi.protocol.parser.INDIXmlInputStream
 import nebulosa.io.MinimalBlockingInputStream
-import java.io.*
+import java.io.ByteArrayInputStream
+import java.io.InputStream
+import java.io.OutputStream
+import java.io.PrintStream
+import java.io.SequenceInputStream
 import java.util.*
 
 internal object INDIProtocolFactory {

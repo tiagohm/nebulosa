@@ -1,13 +1,13 @@
-import { HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http'
-import { Injectable } from '@angular/core'
-import { Observable } from 'rxjs'
+import type { HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http'
+import { Injectable, inject } from '@angular/core'
+import type { Observable } from 'rxjs'
 import { PreferenceService } from '../services/preference.service'
 
 @Injectable({ providedIn: 'root' })
 export class LocationInterceptor implements HttpInterceptor {
-	static readonly HEADER_KEY = 'X-Location'
+	private readonly preferenceService = inject(PreferenceService)
 
-	constructor(private readonly preferenceService: PreferenceService) {}
+	static readonly HEADER_KEY = 'X-Location'
 
 	intercept(req: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
 		if (req.urlWithParams.includes('hasLocation')) {

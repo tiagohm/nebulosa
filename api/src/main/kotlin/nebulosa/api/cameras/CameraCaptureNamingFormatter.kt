@@ -1,6 +1,14 @@
 package nebulosa.api.cameras
 
-import nebulosa.fits.*
+import nebulosa.fits.binX
+import nebulosa.fits.declination
+import nebulosa.fits.exposureTime
+import nebulosa.fits.filter
+import nebulosa.fits.gain
+import nebulosa.fits.height
+import nebulosa.fits.rightAscension
+import nebulosa.fits.temperature
+import nebulosa.fits.width
 import nebulosa.image.format.ReadableHeader
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.FrameType

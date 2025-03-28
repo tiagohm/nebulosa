@@ -1,35 +1,34 @@
-import { Injectable } from '@angular/core'
-import { DARVStart, TPPAStart } from '../types/alignment.types'
+import { Injectable, inject } from '@angular/core'
+import type { DARVStart, TPPAStart } from '../types/alignment.types'
 import { extractDate, extractDateTime } from '../types/angular.types'
-import { Angle, BodyPosition, CloseApproach, ComputedLocation, DeepSkyObject, Location, MinorPlanet, MoonPhase, Satellite, SatelliteGroupType, SkyObjectSearchFilter, SkyObjectType, Twilight } from '../types/atlas.types'
-import { AutoFocusRequest } from '../types/autofocus.type'
-import { CalibrationFrame } from '../types/calibration.types'
-import { Camera, CameraStartCapture } from '../types/camera.types'
-import { Device, INDIProperty, INDISendProperty } from '../types/device.types'
-import { DustCap } from '../types/dustcap.types'
-import { FlatWizardRequest } from '../types/flat-wizard.types'
-import { Focuser } from '../types/focuser.types'
-import { HipsSurvey } from '../types/framing.types'
-import { GuideDirection, GuideOutput, Guider, GuiderHistoryStep, SettleInfo } from '../types/guider.types'
-import { ConnectionStatus, ConnectionType, GitHubRelease } from '../types/home.types'
-import { AnnotateImageRequest, CoordinateInterpolation, DetectedStar, FOVCamera, FOVTelescope, ImageAnalyzed, ImageAnnotation, ImageChannel, ImageInfo, ImageMousePosition, ImageSaveDialog, ImageSolved, ImageStatistics, ImageTransformation } from '../types/image.types'
-import { LightBox } from '../types/lightbox.types'
-import { CelestialLocationType, Mount, MountRemoteControl, MountRemoteControlProtocol, SlewRate, TrackMode } from '../types/mount.types'
-import { PlateSolverRequest } from '../types/platesolver.types'
-import { Rotator } from '../types/rotator.types'
-import { SequencerPlan } from '../types/sequencer.types'
-import { StarDetectionRequest } from '../types/stardetector.types'
-import { Wheel } from '../types/wheel.types'
-import { Undefinable } from '../utils/types'
+import type { Angle, BodyPosition, CloseApproach, ComputedLocation, DeepSkyObject, EarthSeasonDateTime, GeographicCoordinate, Location, MinorPlanet, MoonPhases, Satellite, SatelliteGroupType, SkyObjectSearchFilter, SkyObjectType, Twilight } from '../types/atlas.types'
+import type { AutoFocusRequest } from '../types/autofocus.type'
+import type { CalibrationFrame } from '../types/calibration.types'
+import type { Camera, CameraStartCapture } from '../types/camera.types'
+import type { Device, INDIProperty, INDISendProperty } from '../types/device.types'
+import type { DustCap } from '../types/dustcap.types'
+import type { FlatWizardRequest } from '../types/flat-wizard.types'
+import type { Focuser } from '../types/focuser.types'
+import type { HipsSurvey } from '../types/framing.types'
+import type { GuideDirection, GuideOutput, Guider, GuiderHistoryStep, SettleInfo } from '../types/guider.types'
+import type { ConnectionStatus, ConnectionType, GitHubRelease } from '../types/home.types'
+import type { AnnotateImageRequest, CoordinateInterpolation, DetectedStar, FOVCamera, FOVTelescope, ImageAnalyzed, ImageAnnotation, ImageChannel, ImageInfo, ImageMousePosition, ImageSaveDialog, ImageSolved, ImageStatistics, ImageTransformation } from '../types/image.types'
+import type { LightBox } from '../types/lightbox.types'
+import type { CelestialLocationType, Mount, MountRemoteControl, MountRemoteControlProtocol, TrackMode } from '../types/mount.types'
+import type { PlateSolverRequest } from '../types/platesolver.types'
+import type { Rotator } from '../types/rotator.types'
+import type { SequencerPlan } from '../types/sequencer.types'
+import type { StarDetectionRequest } from '../types/stardetector.types'
+import type { Wheel } from '../types/wheel.types'
 import { HttpService } from './http.service'
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
+	private readonly http = inject(HttpService)
+
 	get baseUrl() {
 		return this.http.baseUrl
 	}
-
-	constructor(private readonly http: HttpService) {}
 
 	// CONNECTION
 
@@ -47,7 +46,7 @@ export class ApiService {
 	}
 
 	connectionStatus(id: string) {
-		return this.http.get<Undefinable<ConnectionStatus>>(`connections/${id}`)
+		return this.http.get<ConnectionStatus | undefined>(`connections/${id}`)
 	}
 
 	// CAMERA
@@ -158,8 +157,8 @@ export class ApiService {
 		return this.http.put<never>(`mounts/${mount.id}/track-mode?mode=${mode}`)
 	}
 
-	mountSlewRate(mount: Mount, rate: SlewRate) {
-		return this.http.put<never>(`mounts/${mount.id}/slew-rate?rate=${rate.name}`)
+	mountSlewRate(mount: Mount, rate: string) {
+		return this.http.put<never>(`mounts/${mount.id}/slew-rate?rate=${rate}`)
 	}
 
 	mountMove(mount: Mount, direction: GuideDirection, enabled: boolean) {
@@ -178,6 +177,17 @@ export class ApiService {
 	pointMountHere(mount: Mount, path: string, point: ImageMousePosition) {
 		const query = this.http.query({ path, ...point })
 		return this.http.put<never>(`mounts/${mount.id}/point-here?${query}`)
+	}
+
+	mountTime(mount: Mount, dateTime: Date, offsetInMinutes: number) {
+		const [date, time] = extractDateTime(dateTime)
+		const query = this.http.query({ date, time, offsetInMinutes })
+		return this.http.put<never>(`mounts/${mount.id}/datetime?${query}`)
+	}
+
+	mountCoordinates(mount: Mount, coordinate: GeographicCoordinate) {
+		const query = this.http.query({ ...coordinate })
+		return this.http.put<never>(`mounts/${mount.id}/coordinates?${query}`)
 	}
 
 	mountRemoteControlStart(mount: Mount, protocol: MountRemoteControlProtocol, host: string, port: number) {
@@ -505,8 +515,8 @@ export class ApiService {
 		return this.http.put<never>(`indi/${device.id}/unlisten`)
 	}
 
-	indiLog(device: Device) {
-		return this.http.get<string[]>(`indi/${device.id}/log`)
+	indiMessages(device: Device) {
+		return this.http.get<string[]>(`indi/${device.id}/messages`)
 	}
 
 	// SKY ATLAS
@@ -521,6 +531,12 @@ export class ApiService {
 		const [date, time] = extractDateTime(dateTime)
 		const query = this.http.query({ date, time, fast, hasLocation: location?.id || true })
 		return this.http.get<[number, number][]>(`sky-atlas/sun/altitude-points?${query}`)
+	}
+
+	earthSeasons(dateTime: Date, location?: Location) {
+		const date = extractDate(dateTime)
+		const query = this.http.query({ date, hasLocation: location?.id || true })
+		return this.http.get<EarthSeasonDateTime[]>(`sky-atlas/earth/seasons?${query}`)
 	}
 
 	positionOfMoon(dateTime: Date, location?: Location, fast: boolean = false) {
@@ -604,10 +620,10 @@ export class ApiService {
 		return this.http.get<CloseApproach[]>(`sky-atlas/minor-planets/close-approaches?${query}`)
 	}
 
-	moonPhase(dateTime: Date, location?: Location) {
+	moonPhases(dateTime: Date, location?: Location, topocentric: boolean = false) {
 		const [date, time] = extractDateTime(dateTime)
-		const query = this.http.query({ date, time, hasLocation: location?.id || true })
-		return this.http.get<MoonPhase | undefined>(`sky-atlas/moon/phase?${query}`)
+		const query = this.http.query({ date, time, topocentric, hasLocation: location?.id || true })
+		return this.http.get<MoonPhases | undefined>(`sky-atlas/moon/phases?${query}`)
 	}
 
 	// IMAGE
@@ -734,8 +750,9 @@ export class ApiService {
 
 	// FLAT WIZARD
 
-	flatWizardStart(camera: Camera, request: FlatWizardRequest) {
-		return this.http.put<never>(`flat-wizard/${camera.id}/start`, request)
+	flatWizardStart(camera: Camera, request: FlatWizardRequest, wheel?: Wheel) {
+		const query = this.http.query({ wheel: wheel?.id })
+		return this.http.put<never>(`flat-wizard/${camera.id}/start?${query}`, request)
 	}
 
 	flatWizardStop(camera: Camera) {

@@ -9,7 +9,6 @@ import nebulosa.job.manager.Task
 import nebulosa.job.manager.delay.DelayTask
 import nebulosa.log.d
 import nebulosa.log.loggerFor
-import nebulosa.log.w
 import nebulosa.math.Angle
 import nebulosa.math.formatHMS
 import nebulosa.math.formatSignedDMS
@@ -39,7 +38,7 @@ data class MountSlewTask(
                     latch.reset()
                 }
             } else if (event is MountSlewFailed) {
-                LOG.w("failed to slew mount. mount={}", mount)
+                LOG.warn("failed to slew mount. mount={}", mount)
                 latch.reset()
             }
         }
@@ -51,7 +50,7 @@ data class MountSlewTask(
             rightAscension.isFinite() && declination.isFinite() &&
             (mount.rightAscension != rightAscension || mount.declination != declination)
         ) {
-            LOG.d("Mount Slew started. mount={}, ra={}, dec={}", mount, rightAscension.formatHMS(), declination.formatSignedDMS())
+            LOG.d { debug("Mount Slew started. mount={}, ra={}, dec={}", mount, rightAscension.formatHMS(), declination.formatSignedDMS()) }
 
             latch.countUp()
 
@@ -67,10 +66,10 @@ data class MountSlewTask(
             }
 
             latch.await()
-            LOG.d("Mount Slew finished. mount={}, ra={}, dec={}", mount, rightAscension.formatHMS(), declination.formatSignedDMS())
+            LOG.d { debug("Mount Slew finished. mount={}, ra={}, dec={}", mount, rightAscension.formatHMS(), declination.formatSignedDMS()) }
             delayTask.run()
         } else {
-            LOG.w("cannot slew mount. mount={}, ra={}, dec={}", mount, rightAscension.formatHMS(), declination.formatSignedDMS())
+            LOG.warn("cannot slew mount. mount={}, ra={}, dec={}", mount, rightAscension.formatHMS(), declination.formatSignedDMS())
         }
     }
 

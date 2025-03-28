@@ -3,7 +3,6 @@ import nebulosa.astrobin.api.AstrobinService
 import nebulosa.astrobin.api.Camera
 import nebulosa.astrobin.api.Sensor
 import nebulosa.astrobin.api.Telescope
-import nebulosa.log.i
 import nebulosa.log.loggerFor
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
@@ -43,7 +42,7 @@ object AstrobinEquipmentGenerator {
                     ?.takeIf { it.results.isNotEmpty() }
                     ?.results
                     ?.forEach { SENSORS[it.id] = it }
-                    ?.also { LOG.i("sensor. page={}", page) }
+                    ?.also { LOG.info("sensor. page={}", page) }
                     ?: break
             }
         }
@@ -54,7 +53,7 @@ object AstrobinEquipmentGenerator {
                     ?.takeIf { it.results.isNotEmpty() }
                     ?.results
                     ?.forEach { CAMERAS[it.id] = it }
-                    ?.also { LOG.i("camera. page={}", page) }
+                    ?.also { LOG.info("camera. page={}", page) }
                     ?: break
 
             }
@@ -66,7 +65,7 @@ object AstrobinEquipmentGenerator {
                     ?.takeIf { it.results.isNotEmpty() }
                     ?.results
                     ?.forEach { TELESCOPES[it.id] = it }
-                    ?.also { LOG.i("telescope. page={}", page) }
+                    ?.also { LOG.info("telescope. page={}", page) }
                     ?: break
             }
         }
@@ -75,9 +74,9 @@ object AstrobinEquipmentGenerator {
         b.get()
         c.get()
 
-        LOG.i("cameras: {}", CAMERAS.size)
-        LOG.i("sensors: {}", SENSORS.size)
-        LOG.i("telescopes: {}", TELESCOPES.size)
+        LOG.info("cameras: {}", CAMERAS.size)
+        LOG.info("sensors: {}", SENSORS.size)
+        LOG.info("telescopes: {}", TELESCOPES.size)
 
         val output = HashSet<Any>(max(CAMERAS.size, TELESCOPES.size))
 

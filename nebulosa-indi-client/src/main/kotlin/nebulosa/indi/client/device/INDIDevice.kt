@@ -1,8 +1,35 @@
 package nebulosa.indi.client.device
 
 import nebulosa.indi.client.INDIClient
-import nebulosa.indi.device.*
-import nebulosa.indi.protocol.*
+import nebulosa.indi.device.Device
+import nebulosa.indi.device.DeviceConnected
+import nebulosa.indi.device.DeviceConnectionFailed
+import nebulosa.indi.device.DeviceDisconnected
+import nebulosa.indi.device.DeviceMessageReceived
+import nebulosa.indi.device.DevicePropertyChanged
+import nebulosa.indi.device.DevicePropertyDeleted
+import nebulosa.indi.device.NumberProperty
+import nebulosa.indi.device.NumberPropertyVector
+import nebulosa.indi.device.PropertyVector
+import nebulosa.indi.device.SwitchProperty
+import nebulosa.indi.device.SwitchPropertyVector
+import nebulosa.indi.device.TextProperty
+import nebulosa.indi.device.TextPropertyVector
+import nebulosa.indi.protocol.DefLightVector
+import nebulosa.indi.protocol.DefNumberVector
+import nebulosa.indi.protocol.DefSwitchVector
+import nebulosa.indi.protocol.DefTextVector
+import nebulosa.indi.protocol.DefVector
+import nebulosa.indi.protocol.DelProperty
+import nebulosa.indi.protocol.INDIProtocol
+import nebulosa.indi.protocol.Message
+import nebulosa.indi.protocol.PropertyState
+import nebulosa.indi.protocol.SetLightVector
+import nebulosa.indi.protocol.SetNumberVector
+import nebulosa.indi.protocol.SetSwitchVector
+import nebulosa.indi.protocol.SetTextVector
+import nebulosa.indi.protocol.SetVector
+import nebulosa.indi.protocol.SwitchVector
 import nebulosa.indi.protocol.Vector
 import okio.ByteString.Companion.encodeUtf8
 import java.util.*
@@ -11,7 +38,7 @@ internal abstract class INDIDevice : Device {
 
     abstract override val sender: INDIClient
 
-    abstract val driverInfo: DriverInfo
+    abstract override val driver: INDIDriverInfo
 
     final override val properties = linkedMapOf<String, PropertyVector<*, *>>()
     final override val messages = LinkedList<String>()
@@ -19,16 +46,10 @@ internal abstract class INDIDevice : Device {
     final override val snoopedDevices = ArrayList<Device>(4)
 
     override val name
-        get() = driverInfo.name
+        get() = driver.name
 
     @Volatile override var connected = false
         protected set
-
-    final override val driverName
-        get() = driverInfo.executable
-
-    final override val driverVersion
-        get() = driverInfo.version
 
     private fun addMessageAndFireEvent(text: String) {
         synchronized(messages) {

@@ -2,7 +2,14 @@
 
 package nebulosa.math
 
-import nebulosa.constants.*
+import nebulosa.constants.AMIN2RAD
+import nebulosa.constants.ASEC2RAD
+import nebulosa.constants.DEG2RAD
+import nebulosa.constants.MILLIASEC2RAD
+import nebulosa.constants.PI
+import nebulosa.constants.PIOVERTWO
+import nebulosa.constants.RAD2DEG
+import nebulosa.constants.TAU
 import java.util.*
 import kotlin.math.abs
 import kotlin.math.cos
@@ -136,7 +143,7 @@ fun Angle(
     if (decimalInput != null) return if (decimalIsHours) decimalInput.hours
     else decimalInput.deg
 
-    val tokenizer = StringTokenizer(trimmedInput, " \t\n\rhms°'\":*#")
+    val tokenizer = StringTokenizer(trimmedInput, " \t\n\rhms°'\":*#′″")
     val res = DoubleArray(3)
     var idx = 0
     var sign = 1.0

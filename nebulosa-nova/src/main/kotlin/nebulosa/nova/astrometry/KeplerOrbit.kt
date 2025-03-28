@@ -2,9 +2,31 @@ package nebulosa.nova.astrometry
 
 import nebulosa.constants.TAU
 import nebulosa.erfa.PositionAndVelocity
-import nebulosa.math.*
+import nebulosa.math.Angle
+import nebulosa.math.Distance
+import nebulosa.math.Matrix3D
+import nebulosa.math.Vector3D
+import nebulosa.math.cos
+import nebulosa.math.rad
+import nebulosa.math.sin
 import nebulosa.time.InstantOfTime
-import kotlin.math.*
+import kotlin.math.PI
+import kotlin.math.abs
+import kotlin.math.acos
+import kotlin.math.atan
+import kotlin.math.cbrt
+import kotlin.math.cos
+import kotlin.math.cosh
+import kotlin.math.exp
+import kotlin.math.ln
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.math.pow
+import kotlin.math.sin
+import kotlin.math.sinh
+import kotlin.math.sqrt
+import kotlin.math.tan
+import kotlin.math.tanh
 
 data class KeplerOrbit(
     val position: Vector3D,

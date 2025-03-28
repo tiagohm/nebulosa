@@ -40,7 +40,7 @@ class Nebula : SkyCatalog<NebulaEntry>(94661) {
                 val redshift = source.readDouble()
                 source.readDouble() // Redshift error
                 val parallax = source.readDouble().mas
-                source.readDouble().mas // Parallax error
+                source.readDouble() //.mas // Parallax error
                 source.readDouble() // Distance
                 source.readDouble() // Distance error
                 val ngc = source.readInt()
@@ -112,7 +112,7 @@ class Nebula : SkyCatalog<NebulaEntry>(94661) {
                 if (vdbha > 0) "VdBHA $vdbha".findNames()
 
                 val nebula = NebulaEntry(
-                    id, names,
+                    id, names.clone() as List<String>,
                     ra, dec, min(mB, mV),
                     NebulaType.entries[type].type,
                     majorAxis, minorAxis, orientation,

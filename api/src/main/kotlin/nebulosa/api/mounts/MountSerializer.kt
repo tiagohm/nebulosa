@@ -37,7 +37,7 @@ class MountSerializer : DeviceSerializer<Mount>(Mount::class.java) {
         writeNumberField("longitude", value.longitude.toDegrees)
         writeNumberField("latitude", value.latitude.toDegrees)
         writeNumberField("elevation", value.elevation.toMeters)
-        writeNumberField("dateTime", value.dateTime.toLocalDateTime().toInstant(ZoneOffset.UTC).toEpochMilli())
-        writeNumberField("offsetInMinutes", value.dateTime.offset.totalSeconds / 60)
+        writeNumberField("dateTime", value.dateTime.toEpochSecond(ZoneOffset.UTC) * 1000L)
+        writeNumberField("offsetInMinutes", value.offsetInSeconds / 60)
     }
 }

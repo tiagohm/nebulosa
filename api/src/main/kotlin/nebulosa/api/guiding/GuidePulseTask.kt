@@ -23,9 +23,9 @@ data class GuidePulseTask(
 
     override fun run() {
         if (!job.isCancelled && guideOutput.pulseGuide(request.duration, request.direction)) {
-            LOG.d("Guide Pulse started. guideOutput={}, duration={} ms, direction={}", guideOutput, guideOutput, direction)
+            LOG.d { debug("Guide Pulse started. guideOutput={}, duration={} ms, direction={}", guideOutput, guideOutput, direction) }
             delayTask.run()
-            LOG.d("Guide Pulse finished. guideOutput={}, duration={} ms, direction={}", guideOutput, guideOutput, direction)
+            LOG.d { debug("Guide Pulse finished. guideOutput={}, duration={} ms, direction={}", guideOutput, guideOutput, direction) }
         }
     }
 

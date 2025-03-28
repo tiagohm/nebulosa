@@ -31,7 +31,6 @@ import nebulosa.indi.device.rotator.RotatorDetached
 import nebulosa.indi.device.thermometer.Thermometer
 import nebulosa.indi.device.thermometer.ThermometerAttached
 import nebulosa.indi.device.thermometer.ThermometerDetached
-import nebulosa.log.i
 import nebulosa.log.loggerFor
 
 abstract class AbstractINDIDeviceProvider : INDIDeviceProvider {
@@ -117,14 +116,14 @@ abstract class AbstractINDIDeviceProvider : INDIDeviceProvider {
         cameras[device.id] = device
         cameras[device.name] = device
         fireOnEventReceived(CameraAttached(device))
-        LOG.i("camera attached: {} ({})", device.name, device.id)
+        LOG.info("camera attached: {} ({})", device.name, device.id)
         return true
     }
 
     fun unregisterCamera(device: Camera) {
         cameras.remove(device.name)
         fireOnEventReceived(CameraDetached(cameras.remove(device.id) ?: return))
-        LOG.i("camera detached: {} ({})", device.name, device.id)
+        LOG.info("camera detached: {} ({})", device.name, device.id)
     }
 
     fun registerMount(device: Mount): Boolean {
@@ -132,14 +131,14 @@ abstract class AbstractINDIDeviceProvider : INDIDeviceProvider {
         mounts[device.id] = device
         mounts[device.name] = device
         fireOnEventReceived(MountAttached(device))
-        LOG.i("mount attached: {} ({})", device.name, device.id)
+        LOG.info("mount attached: {} ({})", device.name, device.id)
         return true
     }
 
     fun unregisterMount(device: Mount) {
         mounts.remove(device.name)
         fireOnEventReceived(MountDetached(mounts.remove(device.id) ?: return))
-        LOG.i("mount detached: {} ({})", device.name, device.id)
+        LOG.info("mount detached: {} ({})", device.name, device.id)
     }
 
     fun registerFocuser(device: Focuser): Boolean {
@@ -147,14 +146,14 @@ abstract class AbstractINDIDeviceProvider : INDIDeviceProvider {
         focusers[device.id] = device
         focusers[device.name] = device
         fireOnEventReceived(FocuserAttached(device))
-        LOG.i("focuser attached: {} ({})", device.name, device.id)
+        LOG.info("focuser attached: {} ({})", device.name, device.id)
         return true
     }
 
     fun unregisterFocuser(device: Focuser) {
         focusers.remove(device.name)
         fireOnEventReceived(FocuserDetached(focusers.remove(device.id) ?: return))
-        LOG.i("focuser detached: {} ({})", device.name, device.id)
+        LOG.info("focuser detached: {} ({})", device.name, device.id)
     }
 
     fun registerRotator(device: Rotator): Boolean {
@@ -162,14 +161,14 @@ abstract class AbstractINDIDeviceProvider : INDIDeviceProvider {
         rotators[device.id] = device
         rotators[device.name] = device
         fireOnEventReceived(RotatorAttached(device))
-        LOG.i("rotator attached: {} ({})", device.name, device.id)
+        LOG.info("rotator attached: {} ({})", device.name, device.id)
         return true
     }
 
     fun unregisterRotator(device: Rotator) {
         rotators.remove(device.name)
         fireOnEventReceived(RotatorDetached(rotators.remove(device.id) ?: return))
-        LOG.i("rotator detached: {} ({})", device.name, device.id)
+        LOG.info("rotator detached: {} ({})", device.name, device.id)
     }
 
     fun registerFilterWheel(device: FilterWheel): Boolean {
@@ -177,14 +176,14 @@ abstract class AbstractINDIDeviceProvider : INDIDeviceProvider {
         wheels[device.id] = device
         wheels[device.name] = device
         fireOnEventReceived(FilterWheelAttached(device))
-        LOG.i("filter wheel attached: {} ({})", device.name, device.id)
+        LOG.info("filter wheel attached: {} ({})", device.name, device.id)
         return true
     }
 
     fun unregisterFilterWheel(device: FilterWheel) {
         wheels.remove(device.name)
         fireOnEventReceived(FilterWheelDetached(wheels.remove(device.id) ?: return))
-        LOG.i("filter wheel detached: {} ({})", device.name, device.id)
+        LOG.info("filter wheel detached: {} ({})", device.name, device.id)
     }
 
     fun registerGPS(device: GPS): Boolean {
@@ -192,14 +191,14 @@ abstract class AbstractINDIDeviceProvider : INDIDeviceProvider {
         gps[device.id] = device
         gps[device.name] = device
         fireOnEventReceived(GPSAttached(device))
-        LOG.i("gps attached: {} ({})", device.name, device.id)
+        LOG.info("gps attached: {} ({})", device.name, device.id)
         return true
     }
 
     fun unregisterGPS(device: GPS) {
         gps.remove(device.name)
         fireOnEventReceived(GPSDetached(gps.remove(device.id) ?: return))
-        LOG.i("gps detached: {} ({})", device.name, device.id)
+        LOG.info("gps detached: {} ({})", device.name, device.id)
     }
 
     fun registerGuideHead(device: GuideHead): Boolean {
@@ -207,14 +206,14 @@ abstract class AbstractINDIDeviceProvider : INDIDeviceProvider {
         cameras[device.id] = device
         cameras[device.name] = device
         fireOnEventReceived(CameraAttached(device))
-        LOG.i("guide head attached: {} ({})", device.name, device.id)
+        LOG.info("guide head attached: {} ({})", device.name, device.id)
         return true
     }
 
     fun unregisterGuiderHead(device: GuideHead) {
         cameras.remove(device.name)
         fireOnEventReceived(CameraDetached(cameras.remove(device.id) ?: return))
-        LOG.i("guide head detached: {} ({})", device.name, device.id)
+        LOG.info("guide head detached: {} ({})", device.name, device.id)
     }
 
     fun registerGuideOutput(device: GuideOutput): Boolean {
@@ -222,14 +221,14 @@ abstract class AbstractINDIDeviceProvider : INDIDeviceProvider {
         guideOutputs[device.id] = device
         guideOutputs[device.name] = device
         fireOnEventReceived(GuideOutputAttached(device))
-        LOG.i("guide output attached: {} ({})", device.name, device.id)
+        LOG.info("guide output attached: {} ({})", device.name, device.id)
         return true
     }
 
     fun unregisterGuideOutput(device: GuideOutput) {
         guideOutputs.remove(device.name)
         fireOnEventReceived(GuideOutputDetached(guideOutputs.remove(device.id) ?: return))
-        LOG.i("guide output detached: {} ({})", device.name, device.id)
+        LOG.info("guide output detached: {} ({})", device.name, device.id)
     }
 
     fun registerLightBox(device: LightBox): Boolean {
@@ -237,14 +236,14 @@ abstract class AbstractINDIDeviceProvider : INDIDeviceProvider {
         lightBoxes[device.id] = device
         lightBoxes[device.name] = device
         fireOnEventReceived(LightBoxAttached(device))
-        LOG.i("light box attached: {} ({})", device.name, device.id)
+        LOG.info("light box attached: {} ({})", device.name, device.id)
         return true
     }
 
     fun unregisterLightBox(device: LightBox) {
         lightBoxes.remove(device.name)
         fireOnEventReceived(LightBoxDetached(lightBoxes.remove(device.id) ?: return))
-        LOG.i("light box detached: {} ({})", device.name, device.id)
+        LOG.info("light box detached: {} ({})", device.name, device.id)
     }
 
     fun registerDustCap(device: DustCap): Boolean {
@@ -252,14 +251,14 @@ abstract class AbstractINDIDeviceProvider : INDIDeviceProvider {
         dustCaps[device.id] = device
         dustCaps[device.name] = device
         fireOnEventReceived(DustCapAttached(device))
-        LOG.i("dust cap attached: {} ({})", device.name, device.id)
+        LOG.info("dust cap attached: {} ({})", device.name, device.id)
         return true
     }
 
     fun unregisterDustCap(device: DustCap) {
         dustCaps.remove(device.name)
         fireOnEventReceived(DustCapDetached(dustCaps.remove(device.id) ?: return))
-        LOG.i("dust cap detached: {} ({})", device.name, device.id)
+        LOG.info("dust cap detached: {} ({})", device.name, device.id)
     }
 
     fun registerThermometer(device: Thermometer): Boolean {
@@ -267,14 +266,14 @@ abstract class AbstractINDIDeviceProvider : INDIDeviceProvider {
         thermometers[device.id] = device
         thermometers[device.name] = device
         fireOnEventReceived(ThermometerAttached(device))
-        LOG.i("thermometer attached: {} ({})", device.name, device.id)
+        LOG.info("thermometer attached: {} ({})", device.name, device.id)
         return true
     }
 
     fun unregisterThermometer(device: Thermometer) {
         thermometers.remove(device.name)
         fireOnEventReceived(ThermometerDetached(thermometers.remove(device.id) ?: return))
-        LOG.i("thermometer detached: {} ({})", device.name, device.id)
+        LOG.info("thermometer detached: {} ({})", device.name, device.id)
     }
 
     override fun close() {

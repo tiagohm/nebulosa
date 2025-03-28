@@ -1,25 +1,30 @@
-import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
-import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, QueryList, ViewChildren, ViewEncapsulation } from '@angular/core'
-import { ActivatedRoute } from '@angular/router'
-import { CameraExposureComponent } from '../../shared/components/camera-exposure/camera-exposure.component'
-import { DialogMenuComponent } from '../../shared/components/dialog-menu/dialog-menu.component'
-import { MenuItem, SlideMenuItem } from '../../shared/components/menu-item/menu-item.component'
+import type { CdkDragDrop } from '@angular/cdk/drag-drop'
+import { moveItemInArray } from '@angular/cdk/drag-drop'
+import type { OnDestroy } from '@angular/core'
+import { Component, effect, HostListener, inject, NgZone, viewChildren, ViewEncapsulation } from '@angular/core'
+import { injectQueryParams } from 'ngxtension/inject-query-params'
+import type { CameraExposureComponent } from '../../shared/components/camera-exposure.component'
+import type { DialogMenuComponent } from '../../shared/components/dialog-menu.component'
+import type { DropdownItem } from '../../shared/components/dropdown.component'
+import type { MenuItem, SlideMenuItem } from '../../shared/components/menu-item.component'
 import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
 import { AngularService } from '../../shared/services/angular.service'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { Tickable, Ticker } from '../../shared/services/ticker.service'
-import { DropdownItem } from '../../shared/types/angular.types'
-import { JsonFile } from '../../shared/types/app.types'
-import { Camera, cameraCaptureNamingFormatWithDefault, FrameType, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
-import { Focuser } from '../../shared/types/focuser.types'
-import { Mount } from '../../shared/types/mount.types'
-import { Rotator } from '../../shared/types/rotator.types'
-import { DEFAULT_SEQUENCE, DEFAULT_SEQUENCE_PROPERTY_DIALOG, DEFAULT_SEQUENCER_PLAN, DEFAULT_SEQUENCER_PREFERENCE, Sequence, SequenceProperty, SequencerEvent, SequencerPlan, sequencerPlanWithDefault } from '../../shared/types/sequencer.types'
+import type { Tickable } from '../../shared/services/ticker.service'
+import { Ticker } from '../../shared/services/ticker.service'
+import type { JsonFile } from '../../shared/types/app.types'
+import type { Camera, FrameType } from '../../shared/types/camera.types'
+import { cameraCaptureNamingFormatWithDefault, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
+import type { Focuser } from '../../shared/types/focuser.types'
+import type { Mount } from '../../shared/types/mount.types'
+import type { Rotator } from '../../shared/types/rotator.types'
+import type { Sequence, SequenceProperty, SequencerEvent, SequencerPlan } from '../../shared/types/sequencer.types'
+import { DEFAULT_SEQUENCE, DEFAULT_SEQUENCE_PROPERTY_DIALOG, DEFAULT_SEQUENCER_PLAN, DEFAULT_SEQUENCER_PREFERENCE, sequencerPlanWithDefault } from '../../shared/types/sequencer.types'
 import { resetCameraCaptureNamingFormat } from '../../shared/types/settings.types'
-import { Wheel } from '../../shared/types/wheel.types'
+import type { Wheel } from '../../shared/types/wheel.types'
 import { deviceComparator, textComparator } from '../../shared/utils/comparators'
 import { AppComponent } from '../app.component'
 import { CameraComponent } from '../camera/camera.component'
@@ -27,12 +32,21 @@ import { FilterWheelComponent } from '../filterwheel/filterwheel.component'
 import { RotatorComponent } from '../rotator/rotator.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-sequencer',
-	templateUrl: './sequencer.component.html',
-	styleUrls: ['./sequencer.component.scss'],
+	templateUrl: 'sequencer.component.html',
 	encapsulation: ViewEncapsulation.None,
 })
-export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable {
+export class SequencerComponent implements OnDestroy, Tickable {
+	private readonly app = inject(AppComponent)
+	private readonly api = inject(ApiService)
+	private readonly browserWindowService = inject(BrowserWindowService)
+	private readonly electronService = inject(ElectronService)
+	private readonly preferenceService = inject(PreferenceService)
+	private readonly angularService = inject(AngularService)
+	private readonly ticker = inject(Ticker)
+	private readonly data = injectQueryParams('data', { transform: (v) => v && decodeURIComponent(v) })
+
 	protected cameras: Camera[] = []
 	protected mounts: Mount[] = []
 	protected wheels: Wheel[] = []
@@ -48,7 +62,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 	protected path?: string
 
 	// NOTE: Remove the "plan.sequences.length <= 1" on layout if add more options
-	protected readonly sequenceModel: SlideMenuItem[] = [
+	private readonly sequenceModel: SlideMenuItem[] = [
 		{
 			icon: 'mdi mdi-content-copy',
 			label: 'Apply to all',
@@ -158,8 +172,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 		},
 	}
 
-	@ViewChildren('cameraExposure')
-	private readonly cameraExposures!: QueryList<CameraExposureComponent>
+	private readonly cameraExposures = viewChildren<CameraExposureComponent>('cameraExposure')
 
 	get canStart() {
 		return !!this.plan.camera?.connected && !!this.plan.sequences.find((e) => e.enabled)
@@ -183,33 +196,25 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 		return { time, frames }
 	}
 
-	constructor(
-		private readonly app: AppComponent,
-		private readonly api: ApiService,
-		private readonly browserWindowService: BrowserWindowService,
-		private readonly electronService: ElectronService,
-		private readonly preferenceService: PreferenceService,
-		private readonly angularService: AngularService,
-		private readonly ticker: Ticker,
-		private readonly route: ActivatedRoute,
-		ngZone: NgZone,
-	) {
-		app.title = 'Sequencer'
+	constructor() {
+		const ngZone = inject(NgZone)
 
-		app.topMenu.push(this.createNewMenuItem)
-		app.topMenu.push(this.saveMenuItem)
-		app.topMenu.push(this.saveAsMenuItem)
-		app.topMenu.push(this.loadMenuItem)
+		this.app.title = 'Sequencer'
 
-		app.beforeClose = async () => {
+		this.app.topMenu.push(this.createNewMenuItem)
+		this.app.topMenu.push(this.saveMenuItem)
+		this.app.topMenu.push(this.saveAsMenuItem)
+		this.app.topMenu.push(this.loadMenuItem)
+
+		this.app.beforeClose = async () => {
 			if (this.path && !this.saveMenuItem.disabled) {
-				return !(await angularService.confirm('Are you sure you want to close the window? Please make sure to save before exiting to avoid losing any important changes.'))
+				return !(await this.angularService.confirm('Are you sure you want to close the window? Please make sure to save before exiting to avoid losing any important changes.'))
 			} else {
 				return true
 			}
 		}
 
-		electronService.on('CAMERA.UPDATED', (event) => {
+		this.electronService.on('CAMERA.UPDATED', (event) => {
 			const camera = this.cameras.find((e) => e.id === event.device.id)
 
 			if (camera) {
@@ -220,7 +225,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 			}
 		})
 
-		electronService.on('MOUNT.UPDATED', (event) => {
+		this.electronService.on('MOUNT.UPDATED', (event) => {
 			const mount = this.mounts.find((e) => e.id === event.device.id)
 
 			if (mount) {
@@ -230,7 +235,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 			}
 		})
 
-		electronService.on('WHEEL.UPDATED', (event) => {
+		this.electronService.on('WHEEL.UPDATED', (event) => {
 			const wheel = this.wheels.find((e) => e.id === event.device.id)
 
 			if (wheel) {
@@ -240,7 +245,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 			}
 		})
 
-		electronService.on('FOCUSER.UPDATED', (event) => {
+		this.electronService.on('FOCUSER.UPDATED', (event) => {
 			const focuser = this.focusers.find((e) => e.id === event.device.id)
 
 			if (focuser) {
@@ -250,7 +255,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 			}
 		})
 
-		electronService.on('ROTATOR.UPDATED', (event) => {
+		this.electronService.on('ROTATOR.UPDATED', (event) => {
 			const rotator = this.rotators.find((e) => e.id === event.device.id)
 
 			if (rotator) {
@@ -260,7 +265,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 			}
 		})
 
-		electronService.on('SEQUENCER.ELAPSED', (event) => {
+		this.electronService.on('SEQUENCER.ELAPSED', (event) => {
 			ngZone.run(() => {
 				if (this.running !== (event.state !== 'IDLE')) {
 					this.enableOrDisableTopbarMenu(this.running)
@@ -273,34 +278,46 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 
 				if (captureEvent) {
 					const index = event.id - 1
-					this.cameraExposures.get(index)?.handleCameraCaptureEvent(captureEvent)
+					this.cameraExposures().at(index)?.handleCameraCaptureEvent(captureEvent)
 				}
 			})
 		})
-	}
 
-	async ngAfterContentInit() {
-		this.ticker.register(this, 30000)
+		effect(async () => {
+			const data = this.data()
 
-		this.cameras = (await this.api.cameras()).sort(deviceComparator)
-		this.mounts = (await this.api.mounts()).sort(deviceComparator)
-		this.wheels = (await this.api.wheels()).sort(deviceComparator)
-		this.focusers = (await this.api.focusers()).sort(deviceComparator)
-		this.rotators = (await this.api.rotators()).sort(deviceComparator)
+			await this.loadDevices()
+			await this.loadCalibrationGroups()
 
-		const calibrationGroups = (await this.api.calibrationGroups()).sort(textComparator)
-		this.calibrationGroups.push({ label: 'None', value: undefined })
-		calibrationGroups.forEach((e) => this.calibrationGroups.push({ label: e, value: e }))
+			if (data) {
+				const camera = JSON.parse(data) as Camera
+				this.plan.camera = this.cameras.find((e) => e.id === camera.id)
+			}
 
-		this.route.queryParams.subscribe(async (e) => {
-			const data = JSON.parse(decodeURIComponent(e['data'] as string)) as Camera
-			this.plan.camera = this.cameras.find((e) => e.id === data.id)
 			this.updateSubTitle()
 			this.loadPreference()
+
 			await this.loadPlanFromPath()
 			await this.cameraChanged()
-			console.log(data, this.plan.camera)
 		})
+	}
+
+	private async loadDevices() {
+		this.ticker.register(this, 30000)
+
+		const [cameras, mounts, wheels, focusers, rotators] = await Promise.all([this.api.cameras(), this.api.mounts(), this.api.wheels(), this.api.focusers(), this.api.rotators()])
+
+		this.cameras = cameras.sort(deviceComparator)
+		this.mounts = mounts.sort(deviceComparator)
+		this.wheels = wheels.sort(deviceComparator)
+		this.focusers = focusers.sort(deviceComparator)
+		this.rotators = rotators.sort(deviceComparator)
+	}
+
+	private async loadCalibrationGroups() {
+		const groups = (await this.api.calibrationGroups()).sort(textComparator)
+		this.calibrationGroups.push({ label: 'None', value: undefined })
+		groups.forEach((e) => this.calibrationGroups.push({ label: e, value: e }))
 	}
 
 	@HostListener('window:unload')
@@ -364,7 +381,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 
 	private loadPlanFromJson(file: JsonFile<SequencerPlan>) {
 		if (!this.loadPlan(file.json)) {
-			this.angularService.message('No sequence found', 'warning')
+			this.angularService.message('No sequence found', 'warn')
 			this.add()
 		}
 
@@ -387,7 +404,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 				return
 			}
 
-			this.angularService.message('Failed to load the file', 'danger')
+			this.angularService.message('Failed to load the file', 'error')
 
 			this.preference.loadPath = undefined
 			this.savePreference()
@@ -538,7 +555,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 		this.savePreference()
 	}
 
-	protected showSequenceMenu(sequence: Sequence, dialogMenu: DialogMenuComponent) {
+	protected showSequenceMenu(sequence: Sequence, menu: DialogMenuComponent) {
 		this.property.sequence = sequence
 
 		const index = this.plan.sequences.indexOf(sequence)
@@ -554,7 +571,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 		this.sequenceModel[7].visible = this.sequenceModel[3].visible
 
 		if (this.sequenceModel.find((e) => e.visible)) {
-			dialogMenu.show()
+			menu.show(this.sequenceModel)
 		}
 	}
 
@@ -648,8 +665,8 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 
 	protected async start() {
 		if (this.plan.camera) {
-			for (let i = 0; i < this.cameraExposures.length; i++) {
-				this.cameraExposures.get(i)?.reset()
+			for (let i = 0; i < this.cameraExposures().length; i++) {
+				this.cameraExposures().at(i)?.reset()
 			}
 
 			// FOCUS OFFSET
@@ -665,26 +682,32 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 
 			Object.assign(this.plan.liveStacking, this.preferenceService.settings.get().liveStacker[this.plan.liveStacking.type])
 
-			await this.browserWindowService.openCameraImage(this.plan.camera, 'SEQUENCER')
+			await this.openCameraImage()
 			await this.api.sequencerStart(this.plan.camera, this.plan)
 		}
 	}
 
 	protected async pause() {
-		if (this.plan.camera) {
+		if (this.plan.camera?.id) {
 			await this.api.sequencerPause(this.plan.camera)
 		}
 	}
 
 	protected async unpause() {
-		if (this.plan.camera) {
+		if (this.plan.camera?.id) {
 			await this.api.sequencerUnpause(this.plan.camera)
 		}
 	}
 
 	protected async stop() {
-		if (this.plan.camera) {
+		if (this.plan.camera?.id) {
 			await this.api.sequencerStop(this.plan.camera)
+		}
+	}
+
+	protected async openCameraImage() {
+		if (this.plan.camera?.id) {
+			await this.browserWindowService.openCameraImage(this.plan.camera, 'SEQUENCER')
 		}
 	}
 

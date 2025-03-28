@@ -1,54 +1,46 @@
-<div class="container px-4 py-3">
-	<div class="grid flex align-items-center">
-		<div class="col-12 align-items-center gap-2">
-			<neb-device-name [device]="dustCap" />
-			<p-button
-				*ngIf="dustCap.connected"
-				(onClick)="connect()"
-				icon="mdi mdi-close"
-				size="small"
-				severity="danger"
-				pTooltip="Disconnect"
-				tooltipPosition="bottom"
-				[text]="true" />
-			<p-button
-				*ngIf="!dustCap.connected"
-				(onClick)="connect()"
-				icon="mdi mdi-connection"
-				size="small"
-				severity="info"
-				pTooltip="Connect"
-				tooltipPosition="bottom"
-				[text]="true" />
+<div class="flex flex-col gap-3 p-4">
+	<div class="grid grid-cols-12 gap-3">
+		<div class="col-span-full flex items-center gap-3">
+			<neb-device-name
+				[device]="dustCap"
+				class="flex-1" />
+			@if (dustCap.connected) {
+				<neb-button
+					[disabled]="dustCap.parking"
+					(action)="connect()"
+					icon="mdi mdi-close"
+					severity="danger"
+					tooltip="Disconnect" />
+			} @else {
+				<neb-button
+					[disabled]="dustCap.parking"
+					(action)="connect()"
+					icon="mdi mdi-connection"
+					severity="info"
+					tooltip="Connect" />
+			}
+			<neb-button-indi [device]="dustCap" />
 		</div>
-		<div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center justify-content-between my-1 gap-1">
-			<div class="flex align-items-center gap-1">
-				<i class="mdi mdi-information text-info"></i>
-				<span style="display: contents">{{ dustCap.parking ? 'moving' : dustCap.parked ? 'closed' : 'open' }}</span>
-			</div>
+		<div class="col-span-full my-1 flex items-center !justify-start gap-1 pt-0 text-sm text-gray-400">
+			<i class="mdi mdi-information text-blue-500"></i>
+			<span class="contents">{{ dustCap.parking ? 'moving' : dustCap.parked ? 'closed' : 'open' }}</span>
 		</div>
-	</div>
-	<div class="grid mt-1">
-		<div class="col-12 text-center align-items-center justify-content-center">
-			<div class="flex flex-column align-items-center justify-content-center text-center gap-2">
-				@if (dustCap.parked) {
-					<p-button
-						[text]="true"
-						[disabled]="!dustCap.connected || dustCap.parking"
-						icon="mdi mdi-lock-open"
-						severity="danger"
-						label="Open"
-						(onClick)="togglePark()" />
-				} @else {
-					<p-button
-						[text]="true"
-						[disabled]="!dustCap.connected || dustCap.parking"
-						icon="mdi mdi-lock"
-						severity="success"
-						label="Close"
-						(onClick)="togglePark()" />
-				}
-			</div>
+		<div class="col-span-full items-center justify-center text-center">
+			@if (dustCap.parked) {
+				<neb-button
+					[disabled]="!dustCap.connected || dustCap.parking"
+					icon="mdi mdi-lock-open"
+					severity="danger"
+					label="Open"
+					(action)="togglePark()" />
+			} @else {
+				<neb-button
+					[disabled]="!dustCap.connected || dustCap.parking"
+					icon="mdi mdi-lock"
+					severity="success"
+					label="Close"
+					(action)="togglePark()" />
+			}
 		</div>
 	</div>
 </div>

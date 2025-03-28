@@ -22,7 +22,6 @@ import nebulosa.indi.protocol.parser.INDIProtocolParser
 import nebulosa.indi.protocol.parser.INDIProtocolReader
 import nebulosa.log.d
 import nebulosa.log.loggerFor
-import nebulosa.log.w
 import java.util.concurrent.LinkedBlockingQueue
 
 abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), MessageSender, INDIProtocolParser, CloseConnectionListener {
@@ -35,91 +34,91 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
     override val isClosed
         get() = protocolReader == null || !protocolReader!!.isRunning
 
-    protected abstract fun newCamera(driverInfo: DriverInfo): Camera
+    protected abstract fun newCamera(driver: INDIDriverInfo): Camera
 
-    protected abstract fun newMount(driverInfo: DriverInfo): Mount
+    protected abstract fun newMount(driver: INDIDriverInfo): Mount
 
-    protected abstract fun newFocuser(driverInfo: DriverInfo): Focuser
+    protected abstract fun newFocuser(driver: INDIDriverInfo): Focuser
 
-    protected abstract fun newFilterWheel(driverInfo: DriverInfo): FilterWheel
+    protected abstract fun newFilterWheel(driver: INDIDriverInfo): FilterWheel
 
-    protected abstract fun newRotator(driverInfo: DriverInfo): Rotator
+    protected abstract fun newRotator(driver: INDIDriverInfo): Rotator
 
-    protected abstract fun newGPS(driverInfo: DriverInfo): GPS
+    protected abstract fun newGPS(driver: INDIDriverInfo): GPS
 
-    protected abstract fun newGuideOutput(driverInfo: DriverInfo): GuideOutput
+    protected abstract fun newGuideOutput(driver: INDIDriverInfo): GuideOutput
 
-    protected abstract fun newLightBox(driverInfo: DriverInfo): LightBox
+    protected abstract fun newLightBox(driver: INDIDriverInfo): LightBox
 
-    protected abstract fun newDustCap(driverInfo: DriverInfo): DustCap
+    protected abstract fun newDustCap(driver: INDIDriverInfo): DustCap
 
-    private fun registerCamera(driverInfo: DriverInfo): Camera? {
-        return if (camera(driverInfo.name) == null) {
-            newCamera(driverInfo).also(::registerCamera)
+    private fun registerCamera(driver: INDIDriverInfo): Camera? {
+        return if (camera(driver.name) == null) {
+            newCamera(driver).also(::registerCamera)
         } else {
             null
         }
     }
 
-    private fun registerMount(driverInfo: DriverInfo): Mount? {
-        return if (mount(driverInfo.name) == null) {
-            newMount(driverInfo).also(::registerMount)
+    private fun registerMount(driver: INDIDriverInfo): Mount? {
+        return if (mount(driver.name) == null) {
+            newMount(driver).also(::registerMount)
         } else {
             null
         }
     }
 
-    private fun registerFocuser(driverInfo: DriverInfo): Focuser? {
-        return if (focuser(driverInfo.name) == null) {
-            newFocuser(driverInfo).also(::registerFocuser)
+    private fun registerFocuser(driver: INDIDriverInfo): Focuser? {
+        return if (focuser(driver.name) == null) {
+            newFocuser(driver).also(::registerFocuser)
         } else {
             null
         }
     }
 
-    private fun registerRotator(driverInfo: DriverInfo): Rotator? {
-        return if (rotator(driverInfo.name) == null) {
-            newRotator(driverInfo).also(::registerRotator)
+    private fun registerRotator(driver: INDIDriverInfo): Rotator? {
+        return if (rotator(driver.name) == null) {
+            newRotator(driver).also(::registerRotator)
         } else {
             null
         }
     }
 
-    private fun registerFilterWheel(driverInfo: DriverInfo): FilterWheel? {
-        return if (wheel(driverInfo.name) == null) {
-            newFilterWheel(driverInfo).also(::registerFilterWheel)
+    private fun registerFilterWheel(driver: INDIDriverInfo): FilterWheel? {
+        return if (wheel(driver.name) == null) {
+            newFilterWheel(driver).also(::registerFilterWheel)
         } else {
             null
         }
     }
 
-    private fun registerGPS(driverInfo: DriverInfo): GPS? {
-        return if (gps(driverInfo.name) == null) {
-            newGPS(driverInfo).also(::registerGPS)
+    private fun registerGPS(driver: INDIDriverInfo): GPS? {
+        return if (gps(driver.name) == null) {
+            newGPS(driver).also(::registerGPS)
         } else {
             null
         }
     }
 
-    private fun registerGuideOutput(driverInfo: DriverInfo): GuideOutput? {
-        return if (guideOutput(driverInfo.name) == null) {
-            newGuideOutput(driverInfo).also(::registerGuideOutput)
+    private fun registerGuideOutput(driver: INDIDriverInfo): GuideOutput? {
+        return if (guideOutput(driver.name) == null) {
+            newGuideOutput(driver).also(::registerGuideOutput)
         } else {
             null
         }
     }
 
-    private fun registerLightBox(driverInfo: DriverInfo): LightBox? {
-        return if (lightBox(driverInfo.name) == null) {
-            newLightBox(driverInfo).also(::registerLightBox)
+    private fun registerLightBox(driver: INDIDriverInfo): LightBox? {
+        return if (lightBox(driver.name) == null) {
+            newLightBox(driver).also(::registerLightBox)
         } else {
             null
         }
     }
 
-    private fun registerDustCap(driverInfo: DriverInfo): DustCap? {
-        return if (dustCap(driverInfo.name) == null) {
-            newDustCap(driverInfo).also(::registerDustCap)
+    private fun registerDustCap(driver: INDIDriverInfo): DustCap? {
+        return if (dustCap(driver.name) == null) {
+            newDustCap(driver).also(::registerDustCap)
         } else {
             null
         }
@@ -170,15 +169,15 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
         if (message is TextVector<*>) {
             when (message.name) {
                 "DRIVER_INFO" -> {
-                    val driverInfo = DriverInfo.from(message) ?: return
+                    val driver = INDIDriverInfo.from(message) ?: return
 
-                    val interfaceType = driverInfo.interfaceType
+                    val interfaceType = driver.interfaceType
                     var registered = false
 
                     if (DeviceInterfaceType.isCamera(interfaceType)) {
                         registered = true
 
-                        registerCamera(driverInfo)?.also {
+                        registerCamera(driver)?.also {
                             it.handleMessage(message)
                             takeMessageFromReorderingQueue(it)
                         }
@@ -187,7 +186,7 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
                     if (DeviceInterfaceType.isMount(interfaceType)) {
                         registered = true
 
-                        registerMount(driverInfo)?.also {
+                        registerMount(driver)?.also {
                             it.handleMessage(message)
                             takeMessageFromReorderingQueue(it)
                         }
@@ -196,7 +195,7 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
                     if (DeviceInterfaceType.isFilterWheel(interfaceType)) {
                         registered = true
 
-                        registerFilterWheel(driverInfo)?.also {
+                        registerFilterWheel(driver)?.also {
                             it.handleMessage(message)
                             takeMessageFromReorderingQueue(it)
                         }
@@ -205,7 +204,7 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
                     if (DeviceInterfaceType.isFocuser(interfaceType)) {
                         registered = true
 
-                        registerFocuser(driverInfo)?.also {
+                        registerFocuser(driver)?.also {
                             it.handleMessage(message)
                             takeMessageFromReorderingQueue(it)
                         }
@@ -214,7 +213,7 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
                     if (DeviceInterfaceType.isRotator(interfaceType)) {
                         registered = true
 
-                        registerRotator(driverInfo)?.also {
+                        registerRotator(driver)?.also {
                             it.handleMessage(message)
                             takeMessageFromReorderingQueue(it)
                         }
@@ -223,7 +222,7 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
                     if (DeviceInterfaceType.isGPS(interfaceType)) {
                         registered = true
 
-                        registerGPS(driverInfo)?.also {
+                        registerGPS(driver)?.also {
                             it.handleMessage(message)
                             takeMessageFromReorderingQueue(it)
                         }
@@ -232,7 +231,7 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
                     if (DeviceInterfaceType.isGuider(interfaceType)) {
                         registered = true
 
-                        registerGuideOutput(driverInfo)?.also {
+                        registerGuideOutput(driver)?.also {
                             it.handleMessage(message)
                             takeMessageFromReorderingQueue(it)
                         }
@@ -241,7 +240,7 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
                     if (DeviceInterfaceType.isLightBox(interfaceType)) {
                         registered = true
 
-                        registerLightBox(driverInfo)?.also {
+                        registerLightBox(driver)?.also {
                             it.handleMessage(message)
                             takeMessageFromReorderingQueue(it)
                         }
@@ -250,14 +249,14 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
                     if (DeviceInterfaceType.isDustCap(interfaceType)) {
                         registered = true
 
-                        registerDustCap(driverInfo)?.also {
+                        registerDustCap(driver)?.also {
                             it.handleMessage(message)
                             takeMessageFromReorderingQueue(it)
                         }
                     }
 
                     if (!registered) {
-                        LOG.w("device is not registered. name={}, interface={}", message.device, interfaceType)
+                        LOG.warn("device is not registered. name={}, interface={}", message.device, interfaceType)
                         notRegisteredDevices.add(message.device)
                     }
 
@@ -277,7 +276,7 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
                     device.forEach { it.handleMessage(message) }
                 }
 
-                LOG.d("message received: {}", message)
+                LOG.d { debug("message received: {}", message) }
 
                 return
             }
@@ -299,7 +298,7 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
                         }
                     }
 
-                    LOG.d("message received: {}", message)
+                    LOG.d { debug("message received: {}", message) }
 
                     return
                 }
@@ -319,7 +318,7 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
 
             messageReorderingQueue.remove(message)
 
-            LOG.d("message received: {}", message)
+            LOG.d { debug("message received: {}", message) }
         } else {
             if (message in messageQueueCounter) {
                 val counter = messageQueueCounter[message]!!
@@ -329,7 +328,7 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
                     messageReorderingQueue.offer(message)
                 } else {
                     messageReorderingQueue.remove(message)
-                    LOG.w("message looping detected: {}", message)
+                    LOG.warn("message looping detected: {}", message)
                 }
             } else {
                 messageQueueCounter[message] = 1

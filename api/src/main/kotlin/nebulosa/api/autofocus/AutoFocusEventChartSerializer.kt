@@ -3,7 +3,12 @@ package nebulosa.api.autofocus
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.databind.SerializerProvider
 import com.fasterxml.jackson.databind.ser.std.StdSerializer
-import nebulosa.curve.fitting.*
+import nebulosa.curve.fitting.Curve
+import nebulosa.curve.fitting.FittedCurve
+import nebulosa.curve.fitting.HyperbolicFitting
+import nebulosa.curve.fitting.QuadraticFitting
+import nebulosa.curve.fitting.TrendLine
+import nebulosa.curve.fitting.TrendLineFitting
 import nebulosa.math.evenlySpacedNumbers
 import kotlin.math.max
 import kotlin.math.min

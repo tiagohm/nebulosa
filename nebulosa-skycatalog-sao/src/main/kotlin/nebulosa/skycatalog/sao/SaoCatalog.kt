@@ -1,6 +1,10 @@
 package nebulosa.skycatalog.sao
 
-import nebulosa.io.*
+import nebulosa.io.ByteOrder
+import nebulosa.io.readDouble
+import nebulosa.io.readFloat
+import nebulosa.io.readInt
+import nebulosa.io.readShort
 import nebulosa.math.rad
 import nebulosa.nova.astrometry.Constellation
 import nebulosa.nova.position.ICRF

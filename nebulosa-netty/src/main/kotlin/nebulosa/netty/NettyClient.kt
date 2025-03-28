@@ -7,7 +7,7 @@ import io.netty.channel.ChannelOption
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioSocketChannel
-import nebulosa.log.di
+import nebulosa.log.d
 import nebulosa.log.loggerFor
 import java.util.concurrent.atomic.AtomicReference
 
@@ -36,14 +36,14 @@ abstract class NettyClient : AutoCloseable {
 
         channel.set(future)
 
-        LOG.di("{} is running. host={}, port={}", this::class.simpleName, host, port)
+        LOG.d { info("{} is running. host={}, port={}", this@NettyClient::class.simpleName, host, port) }
 
         future.channel().closeFuture().addListener {
             masterGroup.shutdownGracefully()
 
             channel.set(null)
 
-            LOG.di("{} closed", this::class.simpleName)
+            LOG.d { info("{} closed", this@NettyClient::class.simpleName) }
         }
     }
 

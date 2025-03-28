@@ -1,22 +1,32 @@
-import { AfterContentInit, Component, NgZone, ViewChild, ViewEncapsulation } from '@angular/core'
-import nebulosa from '../../assets/data/nebulosa.json'
-import { DeviceChooserComponent } from '../../shared/components/device-chooser/device-chooser.component'
-import { DeviceConnectionCommandEvent, DeviceListMenuComponent } from '../../shared/components/device-list-menu/device-list-menu.component'
-import { MenuItem, SlideMenuItem } from '../../shared/components/menu-item/menu-item.component'
+import type { AfterContentInit } from '@angular/core'
+import { Component, inject, NgZone, viewChild, ViewEncapsulation } from '@angular/core'
+import packageJson from '../../../package.json' with { type: 'json' }
+import type { DeviceListMenuComponent } from '../../shared/components/device-list-menu.component'
+import type { MenuItem, SlideMenuItem } from '../../shared/components/menu-item.component'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { Camera, isCamera } from '../../shared/types/camera.types'
-import { Device, DeviceType } from '../../shared/types/device.types'
-import { DustCap, isDustCap } from '../../shared/types/dustcap.types'
-import { Focuser, isFocuser } from '../../shared/types/focuser.types'
-import { GuideOutput, isGuideOuptut } from '../../shared/types/guider.types'
-import { ConnectionDetails, DEFAULT_CONNECTION_DETAILS, DEFAULT_HOME_CONNECTION_DIALOG, DEFAULT_HOME_PREFERENCE, HomeWindowType } from '../../shared/types/home.types'
-import { isLightBox, LightBox } from '../../shared/types/lightbox.types'
-import { isMount, Mount } from '../../shared/types/mount.types'
-import { isRotator, Rotator } from '../../shared/types/rotator.types'
-import { isWheel, Wheel } from '../../shared/types/wheel.types'
+import type { Camera } from '../../shared/types/camera.types'
+import { isCamera } from '../../shared/types/camera.types'
+import type { Device, DeviceType } from '../../shared/types/device.types'
+import type { DustCap } from '../../shared/types/dustcap.types'
+import { isDustCap } from '../../shared/types/dustcap.types'
+import type { Focuser } from '../../shared/types/focuser.types'
+import { isFocuser } from '../../shared/types/focuser.types'
+import type { GuideOutput } from '../../shared/types/guider.types'
+import { isGuideOuptut } from '../../shared/types/guider.types'
+import type { ConnectionDetails, HomeWindowType } from '../../shared/types/home.types'
+import { DEFAULT_CONNECTION_DETAILS, DEFAULT_HOME_CONNECTION_DIALOG, DEFAULT_HOME_PREFERENCE } from '../../shared/types/home.types'
+import type { LightBox } from '../../shared/types/lightbox.types'
+import { isLightBox } from '../../shared/types/lightbox.types'
+import type { Mount } from '../../shared/types/mount.types'
+import { isMount } from '../../shared/types/mount.types'
+import type { Rotator } from '../../shared/types/rotator.types'
+import { isRotator } from '../../shared/types/rotator.types'
+import type { Wheel } from '../../shared/types/wheel.types'
+import { isWheel } from '../../shared/types/wheel.types'
+import { openLink } from '../../shared/utils/common'
 import { AppComponent } from '../app.component'
 
 function scrollPageOf(element: Element) {
@@ -24,12 +34,27 @@ function scrollPageOf(element: Element) {
 }
 
 @Component({
+	standalone: false,
 	selector: 'neb-home',
-	templateUrl: './home.component.html',
-	styleUrls: ['./home.component.scss'],
+	templateUrl: 'home.component.html',
+	styles: `
+		neb-home {
+			neb-button-image {
+				.p-button {
+					max-height: 62px;
+				}
+			}
+		}
+	`,
 	encapsulation: ViewEncapsulation.None,
 })
 export class HomeComponent implements AfterContentInit {
+	private readonly app = inject(AppComponent)
+	private readonly electronService = inject(ElectronService)
+	private readonly browserWindowService = inject(BrowserWindowService)
+	private readonly api = inject(ApiService)
+	private readonly preferenceService = inject(PreferenceService)
+
 	protected readonly preference = structuredClone(DEFAULT_HOME_PREFERENCE)
 	protected connection?: ConnectionDetails
 	protected readonly connectionDialog = structuredClone(DEFAULT_HOME_CONNECTION_DIALOG)
@@ -77,8 +102,7 @@ export class HomeComponent implements AfterContentInit {
 		}
 	}
 
-	@ViewChild('deviceMenu')
-	private readonly deviceMenu!: DeviceListMenuComponent
+	private readonly deviceMenu = viewChild.required<DeviceListMenuComponent>('deviceMenu')
 
 	get connected() {
 		return !!this.connection && this.connection.connected
@@ -160,145 +184,140 @@ export class HomeComponent implements AfterContentInit {
 		return this.connection?.type === 'ALPACA' && this.hasDevices
 	}
 
-	constructor(
-		app: AppComponent,
-		private readonly electronService: ElectronService,
-		private readonly browserWindowService: BrowserWindowService,
-		private readonly api: ApiService,
-		private readonly preferenceService: PreferenceService,
-		ngZone: NgZone,
-	) {
-		app.title = 'Nebulosa'
+	constructor() {
+		const ngZone = inject(NgZone)
 
-		electronService.on('CAMERA.ATTACHED', (event) => {
+		this.app.title = 'Nebulosa'
+
+		this.electronService.on('CAMERA.ATTACHED', (event) => {
 			ngZone.run(() => {
 				this.deviceAdded(event.device)
 			})
 		})
-		electronService.on(`CAMERA.DETACHED`, (event) => {
+		this.electronService.on(`CAMERA.DETACHED`, (event) => {
 			ngZone.run(() => {
 				this.deviceRemoved(event.device)
 			})
 		})
-		electronService.on(`CAMERA.UPDATED`, (event) => {
+		this.electronService.on(`CAMERA.UPDATED`, (event) => {
 			ngZone.run(() => {
 				this.deviceUpdated(event.device)
 			})
 		})
 
-		electronService.on('MOUNT.ATTACHED', (event) => {
+		this.electronService.on('MOUNT.ATTACHED', (event) => {
 			ngZone.run(() => {
 				this.deviceAdded(event.device)
 			})
 		})
-		electronService.on(`MOUNT.DETACHED`, (event) => {
+		this.electronService.on(`MOUNT.DETACHED`, (event) => {
 			ngZone.run(() => {
 				this.deviceRemoved(event.device)
 			})
 		})
-		electronService.on(`MOUNT.UPDATED`, (event) => {
+		this.electronService.on(`MOUNT.UPDATED`, (event) => {
 			ngZone.run(() => {
 				this.deviceUpdated(event.device)
 			})
 		})
 
-		electronService.on('FOCUSER.ATTACHED', (event) => {
+		this.electronService.on('FOCUSER.ATTACHED', (event) => {
 			ngZone.run(() => {
 				this.deviceAdded(event.device)
 			})
 		})
-		electronService.on(`FOCUSER.DETACHED`, (event) => {
+		this.electronService.on(`FOCUSER.DETACHED`, (event) => {
 			ngZone.run(() => {
 				this.deviceRemoved(event.device)
 			})
 		})
-		electronService.on(`FOCUSER.UPDATED`, (event) => {
+		this.electronService.on(`FOCUSER.UPDATED`, (event) => {
 			ngZone.run(() => {
 				this.deviceUpdated(event.device)
 			})
 		})
 
-		electronService.on('WHEEL.ATTACHED', (event) => {
+		this.electronService.on('WHEEL.ATTACHED', (event) => {
 			ngZone.run(() => {
 				this.deviceAdded(event.device)
 			})
 		})
-		electronService.on(`WHEEL.DETACHED`, (event) => {
+		this.electronService.on(`WHEEL.DETACHED`, (event) => {
 			ngZone.run(() => {
 				this.deviceRemoved(event.device)
 			})
 		})
-		electronService.on(`WHEEL.UPDATED`, (event) => {
+		this.electronService.on(`WHEEL.UPDATED`, (event) => {
 			ngZone.run(() => {
 				this.deviceUpdated(event.device)
 			})
 		})
 
-		electronService.on('ROTATOR.ATTACHED', (event) => {
+		this.electronService.on('ROTATOR.ATTACHED', (event) => {
 			ngZone.run(() => {
 				this.deviceAdded(event.device)
 			})
 		})
-		electronService.on(`ROTATOR.DETACHED`, (event) => {
+		this.electronService.on(`ROTATOR.DETACHED`, (event) => {
 			ngZone.run(() => {
 				this.deviceRemoved(event.device)
 			})
 		})
-		electronService.on(`ROTATOR.UPDATED`, (event) => {
+		this.electronService.on(`ROTATOR.UPDATED`, (event) => {
 			ngZone.run(() => {
 				this.deviceUpdated(event.device)
 			})
 		})
 
-		electronService.on('GUIDE_OUTPUT.ATTACHED', (event) => {
+		this.electronService.on('GUIDE_OUTPUT.ATTACHED', (event) => {
 			ngZone.run(() => {
 				this.deviceAdded(event.device)
 			})
 		})
-		electronService.on(`GUIDE_OUTPUT.DETACHED`, (event) => {
+		this.electronService.on(`GUIDE_OUTPUT.DETACHED`, (event) => {
 			ngZone.run(() => {
 				this.deviceRemoved(event.device)
 			})
 		})
-		electronService.on(`GUIDE_OUTPUT.UPDATED`, (event) => {
+		this.electronService.on(`GUIDE_OUTPUT.UPDATED`, (event) => {
 			ngZone.run(() => {
 				this.deviceUpdated(event.device)
 			})
 		})
 
-		electronService.on('LIGHT_BOX.ATTACHED', (event) => {
+		this.electronService.on('LIGHT_BOX.ATTACHED', (event) => {
 			ngZone.run(() => {
 				this.deviceAdded(event.device)
 			})
 		})
-		electronService.on(`LIGHT_BOX.DETACHED`, (event) => {
+		this.electronService.on(`LIGHT_BOX.DETACHED`, (event) => {
 			ngZone.run(() => {
 				this.deviceRemoved(event.device)
 			})
 		})
-		electronService.on(`LIGHT_BOX.UPDATED`, (event) => {
+		this.electronService.on(`LIGHT_BOX.UPDATED`, (event) => {
 			ngZone.run(() => {
 				this.deviceUpdated(event.device)
 			})
 		})
 
-		electronService.on('DUST_CAP.ATTACHED', (event) => {
+		this.electronService.on('DUST_CAP.ATTACHED', (event) => {
 			ngZone.run(() => {
 				this.deviceAdded(event.device)
 			})
 		})
-		electronService.on(`DUST_CAP.DETACHED`, (event) => {
+		this.electronService.on(`DUST_CAP.DETACHED`, (event) => {
 			ngZone.run(() => {
 				this.deviceRemoved(event.device)
 			})
 		})
-		electronService.on(`DUST_CAP.UPDATED`, (event) => {
+		this.electronService.on(`DUST_CAP.UPDATED`, (event) => {
 			ngZone.run(() => {
 				this.deviceUpdated(event.device)
 			})
 		})
 
-		electronService.on('CONNECTION.CLOSED', async (event) => {
+		this.electronService.on('CONNECTION.CLOSED', async (event) => {
 			if (this.connection?.id === event.id) {
 				await ngZone.run(() => {
 					return this.updateConnection()
@@ -306,7 +325,7 @@ export class HomeComponent implements AfterContentInit {
 			}
 		})
 
-		electronService.on('IMAGE.OPEN', (event) => {
+		this.electronService.on('IMAGE.OPEN', (event) => {
 			return ngZone.run(() => {
 				return this.browserWindowService.openImage({ path: event.path, source: 'PATH' })
 			})
@@ -337,8 +356,14 @@ export class HomeComponent implements AfterContentInit {
 			try {
 				const release = await this.api.latestRelease()
 
-				if (release.tag_name && nebulosa.version !== release.tag_name) {
-					this.newVersion = release.name
+				if (release.tag_name && packageJson.version !== release.tag_name) {
+					this.app.topMenu.push({
+						label: `New version: ${release.name}`,
+						icon: 'mdi mdi-download',
+						command: () => {
+							openLink('https://github.com/tiagohm/nebulosa/releases/latest')
+						},
+					})
 				}
 			} catch {
 				console.error('failed to check for new version')
@@ -423,19 +448,18 @@ export class HomeComponent implements AfterContentInit {
 	}
 
 	protected addConnection() {
-		this.connectionDialog.edited = false
+		this.connectionDialog.editMode = false
 		this.connectionDialog.connection = structuredClone(DEFAULT_CONNECTION_DETAILS)
 		this.connectionDialog.showDialog = true
 	}
 
-	protected editConnection(connection: ConnectionDetails, event: MouseEvent) {
-		this.connectionDialog.edited = true
+	protected editConnection(connection: ConnectionDetails) {
+		this.connectionDialog.editMode = true
 		this.connectionDialog.connection = connection
 		this.connectionDialog.showDialog = true
-		event.stopImmediatePropagation()
 	}
 
-	protected deleteConnection(connection: ConnectionDetails, event: MouseEvent) {
+	protected deleteConnection(connection: ConnectionDetails) {
 		const index = this.preference.connections.findIndex((e) => e === connection)
 
 		if (index >= 0 && !connection.connected) {
@@ -451,12 +475,10 @@ export class HomeComponent implements AfterContentInit {
 
 			this.savePreference()
 		}
-
-		event.stopImmediatePropagation()
 	}
 
 	protected saveConnection() {
-		if (!this.connectionDialog.edited) {
+		if (!this.connectionDialog.editMode) {
 			this.connection = this.connectionDialog.connection
 			this.preference.connections.push(this.connection)
 		}
@@ -486,14 +508,6 @@ export class HomeComponent implements AfterContentInit {
 		}
 	}
 
-	protected deviceConnected(event: DeviceConnectionCommandEvent) {
-		return DeviceChooserComponent.handleConnectDevice(this.api, event.device, event.item)
-	}
-
-	protected deviceDisconnected(event: DeviceConnectionCommandEvent) {
-		return DeviceChooserComponent.handleDisconnectDevice(this.api, event.device, event.item)
-	}
-
 	protected toggleAuxiliary() {
 		this.preference.showAuxiliary = !this.preference.showAuxiliary
 		this.savePreference()
@@ -514,7 +528,7 @@ export class HomeComponent implements AfterContentInit {
 
 		if (devices.length === 0) return
 
-		const device = await this.deviceMenu.show(devices, undefined, type)
+		const device = await this.deviceMenu().show(devices, undefined, type.replace('_', ' '))
 
 		if (device && device !== 'NONE') {
 			await this.openDeviceWindow(device)
@@ -574,7 +588,7 @@ export class HomeComponent implements AfterContentInit {
 				await this.browserWindowService.openAlignment({ bringToFront: true })
 				break
 			case 'SEQUENCER': {
-				const device = await this.deviceMenu.show(this.cameras, undefined, 'CAMERA')
+				const device = await this.deviceMenu().show(this.cameras, undefined, 'CAMERA')
 
 				if (device && device !== 'NONE') {
 					await this.browserWindowService.openSequencer(device, { bringToFront: true })
@@ -668,7 +682,7 @@ export class HomeComponent implements AfterContentInit {
 		}
 
 		let page = 0
-		const scrollChidren = document.getElementsByClassName('scroll-child')
+		const scrollChidren = document.querySelectorAll('[scroll-page]')
 
 		for (let i = 0; i < scrollChidren.length; i++) {
 			const child = scrollChidren[i]
@@ -683,14 +697,8 @@ export class HomeComponent implements AfterContentInit {
 		event.stopImmediatePropagation()
 	}
 
-	protected scrollTo(event: Event, page: number) {
-		this.page = page
-		this.scrollToPage(page)
-		event.stopImmediatePropagation()
-	}
-
 	protected scrollToPage(page: number) {
-		const scrollChidren = document.getElementsByClassName('scroll-child')
+		const scrollChidren = document.querySelectorAll('[scroll-page]')
 
 		for (let i = 0; i < scrollChidren.length; i++) {
 			const child = scrollChidren[i]

@@ -4,27 +4,64 @@ import nebulosa.fits.FitsHeaderCard
 import nebulosa.image.algorithms.transformation.CfaPattern
 import nebulosa.image.format.HeaderCard
 import nebulosa.indi.client.INDIClient
-import nebulosa.indi.client.device.DriverInfo
+import nebulosa.indi.client.device.INDIDriverInfo
 import nebulosa.indi.client.device.INDIDevice
 import nebulosa.indi.client.device.handler.INDIGuideOutputHandler
 import nebulosa.indi.device.Device
-import nebulosa.indi.device.camera.*
+import nebulosa.indi.device.camera.Camera
+import nebulosa.indi.device.camera.CameraBinChanged
+import nebulosa.indi.device.camera.CameraCanAbortChanged
+import nebulosa.indi.device.camera.CameraCanBinChanged
+import nebulosa.indi.device.camera.CameraCanSetTemperatureChanged
+import nebulosa.indi.device.camera.CameraCanSubFrameChanged
+import nebulosa.indi.device.camera.CameraCfaChanged
+import nebulosa.indi.device.camera.CameraCoolerChanged
+import nebulosa.indi.device.camera.CameraCoolerControlChanged
+import nebulosa.indi.device.camera.CameraCoolerPowerChanged
+import nebulosa.indi.device.camera.CameraExposureAborted
+import nebulosa.indi.device.camera.CameraExposureFailed
+import nebulosa.indi.device.camera.CameraExposureFinished
+import nebulosa.indi.device.camera.CameraExposureMinMaxChanged
+import nebulosa.indi.device.camera.CameraExposureProgressChanged
+import nebulosa.indi.device.camera.CameraExposureStateChanged
+import nebulosa.indi.device.camera.CameraExposuringChanged
+import nebulosa.indi.device.camera.CameraFrameCaptured
+import nebulosa.indi.device.camera.CameraFrameChanged
+import nebulosa.indi.device.camera.CameraFrameFormatsChanged
+import nebulosa.indi.device.camera.CameraGainChanged
+import nebulosa.indi.device.camera.CameraGainMinMaxChanged
+import nebulosa.indi.device.camera.CameraHasCoolerChanged
+import nebulosa.indi.device.camera.CameraOffsetChanged
+import nebulosa.indi.device.camera.CameraOffsetMinMaxChanged
+import nebulosa.indi.device.camera.CameraPixelSizeChanged
+import nebulosa.indi.device.camera.CameraTemperatureChanged
+import nebulosa.indi.device.camera.FrameType
+import nebulosa.indi.device.camera.GuideHead
 import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.rotator.Rotator
-import nebulosa.indi.protocol.*
+import nebulosa.indi.protocol.DefBLOBVector
+import nebulosa.indi.protocol.DefNumber
+import nebulosa.indi.protocol.DefNumberVector
+import nebulosa.indi.protocol.DefSwitchVector
 import nebulosa.indi.protocol.DefVector.Companion.isNotReadOnly
+import nebulosa.indi.protocol.INDIProtocol
+import nebulosa.indi.protocol.NumberElement
+import nebulosa.indi.protocol.NumberVector
+import nebulosa.indi.protocol.PropertyState
+import nebulosa.indi.protocol.SetBLOBVector
+import nebulosa.indi.protocol.SwitchVector
+import nebulosa.indi.protocol.TextVector
 import nebulosa.io.Base64InputStream
 import nebulosa.log.loggerFor
-import nebulosa.log.w
 import java.time.Duration
 
 // https://github.com/indilib/indi/blob/master/libs/indibase/indiccd.cpp
 
 internal open class INDICamera(
     final override val sender: INDIClient,
-    final override val driverInfo: DriverInfo,
+    final override val driver: INDIDriverInfo,
 ) : INDIDevice(), Camera {
 
     @Volatile final override var exposuring = false
@@ -266,7 +303,7 @@ internal open class INDICamera(
                             val camera = if (message.name == "CCD2") guideHead!! else this
                             sender.fireOnEventReceived(CameraFrameCaptured(camera, stream = stream))
                         } else {
-                            LOG.w("compressed FITS is not supported yet")
+                            LOG.warn("compressed FITS is not supported yet")
                         }
                     }
 
@@ -442,7 +479,7 @@ internal open class INDICamera(
             " gainMax=$gainMax, offset=$offset, offsetMin=$offsetMin," +
             " offsetMax=$offsetMax, canPulseGuide=$canPulseGuide, pulseGuiding=$pulseGuiding)"
 
-    internal data class GuideHeadCamera(override val main: INDICamera) : GuideHead, INDICamera(main.sender, main.driverInfo) {
+    internal data class GuideHeadCamera(override val main: INDICamera) : GuideHead, INDICamera(main.sender, main.driver) {
 
         override val name = main.name + " $GUIDE_HEAD_SUFFIX"
 

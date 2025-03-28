@@ -1,15 +1,24 @@
 package nebulosa.api.inject
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import io.ktor.server.engine.EmbeddedServer
-import io.ktor.server.netty.NettyApplicationEngine
+import io.ktor.server.engine.*
+import io.ktor.server.netty.*
 import nebulosa.api.APP_DIR_KEY
 import nebulosa.api.Nebulosa
 import nebulosa.api.alignment.polar.PolarAlignmentController
 import nebulosa.api.alignment.polar.PolarAlignmentService
 import nebulosa.api.alignment.polar.darv.DARVExecutor
 import nebulosa.api.alignment.polar.tppa.TPPAExecutor
-import nebulosa.api.atlas.*
+import nebulosa.api.atlas.EarthSeasonFinder
+import nebulosa.api.atlas.IERSUpdateTask
+import nebulosa.api.atlas.LibWCSDownloadTask
+import nebulosa.api.atlas.MoonPhaseFinder
+import nebulosa.api.atlas.SatelliteRepository
+import nebulosa.api.atlas.SatelliteUpdateTask
+import nebulosa.api.atlas.SkyAtlasController
+import nebulosa.api.atlas.SkyAtlasService
+import nebulosa.api.atlas.SkyAtlasUpdateTask
+import nebulosa.api.atlas.SkyObjectEntityRepository
 import nebulosa.api.atlas.ephemeris.BodyEphemerisProvider
 import nebulosa.api.atlas.ephemeris.HorizonsEphemerisProvider
 import nebulosa.api.autofocus.AutoFocusController
@@ -37,7 +46,11 @@ import nebulosa.api.focusers.FocuserEventHub
 import nebulosa.api.focusers.FocuserService
 import nebulosa.api.framing.FramingController
 import nebulosa.api.framing.FramingService
-import nebulosa.api.guiding.*
+import nebulosa.api.guiding.GuideOutputController
+import nebulosa.api.guiding.GuideOutputEventHub
+import nebulosa.api.guiding.GuideOutputService
+import nebulosa.api.guiding.GuidingController
+import nebulosa.api.guiding.GuidingService
 import nebulosa.api.image.ImageBucket
 import nebulosa.api.image.ImageController
 import nebulosa.api.image.ImageService
@@ -55,7 +68,6 @@ import nebulosa.api.mounts.MountEventHub
 import nebulosa.api.mounts.MountService
 import nebulosa.api.platesolver.PlateSolverController
 import nebulosa.api.platesolver.PlateSolverService
-import nebulosa.api.preference.PreferenceRepository
 import nebulosa.api.preference.PreferenceService
 import nebulosa.api.rotators.RotatorController
 import nebulosa.api.rotators.RotatorEventHub
@@ -75,7 +87,7 @@ import nebulosa.guiding.Guider
 import nebulosa.guiding.phd2.PHD2Guider
 import nebulosa.hips2fits.Hips2FitsService
 import nebulosa.horizons.HorizonsService
-import nebulosa.log.di
+import nebulosa.log.d
 import nebulosa.phd2.client.PHD2Client
 import nebulosa.sbd.SmallBodyDatabaseService
 import nebulosa.simbad.SimbadService
@@ -88,40 +100,39 @@ import okhttp3.logging.HttpLoggingInterceptor
 import org.greenrobot.eventbus.EventBus
 import org.jetbrains.exposed.sql.Database
 import org.koin.core.qualifier.named
-import org.koin.dsl.koinApplication
 import org.koin.dsl.module
 import java.nio.file.Path
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import java.util.concurrent.*
-import kotlin.io.path.*
-
-val koinApp = koinApplication {
-    modules(pathModule())
-    modules(coreModule())
-    modules(httpModule())
-    modules(databaseModule())
-    modules(eventBusModule())
-    modules(repositoriesModule())
-    modules(phd2Module())
-}
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.SynchronousQueue
+import java.util.concurrent.ThreadPoolExecutor
+import java.util.concurrent.TimeUnit
+import kotlin.io.path.Path
+import kotlin.io.path.createDirectories
+import kotlin.io.path.deleteIfExists
+import kotlin.io.path.exists
+import kotlin.io.path.listDirectoryEntries
 
 object Named {
 
-    val appDir = named("appDir")
-    val logsDir = named("logsDir")
-    val dataDir = named("dataDir")
-    val capturesDir = named("capturesDir")
-    val sequencesDir = named("sequencesDir")
-    val cacheDir = named("cacheDir")
-    val libsDir = named("libsDir")
-    val liveStackingDir = named("liveStackingDir")
-    val defaultHttpClient = named("defaultHttpClient")
-    val alpacaHttpClient = named("alpacaHttpClient")
-    val mainConnection = named("mainConnection")
-    val mainDatasourceUrl = named("mainDatasource")
-    val skyConnection = named("skyConnection")
-    val skyDatasourceUrl = named("skyDatasource")
+    @JvmField val appDir = named("appDir")
+    @JvmField val logsDir = named("logsDir")
+    @JvmField val dataDir = named("dataDir")
+    @JvmField val capturesDir = named("capturesDir")
+    @JvmField val sequencesDir = named("sequencesDir")
+    @JvmField val cacheDir = named("cacheDir")
+    @JvmField val libsDir = named("libsDir")
+    @JvmField val liveStackingDir = named("liveStackingDir")
+    @JvmField val preferencesPath = named("preferencesPath")
+    @JvmField val defaultHttpClient = named("defaultHttpClient")
+    @JvmField val alpacaHttpClient = named("alpacaHttpClient")
+    @JvmField val mainConnection = named("mainConnection")
+    @JvmField val mainDatasourceUrl = named("mainDatasource")
+    @JvmField val skyConnection = named("skyConnection")
+    @JvmField val skyDatasourceUrl = named("skyDatasource")
 }
 
 // PATH
@@ -153,15 +164,14 @@ fun pathModule(root: Path = Path(requireNotNull(System.getProperty(APP_DIR_KEY))
     single(Named.cacheDir) { Path("$root", "cache").createDirectories() }
     single(Named.libsDir) { Path("$root", "libs").createDirectories() }
     single(Named.liveStackingDir) { Path("$root", "live-stacking").createDirectories() }
+    single(Named.preferencesPath) { Path("$root", PreferenceService.FILENAME) }
 }
 
 // CORE
 
 fun coreModule() = module {
-    val numberOfCores = Runtime.getRuntime().availableProcessors()
-
-    single<ExecutorService> { ThreadPoolExecutor(numberOfCores, 32, 60L, TimeUnit.SECONDS, SynchronousQueue(), DaemonThreadFactory) }
-    single<ScheduledExecutorService> { Executors.newScheduledThreadPool(numberOfCores, DaemonThreadFactory) }
+    single<ExecutorService> { ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(), Int.MAX_VALUE, 60L, TimeUnit.SECONDS, SynchronousQueue(), DaemonThreadFactory("Pooled")) }
+    single<ScheduledExecutorService> { Executors.newScheduledThreadPool(Runtime.getRuntime().availableProcessors(), DaemonThreadFactory("Scheduled")) }
 }
 
 // HTTP
@@ -171,7 +181,7 @@ private const val MAX_CACHE_SIZE = 1024L * 1024L * 32L // 32MB
 fun httpModule() = module {
     single { ConnectionPool(32, 5L, TimeUnit.MINUTES) }
     single { Cache(get<Path>(Named.cacheDir).toFile(), MAX_CACHE_SIZE) }
-    single { HttpLoggingInterceptor.Logger { Nebulosa.LOG.di(it) } }
+    single { HttpLoggingInterceptor.Logger { Nebulosa.LOG.d { info(it) } } }
     single(Named.defaultHttpClient) {
         OkHttpClient.Builder()
             .connectionPool(get())
@@ -204,7 +214,7 @@ fun eventBusModule() = module {
             .throwSubscriberException(false)
             .logNoSubscriberMessages(false)
             .logSubscriberExceptions(false)
-            .executorService(get())
+            .executorService(Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(), DaemonThreadFactory("Bused")))
             .build()
     }
 }
@@ -235,7 +245,6 @@ fun phd2Module() = module {
 
 fun repositoriesModule() = module {
     single { CalibrationFrameRepository(get(Named.mainConnection)) }
-    single { PreferenceRepository(get(Named.mainConnection)) }
     single { SatelliteRepository(get(Named.skyConnection)) }
     single { SkyObjectEntityRepository(get(Named.skyConnection)) }
 }
@@ -262,7 +271,7 @@ fun tasksModule() = module(true) {
     single { LibWCSDownloadTask(get(Named.libsDir), get(Named.defaultHttpClient), get(), get()) }
 }
 
-fun servicesModule() = module {
+fun servicesModule(preferenceService: PreferenceService) = module {
     single { HorizonsService(httpClient = get(Named.defaultHttpClient)) }
     single { SimbadService(httpClient = get(Named.defaultHttpClient)) }
     single { SmallBodyDatabaseService(httpClient = get(Named.defaultHttpClient)) }
@@ -289,18 +298,19 @@ fun servicesModule() = module {
     single { AutoFocusService(get()) }
     single { LiveStackingService() }
     single { FramingService(get(), get()) }
-    single { INDIService(get()) }
+    single { INDIService(get(), get()) }
     single { DARVExecutor(get(), get(), get()) }
     single { TPPAExecutor(get(), get(), get()) }
     single { PolarAlignmentService(get(), get()) }
-    single { PreferenceService(get(), get()) }
-    single { GuidingService(get(), get(), get(), get()) }
+    single { preferenceService }
+    single { GuidingService(get(), get(), get(), get(), get()) }
     single { SequencerExecutor(get(), get(), get(), get(), get()) }
     single { SequencerService(get(Named.sequencesDir), get()) }
     single { MoonPhaseFinder(get()) }
+    single { EarthSeasonFinder(get()) }
     single { HorizonsEphemerisProvider(get()) }
     single { BodyEphemerisProvider(get()) }
-    single { SkyAtlasService(get(), get(), get(), get(), get(), get(Named.defaultHttpClient), get(), get(), get()) }
+    single { SkyAtlasService(get(), get(), get(), get(), get(), get(Named.defaultHttpClient), get(), get(), get(), get()) }
     single { MountService(get(), get(), get(), get(), get()) }
     single { CameraCaptureExecutor(get(), get(), get(), get(), get()) }
     single { CameraService(get(Named.capturesDir), get(), get()) }

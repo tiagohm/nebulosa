@@ -4,15 +4,18 @@ import nebulosa.constants.PIOVERTWO
 import nebulosa.guiding.GuideDirection
 import nebulosa.image.Image
 import nebulosa.image.algorithms.transformation.convolution.Mean
-import nebulosa.log.di
-import nebulosa.log.dw
+import nebulosa.log.d
 import nebulosa.log.loggerFor
 import nebulosa.math.cos
 import nebulosa.math.sin
 import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
-import kotlin.math.*
+import kotlin.math.abs
+import kotlin.math.hypot
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.math.roundToInt
 
 /**
  * It is responsible for dealing with new images as they arrive,
@@ -207,12 +210,12 @@ class MultiStarGuider : InternalGuider {
             }
         }
 
-        LOG.di("setting lock position. x={}, y={}", position.x, position.y)
+        LOG.d { info("setting lock position. x={}, y={}", position.x, position.y) }
 
         lockPosition.set(position)
 
         if (isMultiStar) {
-            LOG.di("stabilizing after lock position change")
+            LOG.d { info("stabilizing after lock position change") }
             lockPositionMoved = true
             stabilizing = true
         }
@@ -247,7 +250,7 @@ class MultiStarGuider : InternalGuider {
                     break
                 }
 
-                LOG.di("dither produces an invalid lock position, try a variation")
+                LOG.d { info("dither produces an invalid lock position, try a variation") }
 
                 val d = min(tmpLockPosition.x, min(image.width - tmpLockPosition.x, min(tmpLockPosition.y, image.height - tmpLockPosition.y)))
 
@@ -289,7 +292,7 @@ class MultiStarGuider : InternalGuider {
     }
 
     private fun updateState(newState: GuiderState) {
-        LOG.di("changing from state {} to {}", state, newState)
+        LOG.d { info("changing from state {} to {}", state, newState) }
 
         var requestedState = newState
 
@@ -309,7 +312,7 @@ class MultiStarGuider : InternalGuider {
         }
 
         if (requestedState.ordinal > state.ordinal + 1) {
-            LOG.dw("cannot transition from {} to {}", state, requestedState)
+            LOG.d { warn("cannot transition from {} to {}", state, requestedState) }
             return
         }
 
@@ -325,7 +328,7 @@ class MultiStarGuider : InternalGuider {
                 if (!guideCalibrator.calibrated) {
                     if (!guideCalibrator.beginCalibration(primaryStar)) {
                         nextState = GuiderState.UNINITIALIZED
-                        LOG.dw("begin calibration failed")
+                        LOG.d { warn("begin calibration failed") }
                     } else {
                         listeners.forEach { it.onStartCalibration() }
                     }
@@ -337,7 +340,7 @@ class MultiStarGuider : InternalGuider {
                 guideCalibrator.adjustCalibrationForScopePointing()
 
                 if (lockPosition.valid && lockPositionIsSticky) {
-                    LOG.di("keeping sticky lock position")
+                    LOG.d { info("keeping sticky lock position") }
                 } else {
                     lockPosition(primaryStar)
                 }
@@ -347,9 +350,9 @@ class MultiStarGuider : InternalGuider {
 
         if (nextState >= requestedState) {
             state = nextState
-            LOG.di("new guider state. state={}", state)
+            LOG.d { info("new guider state. state={}", state) }
         } else {
-            LOG.dw("recurses new state. state={}", nextState)
+            LOG.d { warn("recurses new state. state={}", nextState) }
             updateState(nextState)
         }
     }
@@ -517,7 +520,7 @@ class MultiStarGuider : InternalGuider {
                     if (!guideCalibrator.calibrated) {
                         if (!guideCalibrator.updateCalibrationState(primaryStar)) {
                             updateState(GuiderState.UNINITIALIZED)
-                            LOG.dw("calibration failed")
+                            LOG.d { warn("calibration failed") }
                             return
                         }
 
@@ -547,17 +550,12 @@ class MultiStarGuider : InternalGuider {
                         val step =
                             Point(min(ditherRecenterRemaining.x, ditherRecenterStep.x), min(ditherRecenterRemaining.y, ditherRecenterStep.y))
 
-                        LOG.di(
-                            "dither recenter. remaining: x={}, y={}, step: x={}, y={}",
-                            ditherRecenterRemaining.x * ditherRecenterDir[0],
-                            ditherRecenterRemaining.y * ditherRecenterDir[1],
-                            step.x * ditherRecenterDir[0], step.y * ditherRecenterDir[1],
-                        )
+                        LOG.d { info("dither recenter. remaining: x={}, y={}, step: x={}, y={}", ditherRecenterRemaining.x * ditherRecenterDir[0], ditherRecenterRemaining.y * ditherRecenterDir[1], step.x * ditherRecenterDir[0], step.y * ditherRecenterDir[1]) }
 
                         ditherRecenterRemaining -= step
 
                         if (ditherRecenterRemaining.x < 0.5 && ditherRecenterRemaining.y < 0.5) {
-                            LOG.di("fast recenter is done")
+                            LOG.d { info("fast recenter is done") }
                             // Fast recenter is done.
                             ditherRecenterRemaining.invalidate()
                             // Reset distance tracker.
@@ -633,7 +631,7 @@ class MultiStarGuider : InternalGuider {
     private fun clearSecondaryStars() {
         while (guideStars.size > 1) {
             val star = guideStars.removeAt(1)
-            LOG.di("secondary guide star removed. x={}, y={}", star.x, star.y)
+            LOG.d { info("secondary guide star removed. x={}, y={}", star.x, star.y) }
         }
     }
 
@@ -655,7 +653,7 @@ class MultiStarGuider : InternalGuider {
 
         massChecker.reset()
 
-        LOG.di("current position. x={}, y={}", x, y)
+        LOG.d { info("current position. x={}, y={}", x, y) }
 
         return primaryStar.find(image, searchRegion, x, y)
     }
@@ -707,18 +705,18 @@ class MultiStarGuider : InternalGuider {
                 primarySigma = primaryDistStats.sigma
 
                 if (!stabilizing && primaryDistance > stabilitySigmaX * primarySigma) {
-                    LOG.di("large primary error, entering stabilization period")
+                    LOG.d { info("large primary error, entering stabilization period") }
                     stabilizing = true
                 } else if (stabilizing) {
                     if (primaryDistance <= 2 * primarySigma) {
                         stabilizing = false
 
-                        LOG.di("exiting stabilization period")
+                        LOG.d { info("exiting stabilization period") }
 
                         if (lockPositionMoved) {
                             lockPositionMoved = false
 
-                            LOG.di("updating star positions after lock position change")
+                            LOG.d { info("updating star positions after lock position change") }
 
                             val guideStarsIter = guideStars.listIterator(1)
 
@@ -825,11 +823,7 @@ class MultiStarGuider : InternalGuider {
                         refined = true
                     }
 
-                    LOG.di(
-                        "{}: {} stars included. multi-star: x={} y={}. single-star: x={}, y={}",
-                        if (refined) "refined" else "single-star", validStars,
-                        sumX, sumY, origOffset.camera.x, origOffset.camera.y,
-                    )
+                    LOG.d { info("{}: {} stars included. multi-star: x={} y={}. single-star: x={}, y={}", if (refined) "refined" else "single-star", validStars, sumX, sumY, origOffset.camera.x, origOffset.camera.y) }
                 }
             }
         }
@@ -847,14 +841,14 @@ class MultiStarGuider : InternalGuider {
         val image = guideImage.get() ?: return false
 
         if (state > GuiderState.SELECTED) {
-            LOG.dw("state > SELECTED. state={}", state)
+            LOG.d { warn("state > SELECTED. state={}", state) }
             return false
         }
 
         if (x <= searchRegion || x + searchRegion >= image.width
             || y <= searchRegion || y + searchRegion >= image.height
         ) {
-            LOG.dw("outside of search region. x={}, y={}, searchRegion={}", x, y, searchRegion)
+            LOG.d { warn("outside of search region. x={}, y={}, searchRegion={}", x, y, searchRegion) }
             return false
         }
 
@@ -865,10 +859,10 @@ class MultiStarGuider : InternalGuider {
 
             if (starCount == 0) {
                 guideStars.add(primaryStar)
-                LOG.di("primary star added. x={}, y={}", primaryStar.x, primaryStar.y)
+                LOG.d { info("primary star added. x={}, y={}", primaryStar.x, primaryStar.y) }
             }
 
-            LOG.di("single-star usage forced by user star selection")
+            LOG.d { info("single-star usage forced by user star selection") }
 
             listeners.forEach { it.onStarSelected(primaryStar) }
 
@@ -876,14 +870,14 @@ class MultiStarGuider : InternalGuider {
 
             true
         } else {
-            LOG.dw("no star selected at position. x={}, y={}", x, y)
+            LOG.d { warn("no star selected at position. x={}, y={}", x, y) }
             false
         }
     }
 
     private fun updateCurrentPosition(image: Image, offset: GuiderOffset): Boolean {
         if (!primaryStar.valid && primaryStar.x == 0.0 && primaryStar.y == 0.0) {
-            LOG.dw("no star selected")
+            LOG.d { warn("no star selected") }
             return false
         }
 
@@ -891,7 +885,7 @@ class MultiStarGuider : InternalGuider {
 
         if (!newStar.find(image, searchRegion)) {
             distanceChecker.activate()
-            LOG.dw("new star not found. x={}, y={}", newStar.x, newStar.y)
+            LOG.d { warn("new star not found. x={}, y={}", newStar.x, newStar.y) }
             return false
         }
 
@@ -905,7 +899,7 @@ class MultiStarGuider : InternalGuider {
             if (checkedMass.reject) {
                 massChecker.add(newStar.flux)
                 distanceChecker.activate()
-                LOG.dw("mass changed. mass={}", checkedMass)
+                LOG.d { warn("mass changed. mass={}", checkedMass) }
                 return false
             }
         }
@@ -920,12 +914,12 @@ class MultiStarGuider : InternalGuider {
             0.0
         }
 
-        LOG.di("checking distance. dist={}, raOnly={}", distance, isGuidingRAOnly)
+        LOG.d { info("checking distance. dist={}, raOnly={}", distance, isGuidingRAOnly) }
 
         val tolerance = if (tolerateJumpsEnabled) tolerateJumpsThreshold else Double.MAX_VALUE
 
         if (!distanceChecker.checkDistance(distance, isGuidingRAOnly, tolerance)) {
-            LOG.di("check distance error")
+            LOG.d { info("check distance error") }
             return false
         }
 
@@ -940,7 +934,7 @@ class MultiStarGuider : InternalGuider {
             if (isMultiStar && starCount > 1) {
                 if (refineOffset(image, offset)) {
                     distance = hypot(offset.camera.x, offset.camera.y)
-                    LOG.di("refined distance. dist={}", distance)
+                    LOG.d { info("refined distance. dist={}", distance) }
                 }
             } else {
                 starsUsed = 1
@@ -982,9 +976,9 @@ class MultiStarGuider : InternalGuider {
         val (dx, dy) = dither.get(ditherAmount, ditherRAOnly)
 
         if (moveLockPosition(dx, dy)) {
-            LOG.di("dithered. size={}, ra={}, dec={}", ditherAmount, dx, dy)
+            LOG.d { info("dithered. size={}, ra={}, dec={}", ditherAmount, dx, dy) }
         } else {
-            LOG.dw("unable to move lock position on dithering")
+            LOG.d { warn("unable to move lock position on dithering") }
         }
     }
 
@@ -994,13 +988,13 @@ class MultiStarGuider : InternalGuider {
             val yDistance = yGuideAlgorithm?.deduce() ?: 0.0
 
             if (xDistance != 0.0 || yDistance != 0.0) {
-                LOG.di("deduced move. x={}, y={}", xDistance, yDistance)
+                LOG.d { info("deduced move. x={}, y={}", xDistance, yDistance) }
                 offset.mount.set(xDistance, yDistance)
             }
         } else {
             if (!offset.mount.valid) {
                 if (!transformCameraCoordinatesToMountCoordinates(offset.camera, offset.mount)) {
-                    LOG.dw("unable to transform camera coordinates")
+                    LOG.d { warn("unable to transform camera coordinates") }
                     return false
                 }
             }
@@ -1045,7 +1039,7 @@ class MultiStarGuider : InternalGuider {
 
     private fun moveAxis(direction: GuideDirection, duration: Int, moveOptions: List<MountMoveOption>): MoveResult {
         if (!isGuidingEnabled && MountMoveOption.MANUAL !in moveOptions) {
-            LOG.dw("guiding disabled")
+            LOG.d { warn("guiding disabled") }
             return MoveResult.NONE
         }
 
@@ -1065,13 +1059,13 @@ class MultiStarGuider : InternalGuider {
                         (direction == GuideDirection.NORTH && declinationGuideMode == DeclinationGuideMode.SOUTH)
                     ) {
                         newDuration = 0
-                        LOG.di("duration set to 0. mode={}", declinationGuideMode)
+                        LOG.d { info("duration set to 0. mode={}", declinationGuideMode) }
                     }
 
                     if (newDuration > maxDECDuration) {
                         newDuration = maxDECDuration
                         limitReached = true
-                        LOG.di("duration set to maxDECDuration. duration={} ms", newDuration)
+                        LOG.d { info("duration set to maxDECDuration. duration={} ms", newDuration) }
                     }
                 }
             }
@@ -1084,15 +1078,14 @@ class MultiStarGuider : InternalGuider {
                     if (newDuration > maxRADuration) {
                         newDuration = maxRADuration
                         limitReached = true
-                        LOG.di("duration set to maxRADuration. duration={} ms", newDuration)
+                        LOG.d { info("duration set to maxRADuration. duration={} ms", newDuration) }
                     }
                 }
             }
-            else -> Unit
         }
 
         return if (newDuration > 0 && guideDirection(direction, newDuration)) {
-            LOG.di("move axis. direction={}, duration={} ms", direction, newDuration)
+            LOG.d { info("move axis. direction={}, duration={} ms", direction, newDuration) }
             MoveResult(true, newDuration, limitReached)
         } else {
             MoveResult.NONE
@@ -1104,7 +1097,6 @@ class MultiStarGuider : InternalGuider {
         GuideDirection.SOUTH -> pulse.guideSouth(duration)
         GuideDirection.WEST -> pulse.guideWest(duration)
         GuideDirection.EAST -> pulse.guideEast(duration)
-        else -> false
     }
 
     private fun transformMountCoordinatesToCameraCoordinates(mount: Point, camera: Point): Boolean {

@@ -1,20 +1,26 @@
-import { Component, Input } from '@angular/core'
+import { Component, input, ViewEncapsulation } from '@angular/core'
 import type { CalculatorFormula } from '../../../shared/types/calculator.types'
 
 @Component({
+	standalone: false,
 	selector: 'neb-formula',
-	templateUrl: './formula.component.html',
-	styleUrls: ['./formula.component.scss'],
+	templateUrl: 'formula.component.html',
+	styles: `
+		neb-formula {
+			width: 100%;
+		}
+	`,
+	encapsulation: ViewEncapsulation.None,
 })
 export class FormulaComponent {
-	@Input({ required: true })
-	protected readonly formula!: CalculatorFormula
+	protected readonly formula = input.required<CalculatorFormula>()
 
-	calculateFormula() {
-		const result = this.formula.calculate(...this.formula.operands.map((e) => e.value))
+	calculate() {
+		const formula = this.formula()
+		const result = formula.calculate(...formula.operands.map((e) => e.value))
 
 		if (result !== undefined) {
-			this.formula.result.value = result
+			formula.result.value = result
 		}
 	}
 }

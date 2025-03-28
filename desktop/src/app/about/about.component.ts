@@ -1,22 +1,26 @@
-import { Component } from '@angular/core'
-import nebulosa from '../../assets/data/nebulosa.json'
-import { DependencyItem, FLAT_ICON_URL, IconItem } from '../../shared/types/about.types'
+import { Component, inject } from '@angular/core'
+import packageJson from '../../../package.json' with { type: 'json' }
+import dependencyGraph from '../../assets/data/dependencyGraph.json' with { type: 'json' }
+import type { DependencyItem, IconItem } from '../../shared/types/about.types'
+import { FLAT_ICON_URL } from '../../shared/types/about.types'
 import { AppComponent } from '../app.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-about',
-	templateUrl: './about.component.html',
+	templateUrl: 'about.component.html',
 })
 export class AboutComponent {
-	protected readonly codename = nebulosa.codename
-	protected readonly version = nebulosa.version
-	protected readonly description = nebulosa.description
-	protected readonly commit = nebulosa.build.commit
-	protected readonly date = nebulosa.build.date
+	protected readonly codename = packageJson.codename
+	protected readonly version = packageJson.version
+	protected readonly description = packageJson.description
+	protected readonly copyrightYear = new Date().getFullYear()
 	protected readonly icons: IconItem[] = []
 	protected readonly dependencies: DependencyItem[] = []
 
-	constructor(app: AppComponent) {
+	constructor() {
+		const app = inject(AppComponent)
+
 		app.title = 'About'
 
 		this.mapDependencies()
@@ -52,13 +56,17 @@ export class AboutComponent {
 	}
 
 	private mapDependencies() {
-		for (const { name, version } of nebulosa.dependencies) {
-			this.dependencies.push(this.mapDependency(name, version))
+		for (const item of dependencyGraph) {
+			this.dependencies.push(this.mapDependency(item as DependencyItem))
 		}
 	}
 
-	private mapDependency(name: string, version: string): DependencyItem {
-		const link = `https://www.npmjs.com/package/${name}`
-		return { name, version, link }
+	private mapDependency(item: DependencyItem): DependencyItem {
+		const link =
+			item.version.includes('#') ? undefined
+			: item.source === 'desktop' ? `https://www.npmjs.com/package/${item.name}/v/${item.version}`
+			: `https://central.sonatype.com/artifact/${item.name.replace(':', '/')}/${item.version}`
+
+		return { ...item, link }
 	}
 }

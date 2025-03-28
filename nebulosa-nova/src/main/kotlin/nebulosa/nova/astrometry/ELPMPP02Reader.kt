@@ -10,7 +10,6 @@ import okio.buffer
 import okio.sink
 import okio.source
 import kotlin.io.path.Path
-import kotlin.text.trim
 
 object ELPMPP02Reader {
 

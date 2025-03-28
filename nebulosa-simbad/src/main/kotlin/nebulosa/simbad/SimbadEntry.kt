@@ -8,7 +8,11 @@ import nebulosa.nova.astrometry.Body
 import nebulosa.nova.astrometry.Constellation
 import nebulosa.nova.astrometry.FixedStar
 import nebulosa.nova.position.ICRF
-import nebulosa.skycatalog.*
+import nebulosa.skycatalog.DeepSkyObject
+import nebulosa.skycatalog.OrientedSkyObject
+import nebulosa.skycatalog.SkyObject
+import nebulosa.skycatalog.SkyObjectType
+import nebulosa.skycatalog.SpectralSkyObject
 import nebulosa.time.InstantOfTime
 
 data class SimbadEntry(

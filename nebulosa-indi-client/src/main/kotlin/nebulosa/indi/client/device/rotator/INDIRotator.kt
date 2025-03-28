@@ -1,18 +1,33 @@
 package nebulosa.indi.client.device.rotator
 
 import nebulosa.indi.client.INDIClient
-import nebulosa.indi.client.device.DriverInfo
+import nebulosa.indi.client.device.INDIDriverInfo
 import nebulosa.indi.client.device.INDIDevice
 import nebulosa.indi.device.firstOnSwitch
-import nebulosa.indi.device.rotator.*
-import nebulosa.indi.protocol.*
+import nebulosa.indi.device.rotator.Rotator
+import nebulosa.indi.device.rotator.RotatorAngleChanged
+import nebulosa.indi.device.rotator.RotatorCanAbortChanged
+import nebulosa.indi.device.rotator.RotatorCanHomeChanged
+import nebulosa.indi.device.rotator.RotatorCanReverseChanged
+import nebulosa.indi.device.rotator.RotatorCanSyncChanged
+import nebulosa.indi.device.rotator.RotatorMinMaxAngleChanged
+import nebulosa.indi.device.rotator.RotatorMoveFailed
+import nebulosa.indi.device.rotator.RotatorMovingChanged
+import nebulosa.indi.device.rotator.RotatorReversedChanged
+import nebulosa.indi.protocol.DefNumberVector
+import nebulosa.indi.protocol.DefSwitchVector
+import nebulosa.indi.protocol.INDIProtocol
+import nebulosa.indi.protocol.PropertyState
+import nebulosa.indi.protocol.SetNumberVector
+import nebulosa.indi.protocol.SetSwitchVector
+import nebulosa.indi.protocol.SwitchVector
 import nebulosa.indi.protocol.Vector.Companion.isBusy
 
 // https://github.com/indilib/indi/blob/master/libs/indibase/indirotatorinterface.cpp
 
 internal open class INDIRotator(
     final override val sender: INDIClient,
-    final override val driverInfo: DriverInfo,
+    final override val driver: INDIDriverInfo,
 ) : INDIDevice(), Rotator {
 
     @Volatile final override var moving = false

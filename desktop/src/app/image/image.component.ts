@@ -1,22 +1,25 @@
-import { AfterViewInit, Component, ElementRef, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
-import { ActivatedRoute } from '@angular/router'
+import type { AfterViewInit, ElementRef, OnDestroy } from '@angular/core'
+import { Component, HostListener, NgZone, ViewEncapsulation, effect, inject, viewChild } from '@angular/core'
 import hotkeys from 'hotkeys-js'
-import { NgxLegacyMoveableComponent, OnDrag, OnResize, OnRotate } from 'ngx-moveable'
-import { ContextMenu } from 'primeng/contextmenu'
-import { DeviceListMenuComponent } from '../../shared/components/device-list-menu/device-list-menu.component'
-import { HistogramComponent } from '../../shared/components/histogram/histogram.component'
-import { MenuItem } from '../../shared/components/menu-item/menu-item.component'
+import type { NgxLegacyMoveableComponent, OnDrag, OnResize, OnRotate } from 'ngx-moveable'
+import { injectQueryParams } from 'ngxtension/inject-query-params'
+import type { ContextMenu } from 'primeng/contextmenu'
+import type { DeviceListMenuComponent } from '../../shared/components/device-list-menu.component'
+import type { HistogramComponent } from '../../shared/components/histogram.component'
+import type { MenuItem } from '../../shared/components/menu-item.component'
 import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
-import { AngularService } from '../../shared/services/angular.service'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
+import { DeviceService } from '../../shared/services/device.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { EquatorialCoordinateJ2000, filterAstronomicalObject } from '../../shared/types/atlas.types'
-import { Camera } from '../../shared/types/camera.types'
+import type { EquatorialCoordinateJ2000 } from '../../shared/types/atlas.types'
+import { filterAstronomicalObject } from '../../shared/types/atlas.types'
+import type { Camera } from '../../shared/types/camera.types'
+import type { AstronomicalObjectDialog, DetectedStar, FOV, ImageAnnotation, ImageHeaderItem, ImageHeadersDialog, ImageInfo, ImageSCNRDialog, ImageSolved, ImageStretchDialog, LiveStackingMode, OpenImage } from '../../shared/types/image.types'
 import {
-	AstronomicalObjectDialog,
 	DEFAULT_FOV,
+	DEFAULT_IMAGE_ADJUSTMENT_DIALOG,
 	DEFAULT_IMAGE_ANNOTATION_DIALOG,
 	DEFAULT_IMAGE_CALIBRATION,
 	DEFAULT_IMAGE_DATA,
@@ -34,33 +37,33 @@ import {
 	DEFAULT_IMAGE_STATISTICS_DIALOG,
 	DEFAULT_IMAGE_ZOOM,
 	DEFAULT_STAR_DETECTOR_DIALOG,
-	DetectedStar,
-	FOV,
-	ImageAnnotation,
-	ImageHeaderItem,
-	ImageHeadersDialog,
-	ImageInfo,
-	ImageSCNRDialog,
-	ImageSolved,
-	ImageStretchDialog,
-	LiveStackingMode,
-	OpenImage,
 	imageFormatFromExtension,
 } from '../../shared/types/image.types'
-import { Mount } from '../../shared/types/mount.types'
-import { PlateSolverRequest } from '../../shared/types/platesolver.types'
-import { StarDetectionRequest } from '../../shared/types/stardetector.types'
+import type { Mount } from '../../shared/types/mount.types'
+import type { PlateSolverRequest } from '../../shared/types/platesolver.types'
+import type { StarDetectionRequest } from '../../shared/types/stardetector.types'
 import { CoordinateInterpolator } from '../../shared/utils/coordinate-interpolation'
-import { PanZoom, PanZoomEventDetail, PanZoomOptions } from '../../shared/utils/pan-zoom'
+import type { PanZoomEventDetail, PanZoomOptions } from '../../shared/utils/pan-zoom'
+import { PanZoom } from '../../shared/utils/pan-zoom'
 import { uid } from '../../shared/utils/random'
 import { AppComponent } from '../app.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-image',
-	templateUrl: './image.component.html',
-	styleUrls: ['./image.component.scss'],
+	templateUrl: 'image.component.html',
+	styleUrls: ['image.component.scss'],
+	encapsulation: ViewEncapsulation.None,
 })
 export class ImageComponent implements AfterViewInit, OnDestroy {
+	private readonly app = inject(AppComponent)
+	private readonly api = inject(ApiService)
+	private readonly electronService = inject(ElectronService)
+	private readonly browserWindowService = inject(BrowserWindowService)
+	private readonly preferenceService = inject(PreferenceService)
+	private readonly deviceService = inject(DeviceService)
+	private readonly data = injectQueryParams('data', { transform: (v) => v && decodeURIComponent(v) })
+
 	protected readonly preference = structuredClone(DEFAULT_IMAGE_PREFERENCE)
 	protected readonly solver = structuredClone(DEFAULT_IMAGE_SOLVER_DIALOG)
 	protected readonly starDetector = structuredClone(DEFAULT_STAR_DETECTOR_DIALOG)
@@ -74,6 +77,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	protected readonly liveStacking = structuredClone(DEFAULT_IMAGE_LIVE_STACKING)
 	protected readonly zoom = structuredClone(DEFAULT_IMAGE_ZOOM)
 	protected readonly rotation = structuredClone(DEFAULT_IMAGE_ROTATION_DIALOG)
+	protected readonly adjustment = structuredClone(DEFAULT_IMAGE_ADJUSTMENT_DIALOG)
 	protected readonly settings = structuredClone(DEFAULT_IMAGE_SETTINGS_DIALOG)
 	private readonly calibration = structuredClone(DEFAULT_IMAGE_CALIBRATION)
 	private readonly mouseMountCoordinate = structuredClone(DEFAULT_IMAGE_MOUSE_POSITION)
@@ -156,6 +160,15 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		},
 	}
 
+	private readonly adjustmentMenuItem: MenuItem = {
+		label: 'Adjustment',
+		icon: 'mdi mdi-palette',
+		selected: false,
+		command: () => {
+			this.adjustment.showDialog = true
+		},
+	}
+
 	private readonly horizontalMirrorMenuItem: MenuItem = {
 		label: 'Horizontal mirror',
 		icon: 'mdi mdi-flip-horizontal',
@@ -202,7 +215,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		label: 'Transformation',
 		icon: 'mdi mdi-image-edit',
 		selected: false,
-		items: [this.horizontalMirrorMenuItem, this.verticalMirrorMenuItem, this.invertMenuItem, this.rotateMenuItem],
+		items: [this.adjustmentMenuItem, this.horizontalMirrorMenuItem, this.verticalMirrorMenuItem, this.invertMenuItem, this.rotateMenuItem],
 	}
 
 	private readonly calibrationMenuItem: MenuItem = {
@@ -298,8 +311,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		icon: 'mdi mdi-select',
 		selected: false,
 		command: () => {
-			this.imageROI.show = !this.imageROI.show
-			this.roiMenuItem.selected = this.hasROI
+			this.toggleROI()
 		},
 	}
 
@@ -362,26 +374,13 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		],
 	}
 
-	@ViewChild('image')
-	private readonly image!: ElementRef<HTMLImageElement>
-
-	@ViewChild('roi')
-	private readonly roi!: ElementRef<HTMLDivElement>
-
-	@ViewChild('menu')
-	private readonly menu!: ContextMenu
-
-	@ViewChild('deviceMenu')
-	private readonly deviceMenu!: DeviceListMenuComponent
-
-	@ViewChild('histogram')
-	private readonly histogram?: HistogramComponent
-
-	@ViewChild('detectedStarCanvas')
-	private readonly detectedStarCanvas!: ElementRef<HTMLCanvasElement>
-
-	@ViewChild('moveable')
-	private readonly moveable!: NgxLegacyMoveableComponent
+	private readonly image = viewChild.required<ElementRef<HTMLImageElement>>('image')
+	private readonly roi = viewChild.required<ElementRef<HTMLDivElement>>('roi')
+	private readonly menu = viewChild.required<ContextMenu>('menu')
+	private readonly deviceMenu = viewChild.required<DeviceListMenuComponent>('deviceMenu')
+	private readonly histogram = viewChild<HistogramComponent>('histogram')
+	private readonly detectedStarCanvas = viewChild.required<ElementRef<HTMLCanvasElement>>('detectedStarCanvas')
+	private readonly moveable = viewChild.required<NgxLegacyMoveableComponent>('moveable')
 
 	get isMouseCoordinateVisible() {
 		return this.mouseCoordinate.show && !!this.mouseCoordinate.interpolator && !this.transformation.mirrorHorizontal && !this.transformation.mirrorVertical
@@ -408,27 +407,20 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		return this.imageROI.show && this.rotation.transformation.angle % 360 === 0
 	}
 
-	constructor(
-		private readonly app: AppComponent,
-		private readonly route: ActivatedRoute,
-		private readonly api: ApiService,
-		private readonly electronService: ElectronService,
-		private readonly browserWindowService: BrowserWindowService,
-		private readonly preferenceService: PreferenceService,
-		private readonly angularService: AngularService,
-		ngZone: NgZone,
-	) {
-		app.title = 'Image'
+	constructor() {
+		const ngZone = inject(NgZone)
 
-		app.topMenu.push(this.liveStackingMenuItem)
+		this.app.title = 'Image'
 
-		app.topMenu.push({
+		this.app.topMenu.push(this.liveStackingMenuItem)
+
+		this.app.topMenu.push({
 			icon: 'mdi mdi-fullscreen',
 			label: 'Fullscreen',
 			command: () => this.enterFullscreen(),
 		})
 
-		app.topMenu.push({
+		this.app.topMenu.push({
 			icon: 'mdi mdi-minus',
 			label: 'Zoom Out',
 			command: () => {
@@ -436,7 +428,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 			},
 		})
 
-		app.topMenu.push({
+		this.app.topMenu.push({
 			icon: 'mdi mdi-plus',
 			label: 'Zoom In',
 			command: () => {
@@ -444,7 +436,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 			},
 		})
 
-		app.topMenu.push({
+		this.app.topMenu.push({
 			icon: 'mdi mdi-numeric-0',
 			label: 'Reset Zoom',
 			command: () => {
@@ -452,7 +444,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 			},
 		})
 
-		app.topMenu.push({
+		this.app.topMenu.push({
 			icon: 'mdi mdi-fit-to-screen',
 			label: 'Fit to Screen',
 			command: () => {
@@ -460,7 +452,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 			},
 		})
 
-		app.topMenu.push({
+		this.app.topMenu.push({
 			icon: 'mdi mdi-cog',
 			label: 'Settings',
 			command: () => {
@@ -468,7 +460,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 			},
 		})
 
-		electronService.on('CAMERA.CAPTURE_ELAPSED', async (event) => {
+		this.electronService.on('CAMERA.CAPTURE_ELAPSED', async (event) => {
 			if (event.state === 'EXPOSURE_FINISHED' && event.camera.id === this.imageData.camera?.id) {
 				await ngZone.run(async () => {
 					if (this.liveStacking.mode === 'NONE') {
@@ -492,13 +484,13 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 			}
 		})
 
-		electronService.on('DATA.CHANGED', (event: OpenImage) => {
+		this.electronService.on('DATA.CHANGED', (event: OpenImage) => {
 			return ngZone.run(() => {
 				return this.loadImageFromOpenImage(event)
 			})
 		})
 
-		electronService.on('CALIBRATION.CHANGED', async () => {
+		this.electronService.on('CALIBRATION.CHANGED', async () => {
 			return ngZone.run(() => {
 				return this.loadCalibrationGroups()
 			})
@@ -551,15 +543,18 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		this.loadPreference()
 
 		this.solver.key = uid()
+
+		effect(() => {
+			const data = this.data()
+
+			if (data) {
+				void this.loadImageFromOpenImage(JSON.parse(data))
+			}
+		})
 	}
 
 	async ngAfterViewInit() {
 		await this.loadCalibrationGroups()
-
-		this.route.queryParams.subscribe((e) => {
-			const data = JSON.parse(decodeURIComponent(e['data'] as string)) as OpenImage
-			return this.loadImageFromOpenImage(data)
-		})
 	}
 
 	@HostListener('window:unload')
@@ -648,8 +643,9 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		}
 
 		this.calibrationMenuItem.items = menu
-		this.menu.model = this.contextMenuModel
-		this.menu.cd.markForCheck()
+		const menuValue = this.menu()
+		menuValue.model = this.contextMenuModel
+		menuValue.cd.markForCheck()
 
 		if (reloadImage) {
 			await this.loadImage()
@@ -683,7 +679,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		const { target, transform } = event
 		target.style.transform = transform
 
-		const rect = this.moveable.getRect()
+		const rect = this.moveable().getRect()
 		this.imageROI.area.x = Math.trunc(rect.left)
 		this.imageROI.area.y = Math.trunc(rect.top)
 	}
@@ -692,7 +688,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		const { target, width, height, transform } = event
 		target.style.transform = transform
 
-		const rect = this.moveable.getRect()
+		const rect = this.moveable().getRect()
 
 		target.style.width = `${width}px`
 		this.imageROI.area.x = Math.trunc(rect.left)
@@ -745,6 +741,10 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 			this.clearOverlay()
 			await this.loadImage()
 		}
+
+		if (data.source === 'FRAMING') {
+			this.center()
+		}
 	}
 
 	private clearOverlay() {
@@ -759,7 +759,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
 		Object.assign(this.solver.solved, DEFAULT_IMAGE_SOLVED)
 
-		this.histogram?.update([])
+		this.histogram()?.update([])
 	}
 
 	protected async computeStatistics(force: boolean = false) {
@@ -770,11 +770,12 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 			const statistics = await this.api.imageStatistics(path, transformation, this.statistics.channel, this.imageData.camera)
 			this.statistics.statistics = statistics
 
-			if (this.histogram) {
-				this.histogram.update(statistics.histogram)
+			const histogram = this.histogram()
+			if (histogram) {
+				histogram.update(statistics.histogram)
 			} else {
 				setTimeout(() => {
-					this.histogram?.update(statistics.histogram)
+					this.histogram()?.update(statistics.histogram)
 				}, 1000)
 			}
 		}
@@ -843,9 +844,9 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	protected drawDetectedStar(star: DetectedStar) {
 		Object.assign(this.starDetector.selected, star)
 
-		const canvas = this.detectedStarCanvas.nativeElement
+		const canvas = this.detectedStarCanvas().nativeElement
 		const ctx = canvas.getContext('2d')
-		ctx?.drawImage(this.image.nativeElement, star.x - 8, star.y - 8, 16, 16, 0, 0, canvas.width, canvas.height)
+		ctx?.drawImage(this.image().nativeElement, star.x - 8, star.y - 8, 16, 16, 0, 0, canvas.width, canvas.height)
 	}
 
 	protected async loadImage() {
@@ -889,7 +890,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	}
 
 	private async loadImageFromPath(path: string) {
-		const image = this.image.nativeElement
+		const image = this.image().nativeElement
 
 		const transformation = this.makeImageTransformation()
 		const { info, blob } = await this.api.openImage(path, transformation, this.imageData.camera)
@@ -951,7 +952,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		this.mouseMountCoordinate.y = event.offsetY
 
 		if (contextMenu) {
-			this.menu.show(event)
+			this.menu().show(event)
 		}
 	}
 
@@ -960,7 +961,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	}
 
 	private imageMouseMovedWithCoordinates(x: number, y: number) {
-		if (!this.menu.visible() && this.mouseCoordinate.interpolator) {
+		if (!this.menu().visible() && this.mouseCoordinate.interpolator) {
 			Object.assign(this.mouseCoordinate, this.mouseCoordinate.interpolator.interpolateAsText(x, y, true, true, false))
 			this.mouseCoordinate.x = x
 			this.mouseCoordinate.y = y
@@ -1086,7 +1087,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		}
 	}
 
-	private async toggleStretch() {
+	protected async toggleStretch() {
 		this.stretch.transformation.auto = !this.stretch.transformation.auto
 		this.savePreference()
 		this.autoStretchMenuItem.selected = this.stretch.transformation.auto
@@ -1116,7 +1117,18 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		return this.applyAutoStretchMeanBackground()
 	}
 
-	private invertImage() {
+	protected resetAdjustment() {
+		this.adjustment.request.contrast.value = 0
+		this.adjustment.request.brightness.value = 0
+		this.adjustment.request.saturation.value = 0
+		this.adjustment.request.exposure.value = 0
+		this.adjustment.request.gamma.value = 0
+		this.adjustment.request.fade.value = 0
+		this.savePreference()
+		return this.loadImage()
+	}
+
+	protected invertImage() {
 		this.transformation.invert = !this.transformation.invert
 		this.invertMenuItem.selected = this.transformation.invert
 		this.savePreference()
@@ -1127,43 +1139,49 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		return this.loadImage()
 	}
 
-	private toggleCrosshair() {
+	protected toggleCrosshair() {
 		this.preference.crossHair = !this.preference.crossHair
 		this.savePreference()
 		this.crosshairMenuItem.selected = this.preference.crossHair
 	}
 
-	private zoomIn() {
+	protected toggleROI() {
+		this.imageROI.show = !this.imageROI.show
+		this.roiMenuItem.selected = this.hasROI
+	}
+
+	protected zoomIn() {
 		if (this.zoom.panZoom) {
 			const { innerWidth, innerHeight } = window
-			const { offsetTop, offsetLeft } = this.image.nativeElement.parentElement!.parentElement!
+			const { offsetTop, offsetLeft } = this.image().nativeElement.parentElement!.parentElement!
 			this.zoom.panZoom.zoomIn({ clientX: innerWidth / 2 + offsetLeft / 2, clientY: innerHeight / 2 + offsetTop / 2 })
 		}
 	}
 
-	private zoomOut() {
+	protected zoomOut() {
 		if (this.zoom.panZoom) {
 			const { innerWidth, innerHeight } = window
-			const { offsetTop, offsetLeft } = this.image.nativeElement.parentElement!.parentElement!
+			const { offsetTop, offsetLeft } = this.image().nativeElement.parentElement!.parentElement!
 			this.zoom.panZoom.zoomOut({ clientX: innerWidth / 2 + offsetLeft / 2, clientY: innerHeight / 2 + offsetTop / 2 })
 		}
 	}
 
-	private center() {
+	protected center() {
 		if (this.zoom.panZoom) {
 			this.zoom.panZoom.centerAt(window.innerWidth / 2, window.innerHeight / 2)
 		}
 	}
 
-	private resetZoom(fitToScreen: boolean = false, center: boolean = true) {
+	protected resetZoom(fitToScreen: boolean = false, center: boolean = true) {
 		if (this.zoom.panZoom) {
 			if (fitToScreen) {
-				const { width: iw, height: ih } = this.image.nativeElement
+				const image = this.image().nativeElement
+				const { width: iw, height: ih } = image
 				const angle = this.rotation.transformation.angle * (Math.PI / 180.0)
 				const nw = Math.abs(iw * Math.cos(angle)) + Math.abs(ih * Math.sin(angle))
 				const nh = Math.abs(iw * Math.sin(angle)) + Math.abs(ih * Math.cos(angle))
-				const { clientWidth: cw, clientHeight: ch } = this.image.nativeElement.parentElement!.parentElement!
-				const { offsetTop } = this.image.nativeElement.parentElement!.parentElement!
+				const { clientWidth: cw, clientHeight: ch } = image.parentElement!.parentElement!
+				const { offsetTop } = image.parentElement!.parentElement!
 				const factor = Math.min(cw / nw, (ch - offsetTop) / nh)
 				this.zoom.panZoom.zoom(factor)
 			} else {
@@ -1190,11 +1208,11 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		this.rotate(((angle % 360) + 360) % 360)
 	}
 
-	private async enterFullscreen() {
+	protected async enterFullscreen() {
 		this.app.showTopBar = !(await this.electronService.fullscreenWindow(true))
 	}
 
-	private async exitFullscreen() {
+	protected async exitFullscreen() {
 		this.app.showTopBar = !(await this.electronService.fullscreenWindow(false))
 	}
 
@@ -1296,7 +1314,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	}
 
 	protected imageLoaded() {
-		const image = this.image.nativeElement
+		const image = this.image().nativeElement
 		const wrapper = image.parentElement
 		const owner = wrapper?.parentElement
 
@@ -1316,12 +1334,12 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 				if (e.shiftKey) {
 					this.rotateWithWheel(e)
 				} else {
-					if (e.target === owner || e.target === wrapper || e.target === image || e.target === this.roi.nativeElement || (e.target as HTMLElement).tagName === 'circle') {
+					if (e.target === owner || e.target === wrapper || e.target === image || e.target === this.roi().nativeElement || (e.target as HTMLElement).tagName === 'circle') {
 						panZoom.zoomWithWheel(e)
 					}
 				}
 			})
-			panZoom.addListener('panzoomzoom', (e: PanZoomEventDetail) => {
+			panZoom.on('panzoomzoom', (e: PanZoomEventDetail) => {
 				this.zoom.scale = e.transformation.scale
 			})
 
@@ -1432,6 +1450,15 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		}
 	}
 
+	protected frameFOV(fov: FOV) {
+		if (this.imageInfo && this.solver.solved.scale > 0 && fov.computed) {
+			const { rightAscensionJ2000: rightAscension, declinationJ2000: declination } = this.solver.solved
+			const fieldSize = fov.computed.fieldSize
+			const { width, height } = fov.cameraSize
+			void this.browserWindowService.openFraming({ rightAscension, declination, width, height, fov: Math.max(fieldSize.width, fieldSize.height) })
+		}
+	}
+
 	protected deleteFOV(fov: FOV) {
 		const index = this.fov.fovs.indexOf(fov)
 
@@ -1456,6 +1483,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		this.stretch.transformation = this.transformation.stretch
 		this.scnr.transformation = this.transformation.scnr
 		this.annotation.request = this.preference.annotation
+		this.adjustment.request = this.transformation.adjustment
 		this.fov.fovs = this.preference.fovs
 
 		this.autoStretchMenuItem.selected = this.transformation.stretch.auto
@@ -1471,46 +1499,12 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	}
 
 	private async executeCamera(action: (camera: Camera) => void | Promise<void>, showConfirmation: boolean = true) {
-		if (showConfirmation && (await this.angularService.confirm('Are you sure that you want to proceed?'))) {
-			return false
-		}
-
 		const cameras = await this.api.cameras()
-
-		if (cameras.length === 1) {
-			await action(cameras[0])
-			return true
-		} else {
-			const camera = await this.deviceMenu.show(cameras, undefined, 'CAMERA')
-
-			if (camera && camera !== 'NONE' && camera.connected) {
-				await action(camera)
-				return true
-			}
-		}
-
-		return false
+		return this.deviceService.executeAction(this.deviceMenu(), cameras, action, showConfirmation)
 	}
 
 	private async executeMount(action: (mount: Mount) => void | Promise<void>, showConfirmation: boolean = true) {
-		if (showConfirmation && (await this.angularService.confirm('Are you sure that you want to proceed?'))) {
-			return false
-		}
-
 		const mounts = await this.api.mounts()
-
-		if (mounts.length === 1) {
-			await action(mounts[0])
-			return true
-		} else {
-			const mount = await this.deviceMenu.show(mounts, undefined, 'MOUNT')
-
-			if (mount && mount !== 'NONE' && mount.connected) {
-				await action(mount)
-				return true
-			}
-		}
-
-		return false
+		return this.deviceService.executeAction(this.deviceMenu(), mounts, action, showConfirmation)
 	}
 }

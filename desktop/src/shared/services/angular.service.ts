@@ -1,16 +1,14 @@
-import { Injectable, Type } from '@angular/core'
+import type { Type } from '@angular/core'
+import { Injectable, inject } from '@angular/core'
 import { MessageService } from 'primeng/api'
-import { DialogService, DynamicDialogConfig } from 'primeng/dynamicdialog'
-import { ConfirmDialog } from '../dialogs/confirm/confirm.dialog'
-import { Severity } from '../types/angular.types'
-import { Undefinable } from '../utils/types'
+import type { DynamicDialogConfig } from 'primeng/dynamicdialog'
+import { DialogService } from 'primeng/dynamicdialog'
+import { ConfirmDialogComponent } from '../dialogs/confirm/confirm.dialog'
 
 @Injectable({ providedIn: 'root' })
 export class AngularService {
-	constructor(
-		private readonly dialogService: DialogService,
-		private readonly messageService: MessageService,
-	) {}
+	private readonly dialogService = inject(DialogService)
+	private readonly messageService = inject(MessageService)
 
 	open<T, R = T>(componentType: Type<unknown>, config: DynamicDialogConfig<T>) {
 		const ref = this.dialogService.open(componentType, {
@@ -29,7 +27,7 @@ export class AngularService {
 			},
 		})
 
-		return new Promise<Undefinable<R>>((resolve) => {
+		return new Promise<R | undefined>((resolve) => {
 			const subscription = ref.onClose.subscribe((data?: R) => {
 				subscription.unsubscribe()
 				resolve(data)
@@ -38,10 +36,10 @@ export class AngularService {
 	}
 
 	confirm(message: string) {
-		return ConfirmDialog.open(this, message)
+		return ConfirmDialogComponent.open(this, message)
 	}
 
-	message(text: string, severity: Severity = 'success') {
-		this.messageService.add({ severity, detail: text, life: 4000 })
+	message(text: string, severity: 'success' | 'info' | 'warn' | 'error' = 'success') {
+		this.messageService.add({ severity, detail: text, summary: severity.toUpperCase(), life: 4000 })
 	}
 }

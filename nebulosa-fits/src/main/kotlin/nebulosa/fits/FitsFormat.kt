@@ -1,11 +1,20 @@
 package nebulosa.fits
 
 import nebulosa.fits.FitsHeader.Companion.isFirstCard
-import nebulosa.image.format.*
-import nebulosa.io.*
-import nebulosa.log.e
+import nebulosa.image.format.BasicImageHdu
+import nebulosa.image.format.Hdu
+import nebulosa.image.format.HeaderCard
+import nebulosa.image.format.ImageData
+import nebulosa.image.format.ImageFormat
+import nebulosa.image.format.ImageHdu
+import nebulosa.image.format.ImageModifier
+import nebulosa.image.format.ReadableHeader
+import nebulosa.io.SeekableSource
+import nebulosa.io.readDouble
+import nebulosa.io.readFloat
+import nebulosa.io.writeDouble
+import nebulosa.io.writeFloat
 import nebulosa.log.loggerFor
-import nebulosa.log.w
 import okio.Buffer
 import okio.BufferedSource
 import okio.Sink
@@ -88,14 +97,14 @@ data object FitsFormat : ImageFormat {
             val header = try {
                 readHeader(source)
             } catch (e: Throwable) {
-                LOG.e("failed to read FITS header", e)
+                LOG.error("failed to read FITS header", e)
                 break
             }
 
             val hdu = when {
                 isImageHdu(header) -> BasicImageHdu(header.width, header.height, header.numberOfChannels, header, readImageData(header, source))
                 else -> {
-                    LOG.w("unsupported FITS header: {}", header)
+                    LOG.warn("unsupported FITS header: {}", header)
                     continue
                 }
             }

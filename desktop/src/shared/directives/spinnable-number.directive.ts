@@ -1,13 +1,11 @@
-import { Directive, Host, HostListener, Optional } from '@angular/core'
+import { Directive, HostListener, inject } from '@angular/core'
 import { InputNumber } from 'primeng/inputnumber'
 import { Knob } from 'primeng/knob'
 
-@Directive({ selector: '[spinnableNumber]' })
+@Directive({ standalone: false, selector: '[spinnableNumber]' })
 export class SpinnableNumberDirective {
-	constructor(
-		@Host() @Optional() private readonly inputNumber?: InputNumber,
-		@Host() @Optional() private readonly knob?: Knob,
-	) {}
+	private readonly inputNumber = inject(InputNumber, { host: true, optional: true })
+	private readonly knob = inject(Knob, { host: true, optional: true })
 
 	@HostListener('wheel', ['$event'])
 	handleEvent(event: WheelEvent) {

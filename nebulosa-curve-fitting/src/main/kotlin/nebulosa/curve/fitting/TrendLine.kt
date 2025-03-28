@@ -2,7 +2,6 @@ package nebulosa.curve.fitting
 
 import nebulosa.curve.fitting.Curve.Companion.curvePoints
 import nebulosa.log.loggerFor
-import nebulosa.log.w
 
 data class TrendLine(val points: List<CurvePoint>) : LinearCurve {
 
@@ -24,7 +23,7 @@ data class TrendLine(val points: List<CurvePoint>) : LinearCurve {
         } else try {
             TrendLineRegression.OLSMultipleLinear.compute(points)
         } catch (e: Throwable) {
-            LOG.w("failed to compute regression using OLS Multiple Linear", e.message)
+            LOG.warn("failed to compute regression using OLS Multiple Linear", e.message)
             TrendLineRegression.Simple.compute(points)
         }
 

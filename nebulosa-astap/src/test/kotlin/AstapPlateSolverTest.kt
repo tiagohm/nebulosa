@@ -2,7 +2,11 @@ import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.shouldBe
 import nebulosa.astap.platesolver.AstapPlateSolver
-import nebulosa.math.*
+import nebulosa.math.deg
+import nebulosa.math.hours
+import nebulosa.math.toArcmin
+import nebulosa.math.toArcsec
+import nebulosa.math.toDegrees
 import nebulosa.test.NonGitHubOnly
 import nebulosa.test.fits.ASTROMETRY_GALACTIC_CENTER_FITS
 import org.junit.jupiter.api.Test

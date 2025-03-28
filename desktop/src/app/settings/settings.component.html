@@ -1,181 +1,111 @@
-<div class="grid px-3 pb-2 pt-3 relative">
-	<div
-		class="col-12"
-		*ngIf="tab === 'GENERAL'">
-		<div class="grid">
-			<div class="col-12">
-				<p-checkbox
-					[binary]="true"
-					label="Check for new version on startup"
-					[(ngModel)]="preference.checkVersion"
-					(ngModelChange)="savePreference()" />
-			</div>
+<div class="relative px-3 pt-3 pb-2">
+	@if (tab === 'GENERAL') {
+		<div class="flex">
+			<neb-checkbox
+				label="Check for new version on startup"
+				[(value)]="preference.checkVersion"
+				(valueChange)="savePreference()" />
 		</div>
-	</div>
-	<div
-		class="col-12"
-		*ngIf="tab === 'LOCATION'">
-		<div class="grid">
-			<div class="col-12 gap-2">
-				<p-floatLabel class="w-full">
-					<p-dropdown
-						[options]="preference.locations"
-						[ngModel]="preference.location"
-						(ngModelChange)="locationChanged($event)"
-						optionLabel="name"
-						dataKey="id"
-						styleClass="p-inputtext-sm border-0"
-						emptyMessage="No location found"
-						[autoDisplayFirst]="false">
-						<ng-template pTemplate="selectedItem">
-							<div class="flex align-items-center gap-2">
-								<span>{{ preference.location.name || '?' }}</span>
-							</div>
-						</ng-template>
-					</p-dropdown>
-					<label>Location</label>
-				</p-floatLabel>
-				<div class="flex gap-1">
-					<p-button
+	} @else if (tab === 'LOCATION') {
+		<div class="flex flex-col gap-1">
+			<div class="flex w-full items-center gap-2">
+				<neb-dropdown
+					label="Location"
+					[options]="preference.locations"
+					[(value)]="preference.location"
+					(valueChange)="locationChanged($event)"
+					emptyMessage="No location available" />
+				<div class="flex items-center gap-1">
+					<neb-button
 						icon="mdi mdi-plus"
-						size="small"
 						severity="success"
-						[text]="true"
-						pTooltip="New"
-						tooltipPosition="bottom"
-						(onClick)="addLocation()" />
-					<p-button
+						tooltip="New"
+						(action)="addLocation()" />
+					<neb-button
 						[disabled]="preference.locations.length <= 1"
 						icon="mdi mdi-delete"
-						size="small"
 						severity="danger"
-						[text]="true"
-						pTooltip="Delete"
-						tooltipPosition="bottom"
-						(onClick)="deleteLocation()" />
+						tooltip="Delete"
+						(action)="deleteLocation()" />
 				</div>
 			</div>
-			<div class="col-12">
+			<div class="w-full">
 				<neb-location
 					[location]="preference.location"
-					(locationChange)="locationChanged($event)" />
+					(update)="locationChanged()" />
 			</div>
 		</div>
-	</div>
-	<div
-		class="col-12"
-		*ngIf="tab === 'PLATE_SOLVER'">
-		<div class="grid">
-			<div class="col-8">
-				<p-floatLabel class="w-full">
-					<p-dropdown
-						[options]="'PLATE_SOLVER' | dropdownOptions | enumDropdown"
-						optionsLabel="label"
-						optionsValue="value"
-						[(ngModel)]="plateSolverType"
-						styleClass="p-inputtext-sm border-0"
-						[autoDisplayFirst]="false" />
-					<label>Solver</label>
-				</p-floatLabel>
+	} @else if (tab === 'PLATE_SOLVER') {
+		<div class="grid grid-cols-3 gap-3">
+			<div class="col-span-full">
+				<neb-dropdown-enum
+					label="Solver"
+					[options]="'PLATE_SOLVER' | dropdownOptions"
+					[(value)]="plateSolverType" />
 			</div>
-			<div
-				class="col-12"
-				*ngIf="plateSolverType !== 'ASTROMETRY_NET_ONLINE'">
-				<neb-path-chooser
-					key="plateSolverExecutableFile"
-					[directory]="false"
-					label="Executable path"
-					[(path)]="plateSolver.executablePath"
-					class="w-full"
-					(pathChange)="savePreference()" />
-			</div>
-			@if (plateSolverType === 'ASTROMETRY_NET_ONLINE') {
-				<div class="col-8">
-					<p-floatLabel class="w-full">
-						<input
-							pInputText
-							class="p-inputtext-sm border-0 w-full"
-							[(ngModel)]="plateSolver.apiUrl"
-							(ngModelChange)="savePreference()" />
-						<label>API URL</label>
-					</p-floatLabel>
+			@if (plateSolverType !== 'ASTROMETRY_NET_ONLINE') {
+				<div class="col-span-full">
+					<neb-path-chooser
+						key="plateSolverExecutableFile"
+						[directory]="false"
+						label="Executable path"
+						[(path)]="plateSolver.executablePath"
+						class="w-full"
+						(pathChange)="savePreference()" />
 				</div>
-				<div class="col-4">
-					<p-floatLabel class="w-full">
-						<input
-							pInputText
-							class="p-inputtext-sm border-0 w-full"
-							[(ngModel)]="plateSolver.apiKey"
-							(ngModelChange)="savePreference()" />
-						<label>API Key</label>
-					</p-floatLabel>
+			} @else {
+				<div class="col-span-2">
+					<neb-input-text
+						label="API URL"
+						[(value)]="plateSolver.apiUrl"
+						(valueChange)="savePreference()" />
+				</div>
+				<div class="col-span-1">
+					<neb-input-text
+						label="API Key"
+						[(value)]="plateSolver.apiKey"
+						(valueChange)="savePreference()" />
 				</div>
 			}
 			@if (plateSolverType !== 'PIXINSIGHT') {
-				<div class="col-6">
-					<p-floatLabel>
-						<p-inputNumber
-							styleClass="p-inputtext-sm border-0 w-full"
-							[(ngModel)]="plateSolver.downsampleFactor"
-							(ngModelChange)="savePreference()"
-							[showButtons]="true"
+				<div class="col-span-full flex gap-3">
+					<div class="w-5/12">
+						<neb-input-number
+							label="Downsample factor"
 							[min]="0"
 							[max]="4"
-							spinnableNumber />
-						<label>Downsample factor</label>
-					</p-floatLabel>
-				</div>
-				<div class="col-6">
-					<p-floatLabel>
-						<p-inputNumber
-							styleClass="p-inputtext-sm border-0 w-full"
-							[(ngModel)]="plateSolver.timeout"
-							(ngModelChange)="savePreference()"
-							[showButtons]="true"
-							[min]="0"
+							[(value)]="plateSolver.downsampleFactor"
+							(valueChange)="savePreference()" />
+					</div>
+					<div class="w-4/12">
+						<neb-input-number
+							label="Timeout (s)"
 							[max]="300"
-							spinnableNumber />
-						<label>Timeout (s)</label>
-					</p-floatLabel>
-				</div>
-			}
-			@if (plateSolverType === 'PIXINSIGHT') {
-				<div class="col-4">
-					<p-floatLabel>
-						<p-inputNumber
 							[min]="0"
-							[max]="256"
-							[step]="1"
-							[showButtons]="true"
-							class="w-full"
-							styleClass="p-inputtext-sm border-0 w-full"
-							[(ngModel)]="plateSolver.slot"
-							(ngModelChange)="savePreference()"
-							[allowEmpty]="false"
-							spinnableNumber />
-						<label>Slot</label>
-					</p-floatLabel>
+							[(value)]="plateSolver.timeout"
+							(valueChange)="savePreference()" />
+					</div>
+				</div>
+			} @else {
+				<div class="col-span-1">
+					<neb-input-number
+						label="Slot"
+						[min]="0"
+						[max]="256"
+						[(value)]="plateSolver.slot"
+						(valueChange)="savePreference()" />
 				</div>
 			}
 		</div>
-	</div>
-	<div
-		class="col-12"
-		*ngIf="tab === 'STAR_DETECTOR'">
-		<div class="grid">
-			<div class="col-6">
-				<p-floatLabel class="w-full">
-					<p-dropdown
-						[options]="'STAR_DETECTOR' | dropdownOptions | enumDropdown"
-						optionsLabel="label"
-						optionsValue="value"
-						[(ngModel)]="starDetectorType"
-						styleClass="p-inputtext-sm border-0"
-						[autoDisplayFirst]="false" />
-					<label>Detector</label>
-				</p-floatLabel>
+	} @else if (tab === 'STAR_DETECTOR') {
+		<div class="grid grid-cols-3 gap-3">
+			<div class="col-span-full">
+				<neb-dropdown-enum
+					label="Detector"
+					[options]="'STAR_DETECTOR' | dropdownOptions"
+					[(value)]="starDetectorType" />
 			</div>
-			<div class="col-12">
+			<div class="col-span-full">
 				<neb-path-chooser
 					key="starDetectorExecutableFile"
 					[directory]="false"
@@ -184,56 +114,34 @@
 					class="w-full"
 					(pathChange)="savePreference()" />
 			</div>
-			<div class="col-4">
-				<p-floatLabel>
-					<p-inputNumber
-						styleClass="p-inputtext-sm border-0 w-full"
-						[(ngModel)]="starDetector.timeout"
-						(ngModelChange)="savePreference()"
-						[showButtons]="true"
-						[min]="0"
-						[max]="300"
-						spinnableNumber />
-					<label>Timeout (s)</label>
-				</p-floatLabel>
+			<div class="col-span-1">
+				<neb-input-number
+					label="Timeout (s)"
+					[(value)]="starDetector.timeout"
+					(valueChange)="savePreference()"
+					[min]="0"
+					[max]="300" />
 			</div>
-			<div
-				class="col-4"
-				*ngIf="starDetectorType === 'PIXINSIGHT'">
-				<p-floatLabel>
-					<p-inputNumber
+			@if (starDetectorType === 'PIXINSIGHT') {
+				<div class="col-span-1">
+					<neb-input-number
+						label="Slot"
 						[min]="0"
 						[max]="256"
-						[step]="1"
-						[showButtons]="true"
-						class="w-full"
-						styleClass="p-inputtext-sm border-0 w-full"
-						[(ngModel)]="starDetector.slot"
-						(ngModelChange)="savePreference()"
-						[allowEmpty]="false"
-						spinnableNumber />
-					<label>Slot</label>
-				</p-floatLabel>
-			</div>
+						[(value)]="starDetector.slot"
+						(valueChange)="savePreference()" />
+				</div>
+			}
 		</div>
-	</div>
-	<div
-		class="col-12"
-		*ngIf="tab === 'LIVE_STACKER'">
-		<div class="grid">
-			<div class="col-6">
-				<p-floatLabel class="w-full">
-					<p-dropdown
-						[options]="'LIVE_STACKER' | dropdownOptions | enumDropdown"
-						optionsLabel="label"
-						optionsValue="value"
-						[(ngModel)]="liveStackerType"
-						styleClass="p-inputtext-sm border-0"
-						[autoDisplayFirst]="false" />
-					<label>Stacker</label>
-				</p-floatLabel>
+	} @else if (tab === 'LIVE_STACKER') {
+		<div class="grid grid-cols-3 gap-3">
+			<div class="col-span-full">
+				<neb-dropdown-enum
+					label="Stacker"
+					[options]="'LIVE_STACKER' | dropdownOptions"
+					[(value)]="liveStackerType" />
 			</div>
-			<div class="col-12">
+			<div class="col-span-full">
 				<neb-path-chooser
 					key="liveStackerExecutableFile"
 					[directory]="false"
@@ -242,106 +150,76 @@
 					label="Executable path"
 					(pathChange)="savePreference()" />
 			</div>
-			<div
-				class="col-4"
-				*ngIf="liveStackerType === 'PIXINSIGHT'">
-				<p-floatLabel>
-					<p-inputNumber
+			@if (liveStackerType === 'PIXINSIGHT') {
+				<div class="col-span-1">
+					<neb-input-number
+						label="Slot"
 						[min]="0"
 						[max]="256"
-						[step]="1"
-						[showButtons]="true"
-						class="w-full"
-						styleClass="p-inputtext-sm border-0 w-full"
-						[(ngModel)]="liveStacker.slot"
-						(ngModelChange)="savePreference()"
-						[allowEmpty]="false"
-						spinnableNumber />
-					<label>Slot</label>
-				</p-floatLabel>
+						[(value)]="liveStacker.slot"
+						(valueChange)="savePreference()" />
+				</div>
+			}
+		</div>
+	} @else if (tab === 'CAPTURE_NAMING_FORMAT') {
+		<div class="grid grid-cols-3 gap-3">
+			<div class="col-span-full flex items-center gap-1">
+				<neb-input-text
+					label="Light"
+					[(value)]="preference.namingFormat.light"
+					(valueChange)="savePreference()"
+					class="flex-1" />
+				<neb-button
+					icon="mdi mdi-restore"
+					(action)="resetCameraCaptureNamingFormat('LIGHT')"
+					tooltip="Reset" />
+			</div>
+			<div class="col-span-full flex items-center gap-1">
+				<neb-input-text
+					label="Dark"
+					[(value)]="preference.namingFormat.dark"
+					(valueChange)="savePreference()"
+					class="flex-1" />
+				<neb-button
+					icon="mdi mdi-restore"
+					(action)="resetCameraCaptureNamingFormat('DARK')"
+					tooltip="Reset" />
+			</div>
+			<div class="col-span-full flex items-center gap-1">
+				<neb-input-text
+					label="Flat"
+					[(value)]="preference.namingFormat.flat"
+					(valueChange)="savePreference()"
+					class="flex-1" />
+				<neb-button
+					icon="mdi mdi-restore"
+					(action)="resetCameraCaptureNamingFormat('FLAT')"
+					tooltip="Reset" />
+			</div>
+			<div class="col-span-full flex items-center gap-1">
+				<neb-input-text
+					label="Bias"
+					[(value)]="preference.namingFormat.bias"
+					(valueChange)="savePreference()"
+					class="flex-1" />
+				<neb-button
+					icon="mdi mdi-restore"
+					(action)="resetCameraCaptureNamingFormat('BIAS')"
+					tooltip="Reset" />
 			</div>
 		</div>
-	</div>
-	<div
-		class="col-12"
-		*ngIf="tab === 'CAPTURE_NAMING_FORMAT'">
-		<div class="grid">
-			<div class="col-12 gap-1">
-				<p-floatLabel class="w-full">
-					<input
-						pInputText
-						class="p-inputtext-sm border-0"
-						[(ngModel)]="preference.namingFormat.light"
-						(ngModelChange)="savePreference()" />
-					<label>Light</label>
-				</p-floatLabel>
-				<p-button
-					[text]="true"
-					icon="mdi mdi-restore"
-					(onClick)="resetCameraCaptureNamingFormat('LIGHT')"
-					pTooltip="Reset"
-					tooltipPosition="bottom" />
-			</div>
-			<div class="col-12 gap-1">
-				<p-floatLabel class="w-full">
-					<input
-						pInputText
-						class="p-inputtext-sm border-0"
-						[(ngModel)]="preference.namingFormat.dark"
-						(ngModelChange)="savePreference()" />
-					<label>Dark</label>
-				</p-floatLabel>
-				<p-button
-					[text]="true"
-					icon="mdi mdi-restore"
-					(onClick)="resetCameraCaptureNamingFormat('DARK')"
-					pTooltip="Reset"
-					tooltipPosition="bottom" />
-			</div>
-			<div class="col-12 gap-1">
-				<p-floatLabel class="w-full">
-					<input
-						pInputText
-						class="p-inputtext-sm border-0"
-						[(ngModel)]="preference.namingFormat.flat"
-						(ngModelChange)="savePreference()" />
-					<label>Flat</label>
-				</p-floatLabel>
-				<p-button
-					[text]="true"
-					icon="mdi mdi-restore"
-					(onClick)="resetCameraCaptureNamingFormat('FLAT')"
-					pTooltip="Reset"
-					tooltipPosition="bottom" />
-			</div>
-			<div class="col-12 gap-1">
-				<p-floatLabel class="w-full">
-					<input
-						pInputText
-						class="p-inputtext-sm border-0"
-						[(ngModel)]="preference.namingFormat.bias"
-						(ngModelChange)="savePreference()" />
-					<label>Bias</label>
-				</p-floatLabel>
-				<p-button
-					[text]="true"
-					icon="mdi mdi-restore"
-					(onClick)="resetCameraCaptureNamingFormat('BIAS')"
-					pTooltip="Reset"
-					tooltipPosition="bottom" />
-			</div>
-		</div>
-	</div>
+	}
 </div>
 
-<p-sidebar
+<p-drawer
 	[(visible)]="showMenu"
 	[fullScreen]="true"
 	appendTo="body"
 	[modal]="false"
 	[dismissible]="true"
-	styleClass="bg-black-alpha-70">
+	[closeButtonProps]="{ severity: 'danger', text: true, rounded: true, size: 'small' }"
+	styleClass="bg-black bg-black/70">
 	<p-menu
 		[model]="menuModel"
-		styleClass="w-full border-0 px-2" />
-</p-sidebar>
+		styleClass="w-full px-2" />
+</p-drawer>

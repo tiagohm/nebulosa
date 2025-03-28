@@ -1,5 +1,6 @@
-import type { Angle, EquatorialCoordinate } from './atlas.types'
-import type { Device } from './device.types'
+import type { DropdownItem } from '../components/dropdown.component'
+import { DEFAULT_LOCATION, type Angle, type EquatorialCoordinate, type Location } from './atlas.types'
+import { EMPTY_DEVICE_SENDER, EMPTY_DRIVER_INFO, type Device } from './device.types'
 import type { GPS } from './gps.types'
 import type { GuideOutput } from './guider.types'
 
@@ -7,7 +8,7 @@ export type PierSide = 'EAST' | 'WEST' | 'NEITHER'
 
 export type TargetCoordinateType = 'J2000' | 'JNOW'
 
-export type TrackMode = 'SIDEREAL' | ' LUNAR' | 'SOLAR' | 'KING' | 'CUSTOM'
+export type TrackMode = 'SIDEREAL' | 'LUNAR' | 'SOLAR' | 'KING' | 'CUSTOM'
 
 export type CelestialLocationType = 'ZENITH' | 'NORTH_POLE' | 'SOUTH_POLE' | 'GALACTIC_CENTER' | 'MERIDIAN_EQUATOR' | 'MERIDIAN_ECLIPTIC' | 'EQUATOR_ECLIPTIC'
 
@@ -19,10 +20,7 @@ export type OrdinalDirection = 'NW' | 'NE' | 'SW' | 'SE'
 
 export type MountSlewDirection = CardinalDirection | OrdinalDirection
 
-export interface SlewRate {
-	name: string
-	label: string
-}
+export type SlewRate = DropdownItem<string>
 
 export interface Parkable {
 	canPark: boolean
@@ -69,6 +67,17 @@ export interface MountRemoteControlDialog {
 	controls: MountRemoteControl[]
 }
 
+export interface MountSiteDialog {
+	showDialog: boolean
+	location: Location
+}
+
+export interface MountTimeDialog {
+	showDialog: boolean
+	dateTime: Date
+	offsetInMinutes: number
+}
+
 export interface MountPreference {
 	targetCoordinateType: TargetCoordinateType
 	targetRightAscension: Angle
@@ -78,9 +87,8 @@ export interface MountPreference {
 
 export const DEFAULT_MOUNT: Mount = {
 	type: 'MOUNT',
-	sender: '',
-	driverName: '',
-	driverVersion: '',
+	sender: EMPTY_DEVICE_SENDER,
+	driver: EMPTY_DRIVER_INFO,
 	id: '',
 	slewing: false,
 	tracking: false,
@@ -117,6 +125,17 @@ export const DEFAULT_MOUNT_REMOTE_CONTROL_DIALOG: MountRemoteControlDialog = {
 	host: '0.0.0.0',
 	port: 10001,
 	controls: [],
+}
+
+export const DEFAULT_MOUNT_TIME_DIALOG: MountTimeDialog = {
+	showDialog: false,
+	dateTime: new Date(),
+	offsetInMinutes: 0,
+}
+
+export const DEFAULT_MOUNT_SITE_DIALOG: MountSiteDialog = {
+	showDialog: false,
+	location: DEFAULT_LOCATION,
 }
 
 export const DEFAULT_MOUNT_PREFERENCE: MountPreference = {

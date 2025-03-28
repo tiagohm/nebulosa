@@ -1,129 +1,101 @@
-<div class="container px-4 py-3">
-	<div class="grid flex align-items-center">
-		<div class="col-12 align-items-center gap-2">
-			<neb-device-name [device]="focuser" />
-			<p-button
-				*ngIf="focuser.connected"
-				[disabled]="!focuser || focuser.moving"
-				(onClick)="connect()"
-				icon="mdi mdi-close"
-				size="small"
-				severity="danger"
-				pTooltip="Disconnect"
-				tooltipPosition="bottom"
-				[text]="true" />
-			<p-button
-				*ngIf="!focuser.connected"
-				[disabled]="!focuser || focuser.moving"
-				(onClick)="connect()"
-				icon="mdi mdi-connection"
-				size="small"
-				severity="info"
-				pTooltip="Connect"
-				tooltipPosition="bottom"
-				[text]="true" />
+<div class="flex flex-col gap-3 p-4">
+	<div class="grid grid-cols-12 gap-3">
+		<div class="col-span-full flex items-center gap-3">
+			<neb-device-name
+				[device]="focuser"
+				class="flex-1" />
+			@if (focuser.connected) {
+				<neb-button
+					[disabled]="focuser.moving"
+					(action)="connect()"
+					icon="mdi mdi-close"
+					severity="danger"
+					tooltip="Disconnect" />
+			} @else {
+				<neb-button
+					[disabled]="focuser.moving"
+					(action)="connect()"
+					icon="mdi mdi-connection"
+					severity="info"
+					tooltip="Connect" />
+			}
+			<neb-button-indi [device]="focuser" />
 		</div>
-		<div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center justify-content-between my-1 gap-1">
-			<div class="flex align-items-center gap-1">
-				<i class="mdi mdi-information text-info"></i>
-				<span style="display: contents">{{ focuser.moving ? 'moving' : 'idle' }}</span>
+		<div class="col-span-full my-1 flex items-center !justify-between gap-1 pt-0 text-sm text-gray-400">
+			<div class="flex items-center gap-1">
+				<i class="mdi mdi-information text-blue-500"></i>
+				<span class="contents">{{ focuser.moving ? 'moving' : 'idle' }}</span>
 			</div>
-			<div
-				class="flex align-items-center gap-1"
-				*ngIf="focuser.hasThermometer">
-				<i class="mdi mdi-thermometer text-danger"></i>
-				<span style="display: contents">{{ focuser.temperature | number: '1.2-2' }}°C</span>
-			</div>
+			@if (focuser.hasThermometer) {
+				<div class="flex items-center gap-1">
+					<i class="mdi mdi-thermometer text-red-500"></i>
+					<span class="contents">{{ focuser.temperature | number: '1.2-2' }}°C</span>
+				</div>
+			}
 		</div>
 	</div>
-	<div class="grid mt-1">
-		<div class="col-8">
-			<p-floatLabel>
-				<p-inputNumber
-					readonly
-					styleClass="p-inputtext-sm border-0 max-w-full"
-					[ngModel]="focuser.position"
-					locale="en"
-					spinnableNumber />
-				<label>Position (max: {{ focuser.maxPosition | number }})</label>
-			</p-floatLabel>
+	<div class="grid grid-cols-12 gap-3">
+		<div class="col-span-8">
+			<neb-input-number
+				label="Position (max: {{ focuser.maxPosition | number }})"
+				[readonly]="true"
+				[value]="focuser.position" />
 		</div>
-		<div class="col-3 text-center justify-content-between gap-2">
-			<p-button
+		<div class="col-span-2">
+			<neb-button
 				[disabled]="!focuser.connected || !focuser.canAbort || !focuser.moving"
 				icon="mdi mdi-stop"
-				[text]="true"
 				severity="danger"
-				size="small"
-				pTooltip="Abort"
-				tooltipPosition="bottom"
-				(onClick)="abort()" />
-			<p-button
+				tooltip="Abort"
+				(action)="abort()" />
+		</div>
+		<div class="col-span-2">
+			<neb-button
 				[disabled]="!focuser.connected || !focuser.canSync || focuser.moving"
-				(onClick)="sync()"
+				(action)="sync()"
 				icon="mdi mdi-sync"
-				[text]="true"
 				severity="info"
-				size="small"
-				pTooltip="Sync"
-				tooltipPosition="bottom" />
+				tooltip="Sync" />
 		</div>
-		<div class="col-12 flex align-items-center gap-1">
-			<p-button
+		<div class="col-span-3 flex justify-end">
+			<neb-button
 				[disabled]="!focuser.connected || !focuser.canRelativeMove || focuser.moving || !preference.stepsRelative"
-				(onClick)="moveIn()"
+				(action)="moveIn()"
 				icon="mdi mdi-arrow-left-bold"
-				[text]="true"
-				size="small"
-				pTooltip="Move In"
-				tooltipPosition="bottom" />
-			<p-floatLabel>
-				<p-inputNumber
-					[disabled]="!focuser.connected || !focuser.canRelativeMove"
-					[min]="0"
-					[max]="focuser.maxPosition"
-					[showButtons]="true"
-					styleClass="p-inputtext-sm border-0"
-					[(ngModel)]="preference.stepsRelative"
-					(ngModelChange)="savePreference()"
-					[allowEmpty]="false"
-					locale="en"
-					spinnableNumber />
-				<label>Relative</label>
-			</p-floatLabel>
-			<p-button
-				[disabled]="!focuser.connected || !focuser.canRelativeMove || focuser.moving || !preference.stepsRelative"
-				(onClick)="moveOut()"
-				icon="mdi mdi-arrow-right-bold"
-				[text]="true"
-				size="small"
-				pTooltip="Move Out"
-				tooltipPosition="bottom" />
+				tooltip="Move In" />
 		</div>
-		<div class="col-12 flex justify-content-end align-items-center gap-1">
-			<p-floatLabel class="w-full">
-				<p-inputNumber
-					[disabled]="!focuser.connected || !focuser.canAbsoluteMove"
-					[min]="0"
-					[max]="focuser.maxPosition"
-					[showButtons]="true"
-					styleClass="p-inputtext-sm border-0 max-w-full"
-					[(ngModel)]="preference.stepsAbsolute"
-					(ngModelChange)="savePreference()"
-					[allowEmpty]="false"
-					locale="en"
-					spinnableNumber />
-				<label>Absolute</label>
-			</p-floatLabel>
-			<p-button
+		<div class="col-span-6">
+			<neb-input-number
+				label="Relative"
+				[disabled]="!focuser.connected || !focuser.canRelativeMove"
+				[min]="0"
+				[max]="focuser.maxPosition"
+				[(value)]="preference.stepsRelative"
+				(valueChange)="savePreference()" />
+		</div>
+		<div class="col-span-3 flex justify-start">
+			<neb-button
+				[disabled]="!focuser.connected || !focuser.canRelativeMove || focuser.moving || !preference.stepsRelative"
+				(action)="moveOut()"
+				icon="mdi mdi-arrow-right-bold"
+				tooltip="Move Out" />
+		</div>
+		<div class="col-span-6 col-start-4">
+			<neb-input-number
+				label="Absolute"
+				[disabled]="!focuser.connected || !focuser.canAbsoluteMove"
+				[min]="0"
+				[max]="focuser.maxPosition"
+				[(value)]="preference.stepsAbsolute"
+				(valueChange)="savePreference()" />
+		</div>
+		<div class="col-span-3">
+			<neb-button
 				[disabled]="!focuser.connected || !focuser.canAbsoluteMove || focuser.moving || preference.stepsAbsolute === focuser.position"
-				(onClick)="moveTo()"
+				(action)="moveTo()"
 				icon="mdi mdi-check"
-				[text]="true"
 				severity="success"
-				size="small"
-				pTooltip="Move To"
-				tooltipPosition="bottom" />
+				tooltip="Move To" />
 		</div>
 	</div>
 </div>

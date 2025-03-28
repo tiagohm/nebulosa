@@ -1,20 +1,17 @@
-<div class="container px-4 py-3">
-	<div class="grid">
-		<div class="col-12 align-items-center justify-content-center gap-2">
+<div class="flex flex-col gap-3 p-4">
+	<div class="grid grid-cols-12 gap-3">
+		<div class="col-span-full flex items-center justify-center gap-2">
 			<neb-device-chooser
 				title="CAMERA"
 				icon="mdi mdi-camera-iris"
 				[devices]="cameras"
 				[(device)]="camera"
 				(deviceChange)="cameraChanged()" />
-			<p-button
-				[text]="true"
+			<neb-button
 				[disabled]="!camera?.id || running"
 				icon="mdi mdi-cog"
-				size="small"
-				(onClick)="showCameraDialog()"
-				pTooltip="Camera"
-				tooltipPosition="bottom" />
+				(action)="showCameraDialog()"
+				tooltip="Camera" />
 			<neb-device-chooser
 				title="FILTER WHEEL"
 				icon="mdi mdi-palette"
@@ -22,18 +19,18 @@
 				[(device)]="wheel"
 				(deviceChange)="wheelChanged()" />
 		</div>
-		<div class="col-12 justify-content-center align-items-center">
+		<div class="col-span-full">
 			<neb-camera-info
 				[info]="request.capture"
 				[hasExposure]="false"
 				[hasType]="false" />
 		</div>
-		<div class="col-12 pt-0 pb-1 text-sm text-gray-400 flex-column flex align-items-center my-1 gap-1 text-center text-xs">
+		<div class="col-span-full my-1 pt-0 pb-1 text-center text-xs text-gray-400">
 			<neb-camera-exposure #cameraExposure />
 		</div>
 	</div>
-	<div class="grid mt-2">
-		<div class="col-12">
+	<div class="grid grid-cols-12 gap-3">
+		<div class="col-span-full">
 			<neb-path-chooser
 				key="flatWizardSaveFile"
 				[disabled]="!camera?.connected || running"
@@ -42,115 +39,79 @@
 				(pathChange)="savePreference()"
 				class="w-full" />
 		</div>
-		<div class="col-6">
-			<p-floatLabel>
-				<p-inputNumber
-					[disabled]="!camera?.connected || running"
-					[(ngModel)]="request.exposureMin"
-					mode="decimal"
-					[showButtons]="true"
-					[step]="1.0"
-					[min]="1"
-					[max]="60000"
-					locale="en"
-					styleClass="p-inputtext-sm border-0"
-					[allowEmpty]="false"
-					(ngModelChange)="savePreference()"
-					spinnableNumber />
-				<label>Min Exposure (ms)</label>
-			</p-floatLabel>
+		<div class="col-span-6">
+			<neb-input-number
+				label="Min Exposure (ms)"
+				[disabled]="!camera?.connected || running"
+				[min]="1"
+				[max]="60000"
+				[(value)]="request.exposureMin"
+				(valueChange)="savePreference()" />
 		</div>
-		<div class="col-6">
-			<p-floatLabel>
-				<p-inputNumber
-					[disabled]="!camera?.connected || running"
-					[(ngModel)]="request.exposureMax"
-					mode="decimal"
-					[showButtons]="true"
-					[step]="1.0"
-					[min]="request.exposureMin"
-					[max]="60000"
-					locale="en"
-					styleClass="p-inputtext-sm border-0"
-					[allowEmpty]="false"
-					(ngModelChange)="savePreference()"
-					spinnableNumber />
-				<label>Max Exposure (ms)</label>
-			</p-floatLabel>
+		<div class="col-span-6">
+			<neb-input-number
+				label="Max Exposure (ms)"
+				[disabled]="!camera?.connected || running"
+				[min]="request.exposureMin"
+				[max]="60000"
+				[(value)]="request.exposureMax"
+				(valueChange)="savePreference()" />
 		</div>
-		<div class="col-6">
-			<p-floatLabel>
-				<p-inputNumber
-					[disabled]="!camera?.connected || running"
-					[(ngModel)]="request.meanTarget"
-					mode="decimal"
-					[showButtons]="true"
-					[step]="1.0"
-					[min]="0"
-					[max]="65535"
-					locale="en"
-					styleClass="p-inputtext-sm border-0"
-					[allowEmpty]="false"
-					(ngModelChange)="savePreference()"
-					spinnableNumber />
-				<label>Mean Target ({{ meanTargetMin }} - {{ meanTargetMax }})</label>
-			</p-floatLabel>
+		<div class="col-span-6">
+			<neb-input-number
+				label="Mean Target ({{ meanTargetMin }} - {{ meanTargetMax }})"
+				[disabled]="!camera?.connected || running"
+				[min]="0"
+				[max]="65535"
+				[(value)]="request.meanTarget"
+				(valueChange)="savePreference()" />
 		</div>
-		<div class="col-6">
-			<p-floatLabel>
-				<p-inputNumber
-					[disabled]="!camera?.connected || running"
-					[(ngModel)]="request.meanTolerance"
-					mode="decimal"
-					[showButtons]="true"
-					[step]="1.0"
-					[min]="0"
-					[max]="100"
-					locale="en"
-					styleClass="p-inputtext-sm border-0"
-					[allowEmpty]="false"
-					(ngModelChange)="savePreference()"
-					spinnableNumber />
-				<label>Mean Tolerance (%)</label>
-			</p-floatLabel>
+		<div class="col-span-6">
+			<neb-input-number
+				label="Mean Tolerance (%)"
+				[disabled]="!camera?.connected || running"
+				[min]="0"
+				[max]="100"
+				[(value)]="request.meanTolerance"
+				(valueChange)="savePreference()" />
 		</div>
-		<div class="col-12">
-			<p-floatLabel class="w-full">
-				<p-multiSelect
-					[disabled]="!wheel?.connected || filters.length <= 0"
-					[options]="filters"
-					[(ngModel)]="selectedFilters"
-					optionLabel="name"
-					(ngModelChange)="savePreference()"
-					styleClass="border-0"
-					[style]="{ minHeight: '45px' }"
-					display="chip"
-					[showClear]="true"
-					[showToggleAll]="true"
-					[maxSelectedLabels]="wheel?.count || 1"
-					scrollHeight="105px" />
-				<label>Filters</label>
-			</p-floatLabel>
-		</div>
+		@if (filters.length && wheel?.connected && wheel?.count) {
+			<div class="col-span-full">
+				<p-floatLabel
+					class="w-full"
+					variant="in">
+					<p-multiSelect
+						[disabled]="!wheel?.connected || running"
+						[options]="filters"
+						[(ngModel)]="request.filters"
+						optionLabel="name"
+						optionValue="position"
+						(ngModelChange)="savePreference()"
+						[style]="{ minHeight: '45px', width: '100%' }"
+						display="chip"
+						[showClear]="true"
+						[showToggleAll]="true"
+						[maxSelectedLabels]="wheel?.count || 1"
+						scrollHeight="105px" />
+					<label>Filters</label>
+				</p-floatLabel>
+			</div>
+		}
 	</div>
-	<div class="grid mt-1">
-		<div class="col-12 flex align-items-center justify-content-center gap-1">
-			<p-button
+	<div class="grid grid-cols-12 gap-3">
+		<div class="col-span-full flex items-center justify-center gap-1">
+			<neb-button
 				[disabled]="!camera?.connected || !request.capture.savePath || running"
 				label="Start"
-				(onClick)="start()"
+				(action)="start()"
 				icon="mdi mdi-play"
-				severity="success"
-				size="small"
-				[text]="true" />
-			<p-button
+				severity="success" />
+			<neb-button
 				[disabled]="!camera?.connected || !running"
 				label="Abort"
-				(onClick)="stop()"
+				(action)="stop()"
 				icon="mdi mdi-stop"
-				severity="danger"
-				size="small"
-				[text]="true" />
+				severity="danger" />
 		</div>
 	</div>
 </div>

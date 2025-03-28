@@ -39,7 +39,7 @@ class CameraService(
     @Synchronized
     fun startCapture(
         camera: Camera, request: CameraStartCaptureRequest,
-        mount: Mount? = null, wheel: FilterWheel? = null, focuser: Focuser? = null, rotator: Rotator? = null
+        mount: Mount? = null, wheel: FilterWheel? = null, focuser: Focuser? = null, rotator: Rotator? = null,
     ) {
         val savePath = request.savePath
             ?.takeIf { "$it".isNotBlank() && it.exists() && it.isDirectory() }

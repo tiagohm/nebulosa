@@ -1,16 +1,14 @@
 package nebulosa.api.confirmation
 
-import io.ktor.server.application.Application
-import io.ktor.server.routing.RoutingContext
-import io.ktor.server.routing.put
-import io.ktor.server.routing.routing
+import io.ktor.server.application.*
+import io.ktor.server.routing.*
 import nebulosa.api.ktor.Controller
 import nebulosa.api.validators.notNull
 import nebulosa.api.validators.notNullOrBlank
 
 class ConfirmationController(
     override val app: Application,
-    private val confirmationService: ConfirmationService
+    private val confirmationService: ConfirmationService,
 ) : Controller {
 
     init {

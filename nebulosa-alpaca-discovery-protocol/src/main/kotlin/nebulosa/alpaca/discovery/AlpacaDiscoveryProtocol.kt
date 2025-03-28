@@ -1,10 +1,13 @@
 package nebulosa.alpaca.discovery
 
-import nebulosa.log.e
-import nebulosa.log.i
 import nebulosa.log.loggerFor
 import java.io.IOException
-import java.net.*
+import java.net.DatagramPacket
+import java.net.DatagramSocket
+import java.net.Inet4Address
+import java.net.InetAddress
+import java.net.NetworkInterface
+import java.net.SocketException
 
 /**
  * Discoveries Windows COM based drivers through ASCOM's registry-based Chooser capability.
@@ -53,7 +56,7 @@ class AlpacaDiscoveryProtocol : Runnable, AutoCloseable {
                             Thread.currentThread().interrupt()
                             break
                         } catch (e: IOException) {
-                            LOG.e("socket IPv4 send error", e)
+                            LOG.error("socket IPv4 send error", e)
                         }
                     }
                 }
@@ -61,7 +64,7 @@ class AlpacaDiscoveryProtocol : Runnable, AutoCloseable {
         } catch (_: InterruptedException) {
             Thread.currentThread().interrupt()
         } catch (e: SocketException) {
-            LOG.e("socket error", e)
+            LOG.error("socket error", e)
         }
 
         try {
@@ -70,7 +73,7 @@ class AlpacaDiscoveryProtocol : Runnable, AutoCloseable {
         } catch (_: InterruptedException) {
             Thread.currentThread().interrupt()
         } catch (e: IOException) {
-            LOG.e("socket IPv6 send error", e)
+            LOG.error("socket IPv6 send error", e)
         }
 
         val responseBuffer = ByteArray(255)
@@ -84,13 +87,13 @@ class AlpacaDiscoveryProtocol : Runnable, AutoCloseable {
                 Thread.currentThread().interrupt()
                 break
             } catch (e: IOException) {
-                LOG.e("socket receive error", e)
+                LOG.error("socket receive error", e)
                 break
             }
 
             val message = packet.data.decodeToString(0, packet.length)
             val port = ALPACA_PORT_REGEX.find(message)?.groupValues?.get(1)?.toIntOrNull() ?: continue
-            LOG.i("server found at {}:{}", packet.address, port)
+            LOG.info("server found at {}:{}", packet.address, port)
             listeners.forEach { it.onServerFound(packet.address, port) }
         }
     }

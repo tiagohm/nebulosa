@@ -262,7 +262,10 @@ data class SequencerJob(
     override fun accept(event: Any) {
         when (event) {
             is DelayEvent -> {
-                status.capture.handleCameraDelayEvent(event)
+                if (event.task !== initialDelayTask) {
+                    status.capture.handleCameraDelayEvent(event)
+                }
+
                 status.elapsedTime += event.waitTime
                 status.computeRemainingTimeAndProgress()
                 status.send()
@@ -280,10 +283,6 @@ data class SequencerJob(
                     status.elapsedTime = captureStartElapsedTime + event.elapsedTime
 
                     if (event is CameraExposureFinished) {
-                        if (status.capture.captureRemainingTime <= 0L) {
-                            status.capture.state = CameraCaptureState.IDLE
-                        }
-
                         status.capture.liveStackedPath = addFrameToLiveStacker(event.task.request, status.capture.savedPath)
                         status.capture.send()
                     }
@@ -300,7 +299,9 @@ data class SequencerJob(
     }
 
     override fun beforeStart() {
-        LOG.d("Sequencer started. camera={}, mount={}, wheel={}, focuser={}, rotator={}, plan={}", camera, mount, wheel, focuser, rotator, plan)
+        LOG.d { debug("Sequencer started. camera={}, mount={}, wheel={}, focuser={}, rotator={}, plan={}", camera, mount, wheel, focuser, rotator, plan) }
+
+        camera.snoop(listOf(mount, wheel, focuser, rotator))
 
         status.state = SequencerState.RUNNING
         status.send()
@@ -328,9 +329,10 @@ data class SequencerJob(
         liveStackingManager?.close()
 
         status.state = SequencerState.IDLE
+        status.capture.state = CameraCaptureState.IDLE
         status.send()
 
-        LOG.d("Sequencer finished. camera={}, mount={}, wheel={}, focuser={}, rotator={}, plan={}", camera, mount, wheel, focuser, rotator, plan)
+        LOG.d { debug("Sequencer finished. camera={}, mount={}, wheel={}, focuser={}, rotator={}, plan={}", camera, mount, wheel, focuser, rotator, plan) }
     }
 
     @Suppress("NOTHING_TO_INLINE")
@@ -347,7 +349,7 @@ data class SequencerJob(
     private inner class SequencerIdTask(@JvmField val id: Int) : Task {
 
         override fun run() {
-            LOG.d("Sequence in execution. id={}", id)
+            LOG.d { debug("Sequence in execution. id={}", id) }
             status.id = id
         }
     }

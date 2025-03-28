@@ -1,17 +1,26 @@
 package nebulosa.indi.client.device.wheel
 
 import nebulosa.indi.client.INDIClient
-import nebulosa.indi.client.device.DriverInfo
+import nebulosa.indi.client.device.INDIDriverInfo
 import nebulosa.indi.client.device.INDIDevice
-import nebulosa.indi.device.filterwheel.*
-import nebulosa.indi.protocol.*
+import nebulosa.indi.device.filterwheel.FilterWheel
+import nebulosa.indi.device.filterwheel.FilterWheelCountChanged
+import nebulosa.indi.device.filterwheel.FilterWheelMoveFailed
+import nebulosa.indi.device.filterwheel.FilterWheelMovingChanged
+import nebulosa.indi.device.filterwheel.FilterWheelNamesChanged
+import nebulosa.indi.device.filterwheel.FilterWheelPositionChanged
+import nebulosa.indi.protocol.DefNumberVector
+import nebulosa.indi.protocol.INDIProtocol
+import nebulosa.indi.protocol.NumberVector
+import nebulosa.indi.protocol.PropertyState
+import nebulosa.indi.protocol.TextVector
 import nebulosa.indi.protocol.Vector.Companion.isBusy
 
 // https://github.com/indilib/indi/blob/master/libs/indibase/indifilterwheel.cpp
 
 internal open class INDIFilterWheel(
     final override val sender: INDIClient,
-    final override val driverInfo: DriverInfo,
+    final override val driver: INDIDriverInfo,
 ) : INDIDevice(), FilterWheel {
 
     @Volatile final override var count = 0
@@ -83,5 +92,5 @@ internal open class INDIFilterWheel(
 
     override fun close() = Unit
 
-    override fun toString() = "FilterWheel(name=$name, count=$count, position=$position, moving=$moving, names=$names)"
+    override fun toString() = "FilterWheel(name=$name, connected=$connected, count=$count, position=$position, moving=$moving, names=$names)"
 }

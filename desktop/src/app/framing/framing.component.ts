@@ -1,52 +1,55 @@
-import { AfterViewInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
-import { ActivatedRoute } from '@angular/router'
+import type { OnDestroy } from '@angular/core'
+import { Component, HostListener, NgZone, effect, inject } from '@angular/core'
+import { injectQueryParams } from 'ngxtension/inject-query-params'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { DEFAULT_FRAMING_PREFERENCE, HipsSurvey, LoadFraming } from '../../shared/types/framing.types'
+import type { FramingRequest, HipsSurvey } from '../../shared/types/framing.types'
+import { DEFAULT_FRAMING_FOV_DIALOG, DEFAULT_FRAMING_PREFERENCE } from '../../shared/types/framing.types'
 import { AppComponent } from '../app.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-framing',
-	templateUrl: './framing.component.html',
+	templateUrl: 'framing.component.html',
 })
-export class FramingComponent implements AfterViewInit, OnDestroy {
+export class FramingComponent implements OnDestroy {
+	private readonly api = inject(ApiService)
+	private readonly browserWindowService = inject(BrowserWindowService)
+	private readonly electronService = inject(ElectronService)
+	private readonly preferenceService = inject(PreferenceService)
+	private readonly data = injectQueryParams('data', { transform: (v) => v && decodeURIComponent(v) })
+
 	protected readonly preference = structuredClone(DEFAULT_FRAMING_PREFERENCE)
+	protected readonly fov = structuredClone(DEFAULT_FRAMING_FOV_DIALOG)
 	protected hipsSurveys: HipsSurvey[] = []
 	protected loading = false
 
 	private frameId = ''
 
-	constructor(
-		app: AppComponent,
-		private readonly route: ActivatedRoute,
-		private readonly api: ApiService,
-		private readonly browserWindowService: BrowserWindowService,
-		private readonly electronService: ElectronService,
-		private readonly preferenceService: PreferenceService,
-		ngZone: NgZone,
-	) {
+	constructor() {
+		const app = inject(AppComponent)
+		const ngZone = inject(NgZone)
+
 		app.title = 'Framing'
 
-		electronService.on('DATA.CHANGED', (event: LoadFraming) => {
+		this.electronService.on('DATA.CHANGED', (event: FramingRequest) => {
 			return ngZone.run(() => this.frameFromData(event))
 		})
-	}
 
-	async ngAfterViewInit() {
-		this.loading = true
+		effect(async () => {
+			const data = this.data()
 
-		try {
-			this.hipsSurveys = await this.api.hipsSurveys()
-			this.loadPreference()
-		} finally {
-			this.loading = false
-		}
+			try {
+				this.hipsSurveys = await this.api.hipsSurveys()
+			} finally {
+				this.loadPreference()
+			}
 
-		this.route.queryParams.subscribe((e) => {
-			const data = JSON.parse(decodeURIComponent(e['data'] as string)) as LoadFraming
-			return this.frameFromData(data)
+			if (data) {
+				await this.frameFromData(JSON.parse(data))
+			}
 		})
 	}
 
@@ -55,18 +58,31 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
 		void this.closeImageWindow()
 	}
 
-	private async frameFromData(data: LoadFraming) {
-		this.preference.rightAscension = data.rightAscension || this.preference.rightAscension
-		this.preference.declination = data.declination || this.preference.declination
-		this.preference.width = data.width || this.preference.width
-		this.preference.height = data.height || this.preference.height
-		this.preference.fov = data.fov || this.preference.fov
-		if (data.rotation === 0 || data.rotation) this.preference.rotation = data.rotation
+	private async frameFromData(data?: Partial<FramingRequest>) {
+		if (data) {
+			this.preference.rightAscension = data.rightAscension || this.preference.rightAscension
+			this.preference.declination = data.declination || this.preference.declination
+			this.preference.width = data.width || this.preference.width
+			this.preference.height = data.height || this.preference.height
+			this.preference.fov = data.fov || this.preference.fov
+			if (data.rotation === 0 || data.rotation) this.preference.rotation = data.rotation
 
-		this.savePreference()
+			this.savePreference()
 
-		if (data.rightAscension && data.declination) {
-			await this.frame()
+			if (data.rightAscension && data.declination) {
+				await this.frame()
+			}
+		}
+	}
+
+	protected computeFOV(apply: boolean = this.preference.updateFovOnChange) {
+		const scale = (this.preference.pixelSize / this.preference.focalLength) * 206.265
+		this.fov.computed = (scale * Math.max(this.preference.width, this.preference.height)) / 3600
+
+		if (apply) {
+			this.preference.fov = this.fov.computed
+			this.fov.showDialog = false
+			this.savePreference()
 		}
 	}
 
@@ -89,6 +105,7 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
 	private loadPreference() {
 		Object.assign(this.preference, this.preferenceService.framing.get())
 		this.preference.hipsSurvey = this.hipsSurveys.find((e) => e.id === this.preference.hipsSurvey?.id) ?? this.hipsSurveys[0]
+		this.computeFOV()
 	}
 
 	protected savePreference() {

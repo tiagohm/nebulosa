@@ -1,55 +1,42 @@
-<p class="text-center mb-2">{{ formula.description }}</p>
-<div class="flex align-items-center justify-content-center">
-	<p-tag
-		styleClass="text-lg py-1"
-		[value]="formula.expression" />
+@let mFormula = formula();
+
+<p class="mt-1 mb-2 text-center leading-tight text-gray-400">{{ mFormula.description }}</p>
+<div class="mt-4 flex items-center justify-center">
+	<neb-tag
+		[label]="mFormula.expression"
+		size="large" />
 </div>
-<div class="flex flex-column align-items-center justify-content-center gap-1 mt-4">
-	@for (item of formula.operands; track $index) {
-		<div class="grid">
-			<div class="col-2 align-items-center justify-content-end">
-				<span class="text-xl text-bold">{{ item.prefix }}</span>
-			</div>
-			<div class="col-8 flex justify-content-center">
-				<p-floatLabel>
-					<p-inputNumber
-						[(ngModel)]="item.value"
-						(ngModelChange)="calculateFormula()"
-						[minFractionDigits]="item.minFractionDigits ?? 0"
-						[maxFractionDigits]="item.maxFractionDigits ?? 4"
-						[min]="item.min ?? 0"
-						[showButtons]="true"
-						styleClass="border-0 p-inputtext-sm"
-						locale="en"
-						spinnableNumber />
-					<label>{{ item.label }}</label>
-				</p-floatLabel>
-			</div>
-			<div class="col-2 align-items-center justify-content-start">
-				<span class="text-xl text-bold">{{ item.suffix }}</span>
-			</div>
+<div class="mt-6 flex flex-col items-center justify-center gap-3">
+	@for (item of mFormula.operands; track item.label) {
+		<div class="flex w-full items-center justify-center gap-2">
+			<span class="w-1/6 text-end text-xl font-bold">{{ item.prefix }}</span>
+			<neb-input-number
+				[label]="item.label"
+				[value]="item.value ?? 0"
+				(valueChange)="item.value = $event; calculate()"
+				[fractionDigits]="item.maxFractionDigits ?? 4"
+				[min]="item.min ?? 0"
+				class="w-4/6" />
+			<span class="w-1/6 text-xl font-bold">{{ item.suffix }}</span>
 		</div>
 	}
 </div>
-<p class="text-bold text-center text-5xl mt-0 mb-1">=</p>
-<div class="flex flex-row justify-content-center align-items-center gap-2">
-	<span class="text-2xl text-bold">{{ formula.result.prefix }}</span>
-	<p-floatLabel>
-		<p-inputNumber
-			readonly
-			[ngModel]="formula.result.value"
-			[minFractionDigits]="formula.result.minFractionDigits ?? 0"
-			[maxFractionDigits]="formula.result.maxFractionDigits ?? 4"
-			styleClass="border-0 p-inputtext-sm"
-			locale="en" />
-		<label>{{ formula.result.label }}</label>
-	</p-floatLabel>
-	<span class="text-xl text-bold">{{ formula.result.suffix }}</span>
+<p class="mt-0 mb-1 text-center text-5xl font-bold">=</p>
+<div class="flex items-center justify-center gap-2">
+	<span class="w-1/6 text-end text-xl font-bold">{{ mFormula.result.prefix }}</span>
+	<div class="w-4/6">
+		<neb-input-number
+			[label]="mFormula.result.label"
+			[readonly]="true"
+			[value]="mFormula.result.value ?? 0"
+			[fractionDigits]="mFormula.result.maxFractionDigits ?? 4" />
+	</div>
+	<span class="w-1/6 text-xl font-bold">{{ mFormula.result.suffix }}</span>
 </div>
-<div
-	class="flex justify-content-center mt-3 text-sm"
-	*ngIf="formula.tip">
-	<p-message
-		severity="info"
-		[text]="formula.tip" />
-</div>
+@if (mFormula.tip) {
+	<div class="mt-3 flex justify-center text-sm">
+		<p-message
+			severity="info"
+			[text]="mFormula.tip" />
+	</div>
+}

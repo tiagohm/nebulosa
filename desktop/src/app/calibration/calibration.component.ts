@@ -1,21 +1,29 @@
-import { AfterViewInit, Component, HostListener, OnDestroy, QueryList, ViewChildren, ViewEncapsulation } from '@angular/core'
-import { Listbox } from 'primeng/listbox'
-import { MenuItem } from '../../shared/components/menu-item/menu-item.component'
+import type { AfterViewInit, OnDestroy } from '@angular/core'
+import { Component, HostListener, ViewEncapsulation, inject, viewChildren } from '@angular/core'
+import type { Listbox } from 'primeng/listbox'
+import type { MenuItem } from '../../shared/components/menu-item.component'
 import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { CalibrationFrame, DEFAULT_CALIBRATION_GROUP_DIALOG, DEFAULT_CALIBRATION_PREFERENCE } from '../../shared/types/calibration.types'
+import type { CalibrationFrame } from '../../shared/types/calibration.types'
+import { DEFAULT_CALIBRATION_GROUP_DIALOG, DEFAULT_CALIBRATION_PREFERENCE } from '../../shared/types/calibration.types'
 import { textComparator } from '../../shared/utils/comparators'
 import { AppComponent } from '../app.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-calibration',
-	templateUrl: './calibration.component.html',
+	templateUrl: 'calibration.component.html',
 	encapsulation: ViewEncapsulation.None,
 })
 export class CalibrationComponent implements AfterViewInit, OnDestroy {
+	private readonly api = inject(ApiService)
+	private readonly electronService = inject(ElectronService)
+	private readonly browserWindowService = inject(BrowserWindowService)
+	private readonly preferenceService = inject(PreferenceService)
+
 	protected readonly frames = new Map<string, CalibrationFrame[]>()
 	protected readonly preference = structuredClone(DEFAULT_CALIBRATION_PREFERENCE)
 	protected readonly groupDialog = structuredClone(DEFAULT_CALIBRATION_GROUP_DIALOG)
@@ -119,9 +127,8 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
 			},
 		},
 		{
-			icon: 'mdi mdi-delete',
+			icon: 'mdi mdi-delete text-red-500',
 			label: 'Delete All',
-			iconClass: 'text-danger',
 			command: async () => {
 				if (this.activeGroup && this.activeFrames.length) {
 					await this.deleteFrameGroup(this.activeGroup)
@@ -130,8 +137,7 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
 		},
 	]
 
-	@ViewChildren('frameListBox')
-	private readonly frameListBoxes!: QueryList<Listbox>
+	private readonly frameListBoxes = viewChildren<Listbox>('frameListBox')
 
 	get groups() {
 		return Array.from(this.frames.keys()).sort(textComparator)
@@ -141,13 +147,9 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
 		return this.frames.get(this.activeGroup) ?? []
 	}
 
-	constructor(
-		app: AppComponent,
-		private readonly api: ApiService,
-		private readonly electronService: ElectronService,
-		private readonly browserWindowService: BrowserWindowService,
-		private readonly preferenceService: PreferenceService,
-	) {
+	constructor() {
+		const app = inject(AppComponent)
+
 		app.title = 'Calibration'
 
 		app.topMenu.push({
@@ -402,7 +404,7 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
 	}
 
 	private markFrameListBoxesForCheck() {
-		for (const box of this.frameListBoxes) {
+		for (const box of this.frameListBoxes()) {
 			box.cd.markForCheck()
 		}
 	}

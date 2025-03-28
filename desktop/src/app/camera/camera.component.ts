@@ -1,40 +1,39 @@
-import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
-import { ActivatedRoute } from '@angular/router'
-import { CameraExposureComponent } from '../../shared/components/camera-exposure/camera-exposure.component'
-import { MenuItemCommandEvent, SlideMenuItem } from '../../shared/components/menu-item/menu-item.component'
+import type { OnDestroy } from '@angular/core'
+import { Component, effect, HostListener, inject, NgZone, viewChild } from '@angular/core'
+import { injectQueryParams } from 'ngxtension/inject-query-params'
+import type { CameraExposureComponent } from '../../shared/components/camera-exposure.component'
+import type { MenuItemCommandEvent, SlideMenuItem } from '../../shared/components/menu-item.component'
 import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { Tickable, Ticker } from '../../shared/services/ticker.service'
-import {
-	Camera,
-	cameraCaptureNamingFormatWithDefault,
-	CameraDialogInput,
-	CameraDitherDialog,
-	CameraLiveStackingDialog,
-	CameraMode,
-	CameraNamingFormatDialog,
-	CameraStartCapture,
-	DEFAULT_CAMERA,
-	DEFAULT_CAMERA_PREFERENCE,
-	FrameType,
-	updateCameraStartCaptureFromCamera,
-} from '../../shared/types/camera.types'
-import { Device, DeviceType } from '../../shared/types/device.types'
-import { Focuser } from '../../shared/types/focuser.types'
-import { Mount } from '../../shared/types/mount.types'
-import { Rotator } from '../../shared/types/rotator.types'
+import type { Tickable } from '../../shared/services/ticker.service'
+import { Ticker } from '../../shared/services/ticker.service'
+import type { Camera, CameraDialogInput, CameraDitherDialog, CameraLiveStackingDialog, CameraMode, CameraNamingFormatDialog, CameraStartCapture, FrameType } from '../../shared/types/camera.types'
+import { cameraCaptureNamingFormatWithDefault, DEFAULT_CAMERA, DEFAULT_CAMERA_PREFERENCE, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
+import type { Device, DeviceType } from '../../shared/types/device.types'
+import type { Focuser } from '../../shared/types/focuser.types'
+import type { Mount } from '../../shared/types/mount.types'
+import type { Rotator } from '../../shared/types/rotator.types'
 import { resetCameraCaptureNamingFormat } from '../../shared/types/settings.types'
-import { Wheel } from '../../shared/types/wheel.types'
+import type { Wheel } from '../../shared/types/wheel.types'
 import { AppComponent } from '../app.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-camera',
-	templateUrl: './camera.component.html',
+	templateUrl: 'camera.component.html',
 })
-export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
+export class CameraComponent implements OnDestroy, Tickable {
+	private readonly app = inject(AppComponent)
+	private readonly api = inject(ApiService)
+	private readonly browserWindowService = inject(BrowserWindowService)
+	private readonly electronService = inject(ElectronService)
+	private readonly preferenceService = inject(PreferenceService)
+	private readonly ticker = inject(Ticker)
+	private readonly data = injectQueryParams('data', { transform: (v) => v && decodeURIComponent(v) })
+
 	protected readonly camera = structuredClone(DEFAULT_CAMERA)
 	protected calibrationModel: SlideMenuItem[] = []
 
@@ -115,11 +114,10 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 		format: this.request.namingFormat,
 	}
 
-	@ViewChild('cameraExposure')
-	private readonly cameraExposure?: CameraExposureComponent
+	private readonly cameraExposure = viewChild<CameraExposureComponent>('cameraExposure')
 
 	get status() {
-		return this.cameraExposure?.currentState ?? 'IDLE'
+		return this.cameraExposure()?.currentState ?? 'IDLE'
 	}
 
 	get pausingOrPaused() {
@@ -186,19 +184,12 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 		return this.preference.wheel?.names[this.preference.wheel.position - 1]
 	}
 
-	constructor(
-		private readonly app: AppComponent,
-		private readonly api: ApiService,
-		private readonly browserWindowService: BrowserWindowService,
-		private readonly electronService: ElectronService,
-		private readonly preferenceService: PreferenceService,
-		private readonly route: ActivatedRoute,
-		private readonly ticker: Ticker,
-		ngZone: NgZone,
-	) {
-		app.title = 'Camera'
+	constructor() {
+		const ngZone = inject(NgZone)
 
-		electronService.on('CAMERA.UPDATED', (event) => {
+		this.app.title = 'Camera'
+
+		this.electronService.on('CAMERA.UPDATED', (event) => {
 			if (event.device.id === this.camera.id) {
 				ngZone.run(() => {
 					Object.assign(this.camera, event.device)
@@ -207,7 +198,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 			}
 		})
 
-		electronService.on('CAMERA.DETACHED', (event) => {
+		this.electronService.on('CAMERA.DETACHED', (event) => {
 			if (event.device.id === this.camera.id) {
 				ngZone.run(() => {
 					Object.assign(this.camera, DEFAULT_CAMERA)
@@ -215,15 +206,15 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 			}
 		})
 
-		electronService.on('CAMERA.CAPTURE_ELAPSED', (event) => {
+		this.electronService.on('CAMERA.CAPTURE_ELAPSED', (event) => {
 			if (event.camera.id === this.camera.id) {
 				ngZone.run(() => {
-					this.running = this.cameraExposure?.handleCameraCaptureEvent(event) ?? false
+					this.running = this.cameraExposure()?.handleCameraCaptureEvent(event) ?? false
 				})
 			}
 		})
 
-		electronService.on('MOUNT.UPDATED', (event) => {
+		this.electronService.on('MOUNT.UPDATED', (event) => {
 			if (this.mode === 'CAPTURE' && event.device.id === this.preference.mount?.id) {
 				ngZone.run(() => {
 					if (this.preference.mount) {
@@ -233,7 +224,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 			}
 		})
 
-		electronService.on('MOUNT.ATTACHED', () => {
+		this.electronService.on('MOUNT.ATTACHED', () => {
 			if (this.mode === 'CAPTURE') {
 				void ngZone.run(() => {
 					return this.loadEquipment('MOUNT')
@@ -241,7 +232,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 			}
 		})
 
-		electronService.on('MOUNT.DETACHED', () => {
+		this.electronService.on('MOUNT.DETACHED', () => {
 			if (this.mode === 'CAPTURE') {
 				void ngZone.run(() => {
 					return this.loadEquipment('MOUNT')
@@ -249,7 +240,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 			}
 		})
 
-		electronService.on('WHEEL.UPDATED', (event) => {
+		this.electronService.on('WHEEL.UPDATED', (event) => {
 			if (this.mode === 'CAPTURE' && event.device.id === this.preference.wheel?.id) {
 				ngZone.run(() => {
 					if (this.preference.wheel) {
@@ -259,7 +250,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 			}
 		})
 
-		electronService.on('WHEEL.ATTACHED', () => {
+		this.electronService.on('WHEEL.ATTACHED', () => {
 			if (this.mode === 'CAPTURE') {
 				void ngZone.run(() => {
 					return this.loadEquipment('WHEEL')
@@ -267,7 +258,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 			}
 		})
 
-		electronService.on('WHEEL.DETACHED', () => {
+		this.electronService.on('WHEEL.DETACHED', () => {
 			if (this.mode === 'CAPTURE') {
 				void ngZone.run(() => {
 					return this.loadEquipment('WHEEL')
@@ -275,7 +266,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 			}
 		})
 
-		electronService.on('FOCUSER.UPDATED', (event) => {
+		this.electronService.on('FOCUSER.UPDATED', (event) => {
 			if (this.mode === 'CAPTURE' && event.device.id === this.preference.focuser?.id) {
 				ngZone.run(() => {
 					if (this.preference.focuser) {
@@ -285,7 +276,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 			}
 		})
 
-		electronService.on('FOCUSER.ATTACHED', () => {
+		this.electronService.on('FOCUSER.ATTACHED', () => {
 			if (this.mode === 'CAPTURE') {
 				void ngZone.run(() => {
 					return this.loadEquipment('FOCUSER')
@@ -293,7 +284,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 			}
 		})
 
-		electronService.on('FOCUSER.DETACHED', () => {
+		this.electronService.on('FOCUSER.DETACHED', () => {
 			if (this.mode === 'CAPTURE') {
 				void ngZone.run(() => {
 					return this.loadEquipment('FOCUSER')
@@ -301,7 +292,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 			}
 		})
 
-		electronService.on('ROTATOR.UPDATED', (event) => {
+		this.electronService.on('ROTATOR.UPDATED', (event) => {
 			if (this.mode === 'CAPTURE' && event.device.id === this.preference.rotator?.id) {
 				ngZone.run(() => {
 					if (this.preference.rotator) {
@@ -311,7 +302,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 			}
 		})
 
-		electronService.on('ROTATOR.ATTACHED', () => {
+		this.electronService.on('ROTATOR.ATTACHED', () => {
 			if (this.mode === 'CAPTURE') {
 				void ngZone.run(() => {
 					return this.loadEquipment('ROTATOR')
@@ -319,7 +310,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 			}
 		})
 
-		electronService.on('ROTATOR.DETACHED', () => {
+		this.electronService.on('ROTATOR.DETACHED', () => {
 			if (this.mode === 'CAPTURE') {
 				void ngZone.run(() => {
 					return this.loadEquipment('ROTATOR')
@@ -327,39 +318,40 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 			}
 		})
 
-		electronService.on('CALIBRATION.CHANGED', () => {
+		this.electronService.on('CALIBRATION.CHANGED', () => {
 			void ngZone.run(() => this.loadCalibrationGroups())
 		})
 
-		electronService.on('ROI.SELECTED', (event) => {
+		this.electronService.on('ROI.SELECTED', (event) => {
 			if (event.camera.id === this.camera.id) {
 				ngZone.run(() => {
 					this.request.x = event.x
 					this.request.y = event.y
 					this.request.width = event.width
 					this.request.height = event.height
+					this.preference.subFrame = true
 				})
 			}
 		})
 
 		this.snoopDevicesMenuItem.visible = this.canSnoopDevices
-	}
 
-	ngAfterContentInit() {
-		this.route.queryParams.subscribe(async (e) => {
-			const data = JSON.parse(decodeURIComponent(e['data'] as string)) as unknown
+		effect(async () => {
+			const data = this.data()
 
-			if (this.app.modal) {
-				await this.loadCameraStartCaptureForDialogMode(data as CameraDialogInput)
-			} else {
-				await this.cameraChanged(data as Camera)
-			}
+			if (data) {
+				if (this.app.modal) {
+					await this.loadCameraStartCaptureForDialogMode(JSON.parse(data))
+				} else {
+					await this.cameraChanged(JSON.parse(data))
+				}
 
-			this.ticker.register(this, 30000)
+				this.ticker.register(this, 30000)
 
-			if (this.mode === 'CAPTURE') {
-				await this.loadEquipment()
-				await this.loadCalibrationGroups()
+				if (this.mode === 'CAPTURE') {
+					await this.loadEquipment()
+					await this.loadCalibrationGroups()
+				}
 			}
 		})
 	}

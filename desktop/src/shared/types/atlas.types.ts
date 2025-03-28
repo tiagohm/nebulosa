@@ -22,7 +22,9 @@ export type AltitudePoint = [number, number]
 
 export type SatelliteSearchGroups = Record<SatelliteGroupType, boolean>
 
-export type MoonPhaseName = 'NEW_MOON' | 'FIRST_QUARTER' | 'FULL_MOON' | 'LAST_QUARTER'
+export type EarthSeason = (typeof EARTH_SEASONS)[number]
+
+export type MoonPhase = 'NEW_MOON' | 'FIRST_QUARTER' | 'FULL_MOON' | 'LAST_QUARTER'
 
 export enum BodyTabType {
 	SUN,
@@ -47,10 +49,11 @@ export interface BodyTab {
 
 export interface SunTab extends BodyTab {
 	image: string
+	seasons: EarthSeasonDateTime[]
 }
 
 export interface MoonTab extends BodyTab {
-	phase?: MoonPhase
+	phases?: MoonPhases
 }
 
 export interface PlanetItem {
@@ -173,20 +176,26 @@ export interface DateTimeAndLocation {
 	location: Location
 }
 
-export interface Location {
+export interface Location extends GeographicCoordinate<number> {
 	id: number
 	name: string
-	latitude: number
-	longitude: number
-	elevation: number
 	offsetInMinutes: number
+}
+
+export interface SkyAtlasSettings {
+	fast: boolean
+	useTopocentricForMoonPhases: boolean
 }
 
 export interface SkyAtlasPreference {
 	satellites: SatelliteSearchGroups
 	location: Location
 	favorites: FavoritedSkyBody[]
-	fast: boolean
+	settings: SkyAtlasSettings
+}
+
+export interface SkyAtlasSettingsDialog {
+	showDialog: boolean
 }
 
 export interface SkyAtlasInput {
@@ -209,6 +218,12 @@ export interface HorizontalCoordinate {
 	altitude: Angle
 }
 
+export interface GeographicCoordinate<T = Angle> {
+	longitude: T
+	latitude: T
+	elevation: number
+}
+
 export interface BodyPosition extends EquatorialCoordinate, EquatorialCoordinateJ2000, HorizontalCoordinate {
 	magnitude: number
 	constellation: Constellation
@@ -229,12 +244,17 @@ export interface Twilight {
 	civilDawn: number[]
 }
 
-export interface MoonPhaseDateTime {
+export interface EarthSeasonDateTime {
 	dateTime: number
-	name: MoonPhaseName
+	name: EarthSeason
 }
 
-export interface MoonPhase {
+export interface MoonPhaseDateTime {
+	dateTime: number
+	name: MoonPhase
+}
+
+export interface MoonPhases {
 	current: {
 		phase: number
 		obscuration: number
@@ -315,6 +335,7 @@ export const DEFAULT_SUN: SunTab = {
 	altitude: [],
 	tags: [],
 	image: '',
+	seasons: [],
 }
 
 export const DEFAULT_MOON: MoonTab = {
@@ -528,12 +549,23 @@ export const DEFAULT_DATE_TIME_AND_LOCATION: DateTimeAndLocation = {
 	location: DEFAULT_LOCATION,
 }
 
+export const DEFAULT_SKY_ATLAS_SETTINGS: SkyAtlasSettings = {
+	fast: false,
+	useTopocentricForMoonPhases: false,
+}
+
 export const DEFAULT_SKY_ATLAS_PREFERENCE: SkyAtlasPreference = {
 	satellites: DEFAULT_SATELLITE_SEARCH_GROUPS,
 	location: DEFAULT_DATE_TIME_AND_LOCATION.location,
 	favorites: [],
-	fast: false,
+	settings: DEFAULT_SKY_ATLAS_SETTINGS,
 }
+
+export const DEFAULT_SKY_ATLAS_SETTINGS_DIALOG: SkyAtlasSettingsDialog = {
+	showDialog: false,
+}
+
+export const EARTH_SEASONS = ['MARCH_EQUINOX', 'JUNE_SOLSTICE', 'SEPTEMBER_EQUINOX', 'DECEMBER_SOLSTICE'] as const
 
 export const CLASSIFICATION_TYPES = ['STAR', 'SET_OF_STARS', 'INTERSTELLAR_MEDIUM', 'GALAXY', 'SET_OF_GALAXIES', 'GRAVITATION', 'SPECTRAL', 'OTHER'] as const
 
@@ -884,12 +916,19 @@ export function locationWithDefault(location?: Partial<Location>, source: Locati
 	return location as Location
 }
 
+export function skyAtlasSettingsWithDefault(settings?: Partial<SkyAtlasSettings>, source: SkyAtlasSettings = DEFAULT_SKY_ATLAS_SETTINGS) {
+	if (!settings) return structuredClone(source)
+	settings.fast ??= source.fast
+	settings.useTopocentricForMoonPhases ??= source.useTopocentricForMoonPhases
+	return settings as SkyAtlasSettings
+}
+
 export function skyAtlasPreferenceWithDefault(preference?: Partial<SkyAtlasPreference>, source: SkyAtlasPreference = DEFAULT_SKY_ATLAS_PREFERENCE) {
 	if (!preference) return structuredClone(source)
 	preference.satellites = satelliteSearchGroupsWithDefault(preference.satellites, source.satellites)
 	preference.location = locationWithDefault(preference.location, source.location)
 	preference.favorites ??= source.favorites
-	preference.fast ??= source.fast
+	preference.settings = skyAtlasSettingsWithDefault(preference.settings, source.settings)
 	return preference as SkyAtlasPreference
 }
 

@@ -1,19 +1,28 @@
-import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core'
-import { Chart, ChartData, ChartOptions } from 'chart.js'
+import type { AfterViewInit, OnDestroy, OnInit } from '@angular/core'
+import { Component, HostListener, NgZone, inject, viewChild } from '@angular/core'
+import type { ChartData, ChartOptions } from 'chart.js'
+import { Chart } from 'chart.js'
 import zoomPlugin from 'chartjs-plugin-zoom'
-import { UIChart } from 'primeng/chart'
+import type { UIChart } from 'primeng/chart'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { Tickable, Ticker } from '../../shared/services/ticker.service'
-import { DEFAULT_GUIDER_CHART_INFO, DEFAULT_GUIDER_PHD2, DEFAULT_GUIDER_PREFERENCE, GuideDirection, GuideOutput, Guider, GuiderHistoryStep } from '../../shared/types/guider.types'
+import type { Tickable } from '../../shared/services/ticker.service'
+import { Ticker } from '../../shared/services/ticker.service'
+import type { GuideDirection, GuideOutput, Guider, GuiderHistoryStep } from '../../shared/types/guider.types'
+import { DEFAULT_GUIDER_CHART_INFO, DEFAULT_GUIDER_PHD2, DEFAULT_GUIDER_PREFERENCE } from '../../shared/types/guider.types'
 import { AppComponent } from '../app.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-guider',
-	templateUrl: './guider.component.html',
+	templateUrl: 'guider.component.html',
 })
 export class GuiderComponent implements OnInit, AfterViewInit, OnDestroy, Tickable {
+	private readonly api = inject(ApiService)
+	private readonly ticker = inject(Ticker)
+	private readonly preferenceService = inject(PreferenceService)
+
 	protected guideOutputs: GuideOutput[] = []
 	protected guideOutput?: GuideOutput
 
@@ -22,9 +31,7 @@ export class GuiderComponent implements OnInit, AfterViewInit, OnDestroy, Tickab
 	protected readonly chartInfo = structuredClone(DEFAULT_GUIDER_CHART_INFO)
 
 	private readonly guideHistory: GuiderHistoryStep[] = []
-
-	@ViewChild('chart')
-	private readonly chart!: UIChart
+	private readonly chart = viewChild.required<UIChart>('chart')
 
 	get stopped() {
 		return this.guider.state === 'STOPPED'
@@ -193,14 +200,11 @@ export class GuiderComponent implements OnInit, AfterViewInit, OnDestroy, Tickab
 		},
 	}
 
-	constructor(
-		app: AppComponent,
-		private readonly api: ApiService,
-		private readonly ticker: Ticker,
-		private readonly preferenceService: PreferenceService,
-		electronService: ElectronService,
-		ngZone: NgZone,
-	) {
+	constructor() {
+		const app = inject(AppComponent)
+		const electronService = inject(ElectronService)
+		const ngZone = inject(NgZone)
+
 		app.title = 'Guider'
 
 		electronService.on('GUIDE_OUTPUT.UPDATED', (event) => {
@@ -350,7 +354,7 @@ export class GuiderComponent implements OnInit, AfterViewInit, OnDestroy, Tickab
 		this.chartData.datasets[2].data = this.guideHistory.map((e) => (e.guideStep?.raDuration ?? 0) / durationScale(e.guideStep?.raDirection))
 		this.chartData.datasets[3].data = this.guideHistory.map((e) => (e.guideStep?.decDuration ?? 0) / durationScale(e.guideStep?.decDirection))
 
-		this.chart.refresh()
+		this.chart().refresh()
 	}
 
 	protected async guideOutputChanged() {

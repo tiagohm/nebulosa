@@ -1,688 +1,593 @@
-<div class="grid flex-1">
-	<div class="col-12">
-		<p-tabView
-			[(activeIndex)]="tab"
-			(activeIndexChange)="tabChanged()">
-			<p-tabPanel
-				header="Sun"
-				headerStyleClass="main">
-				<ng-template pTemplate="header">
+<div class="flex flex-col">
+	<div class="h-[265px] w-full">
+		<p-tabs
+			[(value)]="tab"
+			(valueChange)="tabChanged()"
+			[lazy]="true">
+			<p-tablist class="top">
+				<p-tab
+					[value]="0"
+					pTooltip="Sun"
+					tooltipPosition="bottom">
+					<img src="assets/icons/sun.png" />
+				</p-tab>
+				<p-tab
+					[value]="1"
+					pTooltip="Moon"
+					tooltipPosition="bottom">
+					<img src="assets/icons/moon.png" />
+				</p-tab>
+				<p-tab
+					[value]="2"
+					pTooltip="Planets"
+					tooltipPosition="bottom">
+					<img src="assets/icons/jupiter.png" />
+				</p-tab>
+				<p-tab
+					[value]="3"
+					pTooltip="Minor planets"
+					tooltipPosition="bottom">
+					<img src="assets/icons/asteroid.png" />
+				</p-tab>
+				<p-tab
+					[value]="4"
+					pTooltip="Stars & DSOs"
+					tooltipPosition="bottom">
+					<img src="assets/icons/blackhole.png" />
+				</p-tab>
+				<p-tab
+					[value]="5"
+					pTooltip="Satellites"
+					tooltipPosition="bottom">
+					<img src="assets/icons/satellite.png" />
+				</p-tab>
+			</p-tablist>
+			<p-tabpanels>
+				<p-tabpanel [value]="0">
 					<div
-						class="p-3"
-						pTooltip="Sun"
-						tooltipPosition="bottom">
-						<img src="assets/icons/sun.png" />
-					</div>
-				</ng-template>
-				<div
-					class="relative grid flex flex-column align-items-center justify-content-center"
-					[class.invisible]="!sun.image"
-					style="height: 225px">
-					<img
-						[src]="sun.image"
-						style="width: 223px" />
-					<a
-						class="text-sm absolute"
-						style="bottom: -8px"
-						target="_blank"
-						href="https://sdo.gsfc.nasa.gov/assets/img/latest/latest_1024_HMIIC.jpg">
-						<p-tag severity="success">SDO/HMI</p-tag>
-					</a>
-				</div>
-			</p-tabPanel>
-			<p-tabPanel
-				header="Moon"
-				headerStyleClass="main">
-				<ng-template pTemplate="header">
-					<div
-						class="p-3"
-						pTooltip="Moon"
-						tooltipPosition="bottom">
-						<img src="assets/icons/moon.png" />
-					</div>
-				</ng-template>
-				<div
-					class="grid flex align-items-center justify-content-center relative"
-					style="height: 225px">
-					<neb-moon
-						[width]="200"
-						[height]="200"
-						[illuminationRatio]="moon.position.illuminated / 100"
-						[waning]="moon.position.leading" />
-					<div
-						*ngIf="moon.phase"
-						class="absolute w-full text-sm left-0 top-0 p-4 flex flex-row align-items-start justify-content-between">
-						<div class="flex flex-column gap-2">
-							<div class="flex flex-column">
-								<span class="font-bold">Diameter</span>
-								<span>{{ moon.phase.current.diameter }} arcsec</span>
-								<span>{{ (moon.phase.current.diameter / 60).toFixed(2) }} arcmin</span>
-							</div>
-							<div class="flex flex-column">
-								<span class="font-bold">Age</span>
-								<span>{{ moon.phase.current.age }} d</span>
-							</div>
-							<div class="flex flex-column">
-								<span class="font-bold">Lunation</span>
-								<span>{{ moon.phase.current.lunation }}</span>
-							</div>
-							<div class="flex flex-column">
-								<span class="font-bold">Sub-Solar Lon / Lat</span>
-								<span>{{ moon.phase.current.subSolarLon }}° / {{ moon.phase.current.subSolarLat }}°</span>
-							</div>
-							<div class="flex flex-column">
-								<span class="font-bold">Sub-Earth Lon / Lat</span>
-								<span>{{ moon.phase.current.subEarthLon }}° / {{ moon.phase.current.subEarthLat }}°</span>
-							</div>
-							<div class="flex flex-column">
-								<span class="font-bold">Position Angle</span>
-								<span>{{ moon.phase.current.posAngle }}°</span>
-							</div>
-							<div class="mt-1 text-xs">
-								<a
-									target="_blank"
-									href="https://svs.gsfc.nasa.gov/5187/">
-									NASA/SVS
-								</a>
-							</div>
-						</div>
-						<div class="flex flex-column gap-2">
-							@for (phase of moon.phase.phases; track $index) {
-								<div class="flex flex-column gap-1">
-									<span class="font-bold flex align-items-center gap-1 text-sm">
-										@let phaseIcon = phase.name === 'NEW_MOON' ? 'new' : phase.name === 'FIRST_QUARTER' ? 'first-quarter' : phase.name === 'FULL_MOON' ? 'full' : 'last-quarter';
-										<i class="mdi mdi-moon-{{ phaseIcon }}"></i>
-										{{ phase.name | enum | uppercase }}
-									</span>
-									<span class="pl-4">{{ phase.dateTime | date: 'dd HH:mm' }}</span>
+						class="relative m-4 flex h-full flex-col items-center justify-center"
+						[ngClass]="{ invisible: !sun.image }">
+						<img
+							[src]="sun.image"
+							style="width: 180px" />
+						@if (sun.seasons.length) {
+							<div class="absolute top-0 left-0 flex w-full items-start justify-between px-4 py-2 text-sm leading-4">
+								<div class="flex flex-col">
+									<a
+										target="_blank"
+										href="https://sdo.gsfc.nasa.gov/assets/img/latest/latest_1024_HMIIC.jpg">
+										SDO/HMI
+									</a>
 								</div>
-							}
-						</div>
+								<div class="mr-2 flex flex-col gap-2">
+									@for (season of sun.seasons; track $index) {
+										<div class="flex flex-row gap-1">
+											<i class="mdi mdi-{{ seasonIcon(season.name) }}"></i>
+											<div class="flex flex-col gap-1">
+												<span>{{ seasonName(season.name) | uppercase }}</span>
+												<span>{{ season.dateTime | date: 'MM-dd HH:mm' }}</span>
+											</div>
+										</div>
+									}
+								</div>
+							</div>
+						}
 					</div>
-				</div>
-			</p-tabPanel>
-			<p-tabPanel
-				header="Planets"
-				headerStyleClass="main">
-				<ng-template pTemplate="header">
-					<div
-						class="p-3"
-						pTooltip="Planets"
-						tooltipPosition="bottom">
-						<img src="assets/icons/jupiter.png" />
+				</p-tabpanel>
+				<p-tabpanel [value]="1">
+					<div class="relative m-4 flex h-full items-center justify-center">
+						<neb-moon
+							[width]="180"
+							[height]="180"
+							[illuminationRatio]="moon.position.illuminated / 100"
+							[waning]="moon.position.leading" />
+						@if (moon.phases) {
+							<div class="absolute top-0 left-0 flex w-full items-start justify-between px-4 py-2 text-sm leading-4">
+								<div class="flex flex-col gap-1">
+									<div class="flex flex-col gap-0">
+										<span class="font-bold">Diameter</span>
+										<span>{{ moon.phases.current.diameter }}" / {{ (moon.phases.current.diameter / 60).toFixed(2) }}'</span>
+									</div>
+									<div class="flex flex-col gap-0">
+										<span class="font-bold">Age</span>
+										<span>{{ moon.phases.current.age }} d</span>
+									</div>
+									<div class="flex flex-col gap-0">
+										<span class="font-bold">Lunation</span>
+										<span>{{ moon.phases.current.lunation }}</span>
+									</div>
+									<div class="flex flex-col gap-0">
+										<span class="font-bold">Sub-Solar Lon / Lat</span>
+										<span>{{ moon.phases.current.subSolarLon }}° / {{ moon.phases.current.subSolarLat }}°</span>
+									</div>
+									<div class="flex flex-col gap-0">
+										<span class="font-bold">Sub-Earth Lon / Lat</span>
+										<span>{{ moon.phases.current.subEarthLon }}° / {{ moon.phases.current.subEarthLat }}°</span>
+									</div>
+									<div class="flex flex-col gap-0">
+										<span class="font-bold">Position Angle</span>
+										<span>{{ moon.phases.current.posAngle }}°</span>
+									</div>
+									<div class="mt-1 text-xs">
+										<a
+											target="_blank"
+											href="https://svs.gsfc.nasa.gov/5187/">
+											NASA/SVS
+										</a>
+									</div>
+								</div>
+								<div class="flex flex-col gap-2">
+									@for (phase of moon.phases.phases; track $index) {
+										<div class="flex flex-col gap-1">
+											<span class="flex items-center gap-1 text-sm font-bold">
+												@let phaseIcon = phase.name === 'NEW_MOON' ? 'new' : phase.name === 'FIRST_QUARTER' ? 'first-quarter' : phase.name === 'FULL_MOON' ? 'full' : 'last-quarter';
+												<i class="mdi mdi-moon-{{ phaseIcon }}"></i>
+												{{ phase.name | enum | uppercase }}
+											</span>
+											<span class="pl-4">{{ phase.dateTime | date: 'dd HH:mm' }}</span>
+										</div>
+									}
+								</div>
+							</div>
+						}
 					</div>
-				</ng-template>
-				<div class="flex align-items-center justify-content-center px-1">
-					<p-table
-						[value]="planet.planets"
-						class="planet"
-						[(selection)]="planet.selected"
-						(selectionChange)="planetChanged()"
-						selectionMode="single"
-						dataKey="code"
-						styleClass="p-datatable-sm p-datatable-striped">
-						<ng-template pTemplate="header">
-							<tr>
-								<th>Name</th>
-								<th>Type</th>
-							</tr>
-						</ng-template>
-						<ng-template
-							pTemplate="body"
-							let-item>
-							<tr [pSelectableRow]="item">
-								<td>{{ item.name }}</td>
-								<td>{{ item.type }}</td>
-							</tr>
-						</ng-template>
-					</p-table>
-				</div>
-			</p-tabPanel>
-			<p-tabPanel
-				header="Minor Planets"
-				headerStyleClass="main">
-				<ng-template pTemplate="header">
-					<div
-						class="p-3"
-						pTooltip="Minor planets"
-						tooltipPosition="bottom">
-						<img src="assets/icons/asteroid.png" />
+				</p-tabpanel>
+				<p-tabpanel [value]="2">
+					<div class="flex items-center justify-center">
+						<p-table
+							[value]="planet.planets"
+							class="w-full"
+							dataKey="code"
+							[(selection)]="planet.selected"
+							(selectionChange)="planetChanged()"
+							selectionMode="single"
+							[scrollable]="true"
+							scrollHeight="197px"
+							size="small">
+							<ng-template #header>
+								<tr>
+									<th>Name</th>
+									<th>Type</th>
+								</tr>
+							</ng-template>
+							<ng-template
+								pTemplate="body"
+								let-item>
+								<tr [pSelectableRow]="item">
+									<td>{{ item.name }}</td>
+									<td>{{ item.type }}</td>
+								</tr>
+							</ng-template>
+						</p-table>
 					</div>
-				</ng-template>
-				<p-tabView [(activeIndex)]="minorPlanet.tab">
-					<p-tabPanel header="Search">
-						<div class="relative flex mt-3 flex-column align-items-center justify-content-center">
-							<div class="flex w-full align-items-center px-4 gap-2">
-								<p-floatLabel class="w-full">
-									<input
-										pInputText
-										class="p-inputtext-sm border-0 w-full"
-										[(ngModel)]="minorPlanet.search.text"
-										pTooltip="Enter the IAU number, designation, name or SPK-ID for the object of interest."
-										tooltipPosition="bottom" />
-									<label>Search</label>
-								</p-floatLabel>
-								<p-button
-									[disabled]="minorPlanet.search.text.length < 3"
-									(onClick)="searchMinorPlanet()"
+				</p-tabpanel>
+				<p-tabpanel [value]="3">
+					<p-tabs [(value)]="minorPlanet.tab">
+						<p-tablist>
+							<p-tab [value]="0">Search</p-tab>
+							<p-tab [value]="1">Close Approaches</p-tab>
+						</p-tablist>
+						<p-tabpanels>
+							<p-tabpanel [value]="0">
+								<div class="relative m-4 flex flex-col items-center justify-center">
+									<div class="flex w-full items-center gap-2">
+										<neb-input-text
+											label="Search"
+											[(value)]="minorPlanet.search.text"
+											class="flex-1"
+											tooltip="Enter the IAU number, designation, name or SPK-ID for the object of interest." />
+										<neb-button
+											[disabled]="minorPlanet.search.text.length < 3"
+											(action)="searchMinorPlanet()"
+											icon="mdi mdi-magnify"
+											severity="info" />
+									</div>
+									<span
+										class="absolute text-xs text-gray-500"
+										style="top: -38px; right: 64px">
+										<a
+											target="_blank"
+											href="https://ssd-api.jpl.nasa.gov/doc/sbdb.html">
+											JPL SBDB Lookup API
+										</a>
+									</span>
+								</div>
+								<div class="flex flex-col items-center justify-center">
+									<p-table
+										[value]="minorPlanet.search.result?.parameters ?? []"
+										class="w-full"
+										[scrollable]="true"
+										scrollHeight="108px"
+										size="small">
+										<ng-template #header>
+											<tr>
+												<th>Name</th>
+												<th>Description</th>
+												<th>Value</th>
+											</tr>
+										</ng-template>
+										<ng-template
+											pTemplate="body"
+											let-item>
+											<tr>
+												<td>{{ item.name }}</td>
+												<td>{{ item.description }}</td>
+												<td>{{ item.value }} {{ item.unit }}</td>
+											</tr>
+										</ng-template>
+									</p-table>
+								</div>
+							</p-tabpanel>
+							<p-tabpanel [value]="1">
+								<div class="relative m-4 flex flex-col items-center justify-center">
+									<div class="flex w-full items-center gap-2">
+										<neb-input-number
+											label="Days"
+											[min]="1"
+											[max]="30"
+											class="flex-1"
+											[(value)]="minorPlanet.closeApproach.days" />
+										<neb-input-number
+											label="Distance (LD)"
+											[min]="1"
+											[max]="100"
+											[step]="0.1"
+											class="flex-1"
+											[(value)]="minorPlanet.closeApproach.lunarDistance" />
+										<neb-button
+											(action)="closeApproachesOfMinorPlanets()"
+											icon="mdi mdi-magnify"
+											severity="info" />
+									</div>
+									<span
+										class="absolute text-xs text-gray-500"
+										style="top: -38px; right: 46px">
+										<a
+											target="_blank"
+											href="https://ssd-api.jpl.nasa.gov/doc/cad.html">
+											JPL SBDB Close-Approach API
+										</a>
+									</span>
+								</div>
+								<div class="flex flex-col items-center justify-center px-1">
+									<p-table
+										[value]="minorPlanet.closeApproach.result"
+										selectionMode="single"
+										[(selection)]="minorPlanet.closeApproach.selected"
+										(selectionChange)="closeApproachChanged()"
+										dataKey="designation"
+										size="small"
+										[scrollable]="true"
+										scrollHeight="108px"
+										class="w-full">
+										<ng-template #header>
+											<tr>
+												<th>Name</th>
+												<th pSortableColumn="dateTime">
+													Date/Time (Local)
+													<p-sortIcon field="dateTime" />
+												</th>
+												<th pSortableColumn="distance">
+													Distance (LD)
+													<p-sortIcon field="distance" />
+												</th>
+												<th pSortableColumn="absoluteMagnitude">
+													H (mag)
+													<p-sortIcon field="absoluteMagnitude" />
+												</th>
+											</tr>
+										</ng-template>
+										<ng-template
+											pTemplate="body"
+											let-item>
+											<tr [pSelectableRow]="item">
+												<td>{{ item.name }}</td>
+												<td>{{ item.dateTime | date: 'yyyy-MM-dd HH:mm' }}</td>
+												<td>{{ item.distance.toFixed(2) }}</td>
+												<td>{{ item.absoluteMagnitude.toFixed(2) }}</td>
+											</tr>
+										</ng-template>
+									</p-table>
+								</div>
+							</p-tabpanel>
+						</p-tabpanels>
+					</p-tabs>
+				</p-tabpanel>
+				<p-tabpanel [value]="4">
+					<div class="m-4 flex items-center justify-center">
+						<div class="flex w-full items-center gap-2">
+							<neb-input-text
+								label="Search"
+								class="flex-1"
+								[(value)]="skyObject.search.filter.text" />
+							<div class="flex gap-1">
+								<neb-button
+									(action)="searchSkyObject()"
 									icon="mdi mdi-magnify"
 									severity="info"
-									size="small"
-									[text]="true" />
+									tooltip="Search" />
+								<neb-button
+									(action)="skyObject.search.showDialog = true"
+									icon="mdi mdi-filter"
+									tooltip="Filter" />
 							</div>
-							<span
-								class="text-xs absolute text-gray-500"
-								style="top: -30px; right: 64px">
-								<a
-									target="_blank"
-									href="https://ssd-api.jpl.nasa.gov/doc/sbdb.html">
-									JPL SBDB Lookup API
-								</a>
-							</span>
 						</div>
-						<div class="flex flex-column align-items-center justify-content-center mt-2 px-1">
-							<p-table
-								[value]="minorPlanet.search.result?.parameters ?? []"
-								class="minorPlanet"
-								styleClass="p-datatable-sm p-datatable-striped">
-								<ng-template pTemplate="header">
-									<tr>
-										<th>Name</th>
-										<th>Description</th>
-										<th>Value</th>
-									</tr>
-								</ng-template>
-								<ng-template
-									pTemplate="body"
-									let-item>
-									<tr>
-										<td>{{ item.name }}</td>
-										<td>{{ item.description }}</td>
-										<td>{{ item.value }} {{ item.unit }}</td>
-									</tr>
-								</ng-template>
-							</p-table>
-						</div>
-					</p-tabPanel>
-					<p-tabPanel header="Close Approaches">
-						<div class="relative flex mt-3 flex-column align-items-center justify-content-center">
-							<div class="flex w-full align-items-center px-4 gap-2">
-								<p-floatLabel>
-									<p-inputNumber
-										[min]="1"
-										[max]="30"
-										class="w-full"
-										[step]="1"
-										[showButtons]="true"
-										inputStyleClass="p-inputtext-sm border-0 w-full"
-										[(ngModel)]="minorPlanet.closeApproach.days"
-										spinnableNumber />
-									<label>Days</label>
-								</p-floatLabel>
-								<p-floatLabel>
-									<p-inputNumber
-										[min]="1"
-										[max]="100"
-										class="w-full"
-										[step]="0.1"
-										[minFractionDigits]="1"
-										[showButtons]="true"
-										inputStyleClass="p-inputtext-sm border-0 w-full"
-										locale="en"
-										[(ngModel)]="minorPlanet.closeApproach.lunarDistance"
-										spinnableNumber />
-									<label>Distance (LD)</label>
-								</p-floatLabel>
-								<p-button
-									(onClick)="closeApproachesOfMinorPlanets()"
+					</div>
+					<div class="flex items-center justify-center">
+						<p-table
+							[value]="skyObject.search.result"
+							class="w-full"
+							sortField="magnitude"
+							[(selection)]="skyObject.search.selected"
+							(selectionChange)="skyObjectChanged()"
+							selectionMode="single"
+							dataKey="id"
+							size="small"
+							[scrollable]="true"
+							scrollHeight="108px"
+							[paginator]="true"
+							[rows]="100"
+							[pageLinks]="3"
+							[showCurrentPageReport]="true"
+							currentPageReportTemplate="{first}-{last} / {totalRecords}">
+							<ng-template #header>
+								<tr>
+									<th
+										style="width: 40%"
+										pSortableColumn="name">
+										Name
+										<p-sortIcon field="name" />
+									</th>
+									<th
+										style="width: 25%"
+										pSortableColumn="type">
+										Type
+										<p-sortIcon field="type" />
+									</th>
+									<th
+										style="width: 15%"
+										pSortableColumn="magnitude">
+										Mag.
+										<p-sortIcon field="magnitude" />
+									</th>
+									<th
+										style="width: 20%"
+										pSortableColumn="constellation">
+										Const.
+										<p-sortIcon field="constellation" />
+									</th>
+								</tr>
+							</ng-template>
+							<ng-template
+								pTemplate="body"
+								let-item>
+								<tr [pSelectableRow]="item">
+									<td class="text-sm">{{ item.name.join(' · ') }}</td>
+									<td class="text-sm">{{ item.type | enum }}</td>
+									<td class="text-center text-sm">{{ item.magnitude < 30 ? item.magnitude.toFixed(1) : '-' }}</td>
+									<td class="text-center text-sm">{{ item.constellation }}</td>
+								</tr>
+							</ng-template>
+						</p-table>
+					</div>
+				</p-tabpanel>
+				<p-tabpanel [value]="5">
+					<div class="m-4 flex flex-col items-center justify-center">
+						<div class="flex w-full items-center gap-2">
+							<neb-input-text
+								label="Search"
+								class="flex-1"
+								[(value)]="satellite.search.filter.text" />
+							<div class="flex gap-1">
+								<neb-button
+									(action)="searchSatellite()"
 									icon="mdi mdi-magnify"
 									severity="info"
-									size="small"
-									[text]="true" />
+									tooltip="Search" />
+								<neb-button
+									(action)="satellite.search.showDialog = true"
+									icon="mdi mdi-filter"
+									tooltip="Filter" />
 							</div>
-							<span
-								class="text-xs absolute text-gray-500"
-								style="top: -30px; right: 46px">
-								<a
-									target="_blank"
-									href="https://ssd-api.jpl.nasa.gov/doc/cad.html">
-									JPL SBDB Close-Approach API
-								</a>
-							</span>
-						</div>
-						<div class="flex flex-column align-items-center justify-content-center mt-2 px-1">
-							<p-table
-								[value]="minorPlanet.closeApproach.result"
-								class="minorPlanet"
-								selectionMode="single"
-								styleClass="p-datatable-sm p-datatable-striped"
-								[(selection)]="minorPlanet.closeApproach.selected"
-								(selectionChange)="closeApproachChanged()"
-								dataKey="designation">
-								<ng-template pTemplate="header">
-									<tr>
-										<th>Name</th>
-										<th pSortableColumn="dateTime">
-											Date/Time (Local)
-											<p-sortIcon field="dateTime" />
-										</th>
-										<th pSortableColumn="distance">
-											Distance (LD)
-											<p-sortIcon field="distance" />
-										</th>
-										<th pSortableColumn="absoluteMagnitude">
-											H (mag)
-											<p-sortIcon field="absoluteMagnitude" />
-										</th>
-									</tr>
-								</ng-template>
-								<ng-template
-									pTemplate="body"
-									let-item>
-									<tr [pSelectableRow]="item">
-										<td>{{ item.name }}</td>
-										<td>{{ item.dateTime | date: 'yyyy-MM-dd HH:mm' }}</td>
-										<td>{{ item.distance.toFixed(2) }}</td>
-										<td>{{ item.absoluteMagnitude.toFixed(2) }}</td>
-									</tr>
-								</ng-template>
-							</p-table>
-						</div>
-					</p-tabPanel>
-				</p-tabView>
-			</p-tabPanel>
-			<p-tabPanel
-				header="Stars & DSOs"
-				headerStyleClass="main">
-				<ng-template pTemplate="header">
-					<div
-						class="p-3"
-						pTooltip="Stars & DSOs"
-						tooltipPosition="bottom">
-						<img src="assets/icons/blackhole.png" />
-					</div>
-				</ng-template>
-				<div class="flex mt-2 align-items-center justify-content-center">
-					<div class="flex w-full align-items-center px-4 gap-2">
-						<p-floatLabel class="w-full">
-							<input
-								pInputText
-								class="p-inputtext-sm border-0 w-full"
-								[(ngModel)]="skyObject.search.filter.text" />
-							<label>Search</label>
-						</p-floatLabel>
-						<div class="flex flex-row gap-1">
-							<p-button
-								(onClick)="searchSkyObject()"
-								icon="mdi mdi-magnify"
-								size="small"
-								severity="info"
-								[text]="true"
-								pTooltip="Search"
-								tooltipPosition="bottom" />
-							<p-button
-								(onClick)="skyObject.search.showDialog = true"
-								icon="mdi mdi-filter"
-								size="small"
-								[text]="true"
-								pTooltip="Filter"
-								tooltipPosition="bottom" />
 						</div>
 					</div>
-				</div>
-				<div class="flex align-items-center justify-content-center mt-2 px-1">
-					<p-table
-						[value]="skyObject.search.result"
-						class="skyObject"
-						sortField="magnitude"
-						[(selection)]="skyObject.search.selected"
-						(selectionChange)="skyObjectChanged()"
-						selectionMode="single"
-						dataKey="id"
-						styleClass="p-datatable-sm p-datatable-striped"
-						[paginator]="true"
-						[rows]="100"
-						[pageLinks]="3"
-						[showCurrentPageReport]="true"
-						currentPageReportTemplate="{first}-{last} / {totalRecords}">
-						<ng-template pTemplate="header">
-							<tr>
-								<th
-									style="width: 40%"
-									pSortableColumn="name">
-									Name
-									<p-sortIcon field="name" />
-								</th>
-								<th
-									style="width: 25%"
-									pSortableColumn="type">
-									Type
-									<p-sortIcon field="type" />
-								</th>
-								<th
-									style="width: 15%"
-									pSortableColumn="magnitude">
-									Mag.
-									<p-sortIcon field="magnitude" />
-								</th>
-								<th
-									style="width: 20%"
-									pSortableColumn="constellation">
-									Const.
-									<p-sortIcon field="constellation" />
-								</th>
-							</tr>
-						</ng-template>
-						<ng-template
-							pTemplate="body"
-							let-item>
-							<tr [pSelectableRow]="item">
-								<td class="text-sm">{{ item.name.join(' · ') }}</td>
-								<td class="text-sm">{{ item.type | enum }}</td>
-								<td class="text-sm text-center">{{ item.magnitude < 30 ? item.magnitude.toFixed(1) : '-' }}</td>
-								<td class="text-sm text-center">{{ item.constellation }}</td>
-							</tr>
-						</ng-template>
-					</p-table>
-				</div>
-			</p-tabPanel>
-			<p-tabPanel
-				header="TLEs"
-				headerStyleClass="main">
-				<ng-template pTemplate="header">
-					<div
-						class="p-3"
-						pTooltip="Satellites"
-						tooltipPosition="bottom">
-						<img src="assets/icons/satellite.png" />
+					<div class="flex items-center justify-center">
+						<p-table
+							[value]="satellite.search.result"
+							class="w-full"
+							sortField="name"
+							[(selection)]="satellite.search.selected"
+							(selectionChange)="satelliteChanged()"
+							selectionMode="single"
+							dataKey="id"
+							size="small"
+							[scrollable]="true"
+							scrollHeight="108px"
+							[paginator]="true"
+							[rows]="100"
+							[pageLinks]="3"
+							[showCurrentPageReport]="true"
+							currentPageReportTemplate="{first}-{last} / {totalRecords}">
+							<ng-template #header>
+								<tr>
+									<th
+										style="width: 20%"
+										pSortableColumn="id">
+										NORAD ID
+										<p-sortIcon field="id" />
+									</th>
+									<th
+										style="width: 40%"
+										pSortableColumn="name">
+										Name
+										<p-sortIcon field="name" />
+									</th>
+									<th style="width: 40%">Groups</th>
+								</tr>
+							</ng-template>
+							<ng-template
+								pTemplate="body"
+								let-item>
+								<tr [pSelectableRow]="item">
+									<td class="w-8rem">{{ item.id }}</td>
+									<td>{{ item.name }}</td>
+									<td class="max-w-16rem flex flex-wrap gap-1">
+										@for (group of item.groups; track $index) {
+											<neb-success [label]="group" />
+										}
+									</td>
+								</tr>
+							</ng-template>
+						</p-table>
 					</div>
-				</ng-template>
-				<div class="flex mt-2 flex-column align-items-center justify-content-center">
-					<div class="flex w-full align-items-center px-4 gap-2">
-						<p-floatLabel class="w-full">
-							<input
-								pInputText
-								class="p-inputtext-sm border-0 w-full"
-								[(ngModel)]="satellite.search.filter.text" />
-							<label>Search</label>
-						</p-floatLabel>
-						<div class="flex flex-row gap-1">
-							<p-button
-								(onClick)="searchSatellite()"
-								icon="mdi mdi-magnify"
-								size="small"
-								severity="info"
-								[text]="true"
-								pTooltip="Search"
-								tooltipPosition="bottom" />
-							<p-button
-								(onClick)="satellite.search.showDialog = true"
-								icon="mdi mdi-filter"
-								size="small"
-								[text]="true"
-								pTooltip="Filter"
-								tooltipPosition="bottom" />
-						</div>
-					</div>
-				</div>
-				<div class="flex align-items-center justify-content-center mt-2 px-1">
-					<p-table
-						[value]="satellite.search.result"
-						class="satellite"
-						sortField="name"
-						[(selection)]="satellite.search.selected"
-						(selectionChange)="satelliteChanged()"
-						selectionMode="single"
-						dataKey="id"
-						styleClass="p-datatable-sm p-datatable-striped"
-						[paginator]="true"
-						[rows]="100"
-						[pageLinks]="3"
-						[showCurrentPageReport]="true"
-						currentPageReportTemplate="{first}-{last} / {totalRecords}">
-						<ng-template pTemplate="header">
-							<tr>
-								<th
-									style="width: 20%"
-									pSortableColumn="id">
-									NORAD ID
-									<p-sortIcon field="id" />
-								</th>
-								<th
-									style="width: 40%"
-									pSortableColumn="name">
-									Name
-									<p-sortIcon field="name" />
-								</th>
-								<th style="width: 40%">Groups</th>
-							</tr>
-						</ng-template>
-						<ng-template
-							pTemplate="body"
-							let-item>
-							<tr [pSelectableRow]="item">
-								<td class="w-8rem">{{ item.id }}</td>
-								<td>{{ item.name }}</td>
-								<td class="flex flex-row flex-wrap gap-1 max-w-16rem">
-									<p-tag
-										*ngFor="let item of item.groups"
-										severity="success"
-										[value]="item" />
-								</td>
-							</tr>
-						</ng-template>
-					</p-table>
-				</div>
-			</p-tabPanel>
-		</p-tabView>
+				</p-tabpanel>
+			</p-tabpanels>
+		</p-tabs>
 	</div>
-</div>
-<div
-	class="grid px-2 fixed bottom-0"
-	style="height: 212px">
-	<p-tabView
-		[style]="{ height: '258px', width: '100vw' }"
-		styleClass="info">
-		<p-tabPanel leftIcon="mdi mdi-information">
-			<div class="relative grid pt-3 px-3 flex-row justify-content-center">
-				<div class="col-12 pb-0">
-					<div class="grid">
-						<div class="col-3">
-							<p-floatLabel>
-								<input
-									pInputText
-									readonly
-									class="p-inputtext-sm border-0 w-full"
-									[value]="position.rightAscensionJ2000" />
-								<label>RA (J2000)</label>
-							</p-floatLabel>
+	<div class="relative h-[230px] w-full">
+		<p-tabs
+			value="0"
+			[lazy]="true">
+			<p-tablist>
+				<p-tab value="0"><i class="mdi mdi-information"></i></p-tab>
+				<p-tab value="1"><i class="mdi mdi-chart-bell-curve"></i></p-tab>
+			</p-tablist>
+			<p-tabpanels>
+				<p-tabpanel value="0">
+					<div class="relative grid grid-cols-4 gap-3 px-4 pt-3">
+						<div class="col-span-1">
+							<neb-input-text
+								label="RA (J2000)"
+								[readonly]="true"
+								[value]="position.rightAscensionJ2000" />
 						</div>
-						<div class="col-3">
-							<p-floatLabel>
-								<input
-									pInputText
-									readonly
-									class="p-inputtext-sm border-0 w-full"
-									[value]="position.declinationJ2000" />
-								<label>DEC (J2000)</label>
-							</p-floatLabel>
+						<div class="col-span-1">
+							<neb-input-text
+								label="DEC (J2000)"
+								[readonly]="true"
+								[value]="position.declinationJ2000" />
 						</div>
-						<div class="col-3">
-							<p-floatLabel>
-								<input
-									pInputText
-									readonly
-									class="p-inputtext-sm border-0 w-full"
-									[value]="position.rightAscension" />
-								<label>RA</label>
-							</p-floatLabel>
+						<div class="col-span-1">
+							<neb-input-text
+								label="RA"
+								[readonly]="true"
+								[value]="position.rightAscension" />
 						</div>
-						<div class="col-3">
-							<p-floatLabel>
-								<input
-									pInputText
-									readonly
-									class="p-inputtext-sm border-0 w-full"
-									[value]="position.declination" />
-								<label>DEC</label>
-							</p-floatLabel>
+						<div class="col-span-1">
+							<neb-input-text
+								label="DEC"
+								[readonly]="true"
+								[value]="position.declination" />
 						</div>
-						<div class="col-3">
-							<p-floatLabel>
-								<input
-									pInputText
-									readonly
-									class="p-inputtext-sm border-0 w-full"
-									[value]="position.azimuth" />
-								<label>Azimuth</label>
-							</p-floatLabel>
+						<div class="col-span-1">
+							<neb-input-text
+								label="Azimuth"
+								[readonly]="true"
+								[value]="position.azimuth" />
 						</div>
-						<div class="col-3">
-							<p-floatLabel>
-								<input
-									pInputText
-									readonly
-									class="p-inputtext-sm border-0 w-full"
-									[value]="position.altitude" />
-								<label>Altitude</label>
-							</p-floatLabel>
+						<div class="col-span-1">
+							<neb-input-text
+								label="Altitude"
+								[readonly]="true"
+								[value]="position.altitude" />
 						</div>
-						<div class="col-3">
-							<p-floatLabel>
-								<input
-									pInputText
-									readonly
-									class="p-inputtext-sm border-0 w-full"
-									[value]="position.magnitude < 30 ? position.magnitude.toFixed(2) : '-'" />
-								<label>Magnitude</label>
-							</p-floatLabel>
+						<div class="col-span-1">
+							<neb-input-text
+								label="Magnitude"
+								[readonly]="true"
+								[value]="position.magnitude < 30 ? position.magnitude.toFixed(2) : '-'" />
 						</div>
-						<div class="col-3">
-							<p-floatLabel>
-								<input
-									pInputText
-									readonly
-									class="p-inputtext-sm border-0 w-full"
-									[value]="position.constellation" />
-								<label>Constellation</label>
-							</p-floatLabel>
+						<div class="col-span-1">
+							<neb-input-text
+								label="Constellation"
+								[readonly]="true"
+								[value]="position.constellation" />
 						</div>
-						<div class="col-3">
-							<p-floatLabel>
-								<input
-									pInputText
-									readonly
-									class="p-inputtext-sm border-0 w-full"
-									[value]="position.distance.toFixed(3)" />
-								<label>Distance ({{ position.distanceUnit }})</label>
-							</p-floatLabel>
+						<div class="col-span-1">
+							<neb-input-text
+								label="Distance ({{ position.distanceUnit }})"
+								[readonly]="true"
+								[value]="position.distance.toFixed(3)" />
 						</div>
-						<div class="col-3">
-							<p-floatLabel>
-								<input
-									pInputText
-									readonly
-									class="p-inputtext-sm border-0 w-full"
-									[value]="position.illuminated.toFixed(3)" />
-								<label>Illuminated (%)</label>
-							</p-floatLabel>
+						<div class="col-span-1">
+							<neb-input-text
+								label="Illuminated (%)"
+								[readonly]="true"
+								[value]="position.illuminated.toFixed(3)" />
 						</div>
-						<div class="col-3">
-							<p-floatLabel>
-								<input
-									pInputText
-									readonly
-									class="p-inputtext-sm border-0 w-full"
-									[value]="position.elongation.toFixed(3)" />
-								<label>Elongation (°)</label>
-							</p-floatLabel>
+						<div class="col-span-1">
+							<neb-input-text
+								label="Elongation (°)"
+								[readonly]="true"
+								[value]="position.elongation.toFixed(3)" />
 						</div>
 					</div>
-				</div>
-				<div
-					[class.invisible]="tab === 4"
-					class="col-12 justify-content-center pt-0 text-xs">
-					<a
-						target="_blank"
-						href="https://ssd.jpl.nasa.gov/horizons/">
-						JPL Horizons
-					</a>
-				</div>
-				<div class="col-12 pt-0 flex justify-content-center">
-					<p-button
-						[disabled]="!body.name"
-						[text]="true"
-						severity="info"
-						(onClick)="mountSync()"
-						icon="mdi mdi-sync"
-						label="Sync"
-						size="small" />
-					<p-button
-						[disabled]="!body.name"
-						[text]="true"
-						severity="success"
-						(onClick)="mountGoTo()"
-						icon="mdi mdi-telescope"
-						label="Go To"
-						size="small" />
-					<p-button
-						[disabled]="!body.name"
-						[text]="true"
-						severity="success"
-						(onClick)="mountSlew()"
-						icon="mdi mdi-telescope"
-						label="Slew"
-						size="small" />
-					<p-button
-						[disabled]="!body.name"
-						[text]="true"
-						(onClick)="frame()"
-						icon="mdi mdi-image"
-						label="Frame"
-						size="small" />
-				</div>
-			</div>
-		</p-tabPanel>
-		<p-tabPanel leftIcon="mdi mdi-chart-bell-curve">
-			<div class="p-1">
-				<p-chart
-					#chart
-					width="100%"
-					height="170px"
-					[data]="altitudeData"
-					[responsive]="true"
-					[options]="altitudeOptions" />
-			</div>
-		</p-tabPanel>
-	</p-tabView>
-	<div
-		class="col-9 flex align-items-center justify-content-between absolute gap-1 overflow-hidden"
-		style="height: 32px; left: 95px; top: 2px; padding-right: 70px">
-		<p-button
-			[disabled]="!body.name"
-			[text]="true"
-			[rounded]="true"
-			icon="mdi mdi-md mdi-dots-vertical"
-			(click)="ephemerisMenu.show()" />
-		@if (body.name && canFavorite) {
-			<p-button
-				[text]="true"
-				[rounded]="true"
-				icon="{{ favorited ? 'mdi mdi-star' : 'mdi mdi-star-outline' }}"
-				pTooltip="{{ favorited ? 'Unfavorite' : 'Favorite' }}"
-				tooltipPosition="bottom"
-				(onClick)="favorite()" />
-		}
-		<span
-			class="flex w-full align-items-center gap-1 justify-content-center"
-			style="min-width: -webkit-fill-available">
-			<span class="text-overflow-scroll font-bold">{{ body.name }}</span>
-			<p-tag
-				*ngFor="let tag of body.tags"
-				[severity]="tag.severity"
-				[value]="tag.label"
-				styleClass="white-space-nowrap" />
-		</span>
+				</p-tabpanel>
+				<p-tabpanel value="1">
+					<div class="w-full p-1">
+						<p-chart
+							#chart
+							width="100%"
+							height="170px"
+							[data]="altitudeData"
+							[responsive]="true"
+							[options]="altitudeOptions" />
+					</div>
+				</p-tabpanel>
+			</p-tabpanels>
+		</p-tabs>
+		<div class="mt-4 flex w-full justify-center">
+			<neb-button
+				[disabled]="!body.name"
+				severity="info"
+				(action)="mountSync()"
+				icon="mdi mdi-sync"
+				label="Sync" />
+			<neb-button
+				[disabled]="!body.name"
+				severity="success"
+				(action)="mountGoTo()"
+				icon="mdi mdi-telescope"
+				label="Go To" />
+			<neb-button
+				[disabled]="!body.name"
+				severity="success"
+				(action)="mountSlew()"
+				icon="mdi mdi-telescope"
+				label="Slew" />
+			<neb-button
+				[disabled]="!body.name"
+				(action)="frame()"
+				icon="mdi mdi-image"
+				label="Frame" />
+		</div>
+		<div
+			class="absolute flex w-9/12 items-center justify-between gap-1 overflow-hidden"
+			style="height: 32px; left: 95px; top: 2px; padding-right: 70px">
+			<neb-button
+				[disabled]="!body.name"
+				icon="mdi mdi-md mdi-dots-vertical"
+				(action)="ephemerisMenu.show(ephemerisModel)" />
+			@if (body.name && canFavorite) {
+				<neb-button
+					icon="{{ favorited ? 'mdi mdi-star' : 'mdi mdi-star-outline' }}"
+					tooltip="{{ favorited ? 'Unfavorite' : 'Favorite' }}"
+					(action)="favorite()" />
+			}
+			<span
+				class="flex w-full items-center justify-center gap-1"
+				style="min-width: -webkit-fill-available">
+				<span class="text-overflow-scroll font-bold">
+					{{ body.name }}
+					@for (tag of body.tags; track $index) {
+						<neb-tag
+							class="ml-1"
+							[severity]="tag.severity"
+							[label]="tag.label" />
+					}
+				</span>
+			</span>
+		</div>
 	</div>
 </div>
 
@@ -708,116 +613,65 @@
 	[(visible)]="skyObject.search.showDialog"
 	[modal]="true"
 	[style]="{ width: '80vw' }">
-	<div class="grid mt-2">
-		<div class="col-4">
-			<p-floatLabel>
-				<input
-					pInputText
-					[disabled]="skyObject.search.filter.radius <= 0"
-					class="p-inputtext-sm border-0 w-full"
-					[value]="skyObject.search.filter.rightAscension" />
-				<label>RA (h)</label>
-			</p-floatLabel>
+	<div class="mt-2 grid grid-cols-6 gap-3">
+		<div class="col-span-2">
+			<neb-input-text
+				label="RA (h)"
+				[disabled]="skyObject.search.filter.radius <= 0"
+				[(value)]="skyObject.search.filter.rightAscension" />
 		</div>
-		<div class="col-4">
-			<p-floatLabel>
-				<input
-					pInputText
-					[disabled]="skyObject.search.filter.radius <= 0"
-					class="p-inputtext-sm border-0 w-full"
-					[value]="skyObject.search.filter.declination" />
-				<label>DEC (°)</label>
-			</p-floatLabel>
+		<div class="col-span-2">
+			<neb-input-text
+				label="DEC (°)"
+				[disabled]="skyObject.search.filter.radius <= 0"
+				[(value)]="skyObject.search.filter.declination" />
 		</div>
-		<div class="col-4">
-			<p-floatLabel>
-				<p-inputNumber
-					[min]="0"
-					[max]="90"
-					class="w-full"
-					[step]="0.1"
-					[minFractionDigits]="1"
-					[maxFractionDigits]="1"
-					[showButtons]="true"
-					inputStyleClass="p-inputtext-sm border-0 w-full"
-					locale="en"
-					[(ngModel)]="skyObject.search.filter.radius"
-					spinnableNumber />
-				<label>Radius (°)</label>
-			</p-floatLabel>
+		<div class="col-span-2">
+			<neb-input-number
+				label="Radius (°)"
+				[min]="0"
+				[max]="90"
+				[step]="0.1"
+				[(value)]="skyObject.search.filter.radius" />
 		</div>
-		<div class="col-6">
-			<p-floatLabel class="w-full">
-				@let constellations = ['ALL'].concat('CONSTELLATION' | dropdownOptions);
-				<p-dropdown
-					[options]="constellations | enumDropdown"
-					[(ngModel)]="skyObject.search.filter.constellation"
-					[filter]="true"
-					appendTo="body"
-					optionLabel="label"
-					optionValue="value"
-					styleClass="p-inputtext-sm border-0"
-					[autoDisplayFirst]="false" />
-				<label>Constellation</label>
-			</p-floatLabel>
+		<div class="col-span-3">
+			@let constellations = ['ALL'].concat('CONSTELLATION' | dropdownOptions);
+			<neb-dropdown-enum
+				label="Constellation"
+				[options]="constellations"
+				[(value)]="skyObject.search.filter.constellation"
+				[filter]="true" />
 		</div>
-		<div class="col-6">
-			<p-floatLabel class="w-full">
-				@let skyObjectTypes = ['ALL'].concat('SKY_OBJECT_TYPE' | dropdownOptions);
-				<p-dropdown
-					[options]="skyObjectTypes | enumDropdown"
-					[(ngModel)]="skyObject.search.filter.type"
-					appendTo="body"
-					[filter]="true"
-					optionLabel="label"
-					optionValue="value"
-					styleClass="p-inputtext-sm border-0"
-					[autoDisplayFirst]="false" />
-				<label>Type</label>
-			</p-floatLabel>
+		<div class="col-span-3">
+			@let skyObjectTypes = ['ALL'].concat('SKY_OBJECT_TYPE' | dropdownOptions);
+			<neb-dropdown-enum
+				label="Type"
+				[options]="skyObjectTypes"
+				[(value)]="skyObject.search.filter.type"
+				[filter]="true" />
 		</div>
-		<div class="col-4">
-			<p-floatLabel>
-				<p-inputNumber
-					[min]="-30"
-					[max]="30"
-					class="w-full"
-					[step]="0.1"
-					[minFractionDigits]="1"
-					[maxFractionDigits]="1"
-					[showButtons]="true"
-					inputStyleClass="p-inputtext-sm border-0 w-full"
-					locale="en"
-					[(ngModel)]="skyObject.search.filter.magnitudeMin"
-					spinnableNumber />
-				<label>Mag. min</label>
-			</p-floatLabel>
+		<div class="col-span-3">
+			<neb-input-number
+				label="Mag. min"
+				[min]="-30"
+				[max]="30"
+				[step]="0.1"
+				[(value)]="skyObject.search.filter.magnitudeMin" />
 		</div>
-		<div class="col-4">
-			<p-floatLabel>
-				<p-inputNumber
-					[min]="-30"
-					[max]="30"
-					class="w-full"
-					[step]="0.1"
-					[minFractionDigits]="1"
-					[maxFractionDigits]="1"
-					[showButtons]="true"
-					inputStyleClass="p-inputtext-sm border-0 w-full"
-					locale="en"
-					[(ngModel)]="skyObject.search.filter.magnitudeMax"
-					spinnableNumber />
-				<label>Mag. max</label>
-			</p-floatLabel>
+		<div class="col-span-3">
+			<neb-input-number
+				label="Mag. max"
+				[min]="-30"
+				[max]="30"
+				[step]="0.1"
+				[(value)]="skyObject.search.filter.magnitudeMax" />
 		</div>
 	</div>
-	<ng-template pTemplate="footer">
-		<p-button
-			[text]="true"
+	<ng-template #footer>
+		<neb-button
 			icon="mdi mdi-filter"
 			label="Filter"
-			size="small"
-			(onClick)="searchSkyObject()" />
+			(action)="searchSkyObject()" />
 	</ng-template>
 </p-dialog>
 
@@ -827,123 +681,110 @@
 	[(visible)]="satellite.search.showDialog"
 	[modal]="true"
 	[style]="{ width: '80vw' }">
-	<div class="grid mt-2">
-		<div class="col-12 flex flex-column gap-1 align-items-start flex-wrap">
+	<div class="mt-2">
+		<div class="flex w-full flex-col flex-wrap items-start gap-1">
 			@let groups = 'SATELLITE_GROUP_TYPE' | dropdownOptions;
 
 			@for (group of groups; track $index) {
-				<p-checkbox
-					[binary]="true"
-					[(ngModel)]="satellite.search.filter.groups[group]"
-					(ngModelChange)="savePreference()"
+				<neb-checkbox
+					[(value)]="satellite.search.filter.groups[group]"
+					(valueChange)="savePreference()"
 					[label]="group | enum"
-					class="white-space-nowrap" />
+					[noWrap]="true" />
 			}
 		</div>
 	</div>
-	<ng-template pTemplate="footer">
-		<p-button
-			[text]="true"
+	<ng-template #footer>
+		<neb-button
 			severity="danger"
 			icon="mdi mdi-restore"
 			label="Reset"
-			size="small"
-			(onClick)="resetSatelliteSearchGroups()" />
-		<p-button
-			[text]="true"
+			(action)="resetSatelliteSearchGroups()" />
+		<neb-button
 			icon="mdi mdi-filter"
 			label="Filter"
-			size="small"
-			(onClick)="searchSatellite()" />
+			(action)="searchSatellite()" />
 	</ng-template>
 </p-dialog>
 
-<p-overlayPanel
-	#dateTimeAndLocationPanel
+<p-dialog
+	header="Settings"
+	[draggable]="false"
+	[(visible)]="settings.showDialog"
+	[modal]="false"
+	[style]="{ width: '80vw' }">
+	<div class="grid grid-cols-1 gap-3">
+		<neb-checkbox
+			[(value)]="preference.settings.useTopocentricForMoonPhases"
+			(valueChange)="settingsChanged('useTopocentricForMoonPhases')"
+			label="Use topocentric coordinates for Moon phases" />
+	</div>
+</p-dialog>
+
+<p-popover
+	#dateTimeAndLocationPopover
 	[style]="{ width: 'calc(100% - 8px)', marginLeft: '4px' }"
 	appendTo="body">
-	<ng-template pTemplate="content">
-		<div class="grid">
-			<div class="col-7 flex-column gap-2">
-				<p-calendar
+	<ng-template #content>
+		<div class="grid grid-cols-12 gap-2">
+			<div class="col-span-7">
+				<p-date-picker
 					[disabled]="!dateTimeAndLocation.manual"
 					[ngModel]="dateTimeAndLocation.dateTime"
-					(ngModelChange)="dateTimeChanged(true, $event)"
+					(ngModelChange)="dateChanged($event)"
 					[inline]="true"
 					[showIcon]="true"
 					[showWeek]="true"
 					[showButtonBar]="false"
 					dateFormat="yy-mm-dd"
-					styleClass="w-full" />
+					class="w-full" />
 			</div>
-			<div class="col-5 flex-column gap-3 align-items-center justify-content-start gap-1">
-				<div class="flex flex-column justify-content-center align-items-center gap-1">
-					<span>Date Time</span>
-					<p-inputSwitch
-						[(ngModel)]="dateTimeAndLocation.manual"
-						(ngModelChange)="manualDateTimeChanged()" />
+			<div class="col-span-5 flex flex-col items-center justify-start gap-3">
+				<neb-switch
+					label="Date Time"
+					[(value)]="dateTimeAndLocation.manual"
+					(valueChange)="manualDateTimeChanged()" />
+				<div class="grid w-full grid-cols-2 gap-3">
+					<neb-input-number
+						label="Hour"
+						[disabled]="!dateTimeAndLocation.manual"
+						[min]="-1"
+						[max]="24"
+						[value]="dateTimeAndLocation.dateTime.getHours()"
+						(valueChange)="timeChanged($event, undefined)"
+						[format]="false" />
+					<neb-input-number
+						label="Minute"
+						[disabled]="!dateTimeAndLocation.manual"
+						[min]="-1"
+						[max]="60"
+						[value]="dateTimeAndLocation.dateTime.getMinutes()"
+						(valueChange)="timeChanged(undefined, $event)"
+						[format]="false" />
 				</div>
-				<div class="flex flex-column align-items-center gap-3">
-					<div class="flex align-items-center justify-content-center gap-2">
-						<p-floatLabel class="w-full">
-							<p-inputNumber
-								[disabled]="!dateTimeAndLocation.manual"
-								[ngModel]="dateTimeAndLocation.dateTime.getHours()"
-								(ngModelChange)="dateTimeAndLocation.dateTime.setHours($event); dateTimeChanged(false)"
-								[showButtons]="true"
-								[min]="0"
-								[max]="23"
-								[format]="false"
-								[allowEmpty]="false"
-								styleClass="p-inputtext-sm border-0"
-								spinnableNumber />
-							<label>Hour</label>
-						</p-floatLabel>
-						<p-floatLabel class="w-full">
-							<p-inputNumber
-								[disabled]="!dateTimeAndLocation.manual"
-								[ngModel]="dateTimeAndLocation.dateTime.getMinutes()"
-								(ngModelChange)="dateTimeAndLocation.dateTime.setMinutes($event); dateTimeChanged(false)"
-								[showButtons]="true"
-								[min]="0"
-								[max]="59"
-								[format]="false"
-								[allowEmpty]="false"
-								styleClass="p-inputtext-sm border-0"
-								spinnableNumber />
-							<label>Minute</label>
-						</p-floatLabel>
-					</div>
-					<p-floatLabel class="w-full">
-						<p-dropdown
-							[options]="locations"
-							[(ngModel)]="dateTimeAndLocation.location"
-							(ngModelChange)="locationChanged()"
-							optionLabel="name"
-							dataKey="id"
-							styleClass="p-inputtext-sm border-0"
-							emptyMessage="No location found"
-							[autoDisplayFirst]="false" />
-						<label>Location</label>
-					</p-floatLabel>
-				</div>
+				<neb-dropdown
+					label="Location"
+					[options]="locations"
+					[(value)]="dateTimeAndLocation.location"
+					(valueChange)="locationChanged()"
+					emptyMessage="No location available" />
 			</div>
 		</div>
 	</ng-template>
-</p-overlayPanel>
+</p-popover>
 
-<p-overlayPanel
-	#favoritesPanel
+<p-popover
+	#bookmarkPopover
 	[style]="{ width: 'calc(100% - 8px)', marginLeft: '4px' }"
 	appendTo="body">
-	<ng-template pTemplate="content">
+	<ng-template #content>
 		<div class="grid">
 			<p-listbox
 				[options]="preference.favorites"
 				[ngModel]="favorited"
-				(ngModelChange)="selectFavorite($event); favoritesPanel.hide()"
+				(ngModelChange)="selectFavorite($event); bookmarkPopover.hide()"
 				class="w-full"
-				styleClass="border-0 w-full"
+				styleClass="w-full"
 				[metaKeySelection]="false"
 				[filter]="true"
 				[filterFields]="['name']"
@@ -951,32 +792,27 @@
 				[listStyle]="{ maxHeight: '188px', height: '188px' }"
 				emptyMessage="No favorites">
 				<ng-template
-					let-item
-					pTemplate="item">
-					<div class="flex align-items-center justify-content-between gap-1 w-full">
-						<span class="text-sm">
+					#item
+					let-item>
+					<div class="flex w-full items-center justify-between gap-1 text-sm">
+						<div class="flex flex-col justify-center gap-1">
 							<span class="font-bold">{{ item.type | enum }}</span>
-							<span class="ml-1">{{ item.name }}</span>
-						</span>
-						<p-button
-							[text]="true"
-							[rounded]="true"
+							<span>{{ item.name }}</span>
+						</div>
+						<neb-button
 							icon="mdi mdi-delete"
 							severity="danger"
-							size="small"
-							pTooltip="Remove"
-							tooltipPosition="bottom"
-							(onClick)="deleteFavorite(item); $event.stopImmediatePropagation()" />
+							tooltip="Remove"
+							(action)="deleteFavorite(item)" />
 					</div>
 				</ng-template>
 			</p-listbox>
 		</div>
 	</ng-template>
-</p-overlayPanel>
+</p-popover>
 
 <neb-dialog-menu
 	#ephemerisMenu
-	[model]="ephemerisModel"
 	[header]="body.name.split(' · ')[0]" />
 
 <neb-device-list-menu #deviceMenu />

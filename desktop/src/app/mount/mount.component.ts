@@ -1,38 +1,50 @@
-import { AfterContentInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
-import { ActivatedRoute } from '@angular/router'
+import type { OnDestroy } from '@angular/core'
+import { Component, HostListener, NgZone, effect, inject } from '@angular/core'
 import hotkeys from 'hotkeys-js'
-import { Subject, Subscription, interval, throttleTime } from 'rxjs'
-import { SlideMenuItem } from '../../shared/components/menu-item/menu-item.component'
+import { injectQueryParams } from 'ngxtension/inject-query-params'
+import type { Subscription } from 'rxjs'
+import { Subject, interval, throttleTime } from 'rxjs'
+import type { SlideMenuItem } from '../../shared/components/menu-item.component'
 import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
-import { AngularService } from '../../shared/services/angular.service'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { Tickable, Ticker } from '../../shared/services/ticker.service'
-import { BodyTabType, ComputedLocation, DEFAULT_COMPUTED_LOCATION } from '../../shared/types/atlas.types'
-import { DEFAULT_MOUNT, DEFAULT_MOUNT_PREFERENCE, DEFAULT_MOUNT_REMOTE_CONTROL_DIALOG, Mount, MountRemoteControlProtocol, MountSlewDirection, SlewRate, TrackMode } from '../../shared/types/mount.types'
+import type { Tickable } from '../../shared/services/ticker.service'
+import { Ticker } from '../../shared/services/ticker.service'
+import type { ComputedLocation } from '../../shared/types/atlas.types'
+import { BodyTabType, DEFAULT_COMPUTED_LOCATION } from '../../shared/types/atlas.types'
+import type { Mount, MountRemoteControlProtocol, MountSlewDirection, TrackMode } from '../../shared/types/mount.types'
+import { DEFAULT_MOUNT, DEFAULT_MOUNT_PREFERENCE, DEFAULT_MOUNT_REMOTE_CONTROL_DIALOG, DEFAULT_MOUNT_SITE_DIALOG, DEFAULT_MOUNT_TIME_DIALOG } from '../../shared/types/mount.types'
 import { AppComponent } from '../app.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-mount',
-	templateUrl: './mount.component.html',
+	templateUrl: 'mount.component.html',
 })
-export class MountComponent implements AfterContentInit, OnDestroy, Tickable {
+export class MountComponent implements OnDestroy, Tickable {
+	private readonly app = inject(AppComponent)
+	private readonly api = inject(ApiService)
+	private readonly browserWindowService = inject(BrowserWindowService)
+	private readonly preferenceService = inject(PreferenceService)
+	private readonly ticker = inject(Ticker)
+	private readonly data = injectQueryParams('data', { transform: (v) => v && decodeURIComponent(v) })
+
 	protected readonly mount = structuredClone(DEFAULT_MOUNT)
 	protected readonly remoteControl = structuredClone(DEFAULT_MOUNT_REMOTE_CONTROL_DIALOG)
 	protected readonly preference = structuredClone(DEFAULT_MOUNT_PREFERENCE)
 	protected readonly currentComputedLocation = structuredClone(DEFAULT_COMPUTED_LOCATION)
 	protected readonly targetComputedLocation = structuredClone(DEFAULT_COMPUTED_LOCATION)
+	protected readonly site = structuredClone(DEFAULT_MOUNT_SITE_DIALOG)
+	protected readonly time = structuredClone(DEFAULT_MOUNT_TIME_DIALOG)
 
 	private readonly computeCoordinatePublisher = new Subject<void>()
 	private readonly computeTargetCoordinatePublisher = new Subject<void>()
 	private readonly computeCoordinateSubscriptions: Subscription[] = []
 	private readonly moveToDirection = [false, false]
 
-	protected tracking = false
-	protected trackMode: TrackMode = 'SIDEREAL'
-	protected slewRate?: SlewRate
+	protected slewRate?: string
 	protected slewingDirection?: MountSlewDirection
 
 	protected readonly ephemerisModel: SlideMenuItem[] = [
@@ -203,18 +215,11 @@ export class MountComponent implements AfterContentInit, OnDestroy, Tickable {
 
 	protected targetCoordinateCommand = this.targetCoordinateModel[0]
 
-	constructor(
-		private readonly app: AppComponent,
-		private readonly api: ApiService,
-		private readonly browserWindowService: BrowserWindowService,
-		electronService: ElectronService,
-		private readonly preferenceService: PreferenceService,
-		private readonly route: ActivatedRoute,
-		private readonly angularService: AngularService,
-		private readonly ticker: Ticker,
-		ngZone: NgZone,
-	) {
-		app.title = 'Mount'
+	constructor() {
+		const electronService = inject(ElectronService)
+		const ngZone = inject(NgZone)
+
+		this.app.title = 'Mount'
 
 		electronService.on('MOUNT.UPDATED', async (event) => {
 			if (event.device.id === this.mount.id) {
@@ -253,7 +258,7 @@ export class MountComponent implements AfterContentInit, OnDestroy, Tickable {
 		})
 		hotkeys('enter', (event) => {
 			event.preventDefault()
-			void this.targetCoordinateCommandClicked()
+			void this.targetCoordinateClicked()
 		})
 		hotkeys('w,up', { keyup: true }, (event) => {
 			event.preventDefault()
@@ -287,13 +292,14 @@ export class MountComponent implements AfterContentInit, OnDestroy, Tickable {
 			event.preventDefault()
 			this.moveTo('SE', event.type === 'keydown')
 		})
-	}
 
-	ngAfterContentInit() {
-		this.route.queryParams.subscribe(async (e) => {
-			const data = JSON.parse(decodeURIComponent(e['data'] as string)) as Mount
-			await this.mountChanged(data)
-			this.ticker.register(this, 30000)
+		effect(async () => {
+			const data = this.data()
+
+			if (data) {
+				await this.mountChanged(JSON.parse(data))
+				this.ticker.register(this, 30000)
+			}
 		})
 	}
 
@@ -339,6 +345,32 @@ export class MountComponent implements AfterContentInit, OnDestroy, Tickable {
 		this.remoteControl.showDialog = true
 	}
 
+	protected showSiteDialog() {
+		const { longitude, latitude, elevation } = this.mount
+		this.site.location = { ...this.site.location, longitude, latitude, elevation }
+		this.site.showDialog = true
+	}
+
+	protected showTimeDialog() {
+		const now = new Date()
+		this.time.offsetInMinutes = this.mount.offsetInMinutes
+		this.time.dateTime = new Date(this.mount.dateTime + now.getTimezoneOffset() * 60000)
+		this.time.showDialog = true
+	}
+
+	protected timeNow() {
+		const now = new Date()
+		this.time.dateTime = new Date(now.getTime() + now.getTimezoneOffset() * 60000)
+	}
+
+	protected timeSync() {
+		return this.api.mountTime(this.mount, this.time.dateTime, this.time.offsetInMinutes)
+	}
+
+	protected siteApply() {
+		return this.api.mountCoordinates(this.mount, this.site.location)
+	}
+
 	protected async startRemoteControl() {
 		await this.api.mountRemoteControlStart(this.mount, this.remoteControl.protocol, this.remoteControl.host, this.remoteControl.port)
 		this.remoteControl.controls = await this.api.mountRemoteControlList(this.mount)
@@ -367,7 +399,7 @@ export class MountComponent implements AfterContentInit, OnDestroy, Tickable {
 		this.savePreference()
 	}
 
-	protected async targetCoordinateCommandClicked() {
+	protected async targetCoordinateClicked() {
 		if (this.targetCoordinateCommand === this.targetCoordinateModel[0]) {
 			await this.goTo()
 		} else if (this.targetCoordinateCommand === this.targetCoordinateModel[1]) {
@@ -421,12 +453,12 @@ export class MountComponent implements AfterContentInit, OnDestroy, Tickable {
 		return this.api.mountAbort(this.mount)
 	}
 
-	protected trackingToggled() {
-		return this.api.mountTracking(this.mount, this.tracking)
+	protected trackingToggled(enabled: boolean) {
+		return this.api.mountTracking(this.mount, enabled)
 	}
 
-	protected trackModeChanged() {
-		return this.api.mountTrackMode(this.mount, this.trackMode)
+	protected trackModeChanged(trackMode: TrackMode) {
+		return this.api.mountTrackMode(this.mount, trackMode)
 	}
 
 	protected async slewRateChanged() {
@@ -449,9 +481,7 @@ export class MountComponent implements AfterContentInit, OnDestroy, Tickable {
 
 	private update() {
 		if (this.mount.id) {
-			this.trackMode = this.mount.trackMode
-			this.slewRate = this.mount.slewRate
-			this.tracking = this.mount.tracking
+			this.slewRate = this.mount.slewRate?.value ?? this.mount.slewRates[0]?.value
 
 			this.computeCoordinatePublisher.next()
 		}

@@ -10,12 +10,26 @@ import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.doubles.shouldBeExactly
 import io.kotest.matchers.shouldBe
-import nebulosa.api.atlas.*
+import nebulosa.api.atlas.EarthSeason
+import nebulosa.api.atlas.EarthSeasonFinder
+import nebulosa.api.atlas.Location
+import nebulosa.api.atlas.MoonPhase
+import nebulosa.api.atlas.MoonPhaseFinder
+import nebulosa.api.atlas.SatelliteGroupType
+import nebulosa.api.atlas.SatelliteRepository
+import nebulosa.api.atlas.SkyAtlasService
+import nebulosa.api.atlas.SkyObjectEntityRepository
 import nebulosa.api.atlas.ephemeris.BodyEphemerisProvider
 import nebulosa.api.atlas.ephemeris.HorizonsEphemerisProvider
 import nebulosa.api.database.migration.SkyDatabaseMigrator
 import nebulosa.horizons.HorizonsService
-import nebulosa.math.*
+import nebulosa.math.deg
+import nebulosa.math.formatDMS
+import nebulosa.math.formatHMS
+import nebulosa.math.formatSignedDMS
+import nebulosa.math.hours
+import nebulosa.math.m
+import nebulosa.math.toDegrees
 import nebulosa.nova.astrometry.Constellation
 import nebulosa.sbd.SmallBodyDatabaseService
 import nebulosa.skycatalog.SkyObjectType
@@ -151,16 +165,16 @@ class SkyAtlasServiceTest {
         phases shouldHaveSize 4
 
         phases[0].dateTime.toString() shouldBe "2024-08-04T11:13"
-        phases[0].name shouldBe MoonPhaseName.NEW_MOON
+        phases[0].name shouldBe MoonPhase.NEW_MOON
 
         phases[1].dateTime.toString() shouldBe "2024-08-12T15:18"
-        phases[1].name shouldBe MoonPhaseName.FIRST_QUARTER
+        phases[1].name shouldBe MoonPhase.FIRST_QUARTER
 
         phases[2].dateTime.toString() shouldBe "2024-08-19T18:25"
-        phases[2].name shouldBe MoonPhaseName.FULL_MOON
+        phases[2].name shouldBe MoonPhase.FULL_MOON
 
         phases[3].dateTime.toString() shouldBe "2024-08-26T09:25"
-        phases[3].name shouldBe MoonPhaseName.LAST_QUARTER
+        phases[3].name shouldBe MoonPhase.LAST_QUARTER
     }
 
     @Test
@@ -170,19 +184,19 @@ class SkyAtlasServiceTest {
         phases shouldHaveSize 5
 
         phases[0].dateTime.toString() shouldBe "2024-12-01T06:21"
-        phases[0].name shouldBe MoonPhaseName.NEW_MOON
+        phases[0].name shouldBe MoonPhase.NEW_MOON
 
         phases[1].dateTime.toString() shouldBe "2024-12-08T15:26"
-        phases[1].name shouldBe MoonPhaseName.FIRST_QUARTER
+        phases[1].name shouldBe MoonPhase.FIRST_QUARTER
 
         phases[2].dateTime.toString() shouldBe "2024-12-15T09:01"
-        phases[2].name shouldBe MoonPhaseName.FULL_MOON
+        phases[2].name shouldBe MoonPhase.FULL_MOON
 
         phases[3].dateTime.toString() shouldBe "2024-12-22T22:18"
-        phases[3].name shouldBe MoonPhaseName.LAST_QUARTER
+        phases[3].name shouldBe MoonPhase.LAST_QUARTER
 
         phases[4].dateTime.toString() shouldBe "2024-12-30T22:26"
-        phases[4].name shouldBe MoonPhaseName.NEW_MOON
+        phases[4].name shouldBe MoonPhase.NEW_MOON
     }
 
     @Test
@@ -193,19 +207,19 @@ class SkyAtlasServiceTest {
         phases shouldHaveSize 5
 
         phases[0].dateTime.toString() shouldBe "2023-08-01T18:31"
-        phases[0].name shouldBe MoonPhaseName.FULL_MOON
+        phases[0].name shouldBe MoonPhase.FULL_MOON
 
         phases[1].dateTime.toString() shouldBe "2023-08-08T10:28"
-        phases[1].name shouldBe MoonPhaseName.LAST_QUARTER
+        phases[1].name shouldBe MoonPhase.LAST_QUARTER
 
         phases[2].dateTime.toString() shouldBe "2023-08-16T09:38"
-        phases[2].name shouldBe MoonPhaseName.NEW_MOON
+        phases[2].name shouldBe MoonPhase.NEW_MOON
 
         phases[3].dateTime.toString() shouldBe "2023-08-24T09:57"
-        phases[3].name shouldBe MoonPhaseName.FIRST_QUARTER
+        phases[3].name shouldBe MoonPhase.FIRST_QUARTER
 
         phases[4].dateTime.toString() shouldBe "2023-08-31T01:35"
-        phases[4].name shouldBe MoonPhaseName.FULL_MOON
+        phases[4].name shouldBe MoonPhase.FULL_MOON
     }
 
     @Test
@@ -215,16 +229,36 @@ class SkyAtlasServiceTest {
         phases shouldHaveSize 4
 
         phases[0].dateTime.toString() shouldBe "2024-08-04T06:45"
-        phases[0].name shouldBe MoonPhaseName.NEW_MOON
+        phases[0].name shouldBe MoonPhase.NEW_MOON
 
         phases[1].dateTime.toString() shouldBe "2024-08-12T10:51"
-        phases[1].name shouldBe MoonPhaseName.FIRST_QUARTER
+        phases[1].name shouldBe MoonPhase.FIRST_QUARTER
 
         phases[2].dateTime.toString() shouldBe "2024-08-19T14:17"
-        phases[2].name shouldBe MoonPhaseName.FULL_MOON
+        phases[2].name shouldBe MoonPhase.FULL_MOON
 
         phases[3].dateTime.toString() shouldBe "2024-08-26T06:28"
-        phases[3].name shouldBe MoonPhaseName.LAST_QUARTER
+        phases[3].name shouldBe MoonPhase.LAST_QUARTER
+    }
+
+    @Test
+    fun findEarthSeasons() {
+        // https://www.weather.gov/media/ind/seasons.pdf
+        val seasons = EARTH_SEASON_FINDER.find(2024, -180)
+
+        seasons shouldHaveSize 4
+
+        seasons[0].dateTime.toString() shouldBe "2024-03-20T00:06"
+        seasons[0].name shouldBe EarthSeason.MARCH_EQUINOX
+
+        seasons[1].dateTime.toString() shouldBe "2024-06-20T17:51"
+        seasons[1].name shouldBe EarthSeason.JUNE_SOLSTICE
+
+        seasons[2].dateTime.toString() shouldBe "2024-09-22T09:43"
+        seasons[2].name shouldBe EarthSeason.SEPTEMBER_EQUINOX
+
+        seasons[3].dateTime.toString() shouldBe "2024-12-21T06:20"
+        seasons[3].name shouldBe EarthSeason.DECEMBER_SOLSTICE
     }
 
     companion object {
@@ -249,6 +283,7 @@ class SkyAtlasServiceTest {
         private val BODY_EPHEMERIS_PROVIDER = BodyEphemerisProvider(THREAD_POOL_TASK_EXECUTOR)
         private val SMALL_BODY_DATABASE_SERVICE = SmallBodyDatabaseService()
         private val MOON_PHASE_FINDER = MoonPhaseFinder(HORIZONS_SERVICE)
+        private val EARTH_SEASON_FINDER = EarthSeasonFinder(HORIZONS_SERVICE)
 
         private val OBJECT_MAPPER = jsonMapper {
             disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
@@ -266,8 +301,8 @@ class SkyAtlasServiceTest {
 
         private val SERVICE = SkyAtlasService(
             HORIZONS_EPHEMERIS_PROVIDER, BODY_EPHEMERIS_PROVIDER, SMALL_BODY_DATABASE_SERVICE,
-            SATELLITE_REPOSITORY, SIMBAD_ENTITY_REPOSITORY, HTTP_CLIENT, OBJECT_MAPPER, MOON_PHASE_FINDER,
-            Executors.newSingleThreadScheduledExecutor(),
+            SATELLITE_REPOSITORY, SIMBAD_ENTITY_REPOSITORY, HTTP_CLIENT, OBJECT_MAPPER,
+            MOON_PHASE_FINDER, EARTH_SEASON_FINDER, Executors.newSingleThreadScheduledExecutor(),
         )
 
         private val LOCATION = Location("-19.846616".deg, "-43.96872".deg, 852.0.m, -180)

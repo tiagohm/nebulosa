@@ -2,7 +2,22 @@ import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.doubles.shouldBeExactly
 import io.kotest.matchers.shouldBe
-import nebulosa.math.*
+import nebulosa.math.AngleFormatter
+import nebulosa.math.CIRCLE
+import nebulosa.math.DMS
+import nebulosa.math.Radians
+import nebulosa.math.arcmin
+import nebulosa.math.arcsec
+import nebulosa.math.deg
+import nebulosa.math.formatHMS
+import nebulosa.math.hours
+import nebulosa.math.mas
+import nebulosa.math.rad
+import nebulosa.math.toArcmin
+import nebulosa.math.toArcsec
+import nebulosa.math.toDegrees
+import nebulosa.math.toHours
+import nebulosa.math.toMas
 import org.junit.jupiter.api.Test
 import java.util.*
 
@@ -195,7 +210,7 @@ class AngleTest {
     }
 
     @Test
-    fun bugOnRoundSeconds() {
+    fun roundSeconds() {
         "23h59m60.0s".hours.formatHMS() shouldBe "00h00m00.0s"
 
         AngleFormatter.HMS
@@ -203,7 +218,13 @@ class AngleTest {
     }
 
     @Test
-    fun bugOnParseUnicodeNegativeSignU2212() {
+    fun parseUnicodeNegativeSignU2212() {
         "−29 00 28.1".deg.toDegrees shouldBe -29.007805555555557
+    }
+
+    @Test
+    fun parseUnicodePrimeU2032() {
+        "-59°41′02.4″".deg shouldBeExactly -1.0416823107602955
+        "-59°41′02.4″".deg.toDegrees shouldBe (-59.68 plusOrMinus 1e-2)
     }
 }

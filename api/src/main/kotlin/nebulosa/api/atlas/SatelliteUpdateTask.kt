@@ -5,9 +5,7 @@ import nebulosa.api.database.migration.MainDatabaseMigrator
 import nebulosa.api.database.migration.SkyDatabaseMigrator
 import nebulosa.api.message.MessageService
 import nebulosa.api.preference.PreferenceService
-import nebulosa.log.i
 import nebulosa.log.loggerFor
-import nebulosa.log.w
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.koin.core.component.KoinComponent
@@ -37,24 +35,25 @@ class SatelliteUpdateTask(
 
     private fun isOutOfDate(): Boolean {
         try {
-            val updatedAt = preferenceService.getLong(UPDATED_AT_KEY) ?: 0L
+            val updatedAt = preferenceService[UPDATED_AT_KEY]?.toLongOrNull() ?: 0L
             return System.currentTimeMillis() - updatedAt >= UPDATE_INTERVAL
-        } catch (e: JsonMappingException) {
+        } catch (_: JsonMappingException) {
             return true
         }
     }
 
     private fun checkIsOutOfDateAndUpdate() {
         if (isOutOfDate()) {
-            LOG.i("satellites is out of date")
+            LOG.info("satellites is out of date")
 
             if (updateTLEs()) {
-                preferenceService.putLong(UPDATED_AT_KEY, System.currentTimeMillis())
+                preferenceService[UPDATED_AT_KEY] = System.currentTimeMillis()
+                preferenceService.save()
             } else {
-                LOG.w("no satellites was updated")
+                LOG.warn("no satellites was updated")
             }
         } else {
-            LOG.i("satellites is up to date")
+            LOG.info("satellites is up to date")
         }
     }
 
@@ -76,7 +75,7 @@ class SatelliteUpdateTask(
 
         return satelliteRepository
             .add(data.values)
-            .also { LOG.i("{} satellites updated", it.size) }
+            .also { LOG.info("{} satellites updated", it.size) }
             .also { messageService.sendMessage(SatelliteUpdateNotificationEvent.Finished(it.size)) }
             .isNotEmpty()
     }
@@ -124,7 +123,7 @@ class SatelliteUpdateTask(
     companion object {
 
         const val UPDATE_INTERVAL = 1000L * 60 * 60 * 24 * 2 // 2 days in ms
-        const val UPDATED_AT_KEY = "SATELLITES.UPDATED_AT"
+        const val UPDATED_AT_KEY = "satellites.updatedAt"
 
         private val LOG = loggerFor<SatelliteUpdateTask>()
     }

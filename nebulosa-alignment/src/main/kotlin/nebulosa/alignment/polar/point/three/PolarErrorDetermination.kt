@@ -158,7 +158,7 @@ internal data class PolarErrorDetermination(
         internal fun DoubleArray.stenographicProjection(
             solution: PlateSolution,
             centerRA: Angle = solution.rightAscension,
-            centerDEC: Angle = solution.declination
+            centerDEC: Angle = solution.declination,
         ) = stenographicProjection(
             centerRA, centerDEC,
             solution.widthInPixels / 2.0, solution.heightInPixels / 2.0, solution.scale, solution.orientation
@@ -166,7 +166,7 @@ internal data class PolarErrorDetermination(
 
         internal fun DoubleArray.stenographicProjection(
             centerRA: Angle, centerDEC: Angle,
-            centerX: Double, centerY: Double, scale: Angle, orientation: Angle
+            centerX: Double, centerY: Double, scale: Angle, orientation: Angle,
         ): DoubleArray {
             var targetRA = this[0]
             val deltaRA = targetRA - centerRA

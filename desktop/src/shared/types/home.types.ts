@@ -30,7 +30,7 @@ export interface HomePreference {
 export interface HomeConnectionDialog {
 	showDialog: boolean
 	connection: ConnectionDetails
-	edited: boolean
+	editMode: boolean
 }
 
 export interface GitHubRelease {
@@ -58,7 +58,7 @@ export const DEFAULT_HOME_PREFERENCE: HomePreference = {
 
 export const DEFAULT_HOME_CONNECTION_DIALOG: HomeConnectionDialog = {
 	showDialog: false,
-	edited: false,
+	editMode: false,
 	connection: DEFAULT_CONNECTION_DETAILS,
 }
 

@@ -1,6 +1,10 @@
 package nebulosa.api.image
 
-import nebulosa.math.*
+import nebulosa.math.formatHMS
+import nebulosa.math.formatSignedDMS
+import nebulosa.math.toArcmin
+import nebulosa.math.toArcsec
+import nebulosa.math.toDegrees
 import nebulosa.platesolver.Parity
 import nebulosa.platesolver.PlateSolution
 

@@ -46,7 +46,7 @@ data class AdaptativeScreenTransformFunction(
         }
 
         return ScreenTransformFunction.Parameters(midtone.average().toFloat(), shadow.average().toFloat(), highlight.average().toFloat())
-            .also { LOG.d("STF auto stretch. median={}, params={}", median, it) }
+            .also { LOG.d { debug("STF auto stretch. median={}, params={}", median, it) } }
     }
 
     override fun transform(source: Image): Image {

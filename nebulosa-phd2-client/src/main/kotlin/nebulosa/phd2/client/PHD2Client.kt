@@ -9,7 +9,6 @@ import io.netty.channel.ChannelInitializer
 import io.netty.channel.socket.SocketChannel
 import nebulosa.guiding.GuideState
 import nebulosa.json.PathModule
-import nebulosa.log.e
 import nebulosa.log.loggerFor
 import nebulosa.netty.NettyClient
 import nebulosa.phd2.client.commands.CompletableCommand
@@ -56,7 +55,7 @@ class PHD2Client : NettyClient() {
 
         return task.orTimeout(max(1L, timeout), TimeUnit.SECONDS)
             .whenComplete { _, e ->
-                if (e != null) LOG.e("command error: {}", command, e)
+                if (e != null) LOG.error("command error: {}", command, e)
                 commands.remove(id)
             }
     }

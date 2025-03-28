@@ -8,7 +8,6 @@ import nebulosa.job.manager.Job
 import nebulosa.job.manager.Task
 import nebulosa.log.d
 import nebulosa.log.loggerFor
-import nebulosa.log.w
 import nebulosa.util.concurrency.cancellation.CancellationSource
 import nebulosa.util.concurrency.latch.CountUpDownLatch
 
@@ -28,14 +27,14 @@ data class WheelMoveTask(
                 latch.reset()
             }
         } else if (event is FilterWheelMoveFailed) {
-            LOG.w("failed to move filter wheel. wheel={}, position={}", wheel, position)
+            LOG.warn("failed to move filter wheel. wheel={}, position={}", wheel, position)
             latch.reset()
         }
     }
 
     override fun run() {
         if (wheel.connected && position in 1..wheel.count && wheel.position != position) {
-            LOG.d("Wheel Move started. wheel={}, position={}", wheel, position)
+            LOG.d { debug("Wheel Move started. wheel={}, position={}", wheel, position) }
 
             initialPosition = wheel.position
 
@@ -43,9 +42,9 @@ data class WheelMoveTask(
             wheel.moveTo(position)
             latch.await()
 
-            LOG.d("Wheel Move finished. wheel={}, position={}", wheel, position)
+            LOG.d { debug("Wheel Move finished. wheel={}, position={}", wheel, position) }
         } else {
-            LOG.w("filter wheel not connected or invalid position. position={}, wheel={}", position, wheel)
+            LOG.warn("filter wheel not connected or position is not applicable. position={}, wheel={}", position, wheel)
         }
     }
 

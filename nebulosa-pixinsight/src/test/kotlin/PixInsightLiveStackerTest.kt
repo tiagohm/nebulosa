@@ -8,7 +8,14 @@ import nebulosa.image.algorithms.transformation.AutoScreenTransformFunction
 import nebulosa.pixinsight.livestacker.PixInsightLiveStacker
 import nebulosa.test.AbstractTest
 import nebulosa.test.NonGitHubOnly
-import nebulosa.test.fits.*
+import nebulosa.test.fits.STACKING_LIGHT_MONO_01_FITS
+import nebulosa.test.fits.STACKING_LIGHT_MONO_02_FITS
+import nebulosa.test.fits.STACKING_LIGHT_MONO_03_FITS
+import nebulosa.test.fits.STACKING_LIGHT_MONO_04_FITS
+import nebulosa.test.fits.STACKING_LIGHT_MONO_05_FITS
+import nebulosa.test.fits.STACKING_LIGHT_MONO_06_FITS
+import nebulosa.test.fits.STACKING_LIGHT_MONO_07_FITS
+import nebulosa.test.fits.STACKING_LIGHT_MONO_08_FITS
 import nebulosa.test.save
 import org.junit.jupiter.api.Test
 import java.nio.file.Path

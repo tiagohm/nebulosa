@@ -3,11 +3,20 @@ package nebulosa.guiding.internal
 import nebulosa.constants.PI
 import nebulosa.constants.PIOVERTWO
 import nebulosa.guiding.GuideDirection
-import nebulosa.log.di
-import nebulosa.log.dw
+import nebulosa.log.d
 import nebulosa.log.loggerFor
-import nebulosa.math.*
-import kotlin.math.*
+import nebulosa.math.Angle
+import nebulosa.math.cos
+import nebulosa.math.normalized
+import nebulosa.math.rad
+import nebulosa.math.sin
+import nebulosa.math.toDegrees
+import nebulosa.math.toHours
+import kotlin.math.abs
+import kotlin.math.acos
+import kotlin.math.floor
+import kotlin.math.max
+import kotlin.math.min
 
 internal class GuideCalibrator(private val guider: MultiStarGuider) {
 
@@ -157,7 +166,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
 
     @Synchronized
     fun updateCalibrationState(currentLocation: Point): Boolean {
-        LOG.di("updating calibration state. x={}, y={}", currentLocation.x, currentLocation.y)
+        LOG.d { info("updating calibration state. x={}, y={}", currentLocation.x, currentLocation.y) }
 
         if (!calibrationStartingLocation.valid) {
             calibrationStartingLocation.set(currentLocation)
@@ -186,12 +195,12 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
                 CalibrationState.GO_WEST -> {
                     if (dist < distCrit) {
                         if (calibrationSteps++ > MAX_CALIBRATION_STEPS) {
-                            LOG.dw("calibration failed. star did not move enough.")
+                            LOG.d { warn("calibration failed. star did not move enough.") }
                             guider.listeners.forEach { it.onCalibrationFailed() }
                             return false
                         }
 
-                        LOG.di("west step {}, dist={}", calibrationSteps, dist)
+                        LOG.d { info("west step {}, dist={}", calibrationSteps, dist) }
 
                         calibrationStatus(GuideDirection.WEST)
 
@@ -220,7 +229,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
                         )
                     }
 
-                    LOG.di("west calibration completed. steps={}, angle={}, rate={}, parity={}", calibrationSteps, calibration.xAngle.toDegrees, calibration.xRate * 1000.0, calibration.raGuideParity)
+                    LOG.d { info("west calibration completed. steps={}, angle={}, rate={}, parity={}", calibrationSteps, calibration.xAngle.toDegrees, calibration.xRate * 1000.0, calibration.raGuideParity) }
 
                     raSteps = calibrationSteps
 
@@ -246,7 +255,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
                         var duration = recenterDuration
                         if (duration > recenterRemaining) duration = recenterRemaining
 
-                        LOG.di("East step {}, dist={}", calibrationSteps, dist)
+                        LOG.d { info("East step {}, dist={}", calibrationSteps, dist) }
 
                         calibrationStatus(GuideDirection.EAST)
 
@@ -268,7 +277,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
                     calibrationStartingLocation.set(currentLocation)
 
                     if (guider.declinationGuideMode == DeclinationGuideMode.NONE) {
-                        LOG.di("skipping DEC calibration as declinationGuideMode == NONE")
+                        LOG.d { info("skipping DEC calibration as declinationGuideMode == NONE") }
                         calibrationState = CalibrationState.COMPLETE
 
                         calibration = calibration.copy(
@@ -298,7 +307,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
                     blLastCumDistance = 0.0
                     blAcceptedMoves = 0
 
-                    LOG.di("looking for 3 moves of {} px, max attempts = {}", blExpectedBacklashStep, blMaxClearingPulses)
+                    LOG.d { info("looking for 3 moves of {} px, max attempts = {}", blExpectedBacklashStep, blMaxClearingPulses) }
                 }
                 CalibrationState.CLEAR_BACKLASH -> {
                     val blDelta = blMarkerPoint.distance(currentLocation)
@@ -308,7 +317,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
                     // pixels without any direction reversals.
                     if (calibrationSteps == 0) {
                         // Get things moving with the first clearing pulse.
-                        LOG.di("starting north clearing using pulse width of {}", guider.calibrationStep)
+                        LOG.d { info("starting north clearing using pulse width of {}", guider.calibrationStep) }
                         guideDirection(GuideDirection.NORTH, guider.calibrationStep)
                         calibrationSteps = 1
                         calibrationStatus(GuideDirection.NORTH)
@@ -319,17 +328,17 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
                         // Just starting or still moving in same direction.
                         if (blAcceptedMoves == 0 || (blCumDelta > blLastCumDistance)) {
                             blAcceptedMoves++
-                            LOG.di("accepted clearing move of {}", blDelta)
+                            LOG.d { info("accepted clearing move of {}", blDelta) }
                         } else {
                             // Reset on a direction reversal.
                             blAcceptedMoves = 0
-                            LOG.di("rejected clearing move of {}, direction reversal", blDelta)
+                            LOG.d { info("rejected clearing move of {}, direction reversal", blDelta) }
                         }
                     } else if (blCumDelta < blLastCumDistance) {
                         blAcceptedMoves = 0
-                        LOG.di("rejected small direction reversal of {} px", blDelta)
+                        LOG.d { info("rejected small direction reversal of {} px", blDelta) }
                     } else {
-                        LOG.di("rejected small move of {} px", blDelta)
+                        LOG.d { info("rejected small move of {} px", blDelta) }
                     }
 
                     // More work to do.
@@ -346,7 +355,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
 
                             calibrationStatus(GuideDirection.NORTH)
 
-                            LOG.di("last delta = {} px, cum distance = {}", blDelta, blCumDelta)
+                            LOG.d { info("last delta = {} px, cum distance = {}", blDelta, blCumDelta) }
 
                             break
                         } else {
@@ -360,10 +369,10 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
                                 dy = 0.0
                                 dist = 0.0
 
-                                LOG.di("reached clearing limit but total displacement > 3px - proceeding with calibration")
+                                LOG.d { info("reached clearing limit but total displacement > 3px - proceeding with calibration") }
                             } else {
                                 guider.listeners.forEach { it.onCalibrationFailed() }
-                                LOG.dw("clear backlash failed")
+                                LOG.d { warn("clear backlash failed") }
                                 return false
                             }
                         }
@@ -377,26 +386,26 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
                         dy = blMarkerPoint.dY(currentLocation)
                         dist = blMarkerPoint.distance(currentLocation)
 
-                        LOG.di("Got 3 acceptable moves, using last move as step 1 of N calibration")
+                        LOG.d { info("Got 3 acceptable moves, using last move as step 1 of N calibration") }
                     }
 
                     // Need this to set nudging limit.
                     blDistanceMoved = blMarkerPoint.distance(calibrationInitialLocation)
 
-                    LOG.di("north calibration moves starting at x={}, y={}, offset = {} px", blMarkerPoint.x, blMarkerPoint.y, blDistanceMoved)
-                    LOG.di("total distance moved = {}", currentLocation.distance(calibrationInitialLocation))
+                    LOG.d { info("north calibration moves starting at x={}, y={}, offset = {} px", blMarkerPoint.x, blMarkerPoint.y, blDistanceMoved) }
+                    LOG.d { info("total distance moved = {}", currentLocation.distance(calibrationInitialLocation)) }
 
                     calibrationState = CalibrationState.GO_NORTH
                 }
                 CalibrationState.GO_NORTH -> {
                     if (dist < distCrit) {
                         if (calibrationSteps++ > MAX_CALIBRATION_STEPS) {
-                            LOG.dw("calibration failed. star did not move enough.")
+                            LOG.d { warn("calibration failed. star did not move enough.") }
                             guider.listeners.forEach { it.onCalibrationFailed() }
                             return false
                         }
 
-                        LOG.di("North step {}, dist={}", calibrationSteps, dist)
+                        LOG.d { info("North step {}, dist={}", calibrationSteps, dist) }
 
                         calibrationStatus(GuideDirection.NORTH)
 
@@ -420,10 +429,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
 
                         calibration = calibration.copy(yAngle = yAngle, yRate = yRate, decGuideParity = GuideParity.UNKNOWN)
 
-                        LOG.di(
-                            "assuming orthogonal axes: measured Y angle={}, X angle={}, orthogonal={},{}, best = {}, dist = {}, decDist = {}",
-                            yAngle.toDegrees, calibration.xAngle.toDegrees, a1.toDegrees, a2.toDegrees, yAngle.toDegrees, dist, decDist,
-                        )
+                        LOG.d { info("assuming orthogonal axes: measured Y angle={}, X angle={}, orthogonal={},{}, best = {}, dist = {}, decDist = {}", yAngle.toDegrees, calibration.xAngle.toDegrees, a1.toDegrees, a2.toDegrees, yAngle.toDegrees, dist, decDist) }
                     } else {
                         val yAngle = currentLocation.angle(calibrationStartingLocation)
                         val yRate = dist / (calibrationSteps * guider.calibrationStep)
@@ -445,10 +451,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
                         )
                     }
 
-                    LOG.di(
-                        "North calibration completes with angle={} rate={} parity={}",
-                        calibration.yAngle.toDegrees, calibration.yRate * 1000.0, calibration.decGuideParity
-                    )
+                    LOG.d { info("North calibration completes with angle={} rate={} parity={}", calibration.yAngle.toDegrees, calibration.yRate * 1000.0, calibration.decGuideParity) }
 
                     // For GO_SOUTH m_recenterRemaining contains the total remaining duration.
                     // Choose the largest pulse size that will not lose the guide star or exceed
@@ -472,7 +475,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
                         var duration = recenterDuration
                         if (duration > recenterRemaining) duration = recenterRemaining
 
-                        LOG.di("South step {}, dist={}", calibrationSteps, dist)
+                        LOG.d { info("South step {}, dist={}", calibrationSteps, dist) }
 
                         calibrationStatus(GuideDirection.SOUTH)
 
@@ -509,7 +512,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
                     val cosTheta = nudgeDirCosX * northDirCosX + nudgeDirCosY * northDirCosY
                     val theta = acos(cosTheta).rad
 
-                    LOG.di("nudge. theta={} deg", theta.toDegrees)
+                    LOG.d { info("nudge. theta={} deg", theta.toDegrees) }
 
                     // We're going at least roughly in the right direction.
                     if (abs(abs(theta.toDegrees) - 180.0) < 40.0) {
@@ -519,7 +522,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
                         ) {
                             // Compute how much more south we need to go.
                             var decAmt = mountCoords(currentLocation - calibrationInitialLocation, calibration.xAngle, calibration.yAngle).y
-                            LOG.di("South nudging, decAmt = {}, normal south moves = {}", decAmt, totalSouthAmt)
+                            LOG.d { info("South nudging, decAmt = {}, normal south moves = {}", decAmt, totalSouthAmt) }
 
                             // Still need to move south to reach target based on matching sign.
                             if (decAmt * totalSouthAmt > 0.0) {
@@ -530,7 +533,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
                                 // Be conservative, use durations that pushed us north in the first place.
                                 if (pulseAmt > guider.calibrationStep) pulseAmt = guider.calibrationStep
 
-                                LOG.di("sending nudge South pulse of duration {} ms", pulseAmt)
+                                LOG.d { info("sending nudge South pulse of duration {} ms", pulseAmt) }
 
                                 calibrationSteps++
 
@@ -542,13 +545,10 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
                             }
                         }
                     } else {
-                        LOG.di("nudging discontinued, wrong direction: {}", theta)
+                        LOG.d { info("nudging discontinued, wrong direction: {}", theta) }
                     }
 
-                    LOG.di(
-                        "final south nudging status: current location={},{}, targeting={},{}",
-                        currentLocation.x, currentLocation.y, calibrationInitialLocation.x, calibrationInitialLocation.y
-                    )
+                    LOG.d { info("final south nudging status: current location={},{}, targeting={},{}", currentLocation.x, currentLocation.y, calibrationInitialLocation.x, calibrationInitialLocation.y) }
 
                     calibrationState = CalibrationState.COMPLETE
                 }
@@ -562,7 +562,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
 
                     load(calibration)
 
-                    LOG.di("calibration completed. calibration={}", calibration)
+                    LOG.d { info("calibration completed. calibration={}", calibration) }
 
                     guider.listeners.forEach { it.onCalibrationCompleted(calibration) }
 
@@ -596,22 +596,19 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
             val xRate = calibration.xRate * rateAdjustment
             val yRate = calibration.yRate * rateAdjustment
 
-            LOG.di(
-                "binning changed. bin={} to {}, xRate={} to {}, yRate={} to {}",
-                calibration.binning, binning, calibration.xRate, xRate, calibration.yRate, yRate,
-            )
+            LOG.d { info("binning changed. bin={} to {}, xRate={} to {}, yRate={} to {}", calibration.binning, binning, calibration.xRate, xRate, calibration.yRate, yRate) }
 
             load(calibration.copy(xRate = xRate, yRate = yRate, binning = binning))
         }
 
         // If the image scale has changed, make some other adjustments.
         if (abs(scaleAdjustment - 1.0) >= 0.01) {
-            LOG.di("image scale ratio changed. scaleAdjustment={}", scaleAdjustment)
+            LOG.d { info("image scale ratio changed. scaleAdjustment={}", scaleAdjustment) }
             clear()
         }
 
         if (pierSideAtEast != calibration.pierSideAtEast) {
-            LOG.di("guiding starts on opposite side of pier")
+            LOG.d { info("guiding starts on opposite side of pier") }
             flip()
         }
 
@@ -623,10 +620,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
             } else {
                 val da = rotatorAngle - calibration.rotatorAngle
 
-                LOG.di(
-                    "new rotator position {} deg, prev={} deg, delta={} deg",
-                    rotatorAngle.toDegrees, calibration.rotatorAngle.toDegrees, da.toDegrees,
-                )
+                LOG.d { info("new rotator position {} deg, prev={} deg, delta={} deg", rotatorAngle.toDegrees, calibration.rotatorAngle.toDegrees, da.toDegrees) }
 
                 val xAngle = (calibration.xAngle - da).normalized - PI
                 val yAngle = (calibration.yAngle - da).normalized - PI
@@ -639,12 +633,12 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
 
         if (declination != calibration.declination) {
             if (!guider.useDECCompensation) {
-                LOG.di("skipping declination compensation")
+                LOG.d { info("skipping declination compensation") }
             } else {
                 // Don't do a full dec comp too close to pole - xRate will become
                 // a huge number and will cause problems downstream.
                 xRate = (calibration.xRate / calibration.declination.cos) * declination.cos
-                LOG.di("declination compensation. xRate={} to {}", calibration.xRate, xRate)
+                LOG.d { info("declination compensation. xRate={} to {}", calibration.xRate, xRate) }
                 declinationCompensated = true
             }
         }

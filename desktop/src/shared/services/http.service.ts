@@ -1,15 +1,14 @@
 import { HttpClient } from '@angular/common/http'
-import { Injectable } from '@angular/core'
+import { Injectable, inject } from '@angular/core'
 import { firstValueFrom } from 'rxjs'
-import { Nullable } from '../utils/types'
 
-export type QueryParamType = Nullable<string | number | boolean> | QueryParamType[]
+export type QueryParamType = string | number | boolean | null | undefined | QueryParamType[]
 
 @Injectable({ providedIn: 'root' })
 export class HttpService {
-	readonly baseUrl = `http://${window.apiHost}:${window.apiPort}`
+	private readonly http = inject(HttpClient)
 
-	constructor(private readonly http: HttpClient) {}
+	readonly baseUrl = `http://${window.apiHost}:${window.apiPort}`
 
 	get<T>(path: string) {
 		return firstValueFrom(this.http.get<T>(`${this.baseUrl}/${path}`))

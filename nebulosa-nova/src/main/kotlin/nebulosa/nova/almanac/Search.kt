@@ -26,30 +26,20 @@ fun IntArray.computeDiffAndReduceToIndices(): IntArray {
     return res
 }
 
-private val EMPTY_X = DoubleArray(0)
-private val EMPTY_Y = IntArray(0)
-
+@Suppress("ArrayInDataClass")
 data class DiscreteResult(
-    private val x: DoubleArray = EMPTY_X,
-    private val y: IntArray = EMPTY_Y,
+    @JvmField val x: DoubleArray = DoubleArray(0),
+    @JvmField val y: IntArray = IntArray(0),
+    @JvmField val i: IntArray = IntArray(0),
 ) {
 
     init {
         require(x.size == y.size)
+        require(y.size == i.size)
     }
 
-    val size
+    inline val size
         get() = x.size
-
-    fun x(index: Int) = x[index]
-
-    fun y(index: Int) = y[index]
-
-    override fun toString() = buildString {
-        append("DiscreteResult(")
-        repeat(size) { append("[${x[it]} | ${y[it]}]") }
-        append(")")
-    }
 
     companion object {
 
@@ -87,7 +77,7 @@ fun findDiscrete(
                 evenlySpacedNumbers(starts[i], ends[i], 8).copyInto(x, i * 8)
             }
         } else {
-            return DiscreteResult(ends, IntArray(indices.size) { y[indices[it] + 1] })
+            return DiscreteResult(ends, IntArray(indices.size) { y[indices[it] + 1] }, indices)
         }
     }
 }

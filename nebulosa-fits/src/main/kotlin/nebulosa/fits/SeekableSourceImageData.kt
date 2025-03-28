@@ -4,7 +4,7 @@ import nebulosa.fits.FitsFormat.readPixel
 import nebulosa.image.format.ImageChannel
 import nebulosa.image.format.ImageData
 import nebulosa.io.SeekableSource
-import nebulosa.log.di
+import nebulosa.log.d
 import nebulosa.log.loggerFor
 import okio.Buffer
 import okio.Sink
@@ -101,7 +101,7 @@ internal data class SeekableSourceImageData(
             if (min < 0f || max > 1f) {
                 val rangeDelta = max - min
 
-                LOG.di("rescaling [{}, {}] to [0, 1]. channel={}, delta={}", min, max, channel, rangeDelta)
+                LOG.d { info("rescaling [{}, {}] to [0, 1]. channel={}, delta={}", min, max, channel, rangeDelta) }
 
                 for (i in output.indices) {
                     output[i] = (output[i] - min) / rangeDelta

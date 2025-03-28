@@ -24,9 +24,6 @@ updates:
       squareup:
         patterns:
           - "com.squareup*"
-      rx:
-        patterns:
-          - "io.reactivex*"
       fasterxml:
         patterns:
           - "com.fasterxml*"

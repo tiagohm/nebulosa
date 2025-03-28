@@ -2,7 +2,11 @@ package nebulosa.nova.position
 
 import nebulosa.constants.TAU
 import nebulosa.erfa.PositionAndVelocity
-import nebulosa.math.*
+import nebulosa.math.Angle
+import nebulosa.math.Distance
+import nebulosa.math.Matrix3D
+import nebulosa.math.Vector3D
+import nebulosa.math.rad
 import nebulosa.nova.astrometry.Body
 import nebulosa.nova.frame.Frame
 import nebulosa.nova.frame.PlanetaryFrame

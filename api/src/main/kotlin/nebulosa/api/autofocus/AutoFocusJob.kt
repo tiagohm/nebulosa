@@ -1,7 +1,16 @@
 package nebulosa.api.autofocus
 
-import nebulosa.api.cameras.*
-import nebulosa.api.focusers.*
+import nebulosa.api.cameras.AutoSubFolderMode
+import nebulosa.api.cameras.CameraCaptureState
+import nebulosa.api.cameras.CameraEventAware
+import nebulosa.api.cameras.CameraExposureEvent
+import nebulosa.api.cameras.CameraExposureFinished
+import nebulosa.api.cameras.CameraExposureTask
+import nebulosa.api.focusers.BacklashCompensationFocuserMoveTask
+import nebulosa.api.focusers.BacklashCompensationMode
+import nebulosa.api.focusers.BacklashCompensator
+import nebulosa.api.focusers.FocuserEventAware
+import nebulosa.api.focusers.FocuserTask
 import nebulosa.api.message.MessageEvent
 import nebulosa.autofocus.AutoFocus
 import nebulosa.autofocus.AutoFocusListener
@@ -18,7 +27,6 @@ import nebulosa.indi.device.focuser.FocuserEvent
 import nebulosa.job.manager.AbstractJob
 import nebulosa.job.manager.Task
 import nebulosa.log.d
-import nebulosa.log.e
 import nebulosa.log.loggerFor
 import nebulosa.stardetector.StarDetector
 import java.nio.file.Files
@@ -105,7 +113,7 @@ data class AutoFocusJob(
     }
 
     override fun beforeStart() {
-        LOG.d("Auto Focus started. reverse={}, request={}, camera={}, focuser={}", reverse, request, camera, focuser)
+        LOG.d { debug("Auto Focus started. reverse={}, request={}, camera={}, focuser={}", reverse, request, camera, focuser) }
 
         autoFocus.registerAutoFocusListener(this)
         finished.set(false)
@@ -136,7 +144,7 @@ data class AutoFocusJob(
                         .determinate(focuser.position)
                         .also { it.handle() }
                 } catch (e: Throwable) {
-                    LOG.e("auto focus determination failed", e)
+                    LOG.error("auto focus determination failed", e)
 
                     status.state = AutoFocusState.FAILED
                     status.send()
@@ -172,7 +180,7 @@ data class AutoFocusJob(
             status.send()
         }
 
-        LOG.d("Auto Focus finished. camera={}, focuser={}", camera, focuser)
+        LOG.d { debug("Auto Focus finished. camera={}, focuser={}", camera, focuser) }
     }
 
     override fun accept(event: Any) {
@@ -227,7 +235,7 @@ data class AutoFocusJob(
         predictedFocusPoint: CurvePoint?,
         minX: Double, minY: Double,
         maxX: Double, maxY: Double,
-        trendLine: TrendLineFitting.Curve?, parabolic: QuadraticFitting.Curve?, hyperbolic: HyperbolicFitting.Curve?
+        trendLine: TrendLineFitting.Curve?, parabolic: QuadraticFitting.Curve?, hyperbolic: HyperbolicFitting.Curve?,
     ) {
         status.state = AutoFocusState.CURVE_FITTED
         status.chart = AutoFocusEvent.Chart(predictedFocusPoint, minX, minY, maxX, maxY, trendLine, parabolic, hyperbolic)

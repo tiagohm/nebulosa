@@ -1,10 +1,8 @@
+import type { GeographicCoordinate } from './atlas.types'
 import type { Device } from './device.types'
 
-export interface GPS extends Device {
+export interface GPS extends Device, GeographicCoordinate<number> {
 	hasGPS: boolean
-	longitude: number
-	latitude: number
-	elevation: number
 	dateTime: number
 	offsetInMinutes: number
 }

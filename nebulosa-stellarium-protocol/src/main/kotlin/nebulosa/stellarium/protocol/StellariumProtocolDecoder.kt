@@ -27,7 +27,7 @@ internal class StellariumProtocolDecoder : ByteToMessageDecoder() {
         val rightAscension = (input.readIntLE() * (PI / 0x80000000)).rad.normalized
         val declination = (input.readIntLE() * (PI / 0x80000000)).rad
 
-        LOG.d("MessageGoto: ra={}, dec={}", rightAscension.toHours, declination.toDegrees)
+        LOG.d { debug("MessageGoto: ra={}, dec={}", rightAscension.toHours, declination.toDegrees) }
 
         output.add(StellariumProtocolMessage.Goto(rightAscension, declination))
     }

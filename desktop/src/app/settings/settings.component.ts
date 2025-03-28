@@ -1,20 +1,30 @@
-import { AfterViewInit, Component, HostListener, OnDestroy } from '@angular/core'
-import { debounceTime, Subject, Subscription } from 'rxjs'
-import { MenuItem } from '../../shared/components/menu-item/menu-item.component'
+import type { AfterViewInit, OnDestroy } from '@angular/core'
+import { Component, HostListener, inject } from '@angular/core'
+import type { Subscription } from 'rxjs'
+import { debounceTime, Subject } from 'rxjs'
+import type { MenuItem } from '../../shared/components/menu-item.component'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { DEFAULT_LOCATION, Location } from '../../shared/types/atlas.types'
-import { DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT, FrameType, LiveStackerType } from '../../shared/types/camera.types'
-import { PlateSolverType } from '../../shared/types/platesolver.types'
-import { DEFAULT_SETTINGS_PREFERENCE, resetCameraCaptureNamingFormat, SettingsTab } from '../../shared/types/settings.types'
-import { StarDetectorType } from '../../shared/types/stardetector.types'
+import type { Location } from '../../shared/types/atlas.types'
+import { DEFAULT_LOCATION } from '../../shared/types/atlas.types'
+import type { FrameType, LiveStackerType } from '../../shared/types/camera.types'
+import { DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT } from '../../shared/types/camera.types'
+import type { PlateSolverType } from '../../shared/types/platesolver.types'
+import type { SettingsTab } from '../../shared/types/settings.types'
+import { DEFAULT_SETTINGS_PREFERENCE, resetCameraCaptureNamingFormat } from '../../shared/types/settings.types'
+import type { StarDetectorType } from '../../shared/types/stardetector.types'
 import { AppComponent } from '../app.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-settings',
-	templateUrl: './settings.component.html',
+	templateUrl: 'settings.component.html',
 })
 export class SettingsComponent implements AfterViewInit, OnDestroy {
+	private readonly app = inject(AppComponent)
+	private readonly preferenceService = inject(PreferenceService)
+	private readonly electronService = inject(ElectronService)
+
 	protected tab: SettingsTab = 'LOCATION'
 	protected showMenu = false
 	protected readonly preference = structuredClone(DEFAULT_SETTINGS_PREFERENCE)
@@ -83,15 +93,11 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
 		return this.preference.liveStacker[this.liveStackerType]
 	}
 
-	constructor(
-		private readonly app: AppComponent,
-		private readonly preferenceService: PreferenceService,
-		private readonly electronService: ElectronService,
-	) {
-		app.title = 'Settings'
-		app.subTitle = 'Location'
+	constructor() {
+		this.app.title = 'Settings'
+		this.app.subTitle = 'Location'
 
-		app.topMenu.push({
+		this.app.topMenu.push({
 			icon: 'mdi mdi-menu',
 			label: 'Menu',
 			command: () => {
@@ -137,12 +143,10 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
 		}
 	}
 
-	protected locationChanged(location?: Location) {
-		if (location) {
-			this.preference.location = location
-			this.savePreference()
-			this.locationChangePublisher.next(location)
-		}
+	protected locationChanged(location: Location = this.preference.location) {
+		this.preference.location = location
+		this.savePreference()
+		this.locationChangePublisher.next(location)
 	}
 
 	protected resetCameraCaptureNamingFormat(type: FrameType) {

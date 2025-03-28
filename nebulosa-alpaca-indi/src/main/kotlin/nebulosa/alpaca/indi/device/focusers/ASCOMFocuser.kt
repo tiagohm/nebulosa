@@ -5,7 +5,12 @@ import nebulosa.alpaca.api.ConfiguredDevice
 import nebulosa.alpaca.indi.client.AlpacaClient
 import nebulosa.alpaca.indi.device.ASCOMDevice
 import nebulosa.indi.device.Device
-import nebulosa.indi.device.focuser.*
+import nebulosa.indi.device.focuser.Focuser
+import nebulosa.indi.device.focuser.FocuserCanAbsoluteMoveChanged
+import nebulosa.indi.device.focuser.FocuserMaxPositionChanged
+import nebulosa.indi.device.focuser.FocuserMovingChanged
+import nebulosa.indi.device.focuser.FocuserPositionChanged
+import nebulosa.indi.device.focuser.FocuserTemperatureChanged
 import nebulosa.indi.protocol.INDIProtocol
 
 @Suppress("RedundantModalityModifier")

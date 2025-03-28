@@ -1,11 +1,8 @@
 package nebulosa.time
 
-import java.time.OffsetDateTime
+import java.time.LocalDateTime
 
 interface TimeStampedWithOffset : TimeZonedInSeconds {
 
-    val dateTime: OffsetDateTime
-
-    override val offsetInSeconds
-        get() = dateTime.offset.totalSeconds
+    val dateTime: LocalDateTime
 }

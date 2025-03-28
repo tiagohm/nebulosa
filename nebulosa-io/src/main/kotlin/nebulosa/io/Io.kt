@@ -3,7 +3,16 @@
 
 package nebulosa.io
 
-import okio.*
+import okio.Buffer
+import okio.BufferedSink
+import okio.BufferedSource
+import okio.EOFException
+import okio.Sink
+import okio.Source
+import okio.Timeout
+import okio.buffer
+import okio.source
+import okio.use
 import java.io.File
 import java.io.InputStream
 import java.io.OutputStream

@@ -4,9 +4,7 @@ import nebulosa.commandline.CommandLine
 import nebulosa.fits.FitsHeader
 import nebulosa.fits.FitsKeyword
 import nebulosa.image.Image
-import nebulosa.log.di
-import nebulosa.log.e
-import nebulosa.log.i
+import nebulosa.log.d
 import nebulosa.log.loggerFor
 import nebulosa.math.Angle
 import nebulosa.math.deg
@@ -70,9 +68,9 @@ data class AstapPlateSolver(
             val result = commandLine.execute(timeout = if (timeout.toSeconds() > 0) timeout.toSeconds() else 5 * 60L, unit = TimeUnit.SECONDS)
 
             if (result.isSuccess) {
-                LOG.di("astap exited. code={}", result.exitCode)
+                LOG.d { info("astap exited. code={}", result.exitCode) }
             } else {
-                LOG.e("astap failed. code={}", result.exitCode, result.exception)
+                LOG.error("astap failed. code={}", result.exitCode, result.exception)
                 throw PlateSolverException(result.exitCode.messageFromExitCode())
             }
 
@@ -124,7 +122,7 @@ data class AstapPlateSolver(
                     widthInPixels = widthInPixels, heightInPixels = heightInPixels, header = header
                 )
 
-                LOG.i("astap solved. calibration={}", solution)
+                LOG.info("astap solved. calibration={}", solution)
 
                 return solution
             } else {

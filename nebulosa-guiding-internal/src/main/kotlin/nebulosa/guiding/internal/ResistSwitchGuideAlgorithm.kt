@@ -1,7 +1,6 @@
 package nebulosa.guiding.internal
 
-import nebulosa.log.di
-import nebulosa.log.dw
+import nebulosa.log.d
 import nebulosa.log.loggerFor
 import kotlin.math.abs
 import kotlin.math.sign
@@ -28,7 +27,7 @@ data class ResistSwitchGuideAlgorithm(
             val thresh = 3.0 * minMove
 
             if (side != currentSide && abs(input) > thresh) {
-                LOG.di("large excursion. input={}, thresh={}, direction={} to {}", input, thresh, currentSide, side)
+                LOG.d { info("large excursion. input={}, thresh={}, direction={} to {}", input, thresh, currentSide, side) }
 
                 currentSide = 0
 
@@ -47,7 +46,7 @@ data class ResistSwitchGuideAlgorithm(
 
         if (currentSide == 0 || currentSide == -decHistory) {
             if (abs(decHistory) < 3) {
-                LOG.dw("not compelling enough")
+                LOG.d { warn("not compelling enough") }
                 return 0.0
             }
 
@@ -60,23 +59,23 @@ data class ResistSwitchGuideAlgorithm(
             }
 
             if (abs(newest) <= abs(oldest)) {
-                LOG.dw("not getting worse")
+                LOG.d { warn("not getting worse") }
                 return 0.0
             }
 
-            LOG.di("switching direction from {} to {}", currentSide, decHistory)
+            LOG.d { info("switching direction from {} to {}", currentSide, decHistory) }
 
             currentSide = decHistory
         }
 
         if (currentSide != side) {
-            LOG.dw("must have overshot -- vetoing move")
+            LOG.d { warn("must have overshot -- vetoing move") }
             return 0.0
         }
 
         val result = input * aggression
 
-        LOG.di("computed. result={}, input={}", result, input)
+        LOG.d { info("computed. result={}, input={}", result, input) }
 
         return result
     }

@@ -1,17 +1,19 @@
 package nebulosa.api.atlas
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import io.ktor.http.ContentType
-import io.ktor.server.application.Application
-import io.ktor.server.response.respond
-import io.ktor.server.response.respondBytes
-import io.ktor.server.response.respondNullable
-import io.ktor.server.routing.RoutingContext
-import io.ktor.server.routing.get
-import io.ktor.server.routing.routing
+import io.ktor.http.*
+import io.ktor.server.application.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 import nebulosa.api.ktor.Controller
 import nebulosa.api.ktor.location
-import nebulosa.api.validators.*
+import nebulosa.api.validators.enumOf
+import nebulosa.api.validators.localDate
+import nebulosa.api.validators.localTime
+import nebulosa.api.validators.min
+import nebulosa.api.validators.notNull
+import nebulosa.api.validators.notNullOrBlank
+import nebulosa.api.validators.positive
 import nebulosa.math.deg
 import nebulosa.math.hours
 import nebulosa.nova.astrometry.Constellation
@@ -32,9 +34,10 @@ class SkyAtlasController(
                 get("/sky-atlas/sun/image", ::imageOfSun)
                 get("/sky-atlas/sun/position", ::positionOfSun)
                 get("/sky-atlas/sun/altitude-points", ::altitudePointsOfSun)
+                get("/sky-atlas/earth/seasons", ::earthSeasons)
                 get("/sky-atlas/moon/position", ::positionOfMoon)
                 get("/sky-atlas/moon/altitude-points", ::altitudePointsOfMoon)
-                get("/sky-atlas/moon/phase", ::moonPhase)
+                get("/sky-atlas/moon/phases", ::moonPhases)
                 get("/sky-atlas/twilight", ::twilight)
                 get("/sky-atlas/planets/{code}/position", ::positionOfPlanet)
                 get("/sky-atlas/planets/{code}/altitude-points", ::altitudePointsOfPlanet)
@@ -203,12 +206,19 @@ class SkyAtlasController(
         respond(skyAtlasService.twilight(location, dateTime, fast))
     }
 
-    private suspend fun moonPhase(ctx: RoutingContext) = with(ctx.call) {
+    private suspend fun moonPhases(ctx: RoutingContext) = with(ctx.call) {
         val location = location(mapper).notNull()
         val date = queryParameters[DATE].notNull().localDate()
         val time = queryParameters[TIME].notNull().localTime()
+        val topocentric = queryParameters[TOPOCENTRIC]?.toBoolean() == true
         val dateTime = LocalDateTime.of(date, time)
-        respondNullable(skyAtlasService.moonPhase(location, dateTime))
+        respondNullable(skyAtlasService.moonPhases(location, dateTime, topocentric))
+    }
+
+    private suspend fun earthSeasons(ctx: RoutingContext) = with(ctx.call) {
+        val location = location(mapper).notNull()
+        val date = queryParameters[DATE].notNull().localDate()
+        respondNullable(skyAtlasService.earthSeasons(location, date.year))
     }
 
     companion object {
@@ -224,5 +234,6 @@ class SkyAtlasController(
         private const val GROUP = "group"
         private const val DISTANCE = "distance"
         private const val STEP_SIZE = "stepSize"
+        private const val TOPOCENTRIC = "topocentric"
     }
 }

@@ -10,7 +10,12 @@ import nebulosa.math.Angle
 import nebulosa.math.deg
 import nebulosa.math.rad
 import nebulosa.wcs.computeCdMatrix
-import kotlin.math.*
+import kotlin.math.abs
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.hypot
+import kotlin.math.min
+import kotlin.math.truncate
 
 data class PlateSolution(
     @JvmField val solved: Boolean = false,
@@ -37,21 +42,23 @@ data class PlateSolution(
 
         @JvmStatic
         fun from(header: ReadableHeader): PlateSolution? {
+            // https://www.aanda.org/articles/aa/full/2002/45/aah3859/aah3859.right.html
             val crval1 = header.getDoubleOrNull(FitsKeyword.CRVAL1)?.deg ?: return null
             val crval2 = header.getDoubleOrNull(FitsKeyword.CRVAL2)?.deg ?: return null
             val (cd11, cd12, cd21, cd22) = header.computeCdMatrix()
             val crota2 = header.getDoubleOrNull(FitsKeyword.CROTA2)?.deg ?: atan2(cd12, cd11).rad
             // https://danmoser.github.io/notes/gai_fits-imgs.html
-            val cdelt1 = header.getDoubleOrNull(FitsKeyword.CDELT1)?.deg ?: (cd11 / cos(crota2)).deg
-            val cdelt2 = header.getDoubleOrNull(FitsKeyword.CDELT2)?.deg ?: (cd22 / cos(crota2)).deg
+            // CDELT has 1.0 deg as default value (ignore it)
+            val cdelt1 = min(header.getDoubleOrNull(FitsKeyword.CDELT1)?.takeIf { it != 1.0 }?.deg ?: Double.MAX_VALUE, (cd11 / cos(crota2)).deg)
+            val cdelt2 = min(header.getDoubleOrNull(FitsKeyword.CDELT2)?.takeIf { it != 1.0 }?.deg ?: Double.MAX_VALUE, (cd22 / cos(crota2)).deg)
             val width = header.getIntOrNull(FitsKeyword.NAXIS1) ?: header.getInt("IMAGEW", 0)
             val height = header.getIntOrNull(FitsKeyword.NAXIS2) ?: header.getInt("IMAGEH", 0)
             val parity = if ((cd11 * cd22 - cd12 * cd21) >= 0.0) Parity.NORMAL else Parity.FLIPPED
 
-            LOG.d("solution from {}: ORIE={}, SCALE={}, RA={}, DEC={}, PARITY={}", header, crota2, cdelt2, crval1, crval2, parity)
+            LOG.d { debug("solution from {}: ORIE={}, SCALE={}, RA={}, DEC={}, PARITY={}", header, crota2, cdelt2, crval1, crval2, parity) }
 
             return PlateSolution(
-                true, crota2, cdelt2, crval1, crval2, abs(cdelt1 * width), abs(cdelt2 * height), parity,
+                true, crota2, abs(cdelt2), crval1, crval2, abs(cdelt1 * width), abs(cdelt2 * height), parity,
                 widthInPixels = width.toDouble(), heightInPixels = height.toDouble(), header = header
             )
         }

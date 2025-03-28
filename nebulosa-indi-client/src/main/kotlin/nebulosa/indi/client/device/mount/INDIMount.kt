@@ -1,20 +1,54 @@
 package nebulosa.indi.client.device.mount
 
 import nebulosa.indi.client.INDIClient
-import nebulosa.indi.client.device.DriverInfo
+import nebulosa.indi.client.device.INDIDriverInfo
 import nebulosa.indi.client.device.INDIDevice
 import nebulosa.indi.client.device.handler.INDIGuideOutputHandler
 import nebulosa.indi.device.firstOnSwitch
 import nebulosa.indi.device.firstOnSwitchOrNull
 import nebulosa.indi.device.gps.GPS
-import nebulosa.indi.device.mount.*
-import nebulosa.indi.protocol.*
+import nebulosa.indi.device.mount.Mount
+import nebulosa.indi.device.mount.MountCanAbortChanged
+import nebulosa.indi.device.mount.MountCanGoToChanged
+import nebulosa.indi.device.mount.MountCanHomeChanged
+import nebulosa.indi.device.mount.MountCanParkChanged
+import nebulosa.indi.device.mount.MountCanSyncChanged
+import nebulosa.indi.device.mount.MountEquatorialCoordinatesChanged
+import nebulosa.indi.device.mount.MountGeographicCoordinateChanged
+import nebulosa.indi.device.mount.MountParkChanged
+import nebulosa.indi.device.mount.MountPierSideChanged
+import nebulosa.indi.device.mount.MountSlewFailed
+import nebulosa.indi.device.mount.MountSlewRateChanged
+import nebulosa.indi.device.mount.MountSlewRatesChanged
+import nebulosa.indi.device.mount.MountSlewingChanged
+import nebulosa.indi.device.mount.MountTimeChanged
+import nebulosa.indi.device.mount.MountTrackModeChanged
+import nebulosa.indi.device.mount.MountTrackModesChanged
+import nebulosa.indi.device.mount.MountTrackingChanged
+import nebulosa.indi.device.mount.MountType
+import nebulosa.indi.device.mount.PierSide
+import nebulosa.indi.device.mount.SlewRate
+import nebulosa.indi.device.mount.TrackMode
+import nebulosa.indi.protocol.DefSwitchVector
 import nebulosa.indi.protocol.DefVector.Companion.isNotReadOnly
+import nebulosa.indi.protocol.INDIProtocol
+import nebulosa.indi.protocol.NumberVector
+import nebulosa.indi.protocol.PropertyState
+import nebulosa.indi.protocol.SwitchVector
+import nebulosa.indi.protocol.TextVector
 import nebulosa.indi.protocol.Vector.Companion.isBusy
-import nebulosa.math.*
+import nebulosa.math.Angle
+import nebulosa.math.Distance
+import nebulosa.math.deg
+import nebulosa.math.hours
+import nebulosa.math.m
+import nebulosa.math.normalized
+import nebulosa.math.toDegrees
+import nebulosa.math.toHours
+import nebulosa.math.toMeters
 import nebulosa.nova.position.ICRF
-import nebulosa.time.SystemClock
 import java.time.Duration
+import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
@@ -22,7 +56,7 @@ import java.time.ZoneOffset
 
 internal open class INDIMount(
     final override val sender: INDIClient,
-    final override val driverInfo: DriverInfo,
+    final override val driver: INDIDriverInfo,
 ) : INDIDevice(), Mount {
 
     @Volatile final override var slewing = false
@@ -58,7 +92,8 @@ internal open class INDIMount(
     @Volatile final override var longitude = 0.0
     @Volatile final override var latitude = 0.0
     @Volatile final override var elevation = 0.0
-    @Volatile final override var dateTime = OffsetDateTime.now(SystemClock)!!
+    @Volatile final override var dateTime = LocalDateTime.ofEpochSecond(0, 0, ZoneOffset.UTC)!!
+    @Volatile final override var offsetInSeconds = 0
 
     override fun handleMessage(message: INDIProtocol) {
         when (message) {
@@ -73,8 +108,8 @@ internal open class INDIMount(
 
                         val name = message.firstOnSwitch().name
 
-                        if (slewRate?.name != name) {
-                            slewRate = slewRates.firstOrNull { it.name == name }
+                        if (slewRate?.value != name) {
+                            slewRate = slewRates.firstOrNull { it.value == name }
                             sender.fireOnEventReceived(MountSlewRateChanged(this))
                         }
                     }
@@ -175,10 +210,8 @@ internal open class INDIMount(
             is TextVector<*> -> {
                 when (message.name) {
                     "TIME_UTC" -> {
-                        val utcTime = GPS.extractTime(message["UTC"]!!.value) ?: return
-                        val utcOffset = message["OFFSET"]!!.value.toDoubleOrNull() ?: 0.0
-
-                        dateTime = OffsetDateTime.of(utcTime, ZoneOffset.ofTotalSeconds((utcOffset * 3600.0).toInt()))
+                        dateTime = GPS.parseTime(message["UTC"]?.value ?: return) ?: return
+                        offsetInSeconds = GPS.parseOffset(message["OFFSET"]?.value ?: return) * 60
 
                         sender.fireOnEventReceived(MountTimeChanged(this))
                     }
@@ -258,7 +291,7 @@ internal open class INDIMount(
 
     override fun slewRate(rate: SlewRate) {
         if (rate in slewRates) {
-            sendNewSwitch("TELESCOPE_SLEW_RATE", rate.name to true)
+            sendNewSwitch("TELESCOPE_SLEW_RATE", rate.value to true)
         }
     }
 

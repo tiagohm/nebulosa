@@ -1,16 +1,34 @@
 package nebulosa.image
 
-import nebulosa.fits.*
+import nebulosa.fits.Bitpix
+import nebulosa.fits.FitsHeader
+import nebulosa.fits.FitsKeyword
+import nebulosa.fits.cfaPattern
+import nebulosa.fits.height
+import nebulosa.fits.width
 import nebulosa.image.algorithms.ComputationAlgorithm
 import nebulosa.image.algorithms.TransformAlgorithm
 import nebulosa.image.algorithms.transform
 import nebulosa.image.algorithms.transformation.CfaPattern
 import nebulosa.image.algorithms.transformation.Debayer
 import nebulosa.image.algorithms.transformation.Grayscale
-import nebulosa.image.format.*
+import nebulosa.image.format.BasicImageHdu
+import nebulosa.image.format.FloatImageData
+import nebulosa.image.format.ImageChannel
+import nebulosa.image.format.ImageFormat
+import nebulosa.image.format.ImageHdu
+import nebulosa.image.format.ImageModifier
+import nebulosa.image.format.ImageRepresentation
+import nebulosa.image.format.ReadableHeader
 import okio.Sink
 import java.awt.color.ColorSpace
-import java.awt.image.*
+import java.awt.image.BufferedImage
+import java.awt.image.ColorModel
+import java.awt.image.ComponentColorModel
+import java.awt.image.DataBuffer
+import java.awt.image.PixelInterleavedSampleModel
+import java.awt.image.Raster
+import java.awt.image.WritableRaster
 
 @Suppress("NOTHING_TO_INLINE")
 class Image internal constructor(

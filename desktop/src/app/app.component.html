@@ -1,66 +1,57 @@
-<section
-	*ngIf="showTopBar"
-	id="titlebar"
-	class="flex flex-row align-items-center justify-content-end gap-2 sticky pr-1"
-	[style]="{ height: '42px', zIndex: '1000', backgroundColor: '#212121' }">
-	<span class="align-items-center draggable-region flex flex-column flex-1 font-bold justify-content-center min-h-full text-center">
-		<div>{{ title }}</div>
-		<div class="text-xs text-gray-200 font-normal">{{ subTitle }}</div>
-	</span>
-	<neb-menu-bar
-		*ngIf="topMenu.length"
-		[model]="topMenu" />
-	<span
-		class="separator flex justify-content-center"
-		*ngIf="topMenu.length"></span>
-	<p-button
-		*ngIf="pinned && !modal"
-		[text]="true"
-		[rounded]="true"
-		size="small"
-		icon="mdi mdi-sm mdi-pin text-gray-200"
-		(onClick)="pin()"
-		pTooltip="Unpin Window"
-		tooltipPosition="bottom"
-		styleClass="select-none cursor-pointer"></p-button>
-	<p-button
-		*ngIf="!pinned && !modal"
-		[text]="true"
-		[rounded]="true"
-		size="small"
-		icon="mdi mdi-sm mdi-pin-off text-gray-200"
-		(onClick)="pin()"
-		pTooltip="Pin Window"
-		tooltipPosition="bottom"
-		styleClass="select-none cursor-pointer"></p-button>
-	<p-button
-		*ngIf="!modal"
-		[text]="true"
-		[rounded]="true"
-		size="small"
-		icon="mdi mdi-sm mdi-window-minimize text-gray-200"
-		(onClick)="minimize()"
-		styleClass="select-none cursor-pointer"></p-button>
-	<p-button
-		*ngIf="!modal && maximizable"
-		[text]="true"
-		[rounded]="true"
-		size="small"
-		icon="mdi mdi-sm mdi-window-maximize text-gray-200"
-		(onClick)="maximize()"
-		styleClass="select-none cursor-pointer"></p-button>
-	<p-button
-		[text]="true"
-		[rounded]="true"
-		size="small"
-		icon="mdi mdi-sm mdi-window-close text-danger"
-		(onClick)="close()"
-		styleClass="select-none cursor-pointer mr-1"></p-button>
-</section>
+@if (showTopBar) {
+	<section
+		id="titlebar"
+		class="sticky flex items-center justify-end gap-2 pr-1"
+		[style]="{ height: '42px', zIndex: '1000', backgroundColor: 'var(--p-surface-800)' }">
+		<span class="draggable-region flex h-full flex-1 flex-col flex-wrap items-center justify-center font-bold">
+			<div>{{ title }}</div>
+			<div class="text-xs font-normal text-gray-200">{{ subTitle }}</div>
+		</span>
+		@if (topMenu.length) {
+			<neb-menu-bar [model]="topMenu" />
+		}
+		@if (!modal) {
+			@if (topMenu.length) {
+				<span class="flex justify-center"></span>
+			}
+			@if (pinned) {
+				<neb-button
+					icon="mdi mdi-sm mdi-pin text-gray-200"
+					severity="contrast"
+					(action)="pin()"
+					tooltip="Unpin Window" />
+			} @else {
+				<neb-button
+					icon="mdi mdi-sm mdi-pin-off text-gray-200"
+					severity="contrast"
+					(action)="pin()"
+					tooltip="Pin Window" />
+			}
+			<neb-button
+				severity="contrast"
+				icon="mdi mdi-sm mdi-window-minimize text-gray-200"
+				(action)="minimize()" />
+			@if (maximizable) {
+				<neb-button
+					severity="contrast"
+					icon="mdi mdi-sm mdi-window-maximize text-gray-200"
+					(action)="maximize()" />
+			}
+		}
+		<neb-button
+			class="mr-1"
+			severity="danger"
+			icon="mdi mdi-sm mdi-window-close"
+			(action)="close()" />
+	</section>
+}
 
 <section id="main">
 	<router-outlet></router-outlet>
 </section>
 
-<p-toast position="bottom-center" />
+<p-toast
+	position="bottom-center"
+	[preventOpenDuplicates]="true" />
+
 <p-confirmDialog [style]="{ minWidth: '320px', maxWidth: '80px' }" />

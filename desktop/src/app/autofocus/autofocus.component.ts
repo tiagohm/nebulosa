@@ -1,25 +1,36 @@
-import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
-import { ChartData, ChartOptions } from 'chart.js'
-import { Point } from 'electron'
-import { UIChart } from 'primeng/chart'
-import { CameraExposureComponent } from '../../shared/components/camera-exposure/camera-exposure.component'
+import type { AfterViewInit, OnDestroy } from '@angular/core'
+import { Component, HostListener, NgZone, inject, viewChild } from '@angular/core'
+import type { ChartData, ChartOptions } from 'chart.js'
+import type { Point } from 'electron'
+import type { UIChart } from 'primeng/chart'
+import type { CameraExposureComponent } from '../../shared/components/camera-exposure.component'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { Tickable, Ticker } from '../../shared/services/ticker.service'
-import { AutoFocusChart, AutoFocusState, DEFAULT_AUTO_FOCUS_PREFERENCE } from '../../shared/types/autofocus.type'
-import { Camera, DEFAULT_CAMERA, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
-import { DEFAULT_FOCUSER, Focuser } from '../../shared/types/focuser.types'
+import type { Tickable } from '../../shared/services/ticker.service'
+import { Ticker } from '../../shared/services/ticker.service'
+import type { AutoFocusChart, AutoFocusState } from '../../shared/types/autofocus.type'
+import { DEFAULT_AUTO_FOCUS_PREFERENCE } from '../../shared/types/autofocus.type'
+import type { Camera } from '../../shared/types/camera.types'
+import { DEFAULT_CAMERA, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
+import type { Focuser } from '../../shared/types/focuser.types'
+import { DEFAULT_FOCUSER } from '../../shared/types/focuser.types'
 import { deviceComparator } from '../../shared/utils/comparators'
 import { AppComponent } from '../app.component'
 import { CameraComponent } from '../camera/camera.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-autofocus',
-	templateUrl: './autofocus.component.html',
+	templateUrl: 'autofocus.component.html',
 })
 export class AutoFocusComponent implements AfterViewInit, OnDestroy, Tickable {
+	private readonly api = inject(ApiService)
+	private readonly browserWindowService = inject(BrowserWindowService)
+	private readonly preferenceService = inject(PreferenceService)
+	private readonly ticker = inject(Ticker)
+
 	protected cameras: Camera[] = []
 	protected camera?: Camera
 
@@ -200,11 +211,8 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy, Tickable {
 		],
 	}
 
-	@ViewChild('cameraExposure')
-	private readonly cameraExposure!: CameraExposureComponent
-
-	@ViewChild('chart')
-	private readonly chart!: UIChart
+	private readonly cameraExposure = viewChild.required<CameraExposureComponent>('cameraExposure')
+	private readonly chart = viewChild.required<UIChart>('chart')
 
 	private get trendLineLeftDataset() {
 		return this.chartData.datasets[0]
@@ -230,15 +238,11 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy, Tickable {
 		return this.chartData.datasets[5]
 	}
 
-	constructor(
-		app: AppComponent,
-		private readonly api: ApiService,
-		private readonly browserWindowService: BrowserWindowService,
-		private readonly preferenceService: PreferenceService,
-		private readonly ticker: Ticker,
-		electronService: ElectronService,
-		ngZone: NgZone,
-	) {
+	constructor() {
+		const app = inject(AppComponent)
+		const electronService = inject(ElectronService)
+		const ngZone = inject(NgZone)
+
 		app.title = 'Auto Focus'
 
 		electronService.on('CAMERA.UPDATED', (event) => {
@@ -313,7 +317,7 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy, Tickable {
 				this.starHFD = event.starHFD
 
 				if (event.capture) {
-					this.cameraExposure.handleCameraCaptureEvent(event.capture, true)
+					this.cameraExposure().handleCameraCaptureEvent(event.capture, true)
 				}
 
 				if (state === 'CURVE_FITTED') {
@@ -439,7 +443,7 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy, Tickable {
 		zoom.limits!['x']!.max = scales['x']!.max
 		zoom.limits!['y']!.max = scales['y']!.max
 
-		this.chart.refresh()
+		this.chart().refresh()
 	}
 
 	private clearChart() {
@@ -449,7 +453,7 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy, Tickable {
 			dataset.data = []
 		}
 
-		this.chart.refresh()
+		this.chart().refresh()
 	}
 
 	private loadPreference() {

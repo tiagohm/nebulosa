@@ -1,122 +1,96 @@
-<div class="container px-4 py-3">
-	<div class="grid flex align-items-center">
-		<div class="col-12 align-items-center gap-2">
-			<neb-device-name [device]="rotator" />
-			<p-button
-				*ngIf="rotator.connected"
-				[disabled]="rotator.moving"
-				(onClick)="connect()"
-				icon="mdi mdi-close"
-				size="small"
-				severity="danger"
-				pTooltip="Disconnect"
-				tooltipPosition="bottom"
-				[text]="true" />
-			<p-button
-				*ngIf="!rotator.connected"
-				[disabled]="rotator.moving"
-				(onClick)="connect()"
-				icon="mdi mdi-connection"
-				size="small"
-				severity="info"
-				pTooltip="Connect"
-				tooltipPosition="bottom"
-				[text]="true" />
+<div class="flex flex-col gap-3 p-4">
+	<div class="grid grid-cols-12 gap-3">
+		<div class="col-span-full flex items-center gap-3">
+			<neb-device-name
+				[device]="rotator"
+				class="flex-1" />
+			@if (rotator.connected) {
+				<neb-button
+					[disabled]="rotator.moving"
+					(action)="connect()"
+					icon="mdi mdi-close"
+					severity="danger"
+					tooltip="Disconnect" />
+			} @else {
+				<neb-button
+					[disabled]="rotator.moving"
+					(action)="connect()"
+					icon="mdi mdi-connection"
+					severity="info"
+					tooltip="Connect" />
+			}
+			<neb-button-indi [device]="rotator" />
 		</div>
-		<div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center justify-content-between my-1 gap-1">
-			<div class="flex align-items-center gap-1">
-				<i class="mdi mdi-information text-info"></i>
-				<span style="display: contents">{{ rotator.moving ? 'moving' : 'idle' }}</span>
-			</div>
+		<div class="col-span-full my-1 flex items-center !justify-start gap-1 pt-0 text-sm text-gray-400">
+			<i class="mdi mdi-information text-blue-500"></i>
+			<span class="contents">{{ rotator.moving ? 'moving' : 'idle' }}</span>
 		</div>
 	</div>
-	<div class="grid mt-1">
-		<div class="col-6">
-			<p-floatLabel>
-				<p-inputNumber
-					readonly
-					styleClass="p-inputtext-sm border-0 max-w-full"
-					[(ngModel)]="rotator.angle"
-					locale="en"
-					spinnableNumber />
-				<label>Angle (°)</label>
-			</p-floatLabel>
+	<div class="grid grid-cols-12 gap-3">
+		<div class="col-span-5">
+			<neb-input-number
+				label="Angle (°)"
+				[readonly]="true"
+				[(value)]="rotator.angle" />
 		</div>
-		<div class="col-6 text-center align-items-center justify-content-between gap-2">
-			<p-button
+		<div class="col-span-2">
+			<neb-button
 				[disabled]="!rotator.connected || !rotator.moving || !canAbort"
 				icon="mdi mdi-stop"
-				[text]="true"
 				severity="danger"
-				size="small"
-				pTooltip="Abort"
-				tooltipPosition="bottom"
-				(onClick)="abort()" />
-			<p-button
+				tooltip="Abort"
+				(action)="abort()" />
+		</div>
+		<div class="col-span-2">
+			<neb-button
 				[disabled]="!rotator.connected || !rotator.moving || !canHome"
 				icon="mdi mdi-home"
-				[text]="true"
 				severity="info"
-				size="small"
-				pTooltip="Home"
-				tooltipPosition="bottom"
-				(onClick)="home()" />
-			<div class="flex flex-column align-items-center justify-content-center text-center gap-2">
-				<span class="text-xs text-gray-100">Reversed</span>
-				<p-inputSwitch
-					[disabled]="!rotator.connected || rotator.moving || !canReverse"
-					(onChange)="reverse($event.checked)"
-					[(ngModel)]="rotator.reversed" />
-			</div>
+				tooltip="Home"
+				(action)="home()" />
 		</div>
-		<div class="col-12 flex align-items-center gap-1">
-			<p-floatLabel>
-				<p-inputNumber
-					[disabled]="!rotator.connected"
-					[step]="0.1"
-					[minFractionDigits]="1"
-					[min]="rotator.minAngle"
-					[max]="rotator.maxAngle"
-					[showButtons]="true"
-					styleClass="p-inputtext-sm border-0 max-w-full"
-					[(ngModel)]="angle"
-					(ngModelChange)="savePreference()"
-					[allowEmpty]="false"
-					locale="en"
-					spinnableNumber />
-				<label>Move</label>
-			</p-floatLabel>
-			<p-button
+		<div class="col-span-3">
+			<neb-switch
+				label="Reversed"
+				[disabled]="!rotator.connected || rotator.moving || !canReverse"
+				[(value)]="rotator.reversed"
+				(valueChange)="reverse($event)" />
+		</div>
+		<div class="col-span-8">
+			<neb-input-number
+				label="Move"
+				[disabled]="!rotator.connected"
+				[step]="0.1"
+				[min]="rotator.minAngle"
+				[max]="rotator.maxAngle"
+				[(value)]="angle"
+				(valueChange)="savePreference()" />
+		</div>
+		<div class="col-span-2">
+			<neb-button
 				[disabled]="!rotator.connected || rotator.moving || !canSync"
-				(onClick)="sync()"
+				(action)="sync()"
 				icon="mdi mdi-sync"
-				[text]="true"
 				severity="info"
-				size="small"
-				pTooltip="Sync"
-				tooltipPosition="bottom" />
-			<p-button
+				tooltip="Sync" />
+		</div>
+		<div class="col-span-2">
+			<neb-button
 				[disabled]="!rotator.connected || rotator.moving || preference.angle === rotator.angle || !canMove"
-				(onClick)="move()"
+				(action)="move()"
 				icon="mdi mdi-check"
-				[text]="true"
 				severity="success"
-				size="small"
-				pTooltip="Move"
-				tooltipPosition="bottom" />
+				tooltip="Move" />
 		</div>
 	</div>
-	<div
-		class="grid mt-2"
-		*ngIf="canApply">
-		<div class="col-12 flex justify-content-center gap-2">
-			<p-button
+	@if (canApply) {
+		<div class="col-span-full">
+			<neb-button
 				[disabled]="!rotator.connected"
 				label="Save"
-				(onClick)="apply()"
+				(action)="apply()"
 				icon="mdi mdi-content-save"
-				severity="info"
-				size="small" />
+				severity="info" />
 		</div>
-	</div>
+	}
 </div>

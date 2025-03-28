@@ -4,8 +4,6 @@ import nebulosa.commandline.CommandLine
 import nebulosa.commandline.CommandLineHandler
 import nebulosa.commandline.CommandLineListener
 import nebulosa.log.d
-import nebulosa.log.de
-import nebulosa.log.di
 import nebulosa.log.loggerFor
 import java.nio.file.Path
 import java.util.concurrent.CancellationException
@@ -18,7 +16,7 @@ data class PixInsightScriptRunner(private val executablePath: Path) {
         script.arguments.forEach(commands::add)
         DEFAULT_ARGS.forEach(commands::add)
 
-        LOG.d("running {} script", script.name)
+        LOG.d { debug("running {} script", script.name) }
 
         val handler = CommandLineHandler()
         val commandLine = CommandLine(commands)
@@ -26,8 +24,8 @@ data class PixInsightScriptRunner(private val executablePath: Path) {
 
         completable.whenComplete { o, e ->
             if (e is CancellationException) handler.kill()
-            if (o != null) LOG.di("{} completed. output={}", script.name, o)
-            else LOG.de("{} completed with exception", script.name, e)
+            if (o != null) LOG.d { info("{} completed. output={}", script.name, o) }
+            else LOG.d { error("{} completed with exception", script.name, e) }
         }
 
         handler.registerCommandLineListener(object : CommandLineListener {
@@ -41,7 +39,7 @@ data class PixInsightScriptRunner(private val executablePath: Path) {
             }
 
             override fun onExited(exitCode: Int, exception: Throwable?) {
-                LOG.d("{} script finished. done={}, exitCode={}", script.name, completable.isDone, exitCode, exception)
+                LOG.d { debug("{} script finished. done={}, exitCode={}", script.name, completable.isDone, exitCode, exception) }
 
                 if (completable.isDone) return
                 if (exception != null) completable.completeExceptionally(exception)

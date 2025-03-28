@@ -3,18 +3,31 @@ package nebulosa.api.cameras
 import nebulosa.api.calibration.CalibrationFrameProvider
 import nebulosa.api.image.ImageFilterType
 import nebulosa.api.livestacker.LiveStackingRequest
-import nebulosa.fits.*
+import nebulosa.fits.binX
+import nebulosa.fits.binY
+import nebulosa.fits.exposureTimeInMicroseconds
+import nebulosa.fits.filter
+import nebulosa.fits.fits
+import nebulosa.fits.gain
+import nebulosa.fits.height
+import nebulosa.fits.isFits
+import nebulosa.fits.temperature
+import nebulosa.fits.width
 import nebulosa.image.format.ImageHdu
 import nebulosa.livestacker.LiveStacker
-import nebulosa.log.e
 import nebulosa.log.loggerFor
-import nebulosa.log.w
 import nebulosa.xisf.isXisf
 import nebulosa.xisf.xisf
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.*
-import kotlin.io.path.*
+import kotlin.io.path.Path
+import kotlin.io.path.copyTo
+import kotlin.io.path.deleteIfExists
+import kotlin.io.path.deleteRecursively
+import kotlin.io.path.exists
+import kotlin.io.path.extension
+import kotlin.io.path.isRegularFile
 
 data class CameraLiveStackingManager(
     private val liveStackingDir: Path,
@@ -43,7 +56,7 @@ data class CameraLiveStackingManager(
 
                 return true
             } catch (e: Throwable) {
-                LOG.e("failed to start live stacking. request={}", request.liveStacking, e)
+                LOG.error("failed to start live stacking. request={}", request.liveStacking, e)
             }
         }
 
@@ -129,7 +142,7 @@ data class CameraLiveStackingManager(
             val filter = header.filter
             val calibrationGroup = request.calibrationGroup
 
-            LOG.w("find calibration frames for live stacking. group={}, temperature={}, binX={}, binY={}. width={}, height={}, exposureTime={}, gain={}, filter={}", calibrationGroup, temperature, binX, binY, width, height, exposureTime, gain, filter)
+            LOG.warn("find calibration frames for live stacking. group={}, temperature={}, binX={}, binY={}. width={}, height={}, exposureTime={}, gain={}, filter={}", calibrationGroup, temperature, binX, binY, width, height, exposureTime, gain, filter)
 
             val newDarkPath = (if (useCalibrationGroup) calibrationFrameProvider
                 .findBestDarkFrames(calibrationGroup, temperature, width, height, binX, binY, exposureTime, gain)
@@ -143,7 +156,7 @@ data class CameraLiveStackingManager(
                 .findBestBiasFrames(calibrationGroup, width, height, binX, binY)
                 .firstOrNull()?.path else biasPath)?.takeIf { it.isCalibrationFrame }
 
-            LOG.w("live stacking will use calibration frames. group={}, dark={}, flat={}, bias={}", calibrationGroup, newDarkPath, newFlatPath, newBiasPath)
+            LOG.warn("live stacking will use calibration frames. group={}, dark={}, flat={}, bias={}", calibrationGroup, newDarkPath, newFlatPath, newBiasPath)
 
             copy(darkPath = newDarkPath, flatPath = newFlatPath, biasPath = newBiasPath)
         } else {

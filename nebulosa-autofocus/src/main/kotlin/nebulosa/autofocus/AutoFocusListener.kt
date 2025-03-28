@@ -11,6 +11,6 @@ interface AutoFocusListener {
 
     fun onCurveFitted(
         predictedFocusPoint: CurvePoint?, minX: Double, minY: Double, maxX: Double, maxY: Double,
-        trendLine: TrendLineFitting.Curve?, parabolic: QuadraticFitting.Curve?, hyperbolic: HyperbolicFitting.Curve?
+        trendLine: TrendLineFitting.Curve?, parabolic: QuadraticFitting.Curve?, hyperbolic: HyperbolicFitting.Curve?,
     )
 }

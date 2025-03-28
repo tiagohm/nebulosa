@@ -1,7 +1,11 @@
 package nebulosa.watney.platesolver.quad
 
 import nebulosa.erfa.SphericalCoordinate
-import nebulosa.io.*
+import nebulosa.io.ByteOrder
+import nebulosa.io.readFloat
+import nebulosa.io.readFully
+import nebulosa.io.readInt
+import nebulosa.io.seekableSource
 import nebulosa.math.Angle
 import nebulosa.math.deg
 import nebulosa.watney.platesolver.quad.QuadDatabaseCellFileDescriptor.SubCellInfo

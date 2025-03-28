@@ -1,17 +1,17 @@
-import { HttpErrorResponse, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http'
-import { Injectable } from '@angular/core'
-import { catchError, Observable, throwError } from 'rxjs'
+import type { HttpErrorResponse, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http'
+import { inject, Injectable } from '@angular/core'
+import type { Observable } from 'rxjs'
+import { catchError, throwError } from 'rxjs'
 import { AngularService } from '../services/angular.service'
-import { Severity } from '../types/angular.types'
 
 export interface ErrorResponse {
 	message: string
-	type: Severity
+	type: 'success' | 'info' | 'warn' | 'error'
 }
 
 @Injectable({ providedIn: 'root' })
 export class ErrorInterceptor implements HttpInterceptor {
-	constructor(private readonly angularService: AngularService) {}
+	private readonly angularService = inject(AngularService)
 
 	intercept(req: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
 		return next.handle(req).pipe(

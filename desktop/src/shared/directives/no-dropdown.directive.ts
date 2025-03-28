@@ -1,9 +1,11 @@
-import { Directive, Host, Optional } from '@angular/core'
+import { Directive, inject } from '@angular/core'
 import { SplitButton } from 'primeng/splitbutton'
 
-@Directive({ selector: '[noDropdown]' })
+@Directive({ standalone: false, selector: '[noDropdown]' })
 export class NoDropdownDirective {
-	constructor(@Host() @Optional() splitButton?: SplitButton) {
+	constructor() {
+		const splitButton = inject(SplitButton, { host: true, optional: true })
+
 		if (splitButton) {
 			// const onDropdownButtonClick = splitButton.onDropdownButtonClick
 

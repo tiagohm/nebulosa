@@ -1,6 +1,12 @@
 package nebulosa.nova.astrometry
 
-import nebulosa.constants.*
+import nebulosa.constants.ASEC2RAD
+import nebulosa.constants.AU_KM
+import nebulosa.constants.DAYSPERJC
+import nebulosa.constants.DEG2RAD
+import nebulosa.constants.J2000
+import nebulosa.constants.PI
+import nebulosa.constants.PIOVERTWO
 import nebulosa.erfa.PositionAndVelocity
 import nebulosa.io.bufferedResource
 import nebulosa.math.Matrix3D

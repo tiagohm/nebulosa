@@ -1,23 +1,33 @@
-import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
-import { CameraExposureComponent } from '../../shared/components/camera-exposure/camera-exposure.component'
+import type { AfterViewInit, OnDestroy } from '@angular/core'
+import { Component, HostListener, NgZone, inject, viewChild } from '@angular/core'
+import type { CameraExposureComponent } from '../../shared/components/camera-exposure.component'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { Tickable, Ticker } from '../../shared/services/ticker.service'
-import { AlignmentMethod, DARVState, DEFAULT_ALIGNMENT_PREFERENCE, DEFAULT_DARV_RESULT, DEFAULT_TPPA_RESULT, TPPAState } from '../../shared/types/alignment.types'
-import { Camera, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
-import { GuideDirection, GuideOutput } from '../../shared/types/guider.types'
-import { Mount } from '../../shared/types/mount.types'
+import type { Tickable } from '../../shared/services/ticker.service'
+import { Ticker } from '../../shared/services/ticker.service'
+import type { AlignmentMethod, DARVState, TPPAState } from '../../shared/types/alignment.types'
+import { DEFAULT_ALIGNMENT_PREFERENCE, DEFAULT_DARV_RESULT, DEFAULT_TPPA_RESULT } from '../../shared/types/alignment.types'
+import type { Camera } from '../../shared/types/camera.types'
+import { updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
+import type { GuideDirection, GuideOutput } from '../../shared/types/guider.types'
+import type { Mount } from '../../shared/types/mount.types'
 import { deviceComparator } from '../../shared/utils/comparators'
 import { AppComponent } from '../app.component'
 import { CameraComponent } from '../camera/camera.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-alignment',
-	templateUrl: './alignment.component.html',
+	templateUrl: 'alignment.component.html',
 })
 export class AlignmentComponent implements AfterViewInit, OnDestroy, Tickable {
+	private readonly api = inject(ApiService)
+	private readonly browserWindowService = inject(BrowserWindowService)
+	private readonly preferenceService = inject(PreferenceService)
+	private readonly ticker = inject(Ticker)
+
 	protected cameras: Camera[] = []
 	protected camera?: Camera
 
@@ -38,8 +48,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy, Tickable {
 	protected darvRequest = this.preference.darvRequest
 	protected readonly darvResult = structuredClone(DEFAULT_DARV_RESULT)
 
-	@ViewChild('cameraExposure')
-	private readonly cameraExposure!: CameraExposureComponent
+	private readonly cameraExposure = viewChild.required<CameraExposureComponent>('cameraExposure')
 
 	get pausingOrPaused() {
 		return this.status === 'PAUSING' || this.status === 'PAUSED'
@@ -49,15 +58,11 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy, Tickable {
 		return this.tab === 1 ? this.darvRequest.capture : this.tppaRequest.capture
 	}
 
-	constructor(
-		app: AppComponent,
-		private readonly api: ApiService,
-		private readonly browserWindowService: BrowserWindowService,
-		private readonly preferenceService: PreferenceService,
-		private readonly ticker: Ticker,
-		electronService: ElectronService,
-		ngZone: NgZone,
-	) {
+	constructor() {
+		const app = inject(AppComponent)
+		const electronService = inject(ElectronService)
+		const ngZone = inject(NgZone)
+
 		app.title = 'Alignment'
 
 		electronService.on('CAMERA.UPDATED', (event) => {
@@ -169,7 +174,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy, Tickable {
 						this.tppaResult.altitudeErrorDirection = event.altitudeErrorDirection
 						this.tppaResult.totalError = event.totalError
 					} else if (event.state === 'FINISHED') {
-						this.cameraExposure.reset()
+						this.cameraExposure().reset()
 					} else if (event.state === 'SOLVED' || event.state === 'SLEWED') {
 						this.tppaResult.failed = false
 						this.tppaResult.rightAscension = event.rightAscension
@@ -179,7 +184,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy, Tickable {
 					}
 
 					if (event.capture.state !== 'CAPTURE_FINISHED') {
-						this.cameraExposure.handleCameraCaptureEvent(event.capture, true)
+						this.cameraExposure().handleCameraCaptureEvent(event.capture, true)
 					}
 				})
 			}
@@ -189,7 +194,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy, Tickable {
 			if (event.camera.id === this.camera?.id) {
 				ngZone.run(() => {
 					this.status = event.state
-					this.running = this.cameraExposure.handleCameraCaptureEvent(event.capture)
+					this.running = this.cameraExposure().handleCameraCaptureEvent(event.capture)
 
 					if (event.state === 'FORWARD' || event.state === 'BACKWARD') {
 						this.darvResult.direction = event.direction
@@ -242,7 +247,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy, Tickable {
 			const mount = await this.api.mount(this.mount.id)
 			Object.assign(this.mount, mount)
 			this.loadPreference()
-			this.tppaRequest.stepSpeed = mount.slewRate?.name
+			this.tppaRequest.stepSpeed = mount.slewRate?.value
 		}
 	}
 

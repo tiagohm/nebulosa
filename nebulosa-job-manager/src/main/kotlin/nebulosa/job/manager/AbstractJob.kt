@@ -1,6 +1,5 @@
 package nebulosa.job.manager
 
-import nebulosa.log.e
 import nebulosa.log.loggerFor
 import nebulosa.util.concurrency.cancellation.CancellationListener
 import nebulosa.util.concurrency.cancellation.CancellationSource
@@ -91,7 +90,7 @@ abstract class AbstractJob : JobTask, CancellationListener, PauseListener {
                     taskCount++
                     task.run()
                 } catch (e: Throwable) {
-                    LOG.e("task execution failed", e)
+                    LOG.error("task execution failed", e)
                     exception = e
                 }
 
@@ -105,7 +104,7 @@ abstract class AbstractJob : JobTask, CancellationListener, PauseListener {
                 TaskExecutionState.CONTINUE
             }
         } catch (e: Throwable) {
-            LOG.e("task execution failed", e)
+            LOG.error("task execution failed", e)
             TaskExecutionState.CONTINUE
         }
     }

@@ -23,11 +23,11 @@ if (parsedArgs.apiMode) {
 
 const appIcon = join(__dirname, parsedArgs.serve ? `../src/assets/icons/nebulosa.png` : `assets/icons/nebulosa.png`)
 const windowManager = new WindowManager(parsedArgs, appIcon)
-let apiProcess: ChildProcessWithoutNullStreams | null
+let api: ChildProcessWithoutNullStreams | null
 
 process.on('beforeExit', () => {
 	windowManager.close()
-	apiProcess?.kill()
+	api?.kill()
 })
 
 function showErrorBox(title: string, message: string) {
@@ -75,7 +75,7 @@ async function startApp() {
 
 		try {
 			if (parsedArgs.apiMode) {
-				apiProcess = createApiProcess()
+				api = createApiProcess()
 			} else if (parsedArgs.uiMode) {
 				await windowManager.createMainWindow()
 			} else if (parsedArgs.serve) {
@@ -83,11 +83,11 @@ async function startApp() {
 			} else {
 				const splashWindow = await windowManager.createSplashWindow()
 
-				apiProcess = createApiProcess(splashWindow)
+				api = createApiProcess(splashWindow)
 
 				const regex = /server is started at port: (\d+)/i
 
-				apiProcess.stdout.on('data', (data: Buffer) => {
+				api.stdout.on('data', (data: Buffer) => {
 					const text = data.toString('utf-8')
 
 					if (text) {
@@ -95,10 +95,10 @@ async function startApp() {
 
 						if (match) {
 							const port = parseInt(match[1])
-							apiProcess?.stdout.removeAllListeners('data')
+							api?.stdout.removeAllListeners('data')
 							console.info(`server was started at ${parsedArgs.host}@${port}`)
 							splashWindow?.close()
-							void windowManager.createMainWindow(apiProcess!, port)
+							void windowManager.createMainWindow(api!, port)
 						}
 					}
 				})
@@ -106,7 +106,7 @@ async function startApp() {
 		} catch (e) {
 			console.error(e)
 
-			apiProcess?.kill()
+			api?.kill()
 			showErrorBox('Failed to start', `${e}`)
 			process.exit(0)
 		}
@@ -125,7 +125,7 @@ try {
 	)
 
 	app.on('window-all-closed', () => {
-		apiProcess?.kill()
+		api?.kill()
 
 		if (process.platform !== 'darwin') {
 			app.quit()

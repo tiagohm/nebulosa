@@ -1,55 +1,53 @@
 package nebulosa.api.preference
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import nebulosa.api.inject.Named
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
+import java.nio.file.Path
+import java.util.*
+import kotlin.io.path.inputStream
+import kotlin.io.path.outputStream
 
-class PreferenceService(
-    private val preferenceRepository: PreferenceRepository,
-    private val objectMapper: ObjectMapper,
-) {
+data class PreferenceService(private val properties: Properties) : KoinComponent {
 
-    operator fun get(key: String) = preferenceRepository[key]
+    private val defaultSavePath by inject<Path>(Named.preferencesPath)
+
+    constructor(capacity: Int = 16) : this(Properties(capacity))
 
     val size
-        get() = preferenceRepository.size
+        get() = properties.size
 
-    fun put(entity: PreferenceEntity) {
-        if (entity.key in this) preferenceRepository.update(entity)
-        else preferenceRepository.add(entity)
+    operator fun get(key: String): String? {
+        return properties.getProperty(key)
     }
 
-    operator fun contains(key: String) = key in preferenceRepository
+    operator fun set(key: String, value: Any) {
+        properties.setProperty(key, "$value")
+    }
 
-    fun <T> getJSON(key: String, type: Class<out T>): T? = this[key]?.value?.let { objectMapper.readValue(it, type) }
+    operator fun contains(key: String): Boolean {
+        return properties.containsKey(key)
+    }
 
-    inline fun <reified T> getJSON(key: String) = getJSON(key, T::class.java)
+    fun delete(key: String): String? {
+        return properties.remove(key)?.toString()
+    }
 
-    fun getBoolean(key: String) = getJSON(key, Boolean::class.java)
+    fun clear() {
+        properties.clear()
+    }
 
-    fun getText(key: String) = getJSON(key, String::class.java)
+    fun load(path: Path) {
+        path.inputStream().use(properties::load)
+    }
 
-    inline fun <reified T : Enum<T>> getEnum(key: String) = getText(key)?.takeIf { it.isNotBlank() }?.let { enumValueOf<T>(it) }
+    @Synchronized
+    fun save(path: Path? = null) {
+        requireNotNull(path ?: defaultSavePath).outputStream().use { properties.store(it, "") }
+    }
 
-    fun getInt(key: String) = getJSON(key, Int::class.java)
+    companion object {
 
-    fun getLong(key: String) = getJSON(key, Long::class.java)
-
-    fun getDouble(key: String) = getJSON(key, Double::class.java)
-
-    fun putJSON(key: String, value: Any?) = put(PreferenceEntity(key, if (value == null) null else objectMapper.writeValueAsString(value)))
-
-    fun putBoolean(key: String, value: Boolean) = putJSON(key, value)
-
-    fun putText(key: String, value: String?) = putJSON(key, value)
-
-    fun putEnum(key: String, value: Enum<*>) = putText(key, value.name)
-
-    fun putInt(key: String, value: Int) = putJSON(key, value)
-
-    fun putLong(key: String, value: Long) = putJSON(key, value)
-
-    fun putDouble(key: String, value: Double) = putJSON(key, value)
-
-    fun clear() = preferenceRepository.clear()
-
-    fun delete(key: String) = preferenceRepository.delete(key)
+        const val FILENAME = "nebulosa.properties"
+    }
 }

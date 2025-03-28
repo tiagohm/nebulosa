@@ -1,5 +1,6 @@
 package nebulosa.fits
 
+@Suppress("DEPRECATION")
 enum class Compression(
     hduType: HduType, valueType: ValueType, comment: String,
     val keyword: FitsHeaderKey? = null,

@@ -1,19 +1,30 @@
-import { AfterViewInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
-import { ActivatedRoute } from '@angular/router'
+import type { OnDestroy } from '@angular/core'
+import { Component, HostListener, NgZone, effect, inject } from '@angular/core'
+import { injectQueryParams } from 'ngxtension/inject-query-params'
 import { ApiService } from '../../shared/services/api.service'
-import { BrowserWindowService } from '../../shared/services/browser-window.service'
+import type { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { Tickable, Ticker } from '../../shared/services/ticker.service'
-import { CameraStartCapture, DEFAULT_CAMERA_START_CAPTURE } from '../../shared/types/camera.types'
-import { DEFAULT_ROTATOR, DEFAULT_ROTATOR_PREFERENCE, Rotator, RotatorDialogInput, RotatorDialogMode } from '../../shared/types/rotator.types'
+import type { Tickable } from '../../shared/services/ticker.service'
+import { Ticker } from '../../shared/services/ticker.service'
+import type { CameraStartCapture } from '../../shared/types/camera.types'
+import { DEFAULT_CAMERA_START_CAPTURE } from '../../shared/types/camera.types'
+import type { Rotator, RotatorDialogInput, RotatorDialogMode } from '../../shared/types/rotator.types'
+import { DEFAULT_ROTATOR, DEFAULT_ROTATOR_PREFERENCE } from '../../shared/types/rotator.types'
 import { AppComponent } from '../app.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-rotator',
-	templateUrl: './rotator.component.html',
+	templateUrl: 'rotator.component.html',
 })
-export class RotatorComponent implements AfterViewInit, OnDestroy, Tickable {
+export class RotatorComponent implements OnDestroy, Tickable {
+	private readonly app = inject(AppComponent)
+	private readonly api = inject(ApiService)
+	private readonly preferenceService = inject(PreferenceService)
+	private readonly ticker = inject(Ticker)
+	private readonly data = injectQueryParams('data', { transform: (v) => v && decodeURIComponent(v) })
+
 	protected readonly rotator = structuredClone(DEFAULT_ROTATOR)
 	protected readonly request = structuredClone(DEFAULT_CAMERA_START_CAPTURE)
 	protected readonly preference = structuredClone(DEFAULT_ROTATOR_PREFERENCE)
@@ -45,16 +56,11 @@ export class RotatorComponent implements AfterViewInit, OnDestroy, Tickable {
 		return this.mode !== 'CAPTURE'
 	}
 
-	constructor(
-		private readonly app: AppComponent,
-		private readonly api: ApiService,
-		electronService: ElectronService,
-		private readonly preferenceService: PreferenceService,
-		private readonly route: ActivatedRoute,
-		private readonly ticker: Ticker,
-		ngZone: NgZone,
-	) {
-		app.title = 'Rotator'
+	constructor() {
+		const electronService = inject(ElectronService)
+		const ngZone = inject(NgZone)
+
+		this.app.title = 'Rotator'
 
 		electronService.on('ROTATOR.UPDATED', (event) => {
 			if (event.device.id === this.rotator.id) {
@@ -72,19 +78,19 @@ export class RotatorComponent implements AfterViewInit, OnDestroy, Tickable {
 				})
 			}
 		})
-	}
 
-	ngAfterViewInit() {
-		this.route.queryParams.subscribe(async (e) => {
-			const data = JSON.parse(decodeURIComponent(e['data'] as string)) as unknown
+		effect(async () => {
+			const data = this.data()
 
-			if (this.app.modal) {
-				await this.loadCameraStartCaptureForDialogMode(data as RotatorDialogInput)
-			} else {
-				await this.rotatorChanged(data as Rotator)
+			if (data) {
+				if (this.app.modal) {
+					await this.loadCameraStartCaptureForDialogMode(JSON.parse(data))
+				} else {
+					await this.rotatorChanged(JSON.parse(data))
+				}
+
+				this.ticker.register(this, 30000)
 			}
-
-			this.ticker.register(this, 30000)
 		})
 	}
 

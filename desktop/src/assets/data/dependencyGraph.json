@@ -1,0 +1,312 @@
+[
+    {
+        "name": "commons-codec:commons-codec",
+        "version": "1.17.1",
+        "source": "api"
+    },
+    {
+        "name": "de.siegmar:fastcsv",
+        "version": "3.4.0",
+        "source": "api"
+    },
+    {
+        "name": "org.greenrobot:eventbus-java",
+        "version": "3.3.1",
+        "source": "api"
+    },
+    {
+        "name": "com.squareup.okhttp3:okhttp",
+        "version": "4.12.0",
+        "source": "api"
+    },
+    {
+        "name": "com.github.oshi:oshi-core",
+        "version": "6.6.5",
+        "source": "api"
+    },
+    {
+        "name": "io.insert-koin:koin-core",
+        "version": "4.0.0",
+        "source": "api"
+    },
+    {
+        "name": "com.github.rvesse:airline",
+        "version": "3.0.0",
+        "source": "api"
+    },
+    {
+        "name": "com.h2database:h2",
+        "version": "2.3.232",
+        "source": "api"
+    },
+    {
+        "name": "org.jetbrains.exposed:exposed-core",
+        "version": "0.56.0",
+        "source": "api"
+    },
+    {
+        "name": "org.jetbrains.exposed:exposed-jdbc",
+        "version": "0.56.0",
+        "source": "api"
+    },
+    {
+        "name": "org.flywaydb:flyway-core",
+        "version": "11.0.0",
+        "source": "api"
+    },
+    {
+        "name": "io.ktor:ktor-server-core-jvm",
+        "version": "3.0.1",
+        "source": "api"
+    },
+    {
+        "name": "io.ktor:ktor-server-websockets",
+        "version": "3.0.1",
+        "source": "api"
+    },
+    {
+        "name": "io.ktor:ktor-server-content-negotiation",
+        "version": "3.0.1",
+        "source": "api"
+    },
+    {
+        "name": "io.ktor:ktor-serialization-jackson",
+        "version": "3.0.1",
+        "source": "api"
+    },
+    {
+        "name": "io.ktor:ktor-server-call-logging",
+        "version": "3.0.1",
+        "source": "api"
+    },
+    {
+        "name": "io.ktor:ktor-server-cors",
+        "version": "3.0.1",
+        "source": "api"
+    },
+    {
+        "name": "io.ktor:ktor-server-host-common",
+        "version": "3.0.1",
+        "source": "api"
+    },
+    {
+        "name": "io.ktor:ktor-server-resources",
+        "version": "3.0.1",
+        "source": "api"
+    },
+    {
+        "name": "io.ktor:ktor-server-netty",
+        "version": "3.0.1",
+        "source": "api"
+    },
+    {
+        "name": "io.ktor:ktor-server-status-pages",
+        "version": "3.0.1",
+        "source": "api"
+    },
+    {
+        "name": "ngx-moveable",
+        "version": "0.50.0",
+        "source": "desktop"
+    },
+    {
+        "name": "primeng",
+        "version": "17.18.12",
+        "source": "desktop"
+    },
+    {
+        "name": "chart.js",
+        "version": "4.4.6",
+        "source": "desktop"
+    },
+    {
+        "name": "@angular/platform-browser",
+        "version": "18.2.12",
+        "source": "desktop"
+    },
+    {
+        "name": "primeng-sass-theme",
+        "version": "github:primefaces/primeng-sass-theme#17.18.3",
+        "source": "desktop"
+    },
+    {
+        "name": "@mdi/font",
+        "version": "7.4.47",
+        "source": "desktop"
+    },
+    {
+        "name": "zone.js",
+        "version": "0.14.10",
+        "source": "desktop"
+    },
+    {
+        "name": "@angular/router",
+        "version": "18.2.12",
+        "source": "desktop"
+    },
+    {
+        "name": "chartjs-plugin-zoom",
+        "version": "2.1.0",
+        "source": "desktop"
+    },
+    {
+        "name": "@angular/common",
+        "version": "18.2.12",
+        "source": "desktop"
+    },
+    {
+        "name": "primeflex",
+        "version": "3.3.1",
+        "source": "desktop"
+    },
+    {
+        "name": "@angular/core",
+        "version": "18.2.12",
+        "source": "desktop"
+    },
+    {
+        "name": "@angular/animations",
+        "version": "18.2.12",
+        "source": "desktop"
+    },
+    {
+        "name": "@angular/compiler",
+        "version": "18.2.12",
+        "source": "desktop"
+    },
+    {
+        "name": "hotkeys-js",
+        "version": "3.13.7",
+        "source": "desktop"
+    },
+    {
+        "name": "@angular/cdk",
+        "version": "18.2.13",
+        "source": "desktop"
+    },
+    {
+        "name": "primeicons",
+        "version": "7.0.0",
+        "source": "desktop"
+    },
+    {
+        "name": "@angular/platform-browser-dynamic",
+        "version": "18.2.12",
+        "source": "desktop"
+    },
+    {
+        "name": "rxjs",
+        "version": "7.8.1",
+        "source": "desktop"
+    },
+    {
+        "name": "@angular/forms",
+        "version": "18.2.12",
+        "source": "desktop"
+    },
+    {
+        "name": "leaflet",
+        "version": "1.9.4",
+        "source": "desktop"
+    },
+    {
+        "name": "tslib",
+        "version": "2.8.1",
+        "source": "desktop"
+    },
+    {
+        "name": "@types/leaflet",
+        "version": "1.9.14",
+        "source": "desktop"
+    },
+    {
+        "name": "@angular/compiler-cli",
+        "version": "18.2.12",
+        "source": "desktop"
+    },
+    {
+        "name": "@swc/cli",
+        "version": "0.5.1",
+        "source": "desktop"
+    },
+    {
+        "name": "@types/eslint__js",
+        "version": "8.42.3",
+        "source": "desktop"
+    },
+    {
+        "name": "@angular/cli",
+        "version": "18.2.12",
+        "source": "desktop"
+    },
+    {
+        "name": "electron-builder",
+        "version": "25.1.8",
+        "source": "desktop"
+    },
+    {
+        "name": "prettier",
+        "version": "3.3.3",
+        "source": "desktop"
+    },
+    {
+        "name": "eslint",
+        "version": "9.15.0",
+        "source": "desktop"
+    },
+    {
+        "name": "npm-run-all",
+        "version": "4.1.5",
+        "source": "desktop"
+    },
+    {
+        "name": "@eslint/js",
+        "version": "9.15.0",
+        "source": "desktop"
+    },
+    {
+        "name": "@types/node",
+        "version": "22.9.1",
+        "source": "desktop"
+    },
+    {
+        "name": "@angular-devkit/build-angular",
+        "version": "18.2.12",
+        "source": "desktop"
+    },
+    {
+        "name": "@angular/language-service",
+        "version": "18.2.12",
+        "source": "desktop"
+    },
+    {
+        "name": "electron",
+        "version": "33.2.0",
+        "source": "desktop"
+    },
+    {
+        "name": "typescript-eslint",
+        "version": "8.15.0",
+        "source": "desktop"
+    },
+    {
+        "name": "typescript",
+        "version": "5.5.4",
+        "source": "desktop"
+    },
+    {
+        "name": "wait-on",
+        "version": "8.0.1",
+        "source": "desktop"
+    },
+    {
+        "name": "electron-store",
+        "version": "8.2.0",
+        "source": "desktop"
+    },
+    {
+        "name": "ws",
+        "version": "8.18.0",
+        "source": "desktop"
+    }
+]

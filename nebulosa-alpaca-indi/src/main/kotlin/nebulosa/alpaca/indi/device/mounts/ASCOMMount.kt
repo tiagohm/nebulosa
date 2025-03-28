@@ -1,20 +1,50 @@
 package nebulosa.alpaca.indi.device.mounts
 
-import nebulosa.alpaca.api.*
+import nebulosa.alpaca.api.AlpacaTelescopeService
+import nebulosa.alpaca.api.AxisRate
+import nebulosa.alpaca.api.AxisType
+import nebulosa.alpaca.api.ConfiguredDevice
+import nebulosa.alpaca.api.DriveRate
+import nebulosa.alpaca.api.EquatorialCoordinateType
+import nebulosa.alpaca.api.PulseGuideDirection
 import nebulosa.alpaca.indi.client.AlpacaClient
 import nebulosa.alpaca.indi.device.ASCOMDevice
 import nebulosa.constants.DEG2RAD
 import nebulosa.indi.device.Device
+import nebulosa.indi.device.gps.GPS
 import nebulosa.indi.device.guider.GuideOutputPulsingChanged
-import nebulosa.indi.device.mount.*
+import nebulosa.indi.device.mount.Mount
+import nebulosa.indi.device.mount.MountCanHomeChanged
+import nebulosa.indi.device.mount.MountCanParkChanged
+import nebulosa.indi.device.mount.MountCanSyncChanged
+import nebulosa.indi.device.mount.MountEquatorialCoordinatesChanged
+import nebulosa.indi.device.mount.MountGeographicCoordinateChanged
+import nebulosa.indi.device.mount.MountParkChanged
+import nebulosa.indi.device.mount.MountSlewRateChanged
+import nebulosa.indi.device.mount.MountSlewRatesChanged
+import nebulosa.indi.device.mount.MountSlewingChanged
+import nebulosa.indi.device.mount.MountTimeChanged
+import nebulosa.indi.device.mount.MountTrackModeChanged
+import nebulosa.indi.device.mount.MountTrackModesChanged
+import nebulosa.indi.device.mount.MountTrackingChanged
+import nebulosa.indi.device.mount.MountType
 import nebulosa.indi.device.mount.PierSide
+import nebulosa.indi.device.mount.SlewRate
+import nebulosa.indi.device.mount.TrackMode
 import nebulosa.indi.protocol.INDIProtocol
-import nebulosa.log.dw
+import nebulosa.log.d
 import nebulosa.log.loggerFor
-import nebulosa.math.*
+import nebulosa.math.Angle
+import nebulosa.math.Distance
+import nebulosa.math.deg
+import nebulosa.math.hours
+import nebulosa.math.m
+import nebulosa.math.normalized
+import nebulosa.math.toDegrees
+import nebulosa.math.toHours
+import nebulosa.math.toMeters
 import nebulosa.nova.position.ICRF
 import nebulosa.time.CurrentTime
-import nebulosa.time.SystemClock
 import java.math.BigDecimal
 import java.time.Duration
 import java.time.OffsetDateTime
@@ -54,7 +84,8 @@ data class ASCOMMount(
     @Volatile final override var longitude = 0.0
     @Volatile final override var latitude = 0.0
     @Volatile final override var elevation = 0.0
-    @Volatile final override var dateTime = OffsetDateTime.now(SystemClock)!!
+    @Volatile final override var dateTime = GPS.ZERO_DATE_TIME
+    @Volatile final override var offsetInSeconds = 0
 
     override val snoopedDevices = emptyList<Device>()
 
@@ -185,12 +216,12 @@ data class ASCOMMount(
     }
 
     override fun slewRate(rate: SlewRate) {
-        slewRate = slewRates.firstOrNull { it.name == rate.name } ?: return
+        slewRate = slewRates.firstOrNull { it.value == rate.value } ?: return
         sender.fireOnEventReceived(MountSlewRateChanged(this))
     }
 
     private fun moveAxis(axisType: AxisType, negative: Boolean, enabled: Boolean) {
-        val rate = slewRate?.name?.let { axisRates[it] }?.second ?: return LOG.dw("axisRate is null")
+        val rate = slewRate?.value?.let { axisRates[it] }?.second ?: return LOG.d { warn("axisRate is null") }
 
         if (enabled) {
             service.moveAxis(device.number, axisType, if (negative) -(rate.toDouble()) else rate.toDouble()).doRequest()
@@ -270,7 +301,7 @@ data class ASCOMMount(
         longitude = 0.0
         latitude = 0.0
         elevation = 0.0
-        dateTime = OffsetDateTime.now(SystemClock)
+        dateTime = GPS.ZERO_DATE_TIME
 
         axisRates.clear()
     }
@@ -425,7 +456,8 @@ data class ASCOMMount(
 
     private fun processDateTime() {
         service.utcDate(device.number).doRequest {
-            dateTime = it.value
+            dateTime = it.value.toLocalDateTime()
+            offsetInSeconds = it.value.offset.totalSeconds * 60
             sender.fireOnEventReceived(MountTimeChanged(this))
         }
     }

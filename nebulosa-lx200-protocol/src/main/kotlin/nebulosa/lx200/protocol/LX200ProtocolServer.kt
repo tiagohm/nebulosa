@@ -2,7 +2,7 @@ package nebulosa.lx200.protocol
 
 import io.netty.channel.ChannelInitializer
 import io.netty.channel.socket.SocketChannel
-import nebulosa.log.di
+import nebulosa.log.d
 import nebulosa.log.loggerFor
 import nebulosa.math.Angle
 import nebulosa.math.toDegrees
@@ -36,13 +36,13 @@ data class LX200ProtocolServer(
         get() = mountHandler.get()?.longitude ?: 0.0
 
     override val slewing
-        get() = mountHandler.get()?.slewing ?: false
+        get() = mountHandler.get()?.slewing == true
 
     override val tracking
-        get() = mountHandler.get()?.tracking ?: false
+        get() = mountHandler.get()?.tracking == true
 
     override val parked
-        get() = mountHandler.get()?.parked ?: false
+        get() = mountHandler.get()?.parked == true
 
     override val channelInitialzer = object : ChannelInitializer<SocketChannel>() {
 
@@ -65,55 +65,55 @@ data class LX200ProtocolServer(
 
     @Synchronized
     override fun goTo(rightAscension: Angle, declination: Angle) {
-        LOG.di("going to. ra={}, dec={}", rightAscension.toHours, declination.toDegrees)
+        LOG.d { info("going to. ra={}, dec={}", rightAscension.toHours, declination.toDegrees) }
         mountHandler.get()?.goTo(rightAscension, declination)
     }
 
     @Synchronized
     override fun syncTo(rightAscension: Angle, declination: Angle) {
-        LOG.di("syncing to. ra={}, dec={}", rightAscension.toHours, declination.toDegrees)
+        LOG.d { info("syncing to. ra={}, dec={}", rightAscension.toHours, declination.toDegrees) }
         mountHandler.get()?.syncTo(rightAscension, declination)
     }
 
     @Synchronized
     override fun moveNorth(enabled: Boolean) {
-        LOG.di("moving to north. enabled={}", enabled)
+        LOG.d { info("moving to north. enabled={}", enabled) }
         mountHandler.get()?.moveNorth(enabled)
     }
 
     @Synchronized
     override fun moveSouth(enabled: Boolean) {
-        LOG.di("moving to south. enabled={}", enabled)
+        LOG.d { info("moving to south. enabled={}", enabled) }
         mountHandler.get()?.moveSouth(enabled)
     }
 
     @Synchronized
     override fun moveWest(enabled: Boolean) {
-        LOG.di("moving to west. enabled={}", enabled)
+        LOG.d { info("moving to west. enabled={}", enabled) }
         mountHandler.get()?.moveWest(enabled)
     }
 
     @Synchronized
     override fun moveEast(enabled: Boolean) {
-        LOG.di("moving to east. enabled={}", enabled)
+        LOG.d { info("moving to east. enabled={}", enabled) }
         mountHandler.get()?.moveEast(enabled)
     }
 
     @Synchronized
     override fun time(time: OffsetDateTime) {
-        LOG.di("sending time. time={}", time)
+        LOG.d { info("sending time. time={}", time) }
         mountHandler.get()?.time(time)
     }
 
     @Synchronized
     override fun coordinates(longitude: Angle, latitude: Angle) {
-        LOG.di("sending coordinates. longitude={}, latitude={}", longitude.toDegrees, latitude.toDegrees)
+        LOG.d { info("sending coordinates. longitude={}, latitude={}", longitude.toDegrees, latitude.toDegrees) }
         mountHandler.get()?.coordinates(longitude, latitude)
     }
 
     @Synchronized
     override fun abort() {
-        LOG.di("aborting")
+        LOG.d { info("aborting") }
         mountHandler.get()?.abort()
     }
 

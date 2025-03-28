@@ -3,8 +3,7 @@ package nebulosa.astap.stardetector
 import de.siegmar.fastcsv.reader.CommentStrategy
 import de.siegmar.fastcsv.reader.CsvReader
 import nebulosa.commandline.CommandLine
-import nebulosa.log.di
-import nebulosa.log.e
+import nebulosa.log.d
 import nebulosa.log.loggerFor
 import nebulosa.stardetector.StarDetector
 import nebulosa.stardetector.StarPoint
@@ -40,9 +39,9 @@ data class AstapStarDetector(
         val result = commandline.execute()
 
         if (result.isSuccess) {
-            LOG.di("astap exited. code={}", result.exitCode)
+            LOG.d { info("astap exited. code={}", result.exitCode) }
         } else {
-            LOG.e("astap failed. code={}", result.exitCode)
+            LOG.error("astap failed. code={}", result.exitCode)
             return emptyList()
         }
 

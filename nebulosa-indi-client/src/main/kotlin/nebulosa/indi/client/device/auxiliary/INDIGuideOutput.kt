@@ -1,7 +1,7 @@
 package nebulosa.indi.client.device.auxiliary
 
 import nebulosa.indi.client.INDIClient
-import nebulosa.indi.client.device.DriverInfo
+import nebulosa.indi.client.device.INDIDriverInfo
 import nebulosa.indi.client.device.INDIDevice
 import nebulosa.indi.client.device.handler.INDIGuideOutputHandler
 import nebulosa.indi.device.DeviceType
@@ -11,7 +11,7 @@ import java.time.Duration
 
 internal open class INDIGuideOutput(
     final override val sender: INDIClient,
-    final override val driverInfo: DriverInfo,
+    final override val driver: INDIDriverInfo,
 ) : INDIDevice(), GuideOutput {
 
     override val type

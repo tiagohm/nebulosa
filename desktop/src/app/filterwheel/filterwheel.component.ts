@@ -1,24 +1,36 @@
-import { AfterContentInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
-import { ActivatedRoute } from '@angular/router'
+import type { OnDestroy } from '@angular/core'
+import { Component, HostListener, NgZone, effect, inject } from '@angular/core'
 import hotkeys from 'hotkeys-js'
-import { CheckboxChangeEvent } from 'primeng/checkbox'
-import { Subject, Subscription, debounceTime } from 'rxjs'
+import { injectQueryParams } from 'ngxtension/inject-query-params'
+import type { Subscription } from 'rxjs'
+import { Subject, debounceTime } from 'rxjs'
 import { ApiService } from '../../shared/services/api.service'
-import { BrowserWindowService } from '../../shared/services/browser-window.service'
+import type { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { Tickable, Ticker } from '../../shared/services/ticker.service'
-import { CameraStartCapture, DEFAULT_CAMERA_START_CAPTURE } from '../../shared/types/camera.types'
-import { Focuser } from '../../shared/types/focuser.types'
-import { DEFAULT_WHEEL, DEFAULT_WHEEL_PREFERENCE, Filter, Wheel, WheelDialogInput, WheelDialogMode, makeFilter } from '../../shared/types/wheel.types'
+import type { Tickable } from '../../shared/services/ticker.service'
+import { Ticker } from '../../shared/services/ticker.service'
+import type { CameraStartCapture } from '../../shared/types/camera.types'
+import { DEFAULT_CAMERA_START_CAPTURE } from '../../shared/types/camera.types'
+import type { Focuser } from '../../shared/types/focuser.types'
+import type { Filter, Wheel, WheelDialogInput, WheelDialogMode } from '../../shared/types/wheel.types'
+import { DEFAULT_WHEEL, DEFAULT_WHEEL_PREFERENCE, makeFilter } from '../../shared/types/wheel.types'
 import { AppComponent } from '../app.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-filterwheel',
-	templateUrl: './filterwheel.component.html',
-	styleUrls: ['./filterwheel.component.scss'],
+	templateUrl: 'filterwheel.component.html',
+	styleUrls: ['filterwheel.component.scss'],
 })
-export class FilterWheelComponent implements AfterContentInit, OnDestroy, Tickable {
+export class FilterWheelComponent implements OnDestroy, Tickable {
+	private readonly app = inject(AppComponent)
+	private readonly api = inject(ApiService)
+	private readonly electronService = inject(ElectronService)
+	private readonly preferenceService = inject(PreferenceService)
+	private readonly ticker = inject(Ticker)
+	private readonly data = injectQueryParams('data', { transform: (v) => v && decodeURIComponent(v) })
+
 	protected readonly wheel = structuredClone(DEFAULT_WHEEL)
 	protected readonly request = structuredClone(DEFAULT_CAMERA_START_CAPTURE)
 	protected readonly preference = structuredClone(DEFAULT_WHEEL_PREFERENCE)
@@ -63,18 +75,12 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Tickab
 		return this.filters[this.position - 1]
 	}
 
-	constructor(
-		private readonly app: AppComponent,
-		private readonly api: ApiService,
-		private readonly electronService: ElectronService,
-		private readonly preferenceService: PreferenceService,
-		private readonly route: ActivatedRoute,
-		private readonly ticker: Ticker,
-		ngZone: NgZone,
-	) {
-		app.title = 'Filter Wheel'
+	constructor() {
+		const ngZone = inject(NgZone)
 
-		electronService.on('WHEEL.UPDATED', (event) => {
+		this.app.title = 'Filter Wheel'
+
+		this.electronService.on('WHEEL.UPDATED', (event) => {
 			if (event.device.id === this.wheel.id) {
 				ngZone.run(() => {
 					Object.assign(this.wheel, event.device)
@@ -83,7 +89,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Tickab
 			}
 		})
 
-		electronService.on('WHEEL.DETACHED', (event) => {
+		this.electronService.on('WHEEL.DETACHED', (event) => {
 			if (event.device.id === this.wheel.id) {
 				ngZone.run(() => {
 					Object.assign(this.wheel, DEFAULT_WHEEL)
@@ -91,7 +97,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Tickab
 			}
 		})
 
-		electronService.on('FOCUSER.UPDATED', (event) => {
+		this.electronService.on('FOCUSER.UPDATED', (event) => {
 			if (event.device.id === this.focuser?.id) {
 				ngZone.run(() => {
 					if (this.focuser) {
@@ -101,7 +107,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Tickab
 			}
 		})
 
-		electronService.on('FOCUSER.DETACHED', (event) => {
+		this.electronService.on('FOCUSER.DETACHED', (event) => {
 			if (this.mode === 'CAPTURE' && event.device.id === this.focuser?.id) {
 				ngZone.run(() => {
 					this.focuser = undefined
@@ -170,29 +176,29 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Tickab
 			event.preventDefault()
 			void this.moveToPosition(9)
 		})
-	}
 
-	async ngAfterContentInit() {
-		this.route.queryParams.subscribe(async (e) => {
-			const data = JSON.parse(decodeURIComponent(e['data'] as string)) as unknown
+		effect(async () => {
+			const data = this.data()
 
-			if (this.app.modal) {
-				await this.loadCameraStartCaptureForDialogMode(data as WheelDialogInput)
-			} else {
-				await this.wheelChanged(data as Wheel)
+			if (data) {
+				if (this.app.modal) {
+					await this.loadCameraStartCaptureForDialogMode(JSON.parse(data))
+				} else {
+					await this.wheelChanged(JSON.parse(data))
+				}
+
+				this.ticker.register(this, 30000)
+
+				if (this.mode === 'CAPTURE') {
+					this.focusers = await this.api.focusers()
+
+					if (this.focusers.length === 1 && !this.focuser) {
+						this.focuser = this.focusers[0]
+						await this.focuserChanged()
+					}
+				}
 			}
-
-			this.ticker.register(this, 30000)
 		})
-
-		if (this.mode === 'CAPTURE') {
-			this.focusers = await this.api.focusers()
-
-			if (this.focusers.length === 1 && !this.focuser) {
-				this.focuser = this.focusers[0]
-				await this.focuserChanged()
-			}
-		}
 	}
 
 	@HostListener('window:unload')
@@ -311,8 +317,8 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Tickab
 		}
 	}
 
-	protected shutterToggled(filter: Filter, event: CheckboxChangeEvent) {
-		this.filters.forEach((e) => (e.dark = !!event.checked && e === filter))
+	protected shutterToggled(filter: Filter, checked: boolean) {
+		this.filters.forEach((e) => (e.dark = checked && e === filter))
 		this.preference.shutterPosition = this.filters.find((e) => e.dark)?.position ?? 0
 		this.savePreference()
 	}

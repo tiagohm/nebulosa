@@ -25,6 +25,8 @@ ij_kotlin_line_break_after_multiline_when_entry = false
 ij_kotlin_variable_annotation_wrap = off
 ij_kotlin_field_annotation_wrap = off
 ij_kotlin_continuation_indent_size = 8
+ij_kotlin_allow_trailing_comma = false
+ij_kotlin_name_count_to_use_star_import = 999
 
 [*.py]
 ij_python_wrap_long_lines = false

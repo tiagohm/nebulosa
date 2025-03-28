@@ -3,7 +3,11 @@ import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.doubles.shouldBeExactly
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.nulls.shouldNotBeNull
-import nebulosa.fits.*
+import nebulosa.fits.declination
+import nebulosa.fits.fits
+import nebulosa.fits.height
+import nebulosa.fits.rightAscension
+import nebulosa.fits.width
 import nebulosa.hips2fits.Hips2FitsService
 import nebulosa.image.format.ImageHdu
 import nebulosa.io.source

@@ -1,16 +1,21 @@
 package nebulosa.api.mounts
 
-import io.ktor.server.application.Application
-import io.ktor.server.response.respond
-import io.ktor.server.response.respondNullable
-import io.ktor.server.routing.RoutingContext
-import io.ktor.server.routing.get
-import io.ktor.server.routing.put
-import io.ktor.server.routing.routing
+import io.ktor.server.application.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 import nebulosa.api.connection.ConnectionService
 import nebulosa.api.ktor.Controller
 import nebulosa.api.ktor.idempotencyKey
-import nebulosa.api.validators.*
+import nebulosa.api.validators.enumOf
+import nebulosa.api.validators.exists
+import nebulosa.api.validators.localDate
+import nebulosa.api.validators.localTime
+import nebulosa.api.validators.notNull
+import nebulosa.api.validators.notNullOrBlank
+import nebulosa.api.validators.path
+import nebulosa.api.validators.positive
+import nebulosa.api.validators.positiveOrZero
+import nebulosa.api.validators.range
 import nebulosa.guiding.GuideDirection
 import nebulosa.indi.device.mount.TrackMode
 import nebulosa.math.deg
@@ -137,7 +142,7 @@ class MountController(
         val id = pathParameters[ID].notNull()
         val mount = connectionService.mount(id) ?: return
         val rate = queryParameters["rate"].notNullOrBlank()
-        mountService.slewRate(mount, mount.slewRates.first { it.name == rate })
+        mountService.slewRate(mount, mount.slewRates.first { it.value == rate })
     }
 
     private fun move(ctx: RoutingContext) = with(ctx.call) {

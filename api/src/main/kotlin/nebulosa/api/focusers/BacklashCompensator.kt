@@ -2,7 +2,6 @@ package nebulosa.api.focusers
 
 import nebulosa.log.d
 import nebulosa.log.loggerFor
-import nebulosa.log.w
 import kotlin.math.max
 import kotlin.math.min
 
@@ -51,11 +50,11 @@ data class BacklashCompensator(
                     val overshoot = targetPosition + backlashCompensation
 
                     if (overshoot < 0) {
-                        LOG.w("overshooting position is below minimum 0, skipping overshoot")
+                        LOG.warn("overshooting position is below minimum 0, skipping overshoot")
                     } else if (overshoot > maxPosition) {
-                        LOG.w("overshooting position is above maximum {}, skipping overshoot", maxPosition)
+                        LOG.warn("overshooting position is above maximum {}, skipping overshoot", maxPosition)
                     } else {
-                        LOG.d("overshooting from {} to overshoot position {} using a compensation of {}. Moving back to position {}", currentPosition, overshoot, backlashCompensation, newPosition)
+                        LOG.d { debug("overshooting from {} to overshoot position {} using a compensation of {}. Moving back to position {}", currentPosition, overshoot, backlashCompensation, newPosition) }
 
                         move(currentPosition, overshoot)
                         move(overshoot, newPosition)
@@ -80,7 +79,7 @@ data class BacklashCompensator(
     @Suppress("NOTHING_TO_INLINE")
     private inline fun move(currentPosition: Int, newPosition: Int) {
         lastDirection = determineMovingDirection(currentPosition, newPosition)
-        LOG.d("moving to position {} using {} backlash compensation", newPosition, compensation.mode)
+        LOG.d { debug("moving to position {} using {} backlash compensation", newPosition, compensation.mode) }
     }
 
     private fun determineMovingDirection(prevPosition: Int, newPosition: Int): OvershootDirection {
@@ -93,10 +92,10 @@ data class BacklashCompensator(
         val direction = determineMovingDirection(lastPosition, newPosition)
 
         return if (direction == OvershootDirection.IN && lastDirection == OvershootDirection.OUT) {
-            LOG.d("focuser is reversing direction from outwards to inwards")
+            LOG.debug("focuser is reversing direction from outwards to inwards")
             -compensation.backlashIn
         } else if (direction == OvershootDirection.OUT && lastDirection === OvershootDirection.IN) {
-            LOG.d("focuser is reversing direction from inwards to outwards")
+            LOG.debug("focuser is reversing direction from inwards to outwards")
             compensation.backlashOut
         } else {
             0

@@ -25,11 +25,11 @@ data class MountTrackTask(
 
     override fun run() {
         if (mount.connected && mount.tracking != enabled) {
-            LOG.d("Mount Track started. mount={}, enabled={}", mount, enabled)
+            LOG.d { debug("Mount Track started. mount={}, enabled={}", mount, enabled) }
             trackingLatch.countUp()
             mount.tracking(enabled)
             trackingLatch.await()
-            LOG.d("Mount Track finished. mount={}, enabled={}", mount, enabled)
+            LOG.d { debug("Mount Track finished. mount={}, enabled={}", mount, enabled) }
         }
     }
 

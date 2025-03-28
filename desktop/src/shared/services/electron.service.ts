@@ -4,24 +4,24 @@ import { Injectable } from '@angular/core'
 // other than as TypeScript types, the resulting javascript file will
 // look as if you never imported the module at all.
 
-import { DARVEvent, TPPAEvent } from '../types/alignment.types'
-import { ConfirmationEvent, DeviceMessageEvent, NotificationEvent, OpenImageEvent } from '../types/api.types'
-import { CloseWindow, FullscreenWindow, JsonFile, OpenDirectory, OpenFile, ResizeWindow, SaveJson, WindowCommand } from '../types/app.types'
-import { Location } from '../types/atlas.types'
-import { AutoFocusEvent } from '../types/autofocus.type'
-import { Camera, CameraCaptureEvent } from '../types/camera.types'
-import { INDIMessageEvent } from '../types/device.types'
-import { DustCap } from '../types/dustcap.types'
-import { FlatWizardEvent } from '../types/flat-wizard.types'
-import { Focuser } from '../types/focuser.types'
-import { GuideOutput, Guider, GuiderHistoryStep, GuiderMessageEvent } from '../types/guider.types'
-import { ConnectionClosed } from '../types/home.types'
-import { ROISelected } from '../types/image.types'
-import { LightBox } from '../types/lightbox.types'
-import { Mount } from '../types/mount.types'
-import { Rotator } from '../types/rotator.types'
-import { SequencerEvent } from '../types/sequencer.types'
-import { Wheel, WheelRenamed } from '../types/wheel.types'
+import type { DARVEvent, TPPAEvent } from '../types/alignment.types'
+import type { ConfirmationEvent, DeviceMessageEvent, NotificationEvent, OpenImageEvent } from '../types/api.types'
+import type { CloseWindowCommand, FullscreenWindowCommand, JsonFile, OpenDirectoryCommand, OpenFileCommand, ResizeWindowCommand, SaveJsonCommand, WindowCommand } from '../types/app.types'
+import type { Location } from '../types/atlas.types'
+import type { AutoFocusEvent } from '../types/autofocus.type'
+import type { Camera, CameraCaptureEvent } from '../types/camera.types'
+import type { INDIMessageEvent } from '../types/device.types'
+import type { DustCap } from '../types/dustcap.types'
+import type { FlatWizardEvent } from '../types/flat-wizard.types'
+import type { Focuser } from '../types/focuser.types'
+import type { GuideOutput, Guider, GuiderHistoryStep, GuiderMessageEvent } from '../types/guider.types'
+import type { ConnectionClosed } from '../types/home.types'
+import type { ROISelected } from '../types/image.types'
+import type { LightBox } from '../types/lightbox.types'
+import type { Mount } from '../types/mount.types'
+import type { Rotator } from '../types/rotator.types'
+import type { SequencerEvent } from '../types/sequencer.types'
+import type { Wheel, WheelRenamed } from '../types/wheel.types'
 
 export const OPEN_IMAGE_FILE_FILTER: Electron.FileFilter[] = [
 	{ name: 'All', extensions: ['fits', 'fit', 'xisf'] },
@@ -80,18 +80,18 @@ export interface EventMap {
 	'FLAT_WIZARD.ELAPSED': FlatWizardEvent
 	'CONNECTION.CLOSED': ConnectionClosed
 	'CALIBRATION.CHANGED': unknown
-	'FILE.OPEN': OpenFile
-	'FILE.SAVE': OpenFile
-	'DIRECTORY.OPEN': OpenDirectory
+	'FILE.OPEN': OpenFileCommand
+	'FILE.SAVE': OpenFileCommand
+	'DIRECTORY.OPEN': OpenDirectoryCommand
 	'JSON.WRITE': JsonFile
 	'JSON.READ': string
-	'WINDOW.RESIZE': ResizeWindow
+	'WINDOW.RESIZE': ResizeWindowCommand
 	'WINDOW.PIN': WindowCommand
 	'WINDOW.UNPIN': WindowCommand
 	'WINDOW.MINIMIZE': WindowCommand
 	'WINDOW.MAXIMIZE': WindowCommand
-	'WINDOW.FULLSCREEN': FullscreenWindow
-	'WINDOW.CLOSE': CloseWindow
+	'WINDOW.FULLSCREEN': FullscreenWindowCommand
+	'WINDOW.CLOSE': CloseWindowCommand
 	'WINDOW.OPEN_DEV_TOOLS': WindowCommand
 	'WHEEL.RENAMED': WheelRenamed
 	'ROI.SELECTED': ROISelected
@@ -109,19 +109,19 @@ export class ElectronService {
 		window.electron.on(channel, listener)
 	}
 
-	openFile(data?: OpenFile): Promise<string | false> {
+	openFile(data?: OpenFileCommand): Promise<string | false> {
 		return this.send('FILE.OPEN', { ...data, windowId: data?.windowId ?? window.id, multiple: false })
 	}
 
-	openFiles(data?: OpenFile): Promise<string[] | false> {
+	openFiles(data?: OpenFileCommand): Promise<string[] | false> {
 		return this.send('FILE.OPEN', { ...data, windowId: data?.windowId ?? window.id, multiple: true })
 	}
 
-	saveFile(data?: OpenFile): Promise<string | false> {
+	saveFile(data?: OpenFileCommand): Promise<string | false> {
 		return this.send('FILE.SAVE', { ...data, windowId: data?.windowId ?? window.id })
 	}
 
-	openImage(data?: OpenFile) {
+	openImage(data?: OpenFileCommand) {
 		return this.openFile({
 			...data,
 			windowId: data?.windowId ?? window.id,
@@ -129,7 +129,7 @@ export class ElectronService {
 		})
 	}
 
-	openImages(data?: OpenFile) {
+	openImages(data?: OpenFileCommand) {
 		return this.openFiles({
 			...data,
 			windowId: data?.windowId ?? window.id,
@@ -137,7 +137,7 @@ export class ElectronService {
 		})
 	}
 
-	saveImage(data?: OpenFile) {
+	saveImage(data?: OpenFileCommand) {
 		return this.saveFile({
 			...data,
 			windowId: data?.windowId ?? window.id,
@@ -145,11 +145,11 @@ export class ElectronService {
 		})
 	}
 
-	openDirectory(data?: OpenDirectory): Promise<string | false> {
+	openDirectory(data?: OpenDirectoryCommand): Promise<string | false> {
 		return this.send('DIRECTORY.OPEN', { ...data, windowId: data?.windowId ?? window.id })
 	}
 
-	async saveJson<T>(data: SaveJson<T>): Promise<JsonFile<T> | false> {
+	async saveJson<T>(data: SaveJsonCommand<T>): Promise<JsonFile<T> | false> {
 		data.path = data.path || (await this.saveFile({ ...data, windowId: data.windowId ?? window.id, filters: [{ name: 'JSON files', extensions: ['json'] }] })) || undefined
 
 		if (data.path) {
@@ -161,7 +161,7 @@ export class ElectronService {
 		return false
 	}
 
-	async openJson<T>(data?: OpenFile): Promise<JsonFile<T> | false> {
+	async openJson<T>(data?: OpenFileCommand): Promise<JsonFile<T> | false> {
 		const path = await this.openFile({ ...data, windowId: data?.windowId ?? window.id, filters: [{ name: 'JSON files', extensions: ['json'] }] })
 
 		if (path) {

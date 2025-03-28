@@ -5,6 +5,7 @@ import nebulosa.api.message.MessageEvent
 import nebulosa.api.message.MessageService
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraEvent
+import nebulosa.indi.device.filterwheel.FilterWheel
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -33,11 +34,11 @@ class FlatWizardExecutor(
         messageService.sendMessage(event)
     }
 
-    fun execute(camera: Camera, request: FlatWizardRequest) {
+    fun execute(camera: Camera, request: FlatWizardRequest, wheel: FilterWheel? = null) {
         check(camera.connected) { "camera is not connected" }
         check(jobs.none { it.camera === camera }) { "${camera.name} Flat Wizard is already in progress" }
 
-        with(FlatWizardJob(this, camera, request)) {
+        with(FlatWizardJob(this, camera, request, wheel)) {
             val completable = runAsync(executorService)
             jobs.add(this)
             completable.whenComplete { _, _ -> jobs.remove(this) }

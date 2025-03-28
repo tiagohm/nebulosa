@@ -1,27 +1,32 @@
-import { AfterViewInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
-import { ActivatedRoute } from '@angular/router'
+import type { OnDestroy } from '@angular/core'
+import { Component, HostListener, NgZone, effect, inject } from '@angular/core'
+import { injectQueryParams } from 'ngxtension/inject-query-params'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
-import { Tickable, Ticker } from '../../shared/services/ticker.service'
-import { DEFAULT_DUST_CAP, DustCap } from '../../shared/types/dustcap.types'
+import type { Tickable } from '../../shared/services/ticker.service'
+import { Ticker } from '../../shared/services/ticker.service'
+import type { DustCap } from '../../shared/types/dustcap.types'
+import { DEFAULT_DUST_CAP } from '../../shared/types/dustcap.types'
 import { AppComponent } from '../app.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-dustcap',
-	templateUrl: './dustcap.component.html',
+	templateUrl: 'dustcap.component.html',
 })
-export class DustCapComponent implements AfterViewInit, OnDestroy, Tickable {
+export class DustCapComponent implements OnDestroy, Tickable {
+	private readonly app = inject(AppComponent)
+	private readonly api = inject(ApiService)
+	private readonly ticker = inject(Ticker)
+	private readonly data = injectQueryParams('data', { transform: (v) => v && decodeURIComponent(v) })
+
 	protected readonly dustCap = structuredClone(DEFAULT_DUST_CAP)
 
-	constructor(
-		private readonly app: AppComponent,
-		private readonly api: ApiService,
-		electronService: ElectronService,
-		private readonly route: ActivatedRoute,
-		private readonly ticker: Ticker,
-		ngZone: NgZone,
-	) {
-		app.title = 'Dust Cap'
+	constructor() {
+		const electronService = inject(ElectronService)
+		const ngZone = inject(NgZone)
+
+		this.app.title = 'Dust Cap'
 
 		electronService.on('DUST_CAP.UPDATED', (event) => {
 			if (event.device.id === this.dustCap.id) {
@@ -38,13 +43,14 @@ export class DustCapComponent implements AfterViewInit, OnDestroy, Tickable {
 				})
 			}
 		})
-	}
 
-	ngAfterViewInit() {
-		this.route.queryParams.subscribe(async (e) => {
-			const data = JSON.parse(decodeURIComponent(e['data'] as string)) as DustCap
-			await this.dustCapChanged(data)
-			this.ticker.register(this, 30000)
+		effect(async () => {
+			const data = this.data()
+
+			if (data) {
+				await this.dustCapChanged(JSON.parse(data))
+				this.ticker.register(this, 30000)
+			}
 		})
 	}
 

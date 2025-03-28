@@ -1,5 +1,5 @@
 import type { CameraStartCapture } from './camera.types'
-import type { Device } from './device.types'
+import { EMPTY_DEVICE_SENDER, EMPTY_DRIVER_INFO, type Device } from './device.types'
 
 export type RotatorDialogMode = 'CAPTURE' | 'SEQUENCER'
 
@@ -28,9 +28,8 @@ export interface RotatorPreference {
 
 export const DEFAULT_ROTATOR: Rotator = {
 	type: 'ROTATOR',
-	sender: '',
-	driverName: '',
-	driverVersion: '',
+	sender: EMPTY_DEVICE_SENDER,
+	driver: EMPTY_DRIVER_INFO,
 	id: '',
 	name: '',
 	moving: false,

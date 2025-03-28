@@ -146,7 +146,7 @@ open class FitsHeader : AbstractHeader {
                     return true
                 }
 
-                LOG.d("[{}] with unexpected value type. Expected {}, got {}", key.key, key.valueType, type)
+                LOG.d { debug("[{}] with unexpected value type. Expected {}, got {}", key.key, key.valueType, type) }
 
                 return false
             }

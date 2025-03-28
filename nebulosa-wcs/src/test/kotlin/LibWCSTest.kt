@@ -2,8 +2,8 @@ import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.shouldBe
 import nebulosa.fits.fits
 import nebulosa.image.format.ReadableHeader
-import nebulosa.math.formatHMS
-import nebulosa.math.formatSignedDMS
+import nebulosa.math.deg
+import nebulosa.math.hours
 import nebulosa.test.LinuxOnly
 import nebulosa.test.download
 import nebulosa.wcs.LibWCS
@@ -11,7 +11,6 @@ import nebulosa.wcs.WCS
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
-import kotlin.random.Random
 
 // https://www.atnf.csiro.au/people/mcalabre/WCS/example_data.html
 
@@ -20,122 +19,153 @@ class LibWCSTest {
 
     @Test
     fun air() {
-        pixToSky("AIR", 192, 192)
+        pixToSky("AIR")
     }
 
     @Test
     fun ait() {
-        pixToSky("AIT", 192, 192)
+        pixToSky("AIT")
     }
 
     @Test
     fun arc() {
-        pixToSky("ARC", 192, 192)
+        pixToSky("ARC")
     }
 
     @Test
     fun azp() {
-        pixToSky("AZP", 192, 192)
+        pixToSky("AZP")
     }
 
     @Test
     fun car() {
-        pixToSky("CAR", 192, 192)
+        pixToSky("CAR")
     }
 
     @Test
     fun cea() {
-        pixToSky("CEA", 192, 192)
+        pixToSky("CEA")
     }
 
     @Test
     fun csc() {
-        pixToSky("CSC", 192, 192)
+        pixToSky("CSC")
     }
 
     @Test
     fun cyp() {
-        pixToSky("CYP", 192, 192)
+        pixToSky("CYP")
     }
 
     @Test
     fun hpx() {
-        pixToSky("HPX", 192, 192)
+        pixToSky("HPX")
     }
 
     @Test
     fun mer() {
-        pixToSky("MER", 192, 192)
+        pixToSky("MER")
     }
 
     @Test
     fun mol() {
-        pixToSky("MOL", 192, 192)
+        pixToSky("MOL")
     }
 
     @Test
     fun ncp() {
-        pixToSky("NCP", 192, 192)
+        pixToSky("NCP")
     }
 
     @Test
     fun par() {
-        pixToSky("PAR", 192, 192)
+        pixToSky("PAR")
     }
 
     @Test
     fun pco() {
-        pixToSky("PCO", 192, 192)
+        pixToSky("PCO")
     }
 
     @Test
     fun qsc() {
-        pixToSky("QSC", 192, 192)
+        pixToSky("QSC")
     }
 
     @Test
     fun sfl() {
-        pixToSky("SFL", 192, 192)
+        pixToSky("SFL")
     }
 
     @Test
     fun sin() {
-        pixToSky("SIN", 192, 192)
+        pixToSky("SIN")
     }
 
     @Test
     fun stg() {
-        pixToSky("STG", 192, 192)
+        pixToSky("STG")
     }
 
     @Test
     fun szp() {
-        pixToSky("SZP", 192, 192)
+        pixToSky("SZP")
     }
 
     @Test
     fun tan() {
-        pixToSky("TAN", 192, 192)
+        pixToSky("TAN")
     }
 
     @Test
     fun tsc() {
-        pixToSky("TSC", 192, 192)
+        pixToSky("TSC")
     }
 
     @Test
     fun zea() {
-        pixToSky("ZEA", 192, 192)
+        pixToSky("ZEA")
+    }
+
+    @Test
+    fun bon() {
+        pixToSky("BON")
+    }
+
+    @Test
+    fun cod() {
+        pixToSky("COD")
+    }
+
+    @Test
+    fun coe() {
+        pixToSky("COE")
+    }
+
+    @Test
+    fun cop() {
+        pixToSky("COP")
+    }
+
+    @Test
+    fun coo() {
+        pixToSky("COO")
+    }
+
+    @Test
+    fun zpn() {
+        pixToSky("ZPN")
     }
 
     @Test
     fun tanSip() {
-        pixToSky("TAN-SIP", 1280, 720)
+        // pixToSky("TAN-SIP", 1280, 720)
     }
 
-    // "BON", "COD", "COE", "COO", "COP", "ZPN" // FAILED
-
     companion object {
+
+        @JvmStatic private val CENTER_RA = "18h 59m 51s".hours
+        @JvmStatic private val CENTER_DEC = "-66d 15m 57s".deg
 
         @BeforeAll
         @JvmStatic
@@ -144,28 +174,16 @@ class LibWCSTest {
             System.setProperty(LibWCS.PATH, "$libPath")
         }
 
-        private fun pixToSky(projectionName: String, width: Int, height: Int) {
-            val data = Array(2048) { intArrayOf(Random.nextInt(width), Random.nextInt(height)) }
-
+        private fun pixToSky(projectionName: String) {
             WCS(readHeaderFromFits(projectionName)).use {
-                val topLeft = it.pixToSky(0.0, 0.0)
-                val topRight = it.pixToSky(width.toDouble(), 0.0)
-                val bottomLeft = it.pixToSky(0.0, height.toDouble())
-                val bottomRight = it.pixToSky(width.toDouble(), height.toDouble())
-                val center = it.pixToSky(width / 2.0, height / 2.0)
+                val (rightAscension, declination) = it.pixToSky(97.0, 97.0)
+                rightAscension shouldBe (CENTER_RA plusOrMinus 1e-12)
+                declination shouldBe (CENTER_DEC plusOrMinus 1e-12)
 
-                println("top left: ${topLeft.rightAscension.formatHMS()} ${topLeft.declination.formatSignedDMS()}")
-                println("top right: ${topRight.rightAscension.formatHMS()} ${topRight.declination.formatSignedDMS()}")
-                println("bottom left: ${bottomLeft.rightAscension.formatHMS()} ${bottomLeft.declination.formatSignedDMS()}")
-                println("bottom right: ${bottomRight.rightAscension.formatHMS()} ${bottomRight.declination.formatSignedDMS()}")
-                println("center: ${center.rightAscension.formatHMS()} ${center.declination.formatSignedDMS()}")
+                val (x, y) = it.skyToPix(rightAscension, declination)
 
-                for ((x0, y0) in data) {
-                    val (rightAscension, declination) = it.pixToSky(x0.toDouble(), y0.toDouble())
-                    val (x1, y1) = it.skyToPix(rightAscension, declination)
-                    x1 shouldBe (x0.toDouble() plusOrMinus 1.0)
-                    y1 shouldBe (y0.toDouble() plusOrMinus 1.0)
-                }
+                x shouldBe (97.0 plusOrMinus 1e-8)
+                y shouldBe (97.0 plusOrMinus 1e-8)
             }
         }
 

@@ -1,7 +1,11 @@
 package nebulosa.alpaca.api
 
 import retrofit2.Call
-import retrofit2.http.*
+import retrofit2.http.Field
+import retrofit2.http.FormUrlEncoded
+import retrofit2.http.GET
+import retrofit2.http.PUT
+import retrofit2.http.Path
 
 interface AlpacaFocuserService : AlpacaDeviceService {
 
@@ -11,6 +15,12 @@ interface AlpacaFocuserService : AlpacaDeviceService {
     @FormUrlEncoded
     @PUT("api/v1/focuser/{id}/connected")
     override fun connect(@Path("id") id: Int, @Field("Connected") connected: Boolean): Call<NoneResponse>
+
+    @GET("api/v1/focuser/{id}/driverversion")
+    override fun driverVersion(@Path("id") id: Int): Call<StringResponse>
+
+    @GET("api/v1/focuser/{id}/driverinfo")
+    override fun driverInfo(@Path("id") id: Int): Call<StringResponse>
 
     @GET("api/v1/focuser/{id}/absolute")
     fun canAbsolute(@Path("id") id: Int): Call<BoolResponse>

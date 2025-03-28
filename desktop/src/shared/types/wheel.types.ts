@@ -1,5 +1,5 @@
 import type { CameraStartCapture } from './camera.types'
-import type { Device } from './device.types'
+import { EMPTY_DEVICE_SENDER, EMPTY_DRIVER_INFO, type Device } from './device.types'
 import type { Focuser } from './focuser.types'
 
 export type WheelDialogMode = 'CAPTURE' | 'SEQUENCER' | 'FLAT_WIZARD'
@@ -59,9 +59,8 @@ export function makeFilter(wheel: Wheel, filters: Filter[], shutterPosition: num
 
 export const DEFAULT_WHEEL: Wheel = {
 	type: 'WHEEL',
-	sender: '',
-	driverName: '',
-	driverVersion: '',
+	sender: EMPTY_DEVICE_SENDER,
+	driver: EMPTY_DRIVER_INFO,
 	id: '',
 	count: 0,
 	position: 0,

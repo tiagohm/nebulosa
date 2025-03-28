@@ -1,7 +1,11 @@
 package nebulosa.nova.astrometry
 
 import nebulosa.constants.GM_SUN_PITJEVA_2005
-import nebulosa.math.*
+import nebulosa.math.Angle
+import nebulosa.math.Distance
+import nebulosa.math.Matrix3D
+import nebulosa.math.au
+import nebulosa.math.deg
 import nebulosa.nova.frame.EclipticJ2000
 import nebulosa.time.InstantOfTime
 import nebulosa.time.TT

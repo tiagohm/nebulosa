@@ -1,170 +1,125 @@
-<div class="container px-4 py-3">
-	<div class="grid flex align-items-center">
-		<div class="col-12 align-items-center gap-2">
-			<neb-device-name [device]="wheel" />
-			<p-button
-				*ngIf="wheel.connected"
-				[disabled]="!wheel || moving"
-				(onClick)="connect()"
-				icon="mdi mdi-close"
-				size="small"
-				severity="danger"
-				pTooltip="Disconnect"
-				tooltipPosition="bottom"
-				[text]="true" />
-			<p-button
-				*ngIf="!wheel.connected"
-				[disabled]="!wheel || moving"
-				(onClick)="connect()"
-				icon="mdi mdi-connection"
-				size="small"
-				severity="info"
-				pTooltip="Connect"
-				tooltipPosition="bottom"
-				[text]="true" />
+<div class="flex flex-col gap-3 p-4">
+	<div class="grid grid-cols-12 gap-3">
+		<div class="col-span-full flex items-center gap-3">
+			<neb-device-name
+				[device]="wheel"
+				class="flex-1" />
+			@if (wheel.connected) {
+				<neb-button
+					[disabled]="moving"
+					(action)="connect()"
+					icon="mdi mdi-close"
+					severity="danger"
+					tooltip="Disconnect" />
+			} @else {
+				<neb-button
+					[disabled]="moving"
+					(action)="connect()"
+					icon="mdi mdi-connection"
+					severity="info"
+					tooltip="Connect" />
+			}
+			<neb-button-indi [device]="wheel" />
 		</div>
-		<div
-			*ngIf="canShowInfo"
-			class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1">
-			<i class="mdi mdi-information text-info"></i>
-			<span class="mr-3">{{ moving ? 'moving' : 'idle' }}</span>
-			<p-tag
-				*ngIf="wheel.connected && currentFilter && currentFilter.position"
-				value="#{{ currentFilter.position }}" />
-			<p-tag
-				*ngIf="wheel.connected && currentFilter"
-				[value]="currentFilter.name"
-				severity="info" />
-		</div>
+		@if (canShowInfo) {
+			<div class="col-span-full my-1 flex items-center !justify-start gap-1 pt-0 text-sm text-gray-400">
+				<i class="mdi mdi-information text-blue-500"></i>
+				<span class="mr-3">{{ moving ? 'moving' : 'idle' }}</span>
+				@if (wheel.connected && currentFilter) {
+					@if (currentFilter.position) {
+						<neb-tag label="#{{ currentFilter.position }}" />
+					}
+					<neb-info [label]="currentFilter.name" />
+				}
+			</div>
+		}
 	</div>
-	<div class="grid mt-2">
-		<div class="col-9">
-			<p-floatLabel class="w-full">
-				<p-dropdown
-					[disabled]="!wheel.connected || moving"
-					[options]="filters"
-					[(ngModel)]="filter"
-					styleClass="border-0"
-					emptyMessage="No filter found"
-					[autoDisplayFirst]="false"
-					(ngModelChange)="filterChanged()"
-					appendTo="body">
-					<ng-template
-						let-item
-						pTemplate="selectedItem">
-						<div class="flex flex-column justify-content-center gap-1">
-							<span
-								class="flex align-items-center text-xs gap-1"
-								style="min-height: 15px">
-								<p-tag
-									*ngIf="filter"
-									value="#{{ filter.position }}" />
-								<p-tag
-									*ngIf="filter"
-									value="OFFSET: {{ focusOffsetForFilter(filter) }}"
-									severity="success" />
-								<i
-									*ngIf="filter?.dark"
-									class="mdi mdi-camera-iris"></i>
-							</span>
-							<span>{{ filter?.name }}</span>
-						</div>
-					</ng-template>
-					<ng-template
-						let-item
-						pTemplate="item">
-						<div class="flex flex-column justify-content-center gap-1">
-							<span
-								class="flex align-items-center text-xs gap-1"
-								style="min-height: 15px">
-								<p-tag value="#{{ item.position }}" />
-								<p-tag
-									value="OFFSET: {{ focusOffsetForFilter(item) }}"
-									severity="success" />
-								<i
-									*ngIf="item.dark"
-									class="mdi mdi-camera-iris"></i>
-							</span>
-							<span>{{ item.name }}</span>
-						</div>
-					</ng-template>
-				</p-dropdown>
-				<label>Filter</label>
-			</p-floatLabel>
+	<div class="grid grid-cols-12 gap-3">
+		<div class="col-span-9">
+			<ng-template
+				#filterDropdownItem
+				let-item
+				let-selected="selected">
+				<div class="flex flex-col justify-center gap-1">
+					@let mItem = selected ? filter : item;
+
+					<span class="flex min-h-5 items-center gap-1 text-xs">
+						@if (mItem) {
+							<neb-tag label="#{{ mItem.position }}" />
+							<neb-success label="OFFSET: {{ focusOffsetForFilter(mItem) }}" />
+							@if (mItem.dark) {
+								<i class="mdi mdi-camera-iris"></i>
+							}
+						}
+					</span>
+					<span>{{ mItem?.name }}</span>
+				</div>
+			</ng-template>
+			<neb-dropdown
+				label="Filter"
+				[disabled]="!wheel.connected || moving"
+				[options]="filters"
+				[(value)]="filter"
+				(valueChange)="filterChanged()"
+				emptyMessage="No filter available"
+				[itemTemplate]="filterDropdownItem" />
 		</div>
-		<div class="col-3 flex align-items-center justify-content-center">
-			<p-button
+		<div class="col-span-3">
+			<neb-button
 				[disabled]="!canMoveTo || !wheel.connected || moving || filter?.position === position"
 				label="Move"
 				icon="mdi mdi-check"
-				(onClick)="moveToSelectedFilter()"
-				size="small"
-				[text]="true" />
+				(action)="moveToSelectedFilter()" />
 		</div>
 	</div>
-	<div
-		class="grid mt-2"
-		*ngIf="filter && canEdit">
-		<div class="col-8">
-			<p-floatLabel>
-				<input
-					pInputText
-					[disabled]="!wheel.connected || moving"
-					[(ngModel)]="filter.name"
-					(ngModelChange)="filterNameChanged(filter)"
-					[maxLength]="16"
-					class="border-0 w-full p-inputtext-sm" />
-				<label>Name</label>
-			</p-floatLabel>
-		</div>
-		<div class="col-4 flex flex-column justify-content-center gap-2">
-			<p-checkbox
-				[binary]="true"
-				[disabled]="!wheel.connected || moving"
-				[ngModel]="filter.dark"
-				(onChange)="shutterToggled(filter, $event)"
-				label="Shutter" />
-		</div>
-	</div>
-	<div
-		*ngIf="filter"
-		class="grid mt-1">
-		<div class="col-12 flex align-items-center justify-content-between gap-2">
+	@if (filter) {
+		@if (canEdit) {
+			<div class="grid grid-cols-12 gap-3">
+				<div class="col-span-8">
+					<neb-input-text
+						label="Name"
+						[disabled]="!wheel.connected || moving"
+						[maxLength]="16"
+						[(value)]="filter.name"
+						(valueChange)="filterNameChanged(filter)" />
+				</div>
+				<div class="col-span-4">
+					<neb-checkbox
+						[disabled]="!wheel.connected || moving"
+						[value]="filter.dark"
+						(valueChange)="shutterToggled(filter, $event)"
+						label="Shutter" />
+				</div>
+			</div>
+		}
+		<div class="flex w-full items-center justify-between gap-2">
 			<neb-device-chooser
 				title="FOCUSER"
+				class="flex-1"
 				icon="mdi mdi-image-filter-center-focus"
 				[disabled]="!canChangeFocusOffset"
 				[devices]="focusers"
 				[(device)]="focuser"
 				(deviceChange)="focuserChanged()"
-				(deviceConnect)="focuserChanged()"
-				style="max-width: 60%" />
-			<p-floatLabel>
-				<p-inputNumber
-					[disabled]="!wheel.connected || moving || !focuser?.connected || !canChangeFocusOffset"
-					[(ngModel)]="focuserOffset"
-					[min]="focuserMinPosition"
-					[max]="focuserMaxPosition"
-					[showButtons]="true"
-					locale="en"
-					styleClass="border-0 w-full p-inputtext-sm"
-					(ngModelChange)="focusOffsetChanged()"
-					spinnableNumber />
-				<label>Focus offset</label>
-			</p-floatLabel>
+				(deviceConnect)="focuserChanged()" />
+			<neb-input-number
+				label="Focus offset"
+				class="!max-w-36"
+				[disabled]="!wheel.connected || moving || !focuser?.connected || !canChangeFocusOffset"
+				[min]="focuserMinPosition"
+				[max]="focuserMaxPosition"
+				[(value)]="focuserOffset"
+				(valueChange)="focusOffsetChanged()" />
 		</div>
-	</div>
-	<div
-		class="grid mt-2"
-		*ngIf="canApply">
-		<div class="col-12 flex justify-content-center gap-2">
-			<p-button
+	}
+	@if (canApply) {
+		<div class="flex w-full justify-center">
+			<neb-button
 				[disabled]="!wheel.connected || !filter || !filters.length"
 				label="Save"
-				(onClick)="apply()"
+				(action)="apply()"
 				icon="mdi mdi-content-save"
-				severity="info"
-				size="small" />
+				severity="info" />
 		</div>
-	</div>
+	}
 </div>

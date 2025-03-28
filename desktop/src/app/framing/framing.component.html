@@ -1,128 +1,86 @@
-<div class="grid px-4 py-2 mt-1">
-	<div class="col-6">
-		<p-floatLabel>
-			<input
-				pInputText
-				class="p-inputtext-sm border-0 w-full"
-				[(ngModel)]="preference.rightAscension"
-				(ngModelChange)="savePreference()" />
-			<label>RA (J2000)</label>
-		</p-floatLabel>
+<div class="mt-2 grid grid-cols-4 gap-3 px-4 py-2">
+	<div class="col-span-2">
+		<neb-input-text
+			label="RA (J2000)"
+			[(value)]="preference.rightAscension"
+			(valueChange)="savePreference()" />
 	</div>
-	<div class="col-6">
-		<p-floatLabel>
-			<input
-				pInputText
-				class="p-inputtext-sm border-0 w-full"
-				[(ngModel)]="preference.declination"
-				(ngModelChange)="savePreference()" />
-			<label>DEC (J2000)</label>
-		</p-floatLabel>
+	<div class="col-span-2">
+		<neb-input-text
+			label="DEC (J2000)"
+			[(value)]="preference.declination"
+			(valueChange)="savePreference()" />
 	</div>
-	<div class="col-6">
-		<p-floatLabel>
-			<p-inputNumber
-				[min]="1"
-				[max]="7680"
-				class="w-full"
-				[showButtons]="true"
-				styleClass="p-inputtext-sm border-0 w-full"
-				[(ngModel)]="preference.width"
-				(ngModelChange)="savePreference()"
-				locale="en"
-				spinnableNumber />
-			<label>Width</label>
-		</p-floatLabel>
+	<div class="col-span-2">
+		<neb-input-number
+			label="Width"
+			[min]="1"
+			[max]="7680"
+			[(value)]="preference.width"
+			(valueChange)="savePreference(); computeFOV()" />
 	</div>
-	<div class="col-6">
-		<p-floatLabel>
-			<p-inputNumber
-				[min]="1"
-				[max]="4320"
-				class="w-full"
-				[showButtons]="true"
-				styleClass="p-inputtext-sm border-0 w-full"
-				[(ngModel)]="preference.height"
-				(ngModelChange)="savePreference()"
-				locale="en"
-				spinnableNumber />
-			<label>Height</label>
-		</p-floatLabel>
+	<div class="col-span-2">
+		<neb-input-number
+			label="Height"
+			[min]="1"
+			[max]="4320"
+			[(value)]="preference.height"
+			(valueChange)="savePreference(); computeFOV()" />
 	</div>
-	<div class="col-6">
-		<p-floatLabel>
-			<p-inputNumber
+	<div class="col-span-2 flex items-center gap-1">
+		<div class="w-3/4">
+			<neb-input-number
+				label="FOV (°)"
 				[min]="0.1"
 				[max]="90"
 				[step]="0.1"
-				class="w-full"
-				[showButtons]="true"
-				styleClass="p-inputtext-sm border-0 w-full"
-				[(ngModel)]="preference.fov"
-				(ngModelChange)="savePreference()"
-				locale="en"
-				[minFractionDigits]="1"
-				spinnableNumber />
-			<label>FOV (°)</label>
-		</p-floatLabel>
+				[(value)]="preference.fov"
+				(valueChange)="savePreference()" />
+		</div>
+		<div class="w-1/4">
+			<neb-button
+				icon="mdi mdi-calculator"
+				(action)="fov.showDialog = true"
+				tooltip="Calculate" />
+		</div>
 	</div>
-	<div class="col-6">
-		<p-floatLabel>
-			<p-inputNumber
-				[min]="-360"
-				[max]="360"
-				[step]="0.1"
-				class="w-full"
-				[showButtons]="true"
-				styleClass="p-inputtext-sm border-0 w-full"
-				[(ngModel)]="preference.rotation"
-				(ngModelChange)="savePreference()"
-				locale="en"
-				[minFractionDigits]="1"
-				spinnableNumber />
-			<label>Rotation (°)</label>
-		</p-floatLabel>
+	<div class="col-span-2">
+		<neb-input-number
+			label="Rotation (°)"
+			[min]="-360"
+			[max]="360"
+			[step]="0.1"
+			[(value)]="preference.rotation"
+			(valueChange)="savePreference()" />
 	</div>
-	<div class="col-12">
-		<p-floatLabel class="w-full">
-			<p-dropdown
-				[options]="hipsSurveys"
-				[(ngModel)]="preference.hipsSurvey"
-				(ngModelChange)="savePreference()"
-				styleClass="border-0"
-				emptyMessage="No HiPS survey found"
-				[autoDisplayFirst]="false">
-				<ng-template
-					let-item
-					pTemplate="selectedItem">
-					<div class="flex flex-column">
-						<span class="text-xs">{{ item?.regime }} ({{ item?.skyFraction | percent: '1.1-1' }})</span>
-						<span>{{ item?.id }}</span>
-					</div>
-				</ng-template>
-				<ng-template
-					let-item
-					pTemplate="item">
-					<div class="flex flex-column">
-						<span class="text-xs">{{ item.regime }} ({{ item?.skyFraction | percent: '1.1-1' }})</span>
-						<span>{{ item.id }}</span>
-					</div>
-				</ng-template>
-			</p-dropdown>
-			<label>HiPS Survey</label>
-		</p-floatLabel>
+	<div class="col-span-full">
+		<ng-template
+			#hipsSurveyDropdownItem
+			let-item>
+			<div class="flex flex-col">
+				<span class="text-xs">{{ item?.regime }} ({{ item?.skyFraction | percent: '1.1-1' }})</span>
+				<span>{{ item?.id }}</span>
+			</div>
+		</ng-template>
+		<neb-dropdown
+			label="HiPS Survey"
+			[options]="hipsSurveys"
+			[filter]="true"
+			[filterFields]="['id', 'category', 'frame', 'regime']"
+			[(value)]="preference.hipsSurvey"
+			(valueChange)="savePreference()"
+			emptyMessage="No HiPS survey available"
+			[itemTemplate]="hipsSurveyDropdownItem" />
 	</div>
-	<div class="col-12 justify-content-center mt-2">
-		<p-button
+	<div class="col-span-full mt-2 flex justify-center">
+		<neb-button
 			[disabled]="!preference.hipsSurvey || loading"
 			icon="mdi mdi-download"
 			label="Load"
-			(onClick)="frame()"
-			[text]="true"
-			size="small" />
+			(action)="frame()" />
 	</div>
-	<div class="col-12 justify-content-center">
-		<span class="text-sm text-gray-700">
+	<div class="col-span-full flex justify-center">
+		<span class="text-sm text-gray-500">
 			Made use of
 			<a
 				target="_blank"
@@ -133,3 +91,46 @@
 		</span>
 	</div>
 </div>
+
+<p-dialog
+	header="FOV"
+	[draggable]="false"
+	[(visible)]="fov.showDialog"
+	[modal]="false"
+	[style]="{ width: '80vw' }">
+	<div class="mt-2 grid grid-cols-2 gap-3">
+		<div class="col-span-full">
+			<neb-input-number
+				label="Focal length (mm)"
+				[min]="0"
+				[max]="10000"
+				[(value)]="preference.focalLength"
+				(valueChange)="computeFOV(false)" />
+		</div>
+		<div class="col-span-full">
+			<neb-input-number
+				label="Pixel size (µm)"
+				[min]="0"
+				[max]="100"
+				[step]="0.01"
+				[fractionDigits]="2"
+				[(value)]="preference.pixelSize"
+				(valueChange)="computeFOV(false)" />
+		</div>
+		<div class="col-span-full">
+			<neb-checkbox
+				label="Update FOV on width/height change"
+				[(value)]="preference.updateFovOnChange"
+				(valueChange)="savePreference()" />
+		</div>
+	</div>
+	<ng-template #footer>
+		<div class="flex w-full items-center justify-between">
+			<span class="flex-1 text-center text-lg font-bold">{{ fov.computed.toFixed(3) }}°</span>
+			<neb-button
+				icon="mdi mdi-check"
+				label="OK"
+				(action)="computeFOV(true)" />
+		</div>
+	</ng-template>
+</p-dialog>

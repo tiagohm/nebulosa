@@ -1,5 +1,6 @@
 package nebulosa.api.guiding
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import nebulosa.api.message.MessageService
 import nebulosa.api.preference.PreferenceService
 import nebulosa.guiding.GuideStar
@@ -16,6 +17,7 @@ class GuidingService(
     private val messageService: MessageService,
     private val phd2Client: PHD2Client,
     private val guider: Guider,
+    private val mapper: ObjectMapper,
 ) : GuiderListener {
 
     private val guideHistory = GuideStepHistory()
@@ -35,7 +37,7 @@ class GuidingService(
 
         phd2Client.open(host, port)
         guider.registerGuiderListener(this)
-        settle(preferenceService.getJSON<SettleInfo>("GUIDER.SETTLE_INFO") ?: SettleInfo.EMPTY)
+        settle(preferenceService["GUIDER.SETTLE_INFO"]?.ifBlank { null }?.let { mapper.readValue(it, SettleInfo::class.java) } ?: SettleInfo.EMPTY)
         messageService.sendMessage(GuiderMessageEvent(GUIDER_CONNECTED))
     }
 
@@ -81,7 +83,8 @@ class GuidingService(
         guider.settleTime = Duration.ofSeconds(settle.time)
         guider.settleTimeout = Duration.ofSeconds(settle.timeout)
 
-        preferenceService.putJSON("GUIDER.SETTLE_INFO", settle)
+        preferenceService["GUIDER.SETTLE_INFO"] = mapper.writeValueAsString(settle)
+        preferenceService.save()
     }
 
     fun dither(amount: Double, raOnly: Boolean = false) {

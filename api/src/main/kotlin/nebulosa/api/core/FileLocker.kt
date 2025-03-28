@@ -1,7 +1,5 @@
 package nebulosa.api.core
 
-import nebulosa.log.e
-import nebulosa.log.i
 import nebulosa.log.loggerFor
 import java.io.RandomAccessFile
 import java.nio.ByteBuffer
@@ -29,7 +27,7 @@ object FileLocker {
             lock = channel.tryLock(0, 1, false)
 
             if (lock == null) {
-                LOG.i("another instance of the application is already running")
+                LOG.info("another instance of the application is already running")
                 return false
             }
 
@@ -39,7 +37,7 @@ object FileLocker {
                     lock?.release()
                     channel.close()
                 } catch (e: Throwable) {
-                    LOG.e("failed to release lock", e)
+                    LOG.error("failed to release lock", e)
                 } finally {
                     lock = null
                     lockPath.deleteIfExists()
@@ -48,7 +46,7 @@ object FileLocker {
 
             return true
         } catch (e: Throwable) {
-            LOG.e("failed to acquire lock on file", e)
+            LOG.error("failed to acquire lock on file", e)
             return false
         }
     }

@@ -45,6 +45,14 @@ inline fun Long.range(min: Long, max: Long, message: String? = null) = validate(
 inline fun Long.positive(message: String? = null) = validate(this > 0) { message ?: "must be greater than 0" }
 inline fun Long.positiveOrZero(message: String? = null) = validate(this >= 0) { message ?: "must be greater than or equal to 0" }
 
+// FLOAT
+
+inline fun Float.min(min: Float, message: String? = null) = validate(this >= min) { message ?: "must be greater than or equal to $min" }
+inline fun Float.max(max: Float, message: String? = null) = validate(this <= max) { message ?: "must be less than or equal to $max" }
+inline fun Float.range(min: Float, max: Float, message: String? = null) = validate(this in min..max) { message ?: "must be between $min and $max" }
+inline fun Float.positive(message: String? = null) = validate(this > 0) { message ?: "must be greater than 0" }
+inline fun Float.positiveOrZero(message: String? = null) = validate(this >= 0) { message ?: "must be greater than or equal to 0" }
+
 // DOUBLE
 
 inline fun Double.min(min: Double, message: String? = null) = validate(this >= min) { message ?: "must be greater than or equal to $min" }
@@ -64,7 +72,10 @@ inline fun Path.exists(message: String? = null) = validate(exists()) { message ?
 inline fun Duration.positive(message: String? = null) = validate(!isNegative && !isZero) { message ?: "must be greater than 0" }
 inline fun Duration.positiveOrZero(message: String? = null) = validate(!isNegative) { message ?: "must be greater than or equal to 0" }
 inline fun Duration.min(duration: Long, unit: TimeUnit, message: String? = null) = validate(toNanos() >= unit.toNanos(duration)) { message ?: "must be greater than or equal to $duration $unit" }
+inline fun Duration.min(duration: Duration, message: String? = null) = validate(this >= duration) { message ?: "must be greater than or equal to $duration" }
 inline fun Duration.max(duration: Long, unit: TimeUnit, message: String? = null) = validate(toNanos() <= unit.toNanos(duration)) { message ?: "must be less than or equal to $duration $unit" }
+inline fun Duration.max(duration: Duration, message: String? = null) = validate(this <= duration) { message ?: "must be less than or equal to $duration" }
+inline fun Duration.range(min: Duration, max: Duration, message: String? = null) = validate(this in min..max) { message ?: "must be between $min and $max" }
 
 // COLLECTION
 

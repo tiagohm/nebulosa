@@ -1,24 +1,26 @@
-import { AfterContentInit, AfterViewInit, Component, HostListener, NgZone, OnDestroy, OnInit, ViewChild, ViewEncapsulation } from '@angular/core'
-import { ActivatedRoute } from '@angular/router'
-import { Chart, ChartData, ChartOptions } from 'chart.js'
+import type { AfterContentInit, AfterViewInit, OnDestroy, OnInit } from '@angular/core'
+import { Component, HostListener, NgZone, ViewEncapsulation, effect, inject, viewChild } from '@angular/core'
+import type { ChartData, ChartOptions } from 'chart.js'
+import { Chart } from 'chart.js'
 import zoomPlugin from 'chartjs-plugin-zoom'
-import { UIChart } from 'primeng/chart'
-import { ListboxChangeEvent } from 'primeng/listbox'
-import { OverlayPanel } from 'primeng/overlaypanel'
+import { injectQueryParams } from 'ngxtension/inject-query-params'
+import type { UIChart } from 'primeng/chart'
+import type { ListboxChangeEvent } from 'primeng/listbox'
+import type { Popover } from 'primeng/popover'
 import { timer } from 'rxjs'
-import { DeviceListMenuComponent } from '../../shared/components/device-list-menu/device-list-menu.component'
-import { SlideMenuItem } from '../../shared/components/menu-item/menu-item.component'
+import type { DeviceListMenuComponent } from '../../shared/components/device-list-menu.component'
+import type { SlideMenuItem } from '../../shared/components/menu-item.component'
 import { ONE_DECIMAL_PLACE_FORMATTER, TWO_DIGITS_FORMATTER } from '../../shared/constants'
 import { AngularService } from '../../shared/services/angular.service'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
+import { DeviceService } from '../../shared/services/device.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { extractDate, extractTime } from '../../shared/types/angular.types'
+import type { AltitudePoint, BodyTag, EarthSeason, FavoritedSkyBody, Location, MinorPlanetListItem, SkyAtlasInput, SkyAtlasSettings } from '../../shared/types/atlas.types'
 import {
-	AltitudePoint,
 	BodyTabType,
-	BodyTag,
 	DEFAULT_BODY_TAB_REFRESH,
 	DEFAULT_DATE_TIME_AND_LOCATION,
 	DEFAULT_LOCATION,
@@ -27,27 +29,34 @@ import {
 	DEFAULT_PLANET,
 	DEFAULT_SATELLITE,
 	DEFAULT_SKY_ATLAS_PREFERENCE,
+	DEFAULT_SKY_ATLAS_SETTINGS_DIALOG,
 	DEFAULT_SKY_OBJECT,
 	DEFAULT_SKY_OBJECT_SEARCH_FILTER,
 	DEFAULT_SUN,
-	FavoritedSkyBody,
-	Location,
-	MinorPlanetListItem,
+	EARTH_SEASONS,
 	SATELLITE_GROUPS,
-	SkyAtlasInput,
 	resetSatelliteSearchGroup,
 	skyObjectSearchFilterWithDefault,
 } from '../../shared/types/atlas.types'
-import { Mount } from '../../shared/types/mount.types'
+import type { Mount } from '../../shared/types/mount.types'
 import { AppComponent } from '../app.component'
 
 @Component({
+	standalone: false,
 	selector: 'neb-atlas',
-	templateUrl: './atlas.component.html',
-	styleUrls: ['./atlas.component.scss'],
+	templateUrl: 'atlas.component.html',
+	styleUrls: ['atlas.component.scss'],
 	encapsulation: ViewEncapsulation.None,
 })
 export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, OnDestroy {
+	private readonly app = inject(AppComponent)
+	private readonly api = inject(ApiService)
+	private readonly browserWindowService = inject(BrowserWindowService)
+	private readonly preferenceService = inject(PreferenceService)
+	private readonly angularService = inject(AngularService)
+	private readonly deviceService = inject(DeviceService)
+	private readonly data = injectQueryParams('data', { transform: (v) => v && decodeURIComponent(v) })
+
 	protected readonly sun = structuredClone(DEFAULT_SUN)
 	protected readonly moon = structuredClone(DEFAULT_MOON)
 	protected readonly planet = structuredClone(DEFAULT_PLANET)
@@ -57,6 +66,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 	protected readonly preference = structuredClone(DEFAULT_SKY_ATLAS_PREFERENCE)
 	protected readonly refresh = structuredClone(DEFAULT_BODY_TAB_REFRESH)
 	protected readonly dateTimeAndLocation = structuredClone(DEFAULT_DATE_TIME_AND_LOCATION)
+	protected readonly settings = structuredClone(DEFAULT_SKY_ATLAS_SETTINGS_DIALOG)
 
 	protected tab = BodyTabType.SUN
 	protected locations: Location[] = [structuredClone(DEFAULT_LOCATION)]
@@ -332,17 +342,10 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 		},
 	]
 
-	@ViewChild('deviceMenu')
-	private readonly deviceMenu!: DeviceListMenuComponent
-
-	@ViewChild('dateTimeAndLocationPanel')
-	private readonly dateTimeAndLocationPanel!: OverlayPanel
-
-	@ViewChild('favoritesPanel')
-	private readonly favoritesPanel!: OverlayPanel
-
-	@ViewChild('chart')
-	private readonly chart!: UIChart
+	private readonly deviceMenu = viewChild.required<DeviceListMenuComponent>('deviceMenu')
+	private readonly dateTimeAndLocationPopover = viewChild.required<Popover>('dateTimeAndLocationPopover')
+	private readonly bookmarkPopover = viewChild.required<Popover>('bookmarkPopover')
+	private readonly chart = viewChild.required<UIChart>('chart')
 
 	get body() {
 		switch (this.tab) {
@@ -385,31 +388,33 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 		return this.preference.favorites.find((e) => e.tab === this.tab && e.id === id)
 	}
 
-	constructor(
-		private readonly app: AppComponent,
-		private readonly api: ApiService,
-		private readonly browserWindowService: BrowserWindowService,
-		private readonly route: ActivatedRoute,
-		electronService: ElectronService,
-		private readonly preferenceService: PreferenceService,
-		private readonly angularService: AngularService,
-		ngZone: NgZone,
-	) {
-		app.title = 'Sky Atlas'
+	constructor() {
+		const electronService = inject(ElectronService)
+		const ngZone = inject(NgZone)
 
-		app.topMenu.push({
+		this.app.title = 'Sky Atlas'
+
+		this.app.topMenu.push({
 			icon: 'mdi mdi-bookmark',
 			tooltip: 'Favorites',
 			command: (e) => {
-				this.favoritesPanel.toggle(e.originalEvent)
+				this.bookmarkPopover().toggle(e.originalEvent)
 			},
 		})
 
-		app.topMenu.push({
+		this.app.topMenu.push({
 			icon: 'mdi mdi-calendar',
 			tooltip: 'Date Time and Location',
 			command: (e) => {
-				this.dateTimeAndLocationPanel.toggle(e.originalEvent)
+				this.dateTimeAndLocationPopover().toggle(e.originalEvent)
+			},
+		})
+
+		this.app.topMenu.push({
+			icon: 'mdi mdi-cog',
+			tooltip: 'Settings',
+			command: () => {
+				this.settings.showDialog = true
 			},
 		})
 
@@ -425,6 +430,14 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 
 		electronService.on('DATA.CHANGED', (event) => {
 			this.loadTabFromData(event)
+		})
+
+		effect(() => {
+			const data = this.data()
+
+			if (data) {
+				this.loadTabFromData(JSON.parse(data))
+			}
 		})
 	}
 
@@ -450,11 +463,6 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 				this.refreshTab()
 			}
 		})
-
-		this.route.queryParams.subscribe((e) => {
-			const data = JSON.parse(decodeURIComponent(e['data'] as string)) as SkyAtlasInput
-			this.loadTabFromData(data)
-		})
 	}
 
 	ngAfterViewInit() {
@@ -472,6 +480,10 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 
 			if (this.tab === BodyTabType.SKY_OBJECT) {
 				this.skyObject.search.filter = skyObjectSearchFilterWithDefault(data.filter, this.skyObject.search.filter)
+
+				if (this.skyObject.search.filter.rightAscension && this.skyObject.search.filter.declination && this.skyObject.search.filter.radius <= 0) {
+					this.skyObject.search.filter.radius = 4
+				}
 
 				this.tabChanged()
 				void this.searchSkyObject()
@@ -501,13 +513,15 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 			// if (minorPlanet.kind) tags.push({ label: minorPlanet.kind, severity: 'success' })
 			if (minorPlanet.orbitType) tags.push({ label: minorPlanet.orbitType, severity: 'success' })
 			if (minorPlanet.pha) tags.push({ label: 'PHA', severity: 'danger' })
-			if (minorPlanet.neo) tags.push({ label: 'NEO', severity: 'warning' })
+			if (minorPlanet.neo) tags.push({ label: 'NEO', severity: 'warn' })
 			this.minorPlanet.tags = tags
 
 			this.refreshTab(false, true)
 		} else if (minorPlanet.list.length) {
 			this.minorPlanet.list.items = minorPlanet.list
 			this.minorPlanet.list.showDialog = true
+		} else {
+			this.angularService.message('specified object was not found', 'error')
 		}
 	}
 
@@ -522,7 +536,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 		this.minorPlanet.closeApproach.result = await this.api.closeApproachesOfMinorPlanets(this.minorPlanet.closeApproach.days, this.minorPlanet.closeApproach.lunarDistance, this.dateTimeAndLocation.dateTime)
 
 		if (!this.minorPlanet.closeApproach.result.length) {
-			this.angularService.message('No close approaches found for the given days and lunar distance', 'warning')
+			this.angularService.message('No close approaches found for the given days and lunar distance', 'warn')
 		}
 	}
 
@@ -628,7 +642,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 		}
 	}
 
-	protected dateTimeChanged(dateChanged: boolean, date?: Date) {
+	protected dateChanged(date?: Date) {
 		if (date) {
 			this.dateTimeAndLocation.dateTime.setFullYear(date.getFullYear())
 			this.dateTimeAndLocation.dateTime.setMonth(date.getMonth())
@@ -636,7 +650,46 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 		}
 
 		this.savePreference()
-		this.refreshTab(dateChanged, true)
+		this.refreshTab(true, true)
+	}
+
+	protected timeChanged(hour?: number, minute?: number) {
+		let refresh = false
+		let dateChanged = false
+
+		const loop = minute === -1 || minute === 60 || hour === -1 || hour === 24
+
+		if (loop) {
+			if (minute === -1) {
+				minute = 59
+				hour = this.dateTimeAndLocation.dateTime.getHours() - 1
+			} else if (minute === 60) {
+				minute = 0
+				hour = this.dateTimeAndLocation.dateTime.getHours() + 1
+			}
+
+			if (hour === -1) {
+				hour = 23
+				this.dateTimeAndLocation.dateTime.setDate(this.dateTimeAndLocation.dateTime.getDate() - 1)
+				dateChanged = true
+			} else if (hour === 24) {
+				hour = 0
+				this.dateTimeAndLocation.dateTime.setDate(this.dateTimeAndLocation.dateTime.getDate() + 1)
+				dateChanged = true
+			}
+		}
+
+		if (hour !== undefined) {
+			const prev = this.dateTimeAndLocation.dateTime.getHours()
+			refresh = !dateChanged && prev !== hour && ((hour >= 12 && prev < 12) || (hour < 12 && prev >= 12))
+			this.dateTimeAndLocation.dateTime.setHours(hour)
+		}
+		if (minute !== undefined) {
+			this.dateTimeAndLocation.dateTime.setMinutes(minute)
+		}
+
+		this.savePreference()
+		this.refreshTab(refresh, refresh)
 	}
 
 	protected manualDateTimeChanged() {
@@ -650,6 +703,14 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 	protected locationChanged() {
 		this.savePreference()
 		this.refreshTab(true, true)
+	}
+
+	protected settingsChanged(name: keyof SkyAtlasSettings) {
+		this.savePreference()
+
+		if (name === 'useTopocentricForMoonPhases' && this.tab === BodyTabType.MOON) {
+			this.refreshTab()
+		}
 	}
 
 	protected mountGoTo() {
@@ -681,7 +742,14 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 		this.refresh.count++
 
 		if (!this.dateTimeAndLocation.manual) {
+			const prev = this.dateTimeAndLocation.dateTime.getHours()
 			this.dateTimeAndLocation.dateTime = new Date()
+			const now = this.dateTimeAndLocation.dateTime.getHours()
+
+			if (prev !== now && ((now >= 12 && prev < 12) || (now < 12 && prev >= 12))) {
+				refreshTwilight = true
+				refreshChart = true
+			}
 		}
 
 		const { dateTime, location } = this.dateTimeAndLocation
@@ -703,12 +771,13 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 		// Sun.
 		if (this.tab === BodyTabType.SUN) {
 			this.sun.image = `${this.api.baseUrl}/sky-atlas/sun/image`
+			void this.api.earthSeasons(dateTime, location).then((seasons) => (this.sun.seasons = seasons))
 			const position = await this.api.positionOfSun(dateTime, location)
 			Object.assign(this.sun.position, position)
 		}
 		// Moon.
 		else if (this.tab === BodyTabType.MOON) {
-			void this.api.moonPhase(dateTime).then((res) => (this.moon.phase = res))
+			void this.api.moonPhases(dateTime, location, this.preference.settings.useTopocentricForMoonPhases).then((phases) => (this.moon.phases = phases))
 			const position = await this.api.positionOfMoon(dateTime, location)
 			Object.assign(this.moon.position, position)
 		}
@@ -785,56 +854,58 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 			[24.0, 90],
 		]
 
-		this.chart.refresh()
+		this.chart().refresh()
 	}
 
 	private async refreshChart(force: boolean = false) {
-		if (force || !this.altitudePoints.length) {
-			const { dateTime, location } = this.dateTimeAndLocation
+		try {
+			if (force || !this.altitudePoints.length) {
+				const { dateTime, location } = this.dateTimeAndLocation
 
-			// Sun.
-			if (this.tab === BodyTabType.SUN) {
-				const points = await this.api.altitudePointsOfSun(dateTime, location)
-				this.sun.altitude = points
-			}
-			// Moon.
-			else if (this.tab === BodyTabType.MOON) {
-				const points = await this.api.altitudePointsOfMoon(dateTime, location)
-				this.moon.altitude = points
-			}
-			// Planet.
-			else if (this.tab === BodyTabType.PLANET) {
-				if (this.planet.selected) {
-					const points = await this.api.altitudePointsOfPlanet(this.planet.selected.code, dateTime, location)
-					this.planet.altitude = points
+				// Sun.
+				if (this.tab === BodyTabType.SUN) {
+					const points = await this.api.altitudePointsOfSun(dateTime, location)
+					this.sun.altitude = points
+				}
+				// Moon.
+				else if (this.tab === BodyTabType.MOON) {
+					const points = await this.api.altitudePointsOfMoon(dateTime, location)
+					this.moon.altitude = points
+				}
+				// Planet.
+				else if (this.tab === BodyTabType.PLANET) {
+					if (this.planet.selected) {
+						const points = await this.api.altitudePointsOfPlanet(this.planet.selected.code, dateTime, location)
+						this.planet.altitude = points
+					}
+				}
+				// Minor Planet.
+				else if (this.tab === BodyTabType.MINOR_PLANET) {
+					if (this.minorPlanet.search.result) {
+						const code = `DES=${this.minorPlanet.search.result.spkId};`
+						const points = await this.api.altitudePointsOfPlanet(code, dateTime, location)
+						this.minorPlanet.altitude = points
+					}
+				}
+				// Sky Object.
+				else if (this.tab === BodyTabType.SKY_OBJECT) {
+					if (this.skyObject.search.selected) {
+						const points = await this.api.altitudePointsOfSkyObject(this.skyObject.search.selected, dateTime, location)
+						this.skyObject.altitude = points
+					}
+				}
+				// Satellite.
+				else {
+					if (this.satellite.search.selected) {
+						const points = await this.api.altitudePointsOfSatellite(this.satellite.search.selected, dateTime, location)
+						this.satellite.altitude = points
+					}
 				}
 			}
-			// Minor Planet.
-			else if (this.tab === BodyTabType.MINOR_PLANET) {
-				if (this.minorPlanet.search.result) {
-					const code = `DES=${this.minorPlanet.search.result.spkId};`
-					const points = await this.api.altitudePointsOfPlanet(code, dateTime, location)
-					this.minorPlanet.altitude = points
-				}
-			}
-			// Sky Object.
-			else if (this.tab === BodyTabType.SKY_OBJECT) {
-				if (this.skyObject.search.selected) {
-					const points = await this.api.altitudePointsOfSkyObject(this.skyObject.search.selected, dateTime, location)
-					this.skyObject.altitude = points
-				}
-			}
-			// Satellite.
-			else {
-				if (this.satellite.search.selected) {
-					const points = await this.api.altitudePointsOfSatellite(this.satellite.search.selected, dateTime, location)
-					this.satellite.altitude = points
-				}
-			}
+		} finally {
+			this.updateAltitudeChart()
+			this.chart().refresh()
 		}
-
-		this.updateAltitudeChart()
-		this.chart.refresh()
 	}
 
 	private updateNow(date: Date = new Date()) {
@@ -871,6 +942,23 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 		this.loadLocations()
 	}
 
+	private static readonly EARTH_SEASON_ICONS = ['flower', 'weather-sunny', 'leaf', 'snowflake']
+	private static readonly EARTH_SEASON_NAMES = ['spring', 'summer', 'autumn/fall', 'winter']
+
+	private seasonIndex(season: EarthSeason) {
+		const offset = this.dateTimeAndLocation.location.latitude < 0 ? 2 : 0
+		const index = EARTH_SEASONS.indexOf(season)
+		return (index + offset) % 4
+	}
+
+	protected seasonIcon(season: EarthSeason) {
+		return AtlasComponent.EARTH_SEASON_ICONS[this.seasonIndex(season)]
+	}
+
+	protected seasonName(season: EarthSeason) {
+		return AtlasComponent.EARTH_SEASON_NAMES[this.seasonIndex(season)]
+	}
+
 	protected savePreference() {
 		this.preference.location = this.dateTimeAndLocation.location
 		this.preferenceService.skyAtlas.set(this.preference)
@@ -884,25 +972,8 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 		}
 	}
 
-	private async executeMount(action: (mount: Mount) => void | Promise<void>) {
-		if (await this.angularService.confirm('Are you sure that you want to proceed?')) {
-			return false
-		}
-
+	private async executeMount(action: (mount: Mount) => void | Promise<void>, showConfirmation: boolean = true) {
 		const mounts = await this.api.mounts()
-
-		if (mounts.length === 1) {
-			await action(mounts[0])
-			return true
-		} else {
-			const mount = await this.deviceMenu.show(mounts)
-
-			if (mount && mount !== 'NONE' && mount.connected) {
-				await action(mount)
-				return true
-			}
-		}
-
-		return false
+		return this.deviceService.executeAction(this.deviceMenu(), mounts, action, showConfirmation)
 	}
 }

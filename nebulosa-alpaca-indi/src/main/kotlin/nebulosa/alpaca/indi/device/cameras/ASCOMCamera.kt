@@ -1,6 +1,10 @@
 package nebulosa.alpaca.indi.device.cameras
 
-import nebulosa.alpaca.api.*
+import nebulosa.alpaca.api.AlpacaCameraService
+import nebulosa.alpaca.api.CameraState
+import nebulosa.alpaca.api.ConfiguredDevice
+import nebulosa.alpaca.api.PulseGuideDirection
+import nebulosa.alpaca.api.SensorType
 import nebulosa.alpaca.indi.client.AlpacaClient
 import nebulosa.alpaca.indi.device.ASCOMDevice
 import nebulosa.fits.Bitpix
@@ -12,7 +16,32 @@ import nebulosa.image.format.BasicImageHdu
 import nebulosa.image.format.FloatImageData
 import nebulosa.image.format.HeaderCard
 import nebulosa.indi.device.Device
-import nebulosa.indi.device.camera.*
+import nebulosa.indi.device.camera.Camera
+import nebulosa.indi.device.camera.CameraBinChanged
+import nebulosa.indi.device.camera.CameraCanAbortChanged
+import nebulosa.indi.device.camera.CameraCanSetTemperatureChanged
+import nebulosa.indi.device.camera.CameraCfaChanged
+import nebulosa.indi.device.camera.CameraCoolerChanged
+import nebulosa.indi.device.camera.CameraCoolerControlChanged
+import nebulosa.indi.device.camera.CameraCoolerPowerChanged
+import nebulosa.indi.device.camera.CameraExposureAborted
+import nebulosa.indi.device.camera.CameraExposureFailed
+import nebulosa.indi.device.camera.CameraExposureFinished
+import nebulosa.indi.device.camera.CameraExposureMinMaxChanged
+import nebulosa.indi.device.camera.CameraExposureProgressChanged
+import nebulosa.indi.device.camera.CameraExposureStateChanged
+import nebulosa.indi.device.camera.CameraExposuringChanged
+import nebulosa.indi.device.camera.CameraFrameCaptured
+import nebulosa.indi.device.camera.CameraFrameChanged
+import nebulosa.indi.device.camera.CameraFrameFormatsChanged
+import nebulosa.indi.device.camera.CameraGainChanged
+import nebulosa.indi.device.camera.CameraGainMinMaxChanged
+import nebulosa.indi.device.camera.CameraHasCoolerChanged
+import nebulosa.indi.device.camera.CameraOffsetChanged
+import nebulosa.indi.device.camera.CameraOffsetMinMaxChanged
+import nebulosa.indi.device.camera.CameraPixelSizeChanged
+import nebulosa.indi.device.camera.CameraTemperatureChanged
+import nebulosa.indi.device.camera.FrameType
 import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.guider.GuideOutputPulsingChanged
@@ -21,8 +50,6 @@ import nebulosa.indi.device.rotator.Rotator
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.PropertyState
 import nebulosa.log.d
-import nebulosa.log.dw
-import nebulosa.log.e
 import nebulosa.log.loggerFor
 import nebulosa.math.AngleFormatter
 import nebulosa.math.format
@@ -610,10 +637,10 @@ data class ASCOMCamera(
             val metadata = ImageMetadata.from(stream.readNBytes(44))
 
             if (metadata.errorNumber != 0) {
-                LOG.e("failed to read image. device={}, error={}", name, metadata.errorNumber)
+                LOG.error("failed to read image. device={}, error={}", name, metadata.errorNumber)
                 return
             } else {
-                LOG.d("image read. metadata={}", metadata)
+                LOG.d { debug("image read. metadata={}", metadata) }
             }
 
             val width = metadata.dimension1
@@ -633,7 +660,7 @@ data class ASCOMCamera(
                                 Bitpix.BYTE -> (source.readByte().toLong() and 0xFF) / 255f
                                 Bitpix.SHORT -> (source.readShortLe().toLong() and 0xFFFF) / 65535f
                                 Bitpix.INTEGER -> ((source.readIntLe().toLong() and 0xFFFFFFFF) / 4294967295.0).toFloat()
-                                else -> return LOG.dw("invalid transmission element type: ${metadata.transmissionElementType}")
+                                else -> return LOG.d { warn("invalid transmission element type: ${metadata.transmissionElementType}") }
                             }
                         }
                     }
@@ -667,7 +694,7 @@ data class ASCOMCamera(
             header.add("OFFSET", offset, "Offset")
             if (canDebayer) header.add(cfaType)
 
-            val mount = snoopedDevices.firstOrNull { it is Mount } as? Mount
+            val mount = snoopedDevices.firstOrNull { it is Mount && it.connected } as? Mount
 
             mount?.also {
                 header.add(FitsKeyword.TELESCOP, it.name)
@@ -687,19 +714,19 @@ data class ASCOMCamera(
                 header.add(FitsKeyword.EQUINOX, 2000)
             }
 
-            val focuser = snoopedDevices.firstOrNull { it is Focuser } as? Focuser
+            val focuser = snoopedDevices.firstOrNull { it is Focuser && it.connected } as? Focuser
 
             focuser?.also {
                 header.add(FitsKeyword.FOCUSPOS, it.position)
             }
 
-            val wheel = snoopedDevices.firstOrNull { it is FilterWheel } as? FilterWheel
+            val wheel = snoopedDevices.firstOrNull { it is FilterWheel && it.connected } as? FilterWheel
 
             wheel?.also {
                 header.add(FitsKeyword.FILTER, it.names.getOrNull(it.position) ?: "Filter #${it.position}")
             }
 
-            val rotator = snoopedDevices.firstOrNull { it is Rotator } as? Rotator
+            val rotator = snoopedDevices.firstOrNull { it is Rotator && it.connected } as? Rotator
 
             rotator?.also {
                 header.add(FitsKeyword.ROTATANG, rotator.angle.toDegrees)
@@ -712,7 +739,7 @@ data class ASCOMCamera(
             image.add(hdu)
 
             sender.fireOnEventReceived(CameraFrameCaptured(this, image = image))
-        } ?: LOG.e("image body is null. device={}", name)
+        } ?: LOG.error("image body is null. device={}", name)
     }
 
     override fun toString() = "Camera(name=$name, connected=$connected, exposuring=$exposuring," +
@@ -798,7 +825,7 @@ data class ASCOMCamera(
                             try {
                                 readImage(exposureTime)
                             } catch (e: Throwable) {
-                                LOG.e("failed to read image", e)
+                                LOG.error("failed to read image", e)
                             }
                         }
                     }

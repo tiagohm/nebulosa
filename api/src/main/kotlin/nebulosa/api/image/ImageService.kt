@@ -1,9 +1,9 @@
 package nebulosa.api.image
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import io.ktor.http.ContentType
-import io.ktor.server.response.respondOutputStream
-import io.ktor.server.routing.RoutingCall
+import io.ktor.http.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 import nebulosa.api.atlas.Location
 import nebulosa.api.atlas.SkyObjectEntityRepository
 import nebulosa.api.calibration.CalibrationFrameService
@@ -12,16 +12,45 @@ import nebulosa.api.framing.FramingService
 import nebulosa.api.image.ImageAnnotation.StarDSO
 import nebulosa.api.ktor.responseHeaders
 import nebulosa.api.message.MessageService
-import nebulosa.fits.*
+import nebulosa.fits.FitsFormat
+import nebulosa.fits.bitpix
+import nebulosa.fits.declination
+import nebulosa.fits.fits
+import nebulosa.fits.instrument
+import nebulosa.fits.isFits
+import nebulosa.fits.latitude
+import nebulosa.fits.longitude
+import nebulosa.fits.observationDate
+import nebulosa.fits.rightAscension
 import nebulosa.image.Image
 import nebulosa.image.algorithms.computation.Statistics
-import nebulosa.image.algorithms.transformation.*
+import nebulosa.image.algorithms.transformation.AdaptativeScreenTransformFunction
+import nebulosa.image.algorithms.transformation.CfaPattern
+import nebulosa.image.algorithms.transformation.HorizontalFlip
+import nebulosa.image.algorithms.transformation.Invert
+import nebulosa.image.algorithms.transformation.ScreenTransformFunction
+import nebulosa.image.algorithms.transformation.SubFrame
+import nebulosa.image.algorithms.transformation.SubtractiveChromaticNoiseReduction
+import nebulosa.image.algorithms.transformation.VerticalFlip
+import nebulosa.image.algorithms.transformation.adjustment.Brightness
+import nebulosa.image.algorithms.transformation.adjustment.Contrast
+import nebulosa.image.algorithms.transformation.adjustment.Exposure
+import nebulosa.image.algorithms.transformation.adjustment.Fade
+import nebulosa.image.algorithms.transformation.adjustment.Gamma
+import nebulosa.image.algorithms.transformation.adjustment.Saturation
 import nebulosa.image.format.ImageChannel
 import nebulosa.image.format.ImageHdu
 import nebulosa.image.format.ImageModifier
 import nebulosa.indi.device.camera.Camera
-import nebulosa.log.*
-import nebulosa.math.*
+import nebulosa.log.d
+import nebulosa.log.loggerFor
+import nebulosa.math.Angle
+import nebulosa.math.deg
+import nebulosa.math.formatSignedDMS
+import nebulosa.math.hours
+import nebulosa.math.normalized
+import nebulosa.math.toArcsec
+import nebulosa.math.toDegrees
 import nebulosa.nova.astrometry.VSOP87E
 import nebulosa.nova.position.Barycentric
 import nebulosa.sbd.SmallBodyDatabaseService
@@ -112,22 +141,23 @@ class ImageService(
 
         output.respondOutputStream(contentType) { ImageIO.write(transformedImage, format, this) }
 
-        LOG.d("image opened. path={}", path)
+        LOG.d { debug("image opened. path={}", path) }
     }
 
     private fun Image.transform(
         enabled: Boolean, transformation: ImageTransformation,
-        operation: ImageOperation, camera: Camera? = null
+        operation: ImageOperation, camera: Camera? = null,
     ): TransformedImage {
         val instrument = camera ?: header.instrument?.let(connectionService::camera)
 
         val (autoStretch, shadow, highlight, midtone) = transformation.stretch
         val scnrEnabled = transformation.scnr.channel != null
         val manualStretch = shadow != 0 || highlight != 65536 || midtone != 32768
+        val adjustment = transformation.adjustment
 
         val shouldBeTransformed = enabled && (autoStretch || manualStretch
                 || transformation.mirrorHorizontal || transformation.mirrorVertical || transformation.invert
-                || scnrEnabled)
+                || scnrEnabled || adjustment.canTransform)
 
         var transformedImage = if (shouldBeTransformed) clone() else this
 
@@ -160,6 +190,33 @@ class ImageService(
             }
         }
 
+        if (enabled && adjustment.enabled) {
+            // Apply exposure adjustment to increase overall brightness.
+            if (adjustment.exposure.enabled) {
+                transformedImage = Exposure(adjustment.exposure.value).transform(transformedImage)
+            }
+            // Establish the tonal range.
+            if (adjustment.contrast.enabled) {
+                transformedImage = Contrast(adjustment.contrast.value).transform(transformedImage)
+            }
+            // Fine-tune the overall intensity.
+            if (adjustment.brightness.enabled) {
+                transformedImage = Brightness(adjustment.brightness.value).transform(transformedImage)
+            }
+            // Refine with gamma correction to balance shadows and highlights.
+            if (adjustment.gamma.enabled) {
+                transformedImage = Gamma(adjustment.gamma.value).transform(transformedImage)
+            }
+            // Enhance or reduce color intensity.
+            if (adjustment.saturation.enabled) {
+                transformedImage = Saturation(adjustment.saturation.value).transform(transformedImage)
+            }
+            // Apply a finishing touch to soften the image.
+            if (adjustment.fade.enabled) {
+                transformedImage = Fade(adjustment.fade.value).transform(transformedImage)
+            }
+        }
+
         if (enabled && transformation.invert) {
             transformedImage = Invert.transform(transformedImage)
         }
@@ -174,7 +231,7 @@ class ImageService(
     @Synchronized
     fun closeImage(path: Path) {
         imageBucket.remove(path)
-        LOG.d("image closed. path={}", path)
+        LOG.d { debug("image closed. path={}", path) }
     }
 
     @Synchronized
@@ -188,7 +245,7 @@ class ImageService(
         val wcs = try {
             WCS(calibration)
         } catch (e: WCSException) {
-            LOG.e("unable to generate annotations for image. path={}", path, e)
+            LOG.error("unable to generate annotations for image. path={}", path, e)
             return emptyList()
         }
 
@@ -202,7 +259,7 @@ class ImageService(
                 val latitude = image.header.latitude ?: location?.latitude?.deg ?: 0.0
                 val longitude = image.header.longitude ?: location?.longitude?.deg ?: 0.0
 
-                LOG.di("finding minor planet annotations. dateTime={}, latitude={}, longitude={}, calibration={}", dateTime, latitude.formatSignedDMS(), longitude.formatSignedDMS(), calibration)
+                LOG.d { info("finding minor planet annotations. dateTime={}, latitude={}, longitude={}, calibration={}", dateTime, latitude.formatSignedDMS(), longitude.formatSignedDMS(), calibration) }
 
                 val identifiedBody = smallBodyDatabaseService.identify(
                     dateTime, latitude, longitude, 0.0,
@@ -231,7 +288,7 @@ class ImageService(
                     }
                 }
 
-                LOG.i("found {} minor planets", count)
+                LOG.info("found {} minor planets", count)
             }, executorService)
                 .whenComplete { _, e -> e?.printStackTrace() }
                 .also(tasks::add)
@@ -239,7 +296,7 @@ class ImageService(
 
         if (request.starsAndDSOs) {
             CompletableFuture.runAsync({
-                LOG.di("finding star/DSO annotations. dateTime={}, useSimbad={}, calibration={}", dateTime, request.useSimbad, calibration)
+                LOG.d { info("finding star/DSO annotations. dateTime={}, useSimbad={}, calibration={}", dateTime, request.useSimbad, calibration) }
 
                 val rightAscension = calibration.rightAscension
                 val declination = calibration.declination
@@ -269,7 +326,7 @@ class ImageService(
                     }
                 }
 
-                LOG.i("found {} stars/DSOs", count)
+                LOG.info("found {} stars/DSOs", count)
             }, executorService)
                 .whenComplete { _, e -> e?.printStackTrace() }
                 .also(tasks::add)
@@ -291,7 +348,7 @@ class ImageService(
         val (x, y, width, height) = save.subFrame.constrained(image.width, image.height)
 
         if (width > 0 && height > 0 && (x > 0 || y > 0 || width != image.width || height != image.height)) {
-            LOG.d("image subframed. x={}, y={}, width={}, height={}", x, y, width, height)
+            LOG.d { debug("image subframed. x={}, y={}, width={}, height={}", x, y, width, height) }
             image = image.transform(SubFrame(x, y, width, height))
         }
 
@@ -337,7 +394,7 @@ class ImageService(
         val wcs = try {
             WCS(calibration)
         } catch (e: WCSException) {
-            LOG.e("unable to generate annotations for image. path={}", path, e)
+            LOG.error("unable to generate annotations for image. path={}", path, e)
             return null
         }
 

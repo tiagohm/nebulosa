@@ -8,11 +8,24 @@ import nebulosa.constants.TAU
 import nebulosa.erfa.CartesianCoordinate
 import nebulosa.erfa.SphericalCoordinate
 import nebulosa.guiding.GuideDirection
-import nebulosa.indi.device.mount.*
-import nebulosa.log.di
+import nebulosa.indi.device.mount.Mount
+import nebulosa.indi.device.mount.MountGeographicCoordinateChanged
+import nebulosa.indi.device.mount.PierSide
+import nebulosa.indi.device.mount.SlewRate
+import nebulosa.indi.device.mount.TrackMode
+import nebulosa.log.d
 import nebulosa.log.loggerFor
 import nebulosa.lx200.protocol.LX200ProtocolServer
-import nebulosa.math.*
+import nebulosa.math.Angle
+import nebulosa.math.Distance
+import nebulosa.math.QUARTER
+import nebulosa.math.deg
+import nebulosa.math.formatHMS
+import nebulosa.math.formatSignedDMS
+import nebulosa.math.hours
+import nebulosa.math.normalized
+import nebulosa.math.toDegrees
+import nebulosa.math.toHours
 import nebulosa.nova.astrometry.Constellation
 import nebulosa.nova.frame.Ecliptic
 import nebulosa.nova.position.GeographicPosition
@@ -51,6 +64,10 @@ class MountService(
         sites[event.device] = Geoid.IERS2010.lonLat(event.device)
     }
 
+    private fun geographicPosition(mount: Mount): GeographicPosition {
+        return sites.computeIfAbsent(mount, Geoid.IERS2010::lonLat)
+    }
+
     fun connect(mount: Mount) {
         mount.connect()
     }
@@ -83,7 +100,7 @@ class MountService(
     }
 
     private fun verifyMountCanSlew(idempotencyKey: String, mount: Mount, ra: Angle, dec: Angle, j2000: Boolean): Boolean {
-        val location = sites[mount] ?: return true
+        val location = geographicPosition(mount)
         val mountPosition = if (j2000) ICRF.equatorial(ra, dec, center = location)
         else ICRF.equatorial(ra, dec, epoch = CurrentTime, center = location)
         return verifyMountWillPointToSun(idempotencyKey, location, mountPosition) &&
@@ -185,7 +202,7 @@ class MountService(
     }
 
     fun computeLST(mount: Mount): Angle {
-        return sites[mount]!!.lstAt(CurrentTime)
+        return geographicPosition(mount).lstAt(CurrentTime)
     }
 
     fun computeZenithLocation(mount: Mount): ComputedLocation {
@@ -231,7 +248,7 @@ class MountService(
     ): ComputedLocation {
         val computedLocation = ComputedLocation()
 
-        val center = sites[mount]!!
+        val center = geographicPosition(mount)
         val epoch = if (j2000) null else CurrentTime
 
         val icrf = ICRF.equatorial(rightAscension, declination, epoch = epoch, center = center)
@@ -284,7 +301,7 @@ class MountService(
             val (calibratedRA, calibratedDEC) = icrf.equatorialAtDate()
             val raOffset = mount.rightAscension - calibratedRA
             val decOffset = mount.declination - calibratedDEC
-            LOG.di("pointing mount adjusted. ra={}, dec={}, dx={}, dy={}", rightAscension.formatHMS(), declination.formatSignedDMS(), raOffset.formatHMS(), decOffset.formatSignedDMS())
+            LOG.d { info("pointing mount adjusted. ra={}, dec={}, dx={}, dy={}", rightAscension.formatHMS(), declination.formatSignedDMS(), raOffset.formatHMS(), decOffset.formatSignedDMS()) }
             goTo(mount, rightAscension + raOffset, declination + decOffset, true)
         }
     }

@@ -10,7 +10,7 @@ interface CalibrationFrameProvider {
 
     fun findBestFlatFrames(
         name: String, width: Int, height: Int,
-        binX: Int, binY: Int = binX, filter: String? = null
+        binX: Int, binY: Int = binX, filter: String? = null,
     ): List<CalibrationFrameEntity>
 
     fun findBestBiasFrames(

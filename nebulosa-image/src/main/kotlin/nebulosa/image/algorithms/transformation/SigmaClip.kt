@@ -17,7 +17,6 @@ data class SigmaClip(
     private val maxIteration: Int = 5,
     private val replaceRejectedPixels: Boolean = false,
     private val rejectedPixelFillValue: Float = 0f,
-    private val noStatistics: Boolean = true,
 ) : TransformAlgorithm, ComputationAlgorithm<SigmaClip.Data> {
 
     enum class CenterMethod {
@@ -30,10 +29,11 @@ data class SigmaClip(
         val minBound: Float,
         val maxBound: Float,
         val numberOfIterations: Int,
-        val statistics: Statistics.Data,
     )
 
-    override fun transform(source: Image) = source.also(::compute)
+    override fun transform(source: Image): Image {
+        return source.also(::compute)
+    }
 
     override fun compute(source: Image): Data {
         var minBound = 1f
@@ -68,8 +68,6 @@ data class SigmaClip(
             numberOfIterations++
         }
 
-        val stats = if (noStatistics) Statistics.Data.EMPTY else Statistics(channel).compute(source)
-
         for (i in 0 until source.size) {
             val pixel = source.read(i, channel)
 
@@ -82,6 +80,6 @@ data class SigmaClip(
             }
         }
 
-        return Data(totalCount, minBound, maxBound, numberOfIterations, stats)
+        return Data(totalCount, minBound, maxBound, numberOfIterations)
     }
 }

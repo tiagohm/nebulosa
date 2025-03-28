@@ -1,10 +1,11 @@
-import { Pipe, PipeTransform } from '@angular/core'
-import { DropdownItem } from '../types/angular.types'
+import type { PipeTransform } from '@angular/core'
+import { Pipe, inject } from '@angular/core'
+import type { DropdownItem } from '../components/dropdown.component'
 import { EnumPipe } from './enum.pipe'
 
-@Pipe({ name: 'enumDropdown' })
+@Pipe({ standalone: false, name: 'enumDropdown' })
 export class EnumDropdownPipe implements PipeTransform {
-	constructor(private readonly enumPipe: EnumPipe) {}
+	private readonly enumPipe = inject(EnumPipe)
 
 	transform<T extends string>(value: T[]): DropdownItem<T>[] {
 		return value.map((value) => {
