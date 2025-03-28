@@ -10,7 +10,7 @@ import type { MenuItemCommandEvent, SlideMenuItem } from './menu-item.component'
 			[resizable]="false"
 			[(visible)]="visible"
 			[modal]="true"
-			[header]="currentHeader | uppercase"
+			[header]="(currentHeader ?? '') | uppercase"
 			[closeOnEscape]="true"
 			[dismissableMask]="true"
 			[closable]="true"
