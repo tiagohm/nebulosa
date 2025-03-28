@@ -6,11 +6,11 @@ import type { MenuItemCommandEvent, SlideMenuItem } from './menu-item.component'
 	selector: 'neb-dialog-menu',
 	template: `
 		<p-dialog
-			[showHeader]="false"
+			[showHeader]="true"
 			[resizable]="false"
 			[(visible)]="visible"
 			[modal]="true"
-			[header]="currentHeader"
+			[header]="currentHeader | uppercase"
 			[closeOnEscape]="true"
 			[dismissableMask]="true"
 			[closable]="true"
