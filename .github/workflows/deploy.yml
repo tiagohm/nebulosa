@@ -69,8 +69,7 @@ jobs:
 
       - name: Install Linux arm64 Build Dependencies
         if: ${{ matrix.os == 'ubuntu-22.04-arm' }}
-        run: sudo apt install -y ruby ruby-dev
-        run: sudo gem install fpm
+        run: sudo apt install -y ruby ruby-dev && sudo gem install fpm
 
       - name: Build Linux x64 & Windows
         if: ${{ matrix.os != 'ubuntu-22.04-arm' }}
