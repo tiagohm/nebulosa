@@ -63,12 +63,22 @@ jobs:
       - name: Install Dependencies
         run: npm i
 
-      - name: Install Linux Build Dependencies
-        if: ${{ matrix.os == 'ubuntu-latest' }}
-        run: sudo apt-get install -y rpm libarchive-tools
+      - name: Install Linux x64 Build Dependencies
+        if: ${{ matrix.os == 'ubuntu-22.04' }}
+        run: sudo apt install -y rpm libarchive-tools
 
-      - name: Build
+      - name: Install Linux arm64 Build Dependencies
+        if: ${{ matrix.os == 'ubuntu-22.04-arm' }}
+        run: sudo apt install -y ruby ruby-dev
+        run: sudo gem install fpm
+
+      - name: Build Linux x64 & Windows
+        if: ${{ matrix.os != 'ubuntu-22.04-arm' }}
         run: npm run electron:build
+
+      - name: Build Linux arm64
+        if: ${{ matrix.os == 'ubuntu-22.04-arm' }}
+        run: USE_SYSTEM_FPM=true npm run electron:build
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
