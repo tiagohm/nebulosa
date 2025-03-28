@@ -1,8 +1,6 @@
 # Nebulosa
 
-[![Active Development](https://img.shields.io/badge/Maintenance%20Level-Actively%20Developed-brightgreen.svg)](https://gist.github.com/cheerfulstoic/d107229326a01ff0f333a1d3476e068d)
-[![CI](https://github.com/tiagohm/nebulosa/actions/workflows/ci.yml/badge.svg)](https://github.com/tiagohm/nebulosa/actions/workflows/ci.yml)
-![GitHub Release](https://img.shields.io/github/v/release/tiagohm/nebulosa)
+[![Not Maintained](https://img.shields.io/badge/Maintenance%20Level-Not%20Maintained-yellow.svg)](https://gist.github.com/cheerfulstoic/d107229326a01ff0f333a1d3476e068d)
 
 The complete integrated solution for all of your astronomical imaging needs.
 
