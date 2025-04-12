@@ -9,7 +9,7 @@ updates:
   - package-ecosystem: "gradle"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "monthly"
     open-pull-requests-limit: 64
     target-branch: "dev"
     commit-message:
@@ -46,7 +46,7 @@ updates:
   - package-ecosystem: "npm"
     directory: "/desktop"
     schedule:
-      interval: "daily"
+      interval: "monthly"
     open-pull-requests-limit: 64
     target-branch: "dev"
     commit-message:
@@ -62,7 +62,7 @@ updates:
   - package-ecosystem: "npm"
     directory: "/desktop/app"
     schedule:
-      interval: "daily"
+      interval: "monthly"
     target-branch: "dev"
     commit-message:
       prefix: "[desktop]"
@@ -71,7 +71,7 @@ updates:
     directory: "/docs"
     schedule:
       interval: "monthly"
-    target-branch: "dev"
+    target-branch: "main"
     commit-message:
       prefix: "[docs]"
 
