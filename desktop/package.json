@@ -80,7 +80,7 @@
 		"postcss": "8.5.3",
 		"prettier": "latest",
 		"prettier-plugin-tailwindcss": "0.6.11",
-		"typescript": "5.8.2",
+		"typescript": "5.8.3",
 		"typescript-eslint": "latest",
 		"wait-on": "8.0.3"
 	},
