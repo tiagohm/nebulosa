@@ -27,7 +27,7 @@ dependencyResolutionManagement {
             library("csv", "de.siegmar:fastcsv:3.6.0")
             library("apache-lang3", "org.apache.commons:commons-lang3:3.17.0")
             library("apache-codec", "commons-codec:commons-codec:1.18.0")
-            library("apache-collections", "org.apache.commons:commons-collections4:4.4")
+            library("apache-collections", "org.apache.commons:commons-collections4:4.5.0")
             library("apache-math", "org.apache.commons:commons-math3:3.6.1")
             library("apache-numbers-complex", "org.apache.commons:commons-numbers-complex:1.2")
             library("oshi", "com.github.oshi:oshi-core:6.8.0")
