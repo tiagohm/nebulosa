@@ -4,12 +4,15 @@
 
 The complete integrated solution for all of your astronomical imaging needs.
 
+> [!IMPORTANT]
+> Moved to [Nebulosa TS](https://github.com/tiagohm/nebulosa.ts) and [Nebulosa Server](https://github.com/tiagohm/nebulosa.server)
+
 ## Building
 
 ### Pre-requisites
 
-* Java 17
-* Node 20.9.0 or newer
+* Java 17 or newer
+* Node 22 or newer
 
 ### Steps
 
@@ -42,6 +45,8 @@ run these commands before:
 
 4. `USE_SYSTEM_FPM=true npm run electron:build:deb` to build `.deb` package.
 
+> [!TIP]
 > Look at `release` subdirectory for the generated build.
 
+> [!TIP]
 > Alternatively, you can run `npm run electron:build` for build all package formats.
