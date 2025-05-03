@@ -9,9 +9,9 @@ export default defineConfig({
         starlight({
             title: 'Nebulosa',
             favicon: 'public/favicon.png',
-            social: {
-                github: 'https://github.com/tiagohm/nebulosa',
-            },
+            social: [
+                { icon: 'github', label: 'GitHub', href: 'https://github.com/tiagohm/nebulosa' },
+            ],
             sidebar: [
                 {
                     label: 'Guides',
